@@ -165,9 +165,12 @@ evaluateType1 form ==
                 [zt,:zv]:= z1:= getAndEvalConstructorArgument tree
                 (v1 := coerceOrRetract(z1, m)) => objValUnwrap v1
                 throwKeyedMsgCannotCoerceWithValue(zv,zt,m)
-        throwEvalTypeMsg("S2IE0006",[makeOrdinal argnum,m,form])
+        throw_eval_type_msg("S2IE0006",
+            '"Cannot convert the %1 argument of %3p to the type %2p .",
+            [makeOrdinal(argnum), m, form])
     [op,:NREVERSE typeList]
-  throwEvalTypeMsg("S2IE0007",[op])
+  throw_eval_type_msg("S2IE0007",
+      '"Category, domain or package constructor %1b is not available.", [op])
 
 throw_eval_type_msg(key, msg, args) ==
   $justUnparseType : local := true
@@ -231,10 +234,14 @@ evalForm(op,opName,argl,mmS) ==
           ['FUNCALL,['function , ['LAMBDA,xargs,:xbody]],:TAKE(#xargs, form)]
         dcVector := evalDomain dc
         fun0 := NRTcompileEvalForm(opName,fun,dcVector)
-        null fun0 => throwKeyedMsg("S2IE0008",[opName])
+        null fun0 => throw_msg("S2IE0008", CONCAT(
+           '"Cannot find an applicable defined function %1b for the given",
+           '" arguments."), [opName])
         [bpi,:domain] := fun0
         EQ(bpi,function Undef) =>
-         sayKeyedMsg("S2IE0009",[opName,formatSignature CDR sig,CAR sig])
+         say_msg("S2IE0009",
+             '"Operation %b %1 : %2 %d is not implemented in %3bp .",
+                 [opName, formatSignature(rest(sig)), first(sig)])
          NIL
         if $NRTmonitorIfTrue = true then
           sayBrightlyNT ['"Applying ",first fun0,'" to:"]
@@ -316,7 +323,13 @@ getArgValueComp(arg,type,cond) ==
     not $compilingMap => n := 'unknownVar
     alias := get0($mapName, 'alias, $e)
     n := alias.(num - 1)
-  keyedMsgCompFailure("S2IE0010",[n])
+  msg_comp_failure("S2IE0010", CONCAT(
+    '"Your expression cannot be fully compiled because it contains an",
+    '" integer expression (for %1b ) whose sign cannot be determined (in",
+    '" general) and so must be specified by you.",
+    '" Perhaps you can try substituting something like %ceon %b ( %1 :: PI )",
+    '" %d %l or %l %b ( %1 ::  NNI ) %d %ceoff into your expression for",
+    '" %1b ."), [n])
 
 evalFormMkValue(op,form,tm) ==
   val:=

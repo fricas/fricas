@@ -604,7 +604,9 @@ Undef(:u) ==
       sayMessage concat ['"   Retrospective determination of slot",'%b,
         slot,'%d,'"of",'%b,:prefix2String domain,'%d]
     APPLY(first ELT(domain', slot), [:u'', rest ELT(domain', slot)])
-  throwKeyedMsg("S2IF0008",[formatOpSignature(op,sig),domain])
+  throw_msg("S2IF0008",
+            '"The function %1b is not defined in the domain %2bp .",
+            [formatOpSignature(op, sig), domain])
 
 TruthP x ==
     --True if x is a predicate that's always true

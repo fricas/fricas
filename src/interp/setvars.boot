@@ -489,7 +489,8 @@ countCache n ==
   $options =>
     $options is [["vars",:l]] =>
       for x in l repeat
-        NULL IDENTP x => sayKeyedMsg("S2IF0007",[x])
+        NULL IDENTP x => say_msg("S2IF0007",
+            '"%1b is not a valid function name.", [x])
         $cacheAlist:= insertAlist(x,n,$cacheAlist)
         cacheCountName := INTERNL1(x, '";COUNT")
         SET(cacheCountName,n)

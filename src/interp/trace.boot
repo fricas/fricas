@@ -97,14 +97,22 @@ trace1(l, options) ==
   hasOption(options, 'off) =>
     (ops := hasOption(options, 'ops)) or
       (lops := hasOption(options, 'local)) =>
-        null l => throwKeyedMsg("S2IT0019",NIL)
+        null(l) => throw_msg("S2IT0019", CONCAT(
+            '"If you use the %b )off %d option for %b )trace %d and",
+            '" you also use the %b )local %d or %b )ops %d option,",
+            '" you must specify the name of a constructor.",
+            '" You have not done so."), [])
         constructor := unabbrev
           atom l => l
           null rest l =>
             atom first l => first l
             first first l
           NIL
-        not(isFunctor constructor) => throwKeyedMsg("S2IT0020",NIL)
+        not(isFunctor constructor) => throw_msg("S2IT0020", CONCAT(
+            '"If you use the %b )off %d option for %b )trace %d and you",
+            '" also use the %b )local %d or %b )ops %d option, you must",
+            '" specify the name of a constructor.  What you gave after",
+            '" %b )trace %d is not a valid constructor name."), [])
         if ops then
           ops := getTraceOption ops
           NIL
@@ -112,12 +120,16 @@ trace1(l, options) ==
           lops := rest getTraceOption lops
           untraceDomainLocalOps(constructor,lops)
     (1 < #options) and not hasOption(options, 'nonquietly) =>
-      throwKeyedMsg("S2IT0021",NIL)
+        throw_msg("S2IT0021", CONCAT(
+            '"If you use the %b )off %d option for %b )trace %d then",
+            '" the only other options you can use are %b )nonquietly,",
+            '" )ops %d and %b )local. %d"), [])
     untrace l
     clearConstructorCaches()
   hasOption(options, 'stats) =>
     (1 < #options) =>
-      throwKeyedMsg("S2IT0001",['")trace ... )stats"])
+        throw_msg("S2IT0001", '"%1b can have no other options.",
+                  ['")trace ... )stats"])
     [., :opt] := first options
     -- look for )trace )stats       to list the statistics
     --          )trace )stats reset to reset them
@@ -130,14 +142,17 @@ trace1(l, options) ==
     selectOptionLC(first opt,'(reset),'optionError)
     resetTimers()
     resetCounters()
-    throwKeyedMsg("S2IT0002",NIL)
+    throw_msg("S2IT0002", CONCAT(
+        '"Trace facility timers, space counts and execution counts have",
+        '" been reset."), [])
   a:= hasOption(options, 'restore) =>
     null(oldL:= $lastUntraced) => nil
     newOptions := delete(a, options)
     null l => trace1(oldL, options)
     for x in l repeat
       x is [domain,:opList] and VECP domain =>
-        sayKeyedMsg("S2IT0003",[devaluate domain])
+          say_msg("S2IT0003", '"Please retrace the domain %1b.",
+                  [devaluate(domain)])
       options := [:newOptions, :LASSOC(x, $optionAlist)]
       trace1(LIST x, options)
   null l => nil
@@ -147,8 +162,9 @@ trace1(l, options) ==
     ADDASSOC(x, options, $optionAlist)
   optionList:= getTraceOptions(options)
   if (domainList := LASSOC("of", optionList)) then
-      LASSOC("ops", optionList) =>
-        throwKeyedMsg("S2IT0004", NIL)
+      LASSOC("ops", optionList) => throw_msg("S2IT0004",
+          '"%b )ops %d and %b )of %d cannot both be options to %b )trace %d",
+          [])
       opList:=
         traceList => [["ops", :traceList]]
         nil
@@ -499,7 +515,8 @@ getTraceOption (x is [key,:l]) ==
   key='mathprint =>
     null l => x
     stackTraceOptionError ["S2IT0009",[STRCONC('")",object2String key)]]
-  key => throwKeyedMsg("S2IT0005",[key])
+  key => throw_msg("S2IT0005", '"The %1b option is not implemented yet.",
+                   [key])
 
 traceOptionError(opt,keys) ==
   null keys => stackTraceOptionError ["S2IT0007",[opt]]
@@ -586,7 +603,8 @@ transTraceItem x ==
     x
   VECP first x => transTraceItem devaluate first x
   y:= domainToGenvar x => y
-  throwKeyedMsg("S2IT0018",[x])
+  throw_msg("S2IT0018", '"FriCAS does not understand the use of %1b here.",
+            [x])
 
 removeTracedMapSigs untraceList ==
   for name in untraceList repeat

@@ -69,12 +69,14 @@ upDollar t ==
   t isnt [op,D,form] => nil
   t2 := t
   (not $genValue) and or/[CONTAINED(var,D) for var in $localVars] =>
-    keyedMsgCompFailure("S2IS0032",NIL)
+      msg_comp_failure("S2IS0032",
+          '"Cannot compile a $-expression involving a local variable.", [])
   EQ(D,'Lisp) => upLispCall(op,form)
   if VECP D and (SIZE(D) > 0) then D := D.0
   t := evaluateType unabbrev D
-  categoryForm? t =>
-    throwKeyedMsg("S2IE0012", [t])
+  categoryForm?(t) => throw_msg("S2IE0012", CONCAT(
+     '"The right-hand side of the $ operator must be a package or domain",
+     '" name, but %1bp is a category."), [t])
   f := getUnname form
   if f = $immediateDataSymbol then
     f := objValUnwrap coerceInteractive(getValue form,$OutputForm)
@@ -82,7 +84,9 @@ upDollar t ==
   ATOM(form) and (f ~= $immediateDataSymbol) and
     (u := findUniqueOpInDomain(op,f,t)) => u
   f in '(One Zero true false nil) and constantInDomain?([f],t) =>
-    isPartialMode t => throwKeyedMsg("S2IS0020",NIL)
+    isPartialMode t => throw_msg("S2IS0020", CONCAT(
+          '"A fully specified type must follow $ when it qualifies a domain",
+          '" constant."), [])
     if $genValue then
       val := wrap getConstantFromDomain([f],t)
     else val := ['getConstantFromDomain,['LIST,MKQ f],MKQ t]
@@ -134,7 +138,9 @@ upLispCall(op,t) ==
   if atom t then code:=getUnname t else
     [lispOp,:argl]:= t
     not(functionp(lispOp.0) or macrop(lispOp.0)) =>
-      throwKeyedMsg("S2IS0024",[lispOp.0])
+        throw_msg("S2IS0024",
+            '"%1b is not a lisp function and so cannot be used with $Lisp.",
+            [lispOp.0])
     for arg in argl repeat bottomUp arg
     code:=[getUnname lispOp,
       :[getArgValue(arg,computedMode arg) for arg in argl]]
@@ -242,7 +248,9 @@ compileIF(op,cond,a,b,t) ==
     rempropI($mapName,'localModemap)
     rempropI($mapName,'localVars)
     rempropI($mapName,'mapBody)
-    throwKeyedMsg("S2IS0026",[m2,m1])
+    throw_msg("S2IS0026", CONCAT(
+        '"Cannot resolve types %1bp and %2bp across the %b then %d and %b",
+        '" else %d clauses of an %b if %d statement."), [m2, m1])
   evalIF(op,rest t,m)
   putModeSet(op,[m])
 
@@ -291,7 +299,9 @@ interpIF(op,cond,a,b) ==
       putValue(op,objNew(voidValue(), $Void))
       putModeSet(op,[$Void])
     upIFgenValue(op,b)
-  throwKeyedMsg("S2IS0031",NIL)
+  throw_msg("S2IS0031", CONCAT(
+      '"A predicate (for example, following an %b if %d keyword) must",
+      '" evaluate to an object of type %b Boolean. %d"), [])
 
 upIFgenValue(op,tree) ==
   -- evaluates tree and transfers the results to op
@@ -323,7 +333,8 @@ upisAndIsnt(t:=[op,a,pattern]) ==
 
 putPvarModes(pattern,m) ==
   -- Puts the modes for the pattern variables into $env
-  m isnt ['List,um] => throwKeyedMsg("S2IS0030",NIL)
+  m isnt ['List, um] => throw_msg("S2IS0030",
+      '"Pattern matching is only allowed on lists.", [])
   for pvar in pattern repeat
       IDENTP(pvar) => putIntSymTab(pvar, 'mode, um, $env)
       pvar is ['_:, var] => putIntSymTab(var, 'mode, m, $env)
@@ -470,7 +481,10 @@ upLET t ==
     throwKeyedMsg("S2IS0027",[var])
   (IDENTP var) and not (var in '(true false elt QUOTE)) =>
     var ~= (var' := unabbrev(var)) =>  -- constructor abbreviation
-      throwKeyedMsg("S2IS0028",[var,var'])
+        throw_msg("S2IS0028", CONCAT(
+            '"You have used the abbreviation %1b of the constructor %2b on",
+            '" the left-hand side of an assignment expression. This is",
+            " not allowed."), [var, var'])
     if get0(var, 'isInterpreterFunction, $e) then
       putHist(var,'isInterpreterFunction,false,$e)
       sayKeyedMsg("S2IS0049",['"Function",var])
@@ -485,7 +499,9 @@ upLET t ==
     if (val := getValue lhs) and (objMode val = $Boolean) and
       getUnname(rhs) = 'equation then putTarget(rhs,$Boolean)
     (rhsMs:= bottomUp rhs) = [$Void] =>
-      throwKeyedMsg("S2IS0034",[var])
+        throw_msg("S2IS0034", CONCAT(
+            '"You cannot assign an object of type %b Void %d to any",
+            '" identifier, (in particular, %2b )."), [var])
     val:=evalLET(lhs,rhs)
     putValue(op,val)
     putModeSet(op,[objMode(val)])
@@ -524,11 +540,19 @@ evalLET(lhs,rhs) ==
       t' := t2
       null (t2 := resolveTM(t1,t2)) =>
         if not t2 then t2 := t'
-        throwKeyedMsg("S2IS0035",[t1,t2])
+        throw_msg("S2IS0035", CONCAT(
+            '"Cannot resolve the type %1bp of the right-hand side of the",
+            '" assignment with the type %2bp of the left-hand side."),
+            [t1, t2])
     null (v := getArgValue(rhs,t2)) =>
       isWrapped(objVal v') and (v2:=coerceInteractive(v',$OutputForm)) =>
-        throwKeyedMsg("S2IS0036",[objValUnwrap v2,t2])
-      throwKeyedMsg("S2IS0037",[t2])
+          throw_msg("S2IS0036", CONCAT(
+              '"Cannot convert right-hand side of assignment %1m to an",
+              '" object of the type %2bp of the left-hand side."),
+              [objValUnwrap(v2), t2])
+      throw_msg("S2IS0037", CONCAT(
+          '"Cannot convert right-hand side of assignment to an object of",
+          '" the type %1bp of the left-hand side."), [t2])
     t2 and objNew(($genValue => wrap timedEVALFUN v ; v),t2)
   value => evalLETput(lhs,value)
   throwKeyedMsgCannotCoerceWithValue(objVal v,t1,getMode lhs)
@@ -614,7 +638,9 @@ upLETWithFormOnLhs(op,lhs,rhs) ==
   rhs' := getUnnameIfCan rhs
   lhs' = 'Tuple =>
     rhs' ~= 'Tuple => throwKeyedMsg("S2IS0039",NIL)
-    #(lhs) ~= #(rhs) => throwKeyedMsg("S2IS0038",NIL)
+    #(lhs) ~= #(rhs) => throw_msg("S2IS0038", CONCAT(
+        '"Assignments with tuples must have the same size tuples on each",
+        '" side of the %b := %d ."), [])
     -- generate a sequence of assignments, using local variables
     -- to first hold the assignments so that things like
     -- (t1,t2) := (t2,t1) will work.
@@ -639,7 +665,10 @@ upLETWithFormOnLhs(op,lhs,rhs) ==
     putModeSet(op,ms)
   rhs' = 'Tuple => throwKeyedMsg("S2IS0039",NIL)
   tree:= seteltable(lhs,rhs) => upSetelt(op,lhs,tree)
-  throwKeyedMsg("S2IS0060", NIL)
+  throw_msg("S2IS0060", CONCAT(
+      '"The form on the left hand side of an assignment must be a",
+      '" single variable, a Tuple of variables or a  reference to an",
+      '" entry in an object supporting the setelt operation."), [])
 --  upTableSetelt(op,lhs,rhs)
 
 get_opname_if_can(f) ==
@@ -683,11 +712,15 @@ upSetelt(op,lhs,tree) ==
 upTableSetelt(op,lhs is [htOp,:args],rhs) ==
   -- called only for undeclared, uninitialized table setelts
   ("*" = (PNAME getUnname htOp).0) and (1 ~= # args) =>
-    throwKeyedMsg("S2IS0040",NIL)
-  # args ~= 1 =>
-    throwKeyedMsg("S2IS0041",[[getUnname htOp,'".[",
-      getUnname first args,
-        ['",",getUnname arg for arg in rest args],'"]"]])
+      throw_msg("S2IS0040", CONCAT(
+          '"FriCAS cannot now handle assignments to scripted variables",
+          '" with more than one script.  You can use %b == %d however."), [])
+  #args ~= 1 =>
+      throw_msg("S2IS0041", CONCAT(
+          '"FriCAS can now only handle undeclared %b Table %d",
+          '"assignments with a single key. Try using the form %1b ."),
+          [[getUnname(htOp), '".[", getUnname(first(args)),
+              ['",", getUnname(arg) for arg in rest(args)], '"]"]])
   keyMode := '(Any)
   putMode (htOp,['Table,keyMode,'(Any)])
   -- if we are to use a new table, we must call the "table"
@@ -971,7 +1004,8 @@ upreturn t ==
   -- make sure we are in a user function
   t isnt [op,val] => NIL
   (null $compilingMap) and (null $interpOnly) =>
-    throwKeyedMsg("S2IS0047",NIL)
+      throw_msg("S2IS0047",
+          '"The %b return %d keyword can only be used within a function.", [])
   if $mapTarget then putTarget(val,$mapTarget)
   bottomUp val
   if $mapTarget
@@ -1109,8 +1143,9 @@ upwhere t ==
   [env,:e] := upwhereClause(clause,$env,$e)
   tree := upwhereMkAtree(tree,env,e)
   if x := getAtree(op,'dollar) then
-    atom tree => throwKeyedMsg("S2IS0048",NIL)
-    putAtree(first tree, 'dollar, x)
+      atom(tree) => throw_msg("S2IS0048",
+          '"The use of a $-expression is not understood in this context.", [])
+      putAtree(first tree, 'dollar, x)
   upwhereMain(tree,env,e)
   val := getValue tree
   putValue(op,val)

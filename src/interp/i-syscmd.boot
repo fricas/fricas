@@ -575,14 +575,18 @@ compileAsharpArchiveCmd args ==
     rc := run_command('"ar", ['"x", path])
     rc ~= 0 =>
         cd [curDir]
-        throwKeyedMsg("S2IL0028", [dir, path])
+        throw_msg("S2IL0028", CONCAT(
+            '"Could not unarchive contents of %2 into directory %1.",
+            '" The file %2 was not compiled."), [dir, path])
 
     -- Look for .ao files
 
     asos := [NAMESTRING(aso) for aso in DIRECTORY('"*.ao")]
     null asos =>
         cd [curDir]
-        throwKeyedMsg("S2IL0029", [dir, path])
+        throw_msg("S2IL0029", CONCAT(
+            '"No .ao files were found when %2 was unarchived into directory",
+            '" %1. The file %2 was not compiled."), [dir, path])
 
     -- Compile the .ao files
 
@@ -1279,7 +1283,9 @@ DEFPARAMETER($internalHistoryTable, NIL)
 DEFPARAMETER($useInternalHistoryTable, true)
 
 history l ==
-  l or null $options => sayKeyedMsg("S2IH0006",NIL)
+  l or null $options => say_msg("S2IH0006", CONCAT(
+      '"You have not used the correct syntax for the %b history %d command.",
+      '"Issue %b )help history %d for more information."), NIL)
   historySpad2Cmd()
 
 
@@ -1332,25 +1338,30 @@ historySpad2Cmd() ==
     for [opt,:optargs] in $options]
   for [opt,:optargs] in opts repeat
     opt in '(on yes) =>
-      $HiFiAccess => sayKeyedMsg("S2IH0007",NIL)
+      $HiFiAccess => say_msg("S2IH0007",
+          '"The history facility is already on.", NIL)
       $IOindex = 1 =>       -- haven't done anything yet
         $HiFiAccess:= 'T
         initHistList()
-        sayKeyedMsg("S2IH0008",NIL)
-      x := UPCASE queryUserKeyedMsg("S2IH0009",NIL)
+        say_msg("S2IH0008", '"The history facility is now on.", NIL)
+      x := UPCASE query_user_msg("S2IH0009", CONCAT(
+         '"Turning on the history facility will clear the contents of",
+         '"the workspace.  Please enter %b y %d or %b yes %d if you really",
+         '" want to do this:"), NIL)
       MEMQ(STRING2ID_N(x, 1), '(Y YES)) =>
         histFileErase histFileName()
         $HiFiAccess:= 'T
         $options := nil
         clearSpad2Cmd '(all)
-        sayKeyedMsg("S2IH0008",NIL)
+        say_msg("S2IH0008", '"The history facility is now on.", NIL)
         initHistList()
-      sayKeyedMsg("S2IH0010",NIL)
+      say_msg("S2IH0010", '"The history facility is still off.", NIL)
     opt in '(off no) =>
-      null $HiFiAccess => sayKeyedMsg("S2IH0011",NIL)
+      null $HiFiAccess => say_msg("S2IH0011",
+          '"The history facility is already off.", NIL)
       $HiFiAccess:= NIL
       disableHist()
-      sayKeyedMsg("S2IH0012",NIL)
+      say_msg("S2IH0012", '"The history facility is now off.", NIL)
     opt = 'file    => setHistoryCore NIL
     opt = 'memory  => setHistoryCore true
     opt = 'reset   => resetInCoreHist()
@@ -1361,14 +1372,25 @@ historySpad2Cmd() ==
     opt = 'write   => writeInputLines(first optargs, 1)
   'done
 
+say_file_or_core_msg(in_core?) ==
+    inCore => say_msg("S2IH0032", CONCAT(
+        '"When the history facility is active, history information will be",
+        '" maintained in memory (and not in an external file)."), nil)
+    say_msg("S2IH0031", CONCAT(
+        '"When the history facility is active, history information will be",
+        '" maintained in a file (and not in an internal table)."), nil)
 
 setHistoryCore inCore ==
   inCore = $useInternalHistoryTable =>
-    sayKeyedMsg((inCore => "S2IH0030"; "S2IH0029"),NIL)
+      inCore => say_msg("S2IH0030", CONCAT(
+          '"History information is already being maintained in memory",
+          '" (and not in an external file)."), nil)
+      say_msg("S2IH0029", CONCAT(
+          '"History information is already being maintained in an",
+          '" external file (and not in memory)."), nil)
   not $HiFiAccess =>
     $useInternalHistoryTable := inCore
-    inCore => sayKeyedMsg("S2IH0032",NIL)
-    sayKeyedMsg("S2IH0031",NIL)
+    say_file_or_core_msg(inCore)
   inCore =>
     $internalHistoryTable := NIL
     if $IOindex ~= 0 then
@@ -1379,7 +1401,7 @@ setHistoryCore inCore ==
         $internalHistoryTable := CONS([i,:vec],$internalHistoryTable)
       histFileErase histFileName()
     $useInternalHistoryTable := true
-    sayKeyedMsg("S2IH0032",NIL)
+    say_file_or_core_msg(true)
   $HiFiAccess:= 'NIL
   histFileErase histFileName()
   str := kaf_open(histFileName(), false)
@@ -1389,14 +1411,16 @@ setHistoryCore inCore ==
   $HiFiAccess:= 'T
   $internalHistoryTable := NIL
   $useInternalHistoryTable := NIL
-  sayKeyedMsg("S2IH0031",NIL)
+  say_file_or_core_msg(false)
 
 
 writeInputLines(fn,initial) ==
   -- writes all input lines into file histInputFileName()
-  not $HiFiAccess => sayKeyedMsg("S2IH0013",NIL) -- history not on
-  null fn =>
-    throwKeyedMsg("S2IH0038", nil)          -- missing file name
+  not $HiFiAccess => say_msg("S2IH0013", CONCAT(
+      '"The history facility is not on, so the .input file containing your",
+      '" user input cannot be created."), NIL) -- history not on
+  null(fn) => throw_msg("S2IH0038",
+      '"You must specify a file name to the history write command.", nil)
   maxn := 72
   breakChars := [char '" ", char '"+"]
   for i in initial..$IOindex - 1 repeat
@@ -1423,7 +1447,9 @@ writeInputLines(fn,initial) ==
   inp := MAKE_OUTSTREAM(file)
   for x in removeUndoLines NREVERSE lineList repeat WRITE_-LINE(x,inp)
   -- see file "undo" for definition of removeUndoLines
-  if fn ~= 'redo then sayKeyedMsg("S2IH0014", [file])
+  if fn ~= 'redo then
+      say_msg("S2IH0014", '"Edit %b %1 %d to see the saved input lines.",
+              [file])
   SHUT inp
   NIL
 
@@ -1437,7 +1463,9 @@ resetInCoreHist() ==
 
 changeHistListLen(n) ==
   -- changes the length of $HistList.  n must be nonnegative
-  NULL INTEGERP n => sayKeyedMsg("S2IH0015",[n])
+  not(INTEGERP(n)) or n < 0 => say_msg("S2IH0015", CONCAT(
+      '"The argument %b n %d for %b )history )change n must be a nonnegative",
+      '" integer and your argument, %1b , is not one."), [n])
   dif:= n-$HistListLen
   $HistListLen:= n
   l := rest $HistList
@@ -1517,7 +1545,8 @@ undoInCore(n) ==
       vec := rest UNWIND_-PROTECT(readHiFi(n), disableHist())
       val := (p := ASSQ('%, vec)) and (p1 := ASSQ('value, rest p)) and
         rest p1
-    sayKeyedMsg("S2IH0019",[n])
+    say_msg("S2IH0019",
+      '"There is no history file, so value of step %1b is undefined.", [n])
   $InteractiveFrame:= putHist('%,'value,val,$InteractiveFrame)
   updateHist()
 
@@ -1549,12 +1578,14 @@ undoFromFile(n) ==
   updateHist()
 
 saveHistory(fn) ==
-  not $HiFiAccess => sayKeyedMsg("S2IH0016",NIL)
+  not $HiFiAccess => say_msg("S2IH0016",
+      '"The history facility is not on, so no information can be saved.", NIL)
   not $useInternalHistoryTable and
       null(make_input_filename1(histFileName())) =>
-          sayKeyedMsg("S2IH0022", nil)
-  null fn =>
-    throwKeyedMsg("S2IH0037", nil)
+          say_msg("S2IH0022",
+                  '"No history information had been saved yet.", nil)
+  null fn => throw_msg("S2IH0037",
+      '"You must specify a file name to the history save command.", nil)
   fn := first(fn)
   savefile := makeHistFileName(fn)
   inputfile := histInputFileName(fn)
@@ -1566,27 +1597,36 @@ saveHistory(fn) ==
       for [n,:rec] in reverse $internalHistoryTable repeat
           val_u := SPADRWRITE0(saveStr, object2String2(n), rec)
           first(val_u) = 1 => -- "failed"
-              sayKeyedMsg("S2IH0035", [n, inputfile]) -- unable to save step
+              say_msg("S2IH0035", CONCAT( _
+    '"Can't save the value of step number %1b.  You can re-generate", _
+    '" this value by running the input file %2b."), [n, inputfile])
       kaf_close(saveStr)
-  sayKeyedMsg("S2IH0018", [savefile])  -- saved hist file named
+  say_msg("S2IH0018", '"The saved history file is %1b .", [savefile])
   nil
 
 restoreHistory(fn) ==
   -- uses fn $historyFileType to recover an old session
   -- if fn = NIL, then use $oldHistoryFileName
   if null fn then fn' := $oldHistoryFileName
-  else if fn is [fn'] and IDENTP(fn') then fn' := fn'
-       else throwKeyedMsg("S2IH0023",[fn'])
+  else if fn is [fn'] and IDENTP(fn') then
+      fn' := fn'
+  else
+      throw_msg("S2IH0023",
+                '"%1b is not a valid filename for the history file.", [fn'])
   restfile := makeHistFileName(fn')
   null(make_input_filename1(restfile)) =>
-    sayKeyedMsg("S2IH0024",[restfile]) -- no history file
+      say_msg("S2IH0024", CONCAT(
+        '"History information cannot be restored from %1b because the",
+        '" file does not exist."), [restfile])
 
   -- if clear is changed to be undoable, this should be a reset-clear
   $options: local := nil
   clearSpad2Cmd '(all)
   oldInternal := $useInternalHistoryTable
   restoreHistory2(oldInternal, restfile, fn')
-  sayKeyedMsg("S2IH0025", [restfile])
+  say_msg("S2IH0025", CONCAT(
+          '"The workspace has been successfully restored from the history",
+          '" file %1b ."), [restfile])
   clear_sorted_caches()
   nil
 
@@ -1638,7 +1678,9 @@ showHistory(arg) ==
   $printTimeSum: local:= 0
   -- ugh!!! these are needed for timedEvaluateStream
   -- displays the last n steps, default n=20
-  not $HiFiAccess => sayKeyedMsg("S2IH0026",['show])
+  not $HiFiAccess => say_msg("S2IH0026", CONCAT(
+      '"The history facility command %1b cannot be performed because the",
+      '"history facility is not on."), ['show])
   showInputOrBoth := 'input
   n := 20
   nset := nil
@@ -1695,21 +1737,26 @@ fetchOutput(n) ==
     n:=
       n < 0 => $IOindex+n
       n
-    n >= $IOindex => throwKeyedMsg("S2IH0001",[n])
-    n < 1        => throwKeyedMsg("S2IH0002",[n])
+    n >= $IOindex => throw_msg("S2IH0001", CONCAT(
+        '"You have not reached step %1b yet, and so its value cannot be",
+        '" supplied."), [n])
+    n < 1 => throw_msg("S2IH0002",
+        '"Cannot supply value for step %1b because 1 is the first step.", [n])
     vec:= UNWIND_-PROTECT(readHiFi(n),disableHist())
     Alist := ASSQ('%, rest vec) =>
-      val := rest ASSQ('value, rest Alist) => val
-      throwKeyedMsg("S2IH0003",[n])
-    throwKeyedMsg("S2IH0003",[n])
-  throwKeyedMsg("S2IH0004",NIL)
+        val := rest ASSQ('value, rest Alist) => val
+        throw_msg("S2IH0003", '"Step %1b has no value.", [n])
+    throw_msg("S2IH0003", '"Step %1b has no value.", [n])
+  throw_msg("S2IH0004",
+     '"The history facility is not on, so you cannot use %b %% %d .", NIL)
 
 readHiFi(n) ==
   -- reads the file using index n
   if $useInternalHistoryTable
   then
     pair := assoc(n,$internalHistoryTable)
-    ATOM pair => keyedSystemError("S2IH0034",NIL)
+    ATOM(pair) => system_error("S2IH0034",
+          '"Missing element in internal history table.", NIL)
     vec := QCDR pair
   else
     HiFi:= kaf_open(histFileName(), false)
@@ -1831,8 +1878,10 @@ library(args) ==
 load args == loadSpad2Cmd args
 
 loadSpad2Cmd args ==
-    sayKeyedMsg("S2IU0003", nil)
-    NIL
+    say_msg("S2IU0003", CONCAT(
+        '"The %b )load %d system command is obsolete. Please use the %b",
+        '" )library %d command instead."), [])
+    nil
 
 reportCount () ==
   centerAndHighlight('" Current Count Settings ",$LINELENGTH,specialChar 'hbar)
@@ -2419,7 +2468,9 @@ apropos l ==
   ops =>
     sayMessage '"Operations whose names satisfy the above pattern(s):"
     sayAsManyPerLineAsPossible MSORT ops
-    sayKeyedMsg("S2IF0011",[first ops])
+    say_msg("S2IF0011", CONCAT(
+       '"%l To get more information about an operation such as %1b, issue",
+       '" the command %b )display op %1 %d"), [first(ops)])
   sayMessage '"   There are no operations containing those patterns"
   NIL
 

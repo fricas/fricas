@@ -56,7 +56,8 @@ reportFunctionCompilation(op,nam,argl,body,isRecursive) ==
         keyedSystemError("S2IM0019",[cacheCount,op])
       cacheCount
     keyedSystemError("S2IM0019",[cacheCount,op])
-  sayKeyedMsg("S2IX0003",[op,num])
+  say_msg("S2IX0003",
+      '"%1bp will cache %2b most recently computed value(s).", [op, num])
   auxfn := mkAuxiliaryName nam
   g1:= GENSYM()  --argument or argument list
   [arg,computeValue] :=
@@ -102,7 +103,8 @@ getCacheCount fn ==
   $cacheCount
 
 reportFunctionCacheAll(op,nam,argl,body) ==
-  sayKeyedMsg("S2IX0004",[op])
+  say_msg("S2IX0004",
+      '"%1bp will cache all previously computed values.", [op])
   auxfn:= mkAuxiliaryName nam
   g1:= GENSYM()  --argument or argument list
   [arg,computeValue] :=
@@ -227,7 +229,8 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
         ['ELT, ['LIST, :initCode], ['sub_SI, n, sharpArg]]]
       phrase5:= ['(QUOTE T),['recurrenceError,MKQ op,sharpArg]]
       ['PROGN,:preset,['COND,phrase1,phrase2,phrase3,phrase4,phrase5]]
-  sayKeyedMsg("S2IX0001",[op])
+  say_msg("S2IX0001",
+          '"Compiling function %1bp as a recurrence relation.", [op])
   compileInteractive computeFunction
   compileInteractive mainFunction
   cacheType:= 'recurrence
@@ -242,7 +245,8 @@ NUMOFNODES(x) ==
 
 nodeCount x == NUMOFNODES x
 
-recurrenceError(op,arg) == throwKeyedMsg("S2IX0002",[op,arg])
+recurrenceError(op,arg) == throw_msg("S2IX0002",
+    '"You did not define %1bp for argument %2b .", [op, arg])
 
 mkCacheVec(op,nam,kind,resetCode,countCode) ==
   [op,nam,kind,resetCode,countCode]
@@ -254,7 +258,7 @@ clearCache x ==
     $e:= putHist(x,'localModemap,nil,$e)
     $e:= putHist(x,'mapBody,nil,$e)
     $e:= putHist(x,'localVars,nil,$e)
-    sayKeyedMsg("S2IX0007",[x])
+    say_msg("S2IX0007", '"Compiled code for %1bp has been cleared.", [x])
 
 compileInteractive fn ==
   if $InteractiveMode then startTimingProcess 'compilation

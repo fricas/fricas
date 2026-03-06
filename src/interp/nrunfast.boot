@@ -385,7 +385,9 @@ newHasTest(domform,catOrAtt) ==
   get_database(opOf(domform), 'ASHARP?) => fn(domform, catOrAtt) where
     fn(a,b) ==
       categoryForm?(a) => assoc(b, ancestors_of_cat(a, nil))
-      isPartialMode a => throwKeyedMsg("S2IS0025",NIL)
+      isPartialMode(a) => throw_msg("S2IS0025",
+          '"You can only use %b has %d to query the properties of a fully",
+          '" specified type. You cannot query a category.", [])
       b is ["SIGNATURE",:opSig] =>
         HasSignature(evalDomain a,opSig)
       b is ["ATTRIBUTE",attr] =>

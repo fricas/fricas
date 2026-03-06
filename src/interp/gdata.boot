@@ -628,6 +628,11 @@ add_operations(con, old_maps) ==
         old_map := get_database(op, 'OPERATION)
         HPUT($operation_hash, op, [rest(map), :old_map])
 
+say_load_msg(cname, object) ==
+    say_msg("S2IU0001",
+            '"%1 will be automatically loaded when needed from %2",
+            [cname, object])
+
 merge_info_from_asy(asy, object, only, make_database?, expose,
                     noquiet) ==
     SET_-FILE_-GETTER(object)
@@ -679,7 +684,7 @@ merge_info_from_asy(asy, object, only, make_database?, expose,
                 set_asharp_autoload_functor(object, cname, asharp_name,
                                             dbstruct.$cosig_ind)
             if noquiet then
-                sayKeyedMsg("S2IU0001", [cname, object])
+                say_load_msg(cname, object)
 
 merge_info_from_nrlib1(in_f, key, object, make_database?, expose,
                        noquiet) ==
@@ -715,7 +720,7 @@ merge_info_from_nrlib1(in_f, key, object, make_database?, expose,
     if expose then setExposeAddConstr2([key], noquiet)
     spad_set_autoload(key)
     if noquiet then
-        sayKeyedMsg('S2IU0001, [key, object])
+        say_load_msg(key, object)
 
 merge_info_from_nrlib(key, nrlib, object, make_database?, expose,
                       noquiet) ==

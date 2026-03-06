@@ -542,7 +542,9 @@ CONTAINEDisDomain(symbol,cond) ==
 
 selectDollarMms(dc,name,types1,types2) ==
   -- finds functions for name in domain dc
-  isPartialMode dc => throwKeyedMsg("S2IF0001",NIL)
+  isPartialMode dc => throw_msg("S2IF0001", CONCAT(
+     '"A $-expression must have a fully specified domain or package on the",
+     '" right-hand side."), NIL)
   mmS := findFunctionInDomain(name,dc,NIL,types1,types2,'T,'T) =>
     orderMms(name, mmS,types1,types2,NIL)
   if $reportBottomUpFlag then sayMSG
@@ -712,10 +714,15 @@ findUniqueOpInDomain(op,opName,dom) ==
   -- use evaluation type context to narrow down the candidate set
   if target := getTarget op then
       mmList := [mm for mm in mmList | mm is [=rest target,:.]]
-      null mmList => throwKeyedMsg("S2IS0061",[opName,target,dom])
+      null mmList => throw_msg("S2IS0061", CONCAT(
+          '"There is no operation named %1b with type %2p in the domain",
+          '" or package %3p."), [opName, target, dom])
   if #mmList > 1 then
     mm := selectMostGeneralMm mmList
-    sayKeyedMsg("S2IS0022", [opName, dom, ['Mapping, :first mm]])
+    say_msg("S2IS0022", CONCAT(
+        '"There is more than one %1b in the domain or package %2bp .",
+        '" The one being chosen has type %3bp ."),
+        [opName, dom, ['Mapping, :first mm]])
   else mm := first mmList
   [sig,slot,:.] := mm
   fun :=
@@ -841,7 +848,8 @@ findFunctionInDomain1(omm, tar, args1, args2, SL) ==
     EQ(y, 'CONST) => [[CONS(dc,sig),osig, RTC]]
     EQ(y, 'ASCONST) => [[CONS(dc, sig), osig, RTC]]
     y is ['XLAM, :.] => [[CONS(dc,sig), y, RTC]]
-    sayKeyedMsg("S2IF0006",[y])
+    say_msg("S2IF0006", '"Skipping function with unimplemented form %1b .",
+            [y])
     NIL
 
 --------------------> NEW DEFINITION (override in xrun.boot)

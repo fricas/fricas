@@ -90,7 +90,7 @@ resolveTypeList u ==
       a := resolveTT(md,a)
       null a => return nil
     a
-  throwKeyedMsg("S2IR0002",NIL)
+  throw_msg("S2IR0002", '"FriCAS cannot handle %b [ ] %d here.", [])
 
 -- resolveTT is in CLAMMED BOOT
 
@@ -513,7 +513,11 @@ matchUpToPatternVars(pat,form,patAlist) ==
 -- only implemented for nullary control-L's (which stand for types)
 
 resolveTMOrCroak(t,m) ==
-  resolveTM(t,m) or throwKeyedMsg("S2IR0004",[t,m])
+    resolveTM(t, m) or throw_msg("S2IR0004", CONCAT(
+        '"FriCAS is confused by what you input.  It cannot resolve the",
+        '" type %1bp with the partial type %2bp .",
+        '" Please make sure you have used the correct syntax."),
+        [t, m])
 
 resolveTM(t,m) ==
   -- resolves a type with a mode which may be partially specified

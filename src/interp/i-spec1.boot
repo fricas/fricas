@@ -91,7 +91,11 @@ upADEF t ==
   t isnt [.,[vars,types,.,body],pred,.] => NIL
   -- do some checking on what we got
   for var in vars repeat
-    if not IDENTP(var) then throwKeyedMsg("S2IS0057",[var])
+      if not(IDENTP(var)) then throw_msg("S2IS0057", CONCAT(
+          '"All parameters to anonymous user maps must be identifiers,",
+          '" possibly in combination with declarations and predicates.",
+          '" Constants are not allowed. The given expression %1b is not",
+          '" allowed."), [var])
   -- unabbreviate types
   types := [(if t then evaluateType unabbrev t else NIL) for t in types]
   -- we do not allow partial types
@@ -106,7 +110,11 @@ upADEF t ==
     types' := rest types
   for type in types' repeat
     if (type and null m) or (m and null type) then
-      throwKeyedMsg("S2IS0059",NIL)
+        throw_msg("S2IS0059", CONCAT(
+            '"You entered an incomplete signature for an anonymous user",
+            '" function.  You must either declare the type types of the",
+            '" rest and all the arguments or you  must declare the types",
+            '" of none of them."), [])
     if isPartialMode type  then throwKeyedMsg("S2IS0058",[type])
 
   $compilingMap : local := true
@@ -172,8 +180,12 @@ evalTargetedADEF1(t, vars, types, body, $env, $localVars, $freeVars) ==
 
 mkInterpTargetedADEF(t,vars,types,oldBody) ==
   null first types =>
-    throwKeyedMsg("S2IS0056",NIL)
-    throwMessage '"   map result type needed but not present."
+      throw_msg("S2IS0056", CONCAT(
+          '"Anonymous user functions created with %b +-> %d that are",
+          '" processed in interpret-code mode must have result target",
+          '" information available.  This information is not present so",
+          '" FriCAS cannot proceed any further.  This may be remedied by",
+          '" declaring the function."), [])
   arglCode := ['LIST,:[argCode for type in rest types for var in vars]]
     where argCode == ['putValueValue,['mkAtreeNode,MKQ var],
       objNewCode(['wrap,var],type)]
@@ -241,7 +253,9 @@ upAlgExtension t ==
   --  to be a simple algebraic extension, with respect to the given
   --  polynomial, and given the value "a" in this type.
   t isnt [op,var,eq] => nil
-  null $genValue => throwKeyedMsg("S2IS0001",NIL)
+  null $genValue => throw_msg("S2IS0001",
+      '"Cannot compile algebraic extension declarations yet.",
+      [])
   a := getUnname var
   clearCmdParts ['propert,a]  --clear properties of a
   algExtension:= eq2AlgExtension eq
@@ -256,7 +270,8 @@ upAlgExtension t ==
       objMode(triple),upmode)
   newmode := objMode T
   (field := resolveTCat(CADDR newmode,'(Field))) or
-    throwKeyedMsg("S2IS0002",[eq])
+      throw_msg("S2IS0002",
+                '"Cannot pass to a field from the domain %1pb .", [eq])
   pd:= ['UnivariatePolynomial,a,field]
   null (canonicalAE:= coerceInteractive(T,pd)) =>
     throwKeyedMsgCannotCoerceWithValue(objVal T,objMode T,pd)
@@ -270,7 +285,9 @@ upAlgExtension t ==
   putHist(a,'value,T2:= objNew(expr,sae),$e)
   clearDependencies(a)
   if $printTypeIfTrue then
-    sayKeyedMsg("S2IS0003",NIL)
+    say_msg("S2IS0003", CONCAT(
+          '"Your statement has resulted in the following assignments and",
+          '" declaration:"), [])
     sayMSG concat ['%l,'"   ",saeTypeSynonym,'" := ",
       :prefix2String objVal saeTypeSynonymValue]
     sayMSG concat ['"   ",a,'" : ",saeTypeSynonym,'" := ",a]
@@ -357,7 +374,9 @@ upcase t ==
   bottomUp lhs
   triple := getValue lhs
   objMode(triple) isnt ['Union,:unionDoms] =>
-    throwKeyedMsg("S2IS0004",NIL)
+      throw_msg("S2IS0004", CONCAT(
+          '"%b case %d is only used for Unions and the object on the",
+          '" left-hand side does not belong to a union."), [])
   if first unionDoms is ['_:,.,.] then
      for i in 0.. for d in unionDoms repeat
         if d is ['_:,=rhs,.] then rhstag := i
@@ -395,7 +414,10 @@ upTARGET t ==
   t isnt [op,lhs,rhs] => nil
   -- do not (yet) support local variables on the rhs
   (not $genValue) and or/[CONTAINED(var,rhs) for var in $localVars] =>
-    keyedMsgCompFailure("S2IC0010",[rhs])
+      msg_comp_failure("S2IC0010", CONCAT( _
+    '"Cannot compile target expressions for types involving local variables.",
+    '"In particular, could not compile the expression involving %b @ %1p %d"),
+      [rhs])
   $declaredMode: local := NIL
   m:= evaluateType unabbrev rhs
   not isLegitimateMode(m,NIL,NIL) => throwKeyedMsg("S2IE0004",[m])
@@ -661,7 +683,9 @@ interpIter itr ==
   itr is ['IN,index,s] =>
     $indexVars:=[getUnname index,:$indexVars]
     [m]:= bottomUp s
-    m isnt ['List,um] => throwKeyedMsg("S2IS0009",[m])
+    m isnt ['List, um] => throw_msg("S2IS0009", CONCAT(
+        '"FriCAS can only iterate over lists now and you supplied an",
+        '" object of type %1bp ."), [m])
     $indexTypes:=[um,:$indexTypes]
     ['IN,getUnname index,getArgValue(s,m)]
   (itr is [x,pred]) and (x in '(WHILE UNTIL SUCHTHAT)) =>
@@ -711,7 +735,8 @@ isStreamCollect itrl ==
 
 collectStream(t,op,itrl,body) ==
   v := CATCH('loopCompiler,collectStream1(t,op,itrl,body))
-  v = 'tryInterpOnly => throwKeyedMsg("S2IS0011",NIL)
+  v = 'tryInterpOnly => throw_msg("S2IS0011",
+      '"Interpret-Code mode is not supported for stream bodies.", [])
   v
 
 collectStream1(t,op,itrl,body) ==
@@ -1167,7 +1192,10 @@ up_tagged_construct1(op, tag, val, um) ==
 upTaggedUnionConstruct(op,l,tar) ==
   -- special handler for tagged union constructors
   tar isnt [.,:types] => nil
-  #l ~= 1 => throwKeyedMsg("S2IS0051",[#l,tar])
+  #l ~= 1 => throw_msg("S2IS0051", CONCAT(
+      '"A tagged union construct with %b [ %d and %b ] %d must contain only",
+      '" one element and you supplied %1b to create an object of type",
+      '" %2bp."), [#l, tar])
   a1 := first(l)
   a1 is [op1, vtag, val] and is_OPTARG(op1) and (tag := is_tag(vtag)) =>
       up_tagged_construct1(op, tag, val, tar)
@@ -1200,9 +1228,12 @@ upRecordConstruct(op,l,tar) ==
 upDeclare t ==
   t isnt  [op,lhs,rhs] => nil
   (not $genValue) and or/[CONTAINED(var,rhs) for var in $localVars] =>
-    keyedMsgCompFailure("S2IS0014",[lhs])
+      msg_comp_failure("S2IS0014", CONCAT(
+          '"Cannot compile the declaration for %1b because its",
+          '" (possibly partial) type contains a local variable."), [lhs])
   mode := evaluateType unabbrev rhs
-  mode = $Void => throwKeyedMsgSP("S2IS0015",NIL,op)
+  mode = $Void => throw_msg_pos("S2IS0015",
+      '"An identifier cannot be declared to have type %b Void %d:", [], op)
   not isLegitimateMode(mode,nil,nil) => throwKeyedMsgSP("S2IE0004",[mode],op)
   categoryForm?(mode) => throwKeyedMsgSP("S2IE0011",[mode, 'category],op)
   packageForm?(mode) => throwKeyedMsgSP("S2IE0011",[mode, 'package],op)
@@ -1229,11 +1260,19 @@ declare(var,mode) ==
     upfreeWithType(v,mode)
     var := v
   not IDENTP(var) =>
-    throwKeyedMsg("S2IS0016",[STRINGIMAGE var])
-  var in '(% %%) => throwKeyedMsg("S2IS0050",[var])
+      throw_msg("S2IS0016",
+          '"Declarations are only allowed on variables and %1b is not one.",
+          [STRINGIMAGE var])
+  var in '(% %%) => throw_msg("S2IS0050", CONCAT(
+      '"Because of its use for recalling previous results, you cannot use",
+      '" %1b as a variable name.  In particular, you cannot declare it."),
+      [var])
   if get0(var, 'isInterpreterFunction, $e) then
     mode isnt ['Mapping,.,:args] =>
-      throwKeyedMsg("S2IS0017",[var,mode])
+        throw_msg("S2IS0017", CONCAT(
+            '"The previous use of %1b as a function is not compatible with",
+            '" its new declaration as %2bp . If you do not want the old",
+            '" value, issue %l %b)clear prop %1 %d"), [var, mode])
     -- validate that the new declaration has the defined # of args
     mapval := objVal(get0(var, 'value, $e))
     -- mapval looks like '(SPADMAP (args . defn))
@@ -1255,7 +1294,10 @@ declare(var,mode) ==
     --   - new mode is same as old declared mode
     objMode(v) = mode => putHist(var,'mode,mode,$e)
     mode = get0(var, 'mode, $e) => NIL   -- nothing to do
-    throwKeyedMsg("S2IS0052",[var,mode])
+    throw_msg("S2IS0052", CONCAT(
+        '"You cannot declare %1b to be of type %2bp because either the",
+        '" declared type of %1b or the type of the value of %1b is",
+        '" different from %2bp ."), [var, mode])
   putHist(var,'mode,mode,$e)
 
 declareMap(var,mode) ==
@@ -1263,7 +1305,9 @@ declareMap(var,mode) ==
   (v := get0(var, 'value, $e)) and objVal(v) isnt ['SPADMAP, :.] =>
       objMode(v) = mode => putHist(var, 'mode, mode, $e)
       mode = get0(var, 'mode, $e) => nil
-      throwKeyedMsg("S2IS0019", [var])
+      throw_msg("S2IS0019", CONCAT(
+          '"Cannot process mapping declaration on %1b since it already",
+          '" has a value."), [var])
   isPartialMode mode => throwKeyedMsg("S2IM0004",NIL)
   putHist(var,'mode,mode,$e)
 

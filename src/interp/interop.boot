@@ -699,16 +699,19 @@ getFunctionFromDomain1(op, dc, target, args) ==
   -- complains, if no function or ambiguous
   $reportBottomUpFlag:local:= NIL
   member(first dc, $nonLisplibDomains) =>
-      throwKeyedMsg("S2IF0002", [first dc])
+      throw_msg("S2IF0002", '"Functions from %1b are not available yet.",
+                 [first(dc)])
   not constructor? first dc =>
-      throwKeyedMsg("S2IF0003", [first dc])
+      throw_msg("S2IF0003",
+          '"%1b must denote a domain or package constructor.", [first(dc)])
   p:= findFunctionInDomain(op, dc, target, args, args, NIL, NIL) =>
     domain := evalDomain dc
     for mm in nreverse p until b repeat
       [[.,:osig],nsig,:.] := mm
       b := compiledLookup(op,nsig,domain)
     b or  throwKeyedMsg("S2IS0023",[op,dc])
-  throwKeyedMsg("S2IF0004",[op,dc])
+  throw_msg("S2IF0004", '"The function %1b cannot be found in %2bp .",
+            [op, dc])
 
 getFunctionFromDomain(op, dc, args) ==
     getFunctionFromDomain1(op, dc, NIL, args)

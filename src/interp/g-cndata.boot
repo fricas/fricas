@@ -101,9 +101,14 @@ installConstructor(cname) ==
 
 constructorAbbreviationErrorCheck(c,a,typ) ==
   siz := SIZE (s := PNAME a)
-  if typ = 'category and siz > 7
-    then throwKeyedErrorMsg('precompilation,"S2IL0021",NIL)
-  if siz > 8 then throwKeyedErrorMsg('precompilation,"S2IL0006",NIL)
+  if typ = 'category and siz > 7 then
+      throw_error_msg('precompilation, "S2IL0021", CONCAT(
+          '"Category abbreviations must have 7 or fewer characters",
+          '" and should be uppercase."), [])
+  if siz > 8 or s ~= UPCASE(s) then
+      throw_error_msg('precompilation, "S2IL0006", _
+   '"Abbreviations must have 8 or fewer characters and should be uppercase.",
+          [])
   if s ~= UPCASE s then throwKeyedMsg("S2IL0006",NIL)
   abb := get_database(c, 'ABBREVIATION)
   name := get_database(a, 'CONSTRUCTOR)

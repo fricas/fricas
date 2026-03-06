@@ -371,7 +371,8 @@ interpret1(x,rootMode,posnForm) ==
   argVal := getArgValue(node, newRootMode)
   argVal and not $genValue => objNew(argVal, newRootMode)
   argVal and (val:=getValue node) => interpret2(val,newRootMode,posnForm)
-  keyedSystemError("S2IS0053",[x])
+  system_error("S2IS0053",
+      '"Interpreter code generation failed for expression %1s", [x])
 
 interpret2(object,m1,posnForm) ==
   x := objVal object

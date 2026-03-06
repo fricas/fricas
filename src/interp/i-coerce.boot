@@ -90,7 +90,9 @@ coerceOrFail(triple,t,mapName) ==
   t = $NoValueMode => triple
   t' := coerceInteractive(triple,t)
   t' => objValUnwrap(t')
-  sayKeyedMsg("S2IC0004",[mapName,objMode triple,t])
+  say_msg("S2IC0004",
+    '"Conversion failed in the compiled user function %1b from %2bp to %3bp .",
+          [mapName, objMode(triple), t])
   '"failed"
 
 coerceOrCroak(triple, t, mapName) ==
@@ -100,7 +102,8 @@ coerceOrCroak(triple, t, mapName) ==
   t' => objValUnwrap(t')
   mapName = 'noMapName =>
     throwKeyedMsgCannotCoerceWithValue(objVal triple,objMode triple, t)
-  sayKeyedMsg("S2IC0005",[mapName])
+  say_msg("S2IC0005", '"Conversion failed in the compiled user function %1b .",
+          [mapName])
   throwKeyedMsgCannotCoerceWithValue(objVal triple,objMode triple, t)
 
 coerceOrThrowFailure(value, t1, t2) ==
@@ -346,7 +349,8 @@ getConstantFromDomain1(form,domainForm) ==
     entryList isnt [[sig, ., ., .]] =>
         key = "One" => getConstantFromDomain(["1"], domainForm)
         key = "Zero" => getConstantFromDomain(["0"], domainForm)
-        throwKeyedMsg("S2IC0008",[form,domainForm])
+        throw_msg("S2IC0008", '"No such constant %1b in domain %2bp .",
+                  [form, domainForm])
     -- i.e., there should be exactly one item under this key of that form
     domain := evalDomain domainForm
     SPADCALL compiledLookupCheck(key,sig,domain)
@@ -766,7 +770,12 @@ coerceInteractive(triple,t2) ==
     NIL
   t1 = '$NoValueMode =>
     if $compilingMap then clearDependentMaps($mapName,nil)
-    throwKeyedMsg("S2IC0009",[t2,$mapName])
+    throw_msg("S2IC0009", CONCAT(
+       '"You are trying to use something (probably a loop) in a situation",
+       '" where a value is expected.  In particular, you are trying to",
+       '" convert this to the type %1bp .",
+       '"  The following information may help:  possible function name:  %2p"),
+       [t2, $mapName])
   $insideCoerceInteractive: local := true
   expr2 := EQUAL(t2,$OutputForm)
   if expr2 then startTimingProcess 'print
@@ -1010,7 +1019,8 @@ coerceUnion2Branch(object) ==
           if EQCAR(val', i) then targetType := typ
       evalSharpOne(pred,val') =>
           targetType := typ
-  null targetType => keyedSystemError("S2IC0013",NIL)
+  null targetType => system_error("S2IC0013",
+      '"Cannot determine branch of %b Union. %d", [])
   predicate is ['EQCAR, ., p] => objNewWrap(rest val', targetType)
   objNew(objVal object,targetType)
 
@@ -1020,7 +1030,8 @@ coerceBranch2Union(object,union) ==
   predList:= mkPredList doms
   doms := stripUnionTags doms
   p := position(objMode object,doms)
-  p = -1 => keyedSystemError("S2IC0014",[objMode object,union])
+  p = -1 => system_error("S2IC0014", '"The type %1bp is not branch of %2bp",
+                         [objMode(object), union])
   val := objVal object
   predList.p is ['EQCAR,.,tag] =>
     objNewWrap([removeQuote tag,:unwrap val],union)

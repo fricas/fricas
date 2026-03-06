@@ -94,15 +94,23 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
     -- previously, make sure it is Mapping.
     op := first lhs
     (oldMode := get0(op, 'mode, $e)) and oldMode isnt ['Mapping, :.] =>
-      throwKeyedMsg("S2IM0001",[op,oldMode])
+        throw_msg("S2IM0001", CONCAT(
+            '"The previous declaration of %1b as %2bp is incompatible with",
+            '" its new use as a function.  If you do not want the old",
+            '" value, issue %b )clear prop %1 %d."), [op, oldMode])
     putHist(op,'isInterpreterRule,false,$e)
     putHist(op,'isInterpreterFunction,true,$e)
 
   (NUMBERP(op) or op in '(true false nil % %%)) =>
-    throwKeyedMsg("S2IM0002",[lhs])
+      throw_msg("S2IM0002",
+          '"%1b is not valid on the left-hand side of a function definition.",
+          [lhs])
 
   -- verify a constructor abbreviation is not used on the lhs
-  op ~= (op' := unabbrev op) => throwKeyedMsg("S2IM0003",[op,op'])
+  op ~= (op' := unabbrev op) => throw_msg("S2IM0003", CONCAT(
+      '"You have used the abbreviation %1b of the constructor %2b as an",
+      '" identifier on the left hand side of a function definition.  This",
+      '" is not allowed."), [op, op'])
 
   -- get the formal parameters. These should only be atomic symbols
   -- that are not numbers.
@@ -125,16 +133,21 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
   if allDecs then
     mapmode := nreverse mapmode
     putHist(op,'mode,mapmode,$e)
-    sayKeyedMsg("S2IM0006",[formatOpSignature(op,rest mapmode)])
-  else if someDecs then throwKeyedMsg("S2IM0007",[op])
+    say_msg("S2IM0006",
+          '"Function declaration %1 has been added to workspace.",
+          [formatOpSignature(op,rest mapmode)])
+  else if someDecs then throw_msg("S2IM0007",
+    '"All or none of the arguments and result type of %1bp must be declared.",
+    [op])
 
   -- if map is declared, check that signature arg count is the
   -- same as what is given.
   if get0(op, 'mode, $e) is ['Mapping, ., :mapargs] then
-    EQCAR(rhs,'rules) =>
-      0 ~= (numargs := # rest lhs) =>
-        throwKeyedMsg("S2IM0027",[numargs,op])
-    # rest lhs ~= # mapargs => throwKeyedMsg("S2IM0008",[op])
+      EQCAR(rhs, 'rules) and 0 ~= (numargs := # rest lhs) =>
+          throw_msg("S2IM0027", CONCAT( _
+    '"No arguments are allowed on the left had side of a rule definition", _
+    '" and you supplied %1b for rule %2b"), [numargs, op])
+      #rest lhs ~= #mapargs => throwKeyedMsg("S2IM0008",[op])
   --get all the user variables in the map definition.  This is a multi
   --step process as this should not include recursive calls to the map
   --itself, or the formal parameters
@@ -297,7 +310,9 @@ sayRemoveFunctionOrValue x ==
   sayMessage ['"  ",:bright x,'"has no value so this does nothing."]
 
 sayDroppingFunctions(op,l) ==
-  sayKeyedMsg("S2IM0017",[#l,op])
+  say_msg("S2IM0017",
+      '"%1b old definition(s) %b deleted %d for function or rule %2bp",
+      [#l, op])
   if $displayDroppedMap then
     for [pattern,:replacement] in l repeat
       displaySingleRule(op,pattern,replacement)
@@ -477,8 +492,12 @@ analyzeMap(op,argTypes,mapDef, tar) ==
   member(mapAndArgTypes,$analyzingMapList) =>
     -- if the map is declared, return the target type
     (getMode op) is ['Mapping,target,:.] => target
-    throwKeyedMsg("S2IM0009",
-      [$mapName,['" ", map for [map,:.] in $analyzingMapList]])
+    throw_msg("S2IM0009", CONCAT(
+        '"A loop has been detected in analyzing function/rule %1b and it",
+        '" can not be further processed. It would probably help if you",
+        '" declared the function.  The functions/rules that were being",
+        '" analyzed were: %l %b %2 %d"),
+        [$mapName, ['" ", map for [map, :.] in $analyzingMapList]])
   PUSH(mapAndArgTypes,$analyzingMapList)
   mapDef := mapDefsWithCorrectArgCount(#argTypes, mapDef)
   null mapDef => (POP $analyzingMapList; nil)
@@ -582,7 +601,9 @@ rewriteMap0(op,opName,argl) ==
       if VECP(arg) then $env := putIntSymTab(var, 'name, getUnname(arg), $env)
       (m := getMode(arg)) => $env := putIntSymTab(var, 'mode, m, $env)
   null (val:= interpMap(opName,tar)) =>
-    throwKeyedMsg("S2IM0010",[opName])
+      throw_msg("S2IM0010",
+          '"FriCAS cannot compile or interpret code for function %1b .",
+          [opName])
   putValue(op,val)
   removeBodyFromEnv(opName)
   ms := putModeSet(op,[objMode val])
@@ -696,10 +717,11 @@ genMapCode(op,body,sig,fnName,parms,isRecursive) ==
     (n := isSharpVarWithNum op) =>
         STRCONC('"<argument ",object2String n,'">")
     op
-  if get0(op, 'isInterpreterRule, $e) then
-    sayKeyedMsg("S2IM0014", [op0, (PAIRP sig => prefix2String first sig;
-                                   '"?")])
-  else sayKeyedMsg("S2IM0015",[op0,formatSignature sig])
+  if get0(op, 'isInterpreterRule, $e) then say_msg("S2IM0014",
+        '"Compiling body of rule %1bp to compute value of type %2b",
+        [op0, (PAIRP(sig) => prefix2String(first(sig)); '"?")])
+  else say_msg("S2IM0015", '"Compiling function %1b with type %2b",
+               [op0, formatSignature(sig)])
   $whereCacheList := [op,:$whereCacheList]
 
   -- RSS: 6-21-94
@@ -736,7 +758,9 @@ compileCoerceMap(op,argTypes,mm) ==
   parms := [var for var in $FormalMapVariableList for t in rest sig]
   name := makeLocalModemap(op, [first sig, :argTypes])
   argCode := [objVal(coerceInteractive(objNew(arg,t1),t2) or
-    throwKeyedMsg("S2IC0001",[arg,$mapName,t1,t2]))
+    throw_msg("S2IC0001", CONCAT(
+        '"Cannot generate conversion for argument %1b in %2b from type",
+        '"%3bp to %4bp."), [arg,$mapName,t1,t2]))
       for t1 in argTypes for t2 in rest sig for arg in parms]
   $insideCompileBodyIfTrue := false
   parms:= [:parms,'envArg]
@@ -817,7 +841,9 @@ analyzeRecursiveMap(op,argTypes,body,parms,n) ==
       sigChanged:= true
       tar := objMode(code)
       restoreDependentMapInfo(op, rest $mapList, localMapInfo)
-  sigChanged => throwKeyedMsg("S2IM0011",[op])
+  sigChanged => throw_msg("S2IM0011",
+    '"FriCAS cannot determine the type for function %1b . Please declare it.",
+      [op])
   putMapCode(op,objVal code,sig,name,parms,true)
   genMapCode(op,objVal code,sig,name,parms,true)
   tar
@@ -861,7 +887,11 @@ nonRecursivePart(opName, funBody) ==
   --  of the function which are not recursive in the name opName
   body:= expandRecursiveBody([opName], funBody)
   ((nrp:=nonRecursivePart1(opName, body)) ~= 'noMapVal) => nrp
-  throwKeyedMsg("S2IM0012",[opName])
+  throw_msg("S2IM0012", CONCAT(
+      '"FriCAS cannot determine the type of %1b because it cannot analyze",
+      '" the non-recursive part, if that exists.  This may be remedied by",
+      '" declaring the function."),
+      [opName])
 
 expandRecursiveBody(alreadyExpanded, body) ==
   -- replaces calls to other maps with their bodies
@@ -1010,7 +1040,9 @@ findLocalVars1(op,form) ==
   form is [y,:argl] =>
     y is 'Record => nil
     for x in argl repeat findLocalVars1(op,x)
-  keyedSystemError("S2IM0020",[op])
+  system_error("S2IM0020",
+      '"Unknown form of function body when analyzing %1b",
+      [op])
 
 findLocalsInLoop(op,itrl,body) ==
   for it in itrl repeat
