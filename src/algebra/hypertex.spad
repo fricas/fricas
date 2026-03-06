@@ -1,3 +1,562 @@
+)abbrev package HDCONN HyperdocConnection
+HyperdocConnection() : Exports == Implementation where
+  Exports ==> with
+      send_line : String -> Void
+      end_page : () -> Void
+  Implementation ==> add
+
+    send_line_tok ==> 98
+    end_page_tok ==> 99
+
+    MENU ==> _$MenuServer$Lisp
+
+    send_int(i) ==> sockSendInt(MENU, i)$Lisp
+
+    send_string(s) ==> sockSendString(MENU, s)$Lisp
+
+    send_line(l : String) : Void ==
+        send_int(send_line_tok)
+        send_string(l)
+
+    end_page() : Void == send_int(end_page_tok)
+
+)abbrev domain HDASSOC HyperdocAssociationList
+HyperdocAssociationList == List(Record(key : Symbol, entry : SExpression))
+
+)abbrev domain HDPAGE HyperdocPage
+HyperdocPage() : Exports == Implementation where
+  SE ==> SExpression
+  LSE ==> List(SE)
+  SY ==> Symbol
+  ALS ==> HyperdocAssociationList
+  ALR ==> Record(key : Symbol, entry : SE)
+  PSR ==> Record(var : Symbol, pvar : Symbol)
+  Exports ==> with
+    new : ALS -> %
+    name : % -> Symbol
+    add_to : (%, List(SE)) -> Void
+    add_to_description : (%, String) -> Void
+    add_to_description : (%, List(SE)) -> Void
+    get_property_list : % -> ALS
+    get_property : (%, SY) -> SE
+    set_property : (%, SY, SE) -> Void
+    show : % -> Void
+  Implementation ==> add
+
+    import HyperdocConnection
+
+    Rep := Record(name : Symbol, domain_conditions : LSE,
+                  variable_alist : ALS, pattern_vars : List(PSR),
+                  radio_buttons : ALS, input_areas : ALS,
+                  property_list : ALS, page_description : LSE,
+                  work_area : List(String))
+
+    name(page : %) : Symbol ==
+        pr : Rep := page
+        pr.name
+
+    new(props : ALS) : % ==
+        name : Symbol := GENTEMP()$Lisp
+        res : % := [name, [], empty(), empty(), empty(), empty(), props, [],
+                    []]$Rep
+        SET(name, res)$Lisp
+        lst : List(SY) := cons(name, _$activePageList$Lisp)
+        SETF(_$activePageList$Lisp, lst)$Lisp
+        res
+
+    get_property_list(page : %) : ALS ==
+        pr : Rep := page
+        pr.property_list
+
+    add_to_description(page : %, s : String) : Void ==
+        pr : Rep := page
+        pr.page_description := cons(convert(s), pr.page_description)
+
+    add_to_description(page : %, l : List(SE)) : Void ==
+        pr : Rep := page
+        for el in l repeat
+            pr.page_description := cons(el, pr.page_description)
+
+    setup_default(page : %, name : Symbol, props : LSE) : Void ==
+        pr : Rep := page
+        pp := [convert([]), convert([]), convert([])]$List(SE)
+        pp := concat(pp, props)
+        pr.input_areas := cons([name, convert(pp)], pr.input_areas)
+
+    label_error_msg : (%, Symbol) -> Union(SE, "failed")
+    hd_assoc : (Symbol, ALS) -> Union(ALR, "failed")
+
+    get_property(page : %, name : SY) : SE ==
+        pr : Rep := page
+        props := pr.property_list
+        u1 := hd_assoc(name, props)
+        u1 case "failed" => convert(empty()$LSE)
+        ar := u1@ALR
+        ar.entry
+
+    set_property(page : %, name : SY, val : SE) : Void ==
+        pr : Rep := page
+        props := pr.property_list
+        u1 := hd_assoc(name, props)
+        u1 case "failed" =>
+            pr.property_list := cons([name, val]$ALR, props)
+        ar := u1@ALR
+        ar.entry := val
+
+    process_add : (%, LSE) -> Void
+
+    process_add1(page : %, item : SE) : Void ==
+        list?(item) => process_add(page, destruct(item))
+
+    is_symbol(se : SE, sym : SY) : Boolean ==
+        symbol?(se) and symbol(se) = sym
+
+    pattern_substitution_list(cl : List(SE)) : List(PSR) ==
+        print(message("pattern_substitution_list")$OutputForm)$OutputForm
+        res : List(PSR) := []
+        pat_vars : List(SY) := _$PatternVariableList$Lisp
+        for c in cl repeat
+            not(list?(c)) => iterate
+            cl1 := destruct(c)
+            print(cl1::OutputForm)$OutputForm
+            #cl1 ~= 3 => iterate
+            op := first(cl1)
+            print(op::OutputForm)$OutputForm
+            pv := first(rest(cl1))
+            if is_symbol(op, 'isDomain) or is_symbol(op, 'ofCategory) or
+               is_symbol(op, 'Satisfies) then
+                if not(pv = _$EmptyMode$Lisp) then
+                    res := cons([symbol(pv), first(pat_vars)], res)
+                pat_vars := rest(pat_vars)
+        print(res::OutputForm)$OutputForm
+        res
+
+    substitute_pvars(cl : LSE, pat_sl : List(PSR)) : LSE ==
+        for sr in pat_sl repeat
+            cl := substitute(sr.pvar, sr.var, cl)$Lisp
+        cl
+
+    get_vars(pat : SE) : List(SY) ==
+        res : List(SY) := []
+        not(list?(pat)) => res
+        for p1 in rest(destruct(pat)) repeat
+            if symbol?(p1) and member?(s1 := symbol(p1),
+                                       _$PatternVariableList$Lisp) then
+                res := cons(s1, res)
+        reverse!(res)
+
+    compute_conds(page : %, v1 : SY) : SE ==
+        res : LSE := []
+        pvars : List(SY) := [v1]
+        for c1 in page.domain_conditions repeat
+            not(list?(c1)) => iterate
+            cl1 := destruct(c1)
+            not(#cl1 = 3) => iterate
+            cl1 := rest(cl1)
+            pv := first(cl1)
+            if member?(symbol(pv), pvars) then
+                res := cons(c1, res)
+                pat := first(rest(cl1))
+                pvars := concat!(pvars, get_vars(pat))
+        convert(reverse!(res))
+
+    compute_variable_alist(page : %, pat_sl : List(PSR)) : ALS ==
+        res : ALS := empty()
+        for sr in pat_sl repeat
+            v1 := sr.pvar
+            res := cons([v1, compute_conds(page, v1)], res)
+        reverse!(res)
+
+    process_domain_conditions(page : %, cl : LSE) : Void ==
+        pat_sl := pattern_substitution_list(cl)
+        page.pattern_vars := pat_sl
+        page.domain_conditions := substitute_pvars(cl, pat_sl)
+        page.variable_alist := compute_variable_alist(page, pat_sl)
+
+    button_names(l : LSE) : LSE == [destruct(el)(3) for el in l]
+
+    process_radio_buttons(page : %, l : List(SE)) : Void ==
+        pr : Rep := page
+        group_name := symbol(first(l))
+        buttons := rest(l)
+        pr.radio_buttons := cons([group_name, convert(button_names(buttons))],
+                                 pr.radio_buttons)
+        default : String := "1"
+        for el in buttons repeat
+            (message, info, buttonName) := destruct(el)
+            button_name := symbol(buttonName)
+            if hd_assoc(button_name, pr.input_areas) case "failed" then
+                setup_default(page, button_name,
+                              [convert('button), convert(default)])
+                default := "0"
+            process_add1(page, message)
+            process_add1(page, info)
+
+    process_input_string1(page : %, l1 : LSE) : Void ==
+            pr : Rep := page
+            (n_char, default, name_e, type) := first(l1, 4)
+            name := symbol(name_e)
+            filter : SE := convert(rest(l1, 4))
+            if hd_assoc(name, pr.input_areas) case "failed" then
+                setup_default(page, name,
+                              [convert('string), default, type, filter])
+            if label_error_msg(page, name) case SE then
+                error "htpLabelErrorMsg unimplemented"
+
+    process_input_strings(page : %, l : List(SE)) : Void ==
+        pr : Rep := page
+        ia := pr.input_areas
+        for el in l repeat
+            l1 := destruct(el)
+            (mess1, mess2) := first(l1, 2)
+            process_input_string1(page, rest(l1, 2))
+            process_add1(page, mess1)
+            process_add1(page, mess2)
+
+    process_bc_buttons(page : %, l : List(SE)) : Void ==
+        pr : Rep := page
+        ia := pr.input_areas
+        for el in l repeat
+            l1 := destruct(el)
+            default_val := first(l1)
+            name := symbol(second(l1))
+            s_res := hd_assoc(name, ia)
+            if s_res case "failed" then
+                setup_default(page, name, [convert('button), default_val])
+
+    process_bc_strings(page : %, l : List(SE)) : Void ==
+        pr : Rep := page
+        for el in l repeat
+            l1 := destruct(el)
+            process_input_string1(page, l1)
+
+    process_add(page : %, l : List(SE)) : Void ==
+        for el in l repeat
+            atom?(el) => iterate
+            l1 := destruct(el)
+            op := symbol(first(l1))
+            args := rest(l1)
+            op = 'radioButtons or op = 'bcRadioButtons =>
+                process_radio_buttons(page, args)
+            op = 'inputStrings => process_input_strings(page, args)
+            op = 'domainConditions =>
+                process_domain_conditions(page, args)
+            op = 'bcButtons => process_bc_buttons(page, args)
+            op = 'bcStrings => process_bc_strings(page, args)
+
+    add_to(page : %, l : List(SE)) : Void ==
+        add_to_description(page, l)
+        process_add(page, l)
+
+    label_error_msg(page : %, name : Symbol) : Union(SE, "failed") ==
+        pr : Rep := page
+        alr := hd_assoc(name, pr.input_areas)
+        alr case "failed" => "failed"
+        res := destruct(alr.entry)(3)
+        null?(res) => "failed"
+        res
+
+    label_input_string(page : %, name : Symbol) : Union(String, "failed") ==
+        pr : Rep := page
+        alr := hd_assoc(name, pr.input_areas)
+        alr case "failed" => "failed"
+        s := destruct(alr.entry)(1)
+        string?(s) => string(s)
+        "failed"
+
+    label_default(page : %, name : Symbol) : SE ==
+        pr : Rep := page
+        mu := label_input_string(page, name)
+        mu case String =>
+            ms := mu::String
+            ms = "t" => convert(1)
+            ms = "nil" => convert(0)
+            convert(ms)
+        alr := hd_assoc(name, pr.input_areas)
+        alr case "failed" => convert([])
+        destruct(alr.entry)(5)
+
+    render_as_string(se : SE) : String ==
+        string?(se) => string(se)
+        symbol?(se) =>
+            sy := symbol(se)
+            sy = "%"::Symbol => "\%"
+            string(sy)
+        integer?(se) => convert(integer(se))
+        PRETTYPRINT(se)$Lisp
+        error "render_as_string: unhandled item"
+
+    LFun2 ==> FiniteLinearAggregateFunctions2(SE, LSE, String, List(String))
+
+    render_ls(page : %, ls : List(String)) : Void ==
+        pr : Rep := page
+        for s in ls repeat
+            pr.work_area := cons(s, pr.work_area)
+
+    render1s(page : %, s : String) : Void ==
+        pr : Rep := page
+        pr.work_area := cons(s, pr.work_area)
+
+    render_l1(page : %, l1 : LSE) : Void ==
+        pr : Rep := page
+        for el in l1 repeat
+            pr.work_area := cons(render_as_string(el), pr.work_area)
+
+    render1(page : %, s : SE) : Void ==
+        pr : Rep := page
+        list?(s) => render_l1(page, destruct(s))
+        pr.work_area := cons(render_as_string(s), pr.work_area)
+
+    render_page : (%, List(SE)) -> Void
+
+    render_item(page : %, item : SE) : Void ==
+        atom?(item) => render1(page, item)
+        render_page(page, destruct(item))
+
+    split_options(links : SE) : Record(links : LSE, options : LSE) ==
+        l1 := destruct(links)
+        ll : LSE := []
+        lo : LSE := []
+        was_options : Boolean := false
+        for el in l1 repeat
+            was_options => lo := cons(el, lo)
+            symbol?(el) and symbol(el) = 'options => was_options := true
+            ll := cons(el, ll)
+        [reverse!(ll), reverse!(lo)]
+
+    trim_options(links : SE) : LSE ==
+        l1 := destruct(links)
+        ll : LSE := []
+        for el in l1 repeat
+            symbol?(el) and symbol(el) = 'options => break
+            ll := cons(el, ll)
+        reverse!(ll)
+
+    render_page : (%, List(SE)) -> Void
+
+    lRSE ==> List(Record(key : Symbol, entry : SE))
+
+    render_button(page : %, link : String, message : SE, fn : String) : Void ==
+        render_ls(page, [link, "{"])
+        render1(page, message)
+        render_ls(page, ["}{(|htDoneButton| '|", fn, "| (PROGN "])
+        pr : Rep := page
+        name := string(pr.name)
+        for en in entries(pr.input_areas)@lRSE repeat
+            el := destruct(en.entry)
+            id := string(en.key)
+            type := symbol(el(4))
+            render_ls(page, ["(|htpSetLabelInputString| ", name, " '|",
+                      id, "| "])
+            if type = 'string then
+                render1s(page, "_"\stringvalue{")
+            else
+                render1s(page, "_"\boxvalue{")
+            render_ls(page, [id, "}_")"])
+        render_ls(page, [" ", name, "))}"])
+
+    render_link_button(page : %, link : String, ld : SE, items? : Boolean
+                      ) : Void ==
+            l1 := destruct(ld)
+            (message, info, func) := first(l1, 3)
+            val := rest(l1, 3)
+            fn : SE := mkCurryFun(func, val)$Lisp
+            if items? then
+                render1s(page, "\item[")
+            render_button(page, link, message, string(symbol(fn)))
+            if items? then
+                render1s(page, "]\space{}")
+            list?(info) => render_page(page, destruct(info))
+            render1(page, info)
+
+    render_lisp_links(page : %, arg : SE, memo? : Boolean) : Void ==
+        -- error "unimplemented"
+        links := trim_options(arg)
+        ind_s : String := "5"
+        render_ls(page, ["\newline\indent{", ind_s, "}\beginitems"])
+        link : String :=
+            memo? => "\lispmemolink"
+            "\lispdownlink"
+        for ld in links repeat
+            render_link_button(page, link, ld, true)
+        render1s(page, "\enditems\indent{0} ")
+
+    render_bc_links0(page : %, arg : SE, link : String) : Void ==
+        links := trim_options(arg)
+        for ld in links repeat
+            render_link_button(page, link, ld, false)
+
+    render_bc_links(page : %, links : SE) : Void ==
+        render_bc_links0(page, links, "\lispdownlink")
+
+    render_bc_lisp_links(page : %, links : SE) : Void ==
+        render_bc_links0(page, links, "\lisplink")
+
+    hd_assoc(name : Symbol, al : ALS
+            ) : Union(ALR, "failed") ==
+)if false
+        -- for fails with message:
+   >> Apparent user error:
+   mode:
+   (HyperdocAssociationList)
+    must be a list of some mode
+)endif
+        -- for r in al repeat
+        while not(empty?(al)) repeat
+            r := first(al)
+            name = r.key => return r
+            al := rest(al)
+        "failed"
+
+    render_input_string1(page : %, mess1 : String, mess2 : String,
+                         l1 : LSE, items? : Boolean) : Void ==
+            pr : Rep := page
+            (n_char, default, name_e, type) := first(l1, 4)
+            name := symbol(name_e)
+            filter : SE := convert(rest(l1, 4))
+            if hd_assoc(name, pr.input_areas) case "failed" then
+                setup_default(page, name,
+                              [convert('string), default, type, filter])
+            if label_error_msg(page, name) case SE then
+                error "htpLabelErrorMsg unimplemented"
+            if items? then
+                render1s(page, "\item ")
+                -- render_item(page, mess1)
+                render1s(page, mess1)
+            render_ls(page, ["\inputstring{", string(name), "}{",
+                             convert(integer(n_char))@String, "}{",
+                      render_as_string(label_default(page, name)),
+                          "} ", mess2])
+
+    render_bc_strings(page : % , arg : SE) : Void ==
+        pr : Rep := page
+        strings := destruct(arg)
+        for el in strings repeat
+            render_input_string1(page, "", "", destruct(el), false)
+
+    render_input_strings(page : % , arg : SE) : Void ==
+        render1s(page, "\newline\indent{5}\beginitems ")
+        strings := destruct(arg)
+        for el in strings repeat
+            l1 := destruct(el)
+            (mess1, mess2) := first(l1, 2)
+            render_input_string1(page, string(mess1), string(mess2),
+                                 rest(l1, 2), true)
+        render1s(page, "\enditems\indent{0}\newline ")
+
+    render_radio_buttons0(page : %, arg : SE, items? : Boolean) : Void ==
+        pr : Rep := page
+        args := destruct(arg)
+        group_name := first(args)
+        buttons := rest(args)
+        boxes_name := string(GENTEMP()$Lisp)$Symbol
+        hd_line : List(String) := ["\radioboxes{", boxes_name,
+                    "}{\htbmfile{pick}}{\htbmfile{unpick}}"]
+        if items? then
+            hd_line := cons("\newline\indent{5}",
+                            concat(hd_line, "\beginitems "))
+        render_ls(page, hd_line)
+        for el in buttons repeat
+            (message, info, buttonName) := destruct(el)
+            button_name := symbol(buttonName)
+            if items? then render1s(page, "\item")
+            render_ls(page, ["{\em\radiobox[",
+                render_as_string(label_default(page, button_name)),
+                  "]{",
+                  string(button_name), "}{", boxes_name, "}"])
+            if items? then render1s(page, "\space{}")
+            render_item(page, message)
+            render1s(page, "\space{}}")
+            render_item(page, info)
+        if items? then render1s(page, "\enditems\indent{0} ")
+
+    render_radio_buttons(page : %, arg : SE) : Void ==
+        render_radio_buttons0(page, arg, true)
+
+    render_bc_radio_buttons(page : %, arg : SE) : Void ==
+        render_radio_buttons0(page, arg, false)
+
+    render_bc_buttons(page : %, args : SE) : Void ==
+        pr : Rep := page
+        for arg in destruct(args) repeat
+            (default, name_e) := destruct(arg)
+            name := symbol(name_e)
+            if hd_assoc(name, pr.input_areas) case "failed" then
+                setup_default(page, name,
+                              [convert('button), default])
+            k : SE := label_default(page, name)
+            EQUAL(k, 0)$Lisp =>
+                render_ls(page, ["\off{", string(name), "}"])
+            EQUAL(k, 1)$Lisp =>
+                render_ls(page, ["\on{", string(name), "}"])
+            render_ls(page, ["\inputbox[", render_as_string(k), "]{",
+                string(name), "}{\htbmfile{pick}}{\htbmfile{unpick}}"])
+
+    render_done_button(page : %, arg : SE) : Void ==
+        (lab_e, fun_e) := destruct(arg)
+        label := string(lab_e)
+        fn := string(symbol(fun_e))
+        message : String :=
+            label = "Continue" => "\ContinueBitmap"
+            label = "Push to enter names" or label = "Select to Set Value"
+              or label = "Select to Set Values" => "\ControlBitmap{ClickToSet}"
+            print(label::OutputForm)$OutputForm
+            error "render_done_button: unimplemented label"
+        render_button(page, "\lispdownlink", convert(message), fn)
+
+    render_doit_button(page : %, arg : SE) : Void ==
+        pr : Rep := page
+        (lab_e, fun_e) := destruct(arg)
+        label := string(lab_e)
+        fn := string(fun_e)
+        message : String :=
+            label = "Do It" => "\DoItBitmap"
+            error "unimplemented"
+        render_ls(page, ["\newline\vspace{1}\centerline{\lispcommand{",
+            message, "}{(|doDoitButton| ", string(pr.name),
+              " _"", htEscapeString(fn)$Lisp, "_")}}"])
+
+    render_page_element(page : %, op : Symbol, args : SE) : Void ==
+            op = 'text => render1(page, args)
+            op = 'bcLinks => render_bc_links(page, args)
+            op = 'bcLispLinks => render_bc_lisp_links(page, args)
+            op = 'domainConditions => void()
+            op = 'bcStrings => render_bc_strings(page, args)
+            op = 'bcRadioButtons => render_bc_radio_buttons(page, args)
+            op = 'bcButtons => render_bc_buttons(page, args)
+            op = 'radioButtons => render_radio_buttons(page, args)
+            op = 'lispLinks => render_lisp_links(page, args, false)
+            op = 'doneButton => render_done_button(page, args)
+            op = 'doitButton => render_doit_button(page, args)
+            op = 'inputStrings => render_input_strings(page, args)
+            error "unexpected page item"
+
+    render_page(page : %, l : List(SE)) : Void ==
+        for el in l repeat
+            op : Symbol := 'text
+            args : SE :=
+                string?(el) => el
+                symbol?(el) => convert(string(symbol(el)))
+                atom?(el) => error "unexpected atom"
+                l1 := destruct(el)
+                op := symbol(first(l1))
+                convert(rest(l1))
+            render_page_element(page, op, args)
+
+    render_page0(page : %) : Void ==
+        pr : Rep := page
+        pr.work_area := []
+        render_page(page, pr.page_description)
+        pr.work_area := reverse!(pr.work_area)
+        l := concat(pr.work_area)
+        send_line(l)
+        end_page()
+
+    show(page : %) : Void ==
+        pr : Rep := page
+        pr.page_description := reverse!(pr.page_description)
+        render_page0(page)
+
 )abbrev domain ERRIND ErrorIndicator
 ++ Author: Waldek Hebisch
 ++ Description: Error indicator used by BrowserInformation.
