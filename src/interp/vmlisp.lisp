@@ -60,15 +60,9 @@
 
 (defun gensymp (x) (and (symbolp x) (null (symbol-package x))))
 
-(defun digitp (x)
-  (or (and (symbolp x) (digitp (symbol-name x)))
-      (and (characterp x) (digit-char-p x))
-      (and (stringp x) (= (length x) 1) (digit-char-p (char x 0)))))
+(defun DIGITP (x) (digit-char-p x))
 
-(defun dig2fix (x)
-  (if (symbolp x)
-    (digit-char-p (char (symbol-name x) 0))
-    (digit-char-p x)))
+(defun DIG2FIX (x) (DIGITP x))
 
 (defun LOG2 (x) (LOG x 2.0))
 
@@ -93,10 +87,7 @@
 ; 11.2 Accessing
 
 ;; note it is important that PNAME returns nil not an error for non-symbols
-(defun PNAME (x)
-  (cond ((symbolp x) (symbol-name x))
-        ((characterp x) (string x))
-        (t nil)))
+(defun PNAME (x) (symbol-name x))
 
 (defun put (sym ind val) (setf (get sym ind) val))
 
