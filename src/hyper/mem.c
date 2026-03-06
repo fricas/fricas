@@ -104,7 +104,7 @@ alloc_hd_window(void)
   w->fMacroHashTable = hash_copy_table(&init_macro_hash);
 
   gWindow = w;
-  /*sprintf(haslisp, "%1d\0", MenuServerOpened);*/
+  /*snprintf(haslisp, sizeof(haslisp), "%1d", MenuServerOpened);*/
   make_special_pages(w->fPageHashTable);
   w->fDisplayedCursor = 0;
   return w;

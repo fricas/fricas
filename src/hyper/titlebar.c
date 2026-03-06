@@ -305,46 +305,46 @@ readTitleBarImages(void)
     fricas_env_var = getenv("FRICAS");
 
     if (fricas_env_var)
-        sprintf(filename, "%s/share/hypertex/bitmaps/%s",
-                fricas_env_var, tw1file);
+        snprintf(filename, sizeof(filename), "%s/share/hypertex/bitmaps/%s",
+                 fricas_env_var, tw1file);
     else
-        sprintf(filename, "%s", tw1file);
+        snprintf(filename, sizeof(filename), "%s", tw1file);
     tw1image = HTReadBitmapFile(gXDisplay, gXScreenNumber, filename,
                                 &twwidth, &twheight);
 
     if (fricas_env_var)
-        sprintf(filename, "%s/share/hypertex/bitmaps/%s",
-                fricas_env_var, tw2file);
+        snprintf(filename, sizeof(filename), "%s/share/hypertex/bitmaps/%s",
+                 fricas_env_var, tw2file);
     else
-        sprintf(filename, "%s", tw2file);
+        snprintf(filename, sizeof(filename), "%s", tw2file);
     tw2image = HTReadBitmapFile(gXDisplay, gXScreenNumber, filename,
                                 &w, &h);
     twwidth = ((twwidth >= w) ? (twwidth) : (w));
 
     if (fricas_env_var)
-        sprintf(filename, "%s/share/hypertex/bitmaps/%s",
-                fricas_env_var, tw3file);
+        snprintf(filename, sizeof(filename), "%s/share/hypertex/bitmaps/%s",
+                 fricas_env_var, tw3file);
     else
-        sprintf(filename, "%s", tw3file);
+        snprintf(filename, sizeof(filename), "%s", tw3file);
     tw3image = HTReadBitmapFile(gXDisplay, gXScreenNumber, filename,
                                 &w, &h);
     twwidth = ((twwidth >= w) ? (twwidth) : (w));
 
     if (fricas_env_var)
-        sprintf(filename, "%s/share/hypertex/bitmaps/%s",
-                fricas_env_var, tw4file);
+        snprintf(filename, sizeof(filename), "%s/share/hypertex/bitmaps/%s",
+                 fricas_env_var, tw4file);
     else
-        sprintf(filename, "%s", tw4file);
+        snprintf(filename, sizeof(filename), "%s", tw4file);
     tw4image = HTReadBitmapFile(gXDisplay, gXScreenNumber, filename,
                                 &w, &h);
     twwidth = ((twwidth >= w) ? (twwidth) : (w));
 
 
     if (fricas_env_var)
-        sprintf(filename, "%s/share/hypertex/bitmaps/%s",
-                fricas_env_var, noopfile);
+        snprintf(filename, sizeof(filename), "%s/share/hypertex/bitmaps/%s",
+                 fricas_env_var, noopfile);
     else
-        sprintf(filename, "%s", noopfile);
+        snprintf(filename, sizeof(filename), "%s", noopfile);
     noopimage = HTReadBitmapFile(gXDisplay, gXScreenNumber, filename,
                                  &twwidth, &twheight);
 }

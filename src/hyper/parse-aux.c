@@ -77,7 +77,7 @@ window_id(Window w)
     char buff[32];
     int length;
 
-    sprintf(buff, "%ld", w);
+    snprintf(buff, sizeof(buff), "%ld", w);
     length = strlen(buff);
     ret = (char *) halloc(length * sizeof(char) + 1, "windowid");
     strcpy(ret, buff);
@@ -205,7 +205,8 @@ read_ht_file(HashTable *page_hash, HashTable *macro_hash,
             if (ret_val == -1) {
                 char buffer[3000];
 
-                sprintf(buffer, "(HyperDoc) read_ht_db: Unable To Open %s :", fullname);
+                snprintf(buffer, sizeof(buffer),
+                         "(HyperDoc) read_ht_db: Unable To Open %s :", fullname);
                 perror(buffer);
                 exit(-1);
             }

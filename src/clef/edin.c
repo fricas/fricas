@@ -410,21 +410,30 @@ do_reading(void) {
                     num_proc++;
                 } else if ((in_buff[num_proc] == _INTR) ||
                           (in_buff[num_proc] == _QUIT)) {
-                    write(contNum, &in_buff[num_proc], num_read - num_proc);
+                    if (write(contNum, &in_buff[num_proc],
+                              num_read - num_proc) == -1) {
+                        perror("clef write child");
+                    }
                     if (!PTY) {
-                        write(contNum, "\n", 1);
+                        if (write(contNum, "\n", 1) == -1) {
+                            perror("clef write child newline");
+                        }
                     }
                     num_proc++;
                 } else if (in_buff[num_proc] == _EOF) {
                     insert_buff_nonprinting(1);
                     if (!PTY) {
-                        write(contNum, "\n", 1);
+                        if (write(contNum, "\n", 1) == -1) {
+                            perror("clef write child newline");
+                        }
                     }
                     num_proc++;
                 } else if (in_buff[num_proc] == _EOL) {
                     send_line_to_child();
                     if (!PTY) {
-                        write(contNum, "\n", 1);
+                        if (write(contNum, "\n", 1) == -1) {
+                            perror("clef write child newline");
+                        }
                     }
                 } else if (in_buff[num_proc] == _ERASE) {
                     back_over_current_char();
@@ -479,7 +488,9 @@ send_line_to_child(void) {
      * actual characters received
      */
     converted_num = convert_buffer(converted_buffer, buff_pntr);
-    write(contNum, converted_buffer, converted_num);
+    if (write(contNum, converted_buffer, converted_num) == -1) {
+        perror("clef write converted line");
+    }
 
     /** reinitialize the buffer  ***/
     re_init_buff();

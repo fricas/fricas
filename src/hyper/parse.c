@@ -454,7 +454,7 @@ parse_HyperDoc(void)
                 curr_node->type = Word;
                 curr_node->space = 0;
                 str = halloc(strlen(cur_page->name) + 1, "parse");
-                sprintf(str, "%s", cur_page->name);
+                snprintf(str, strlen(cur_page->name) + 1, "%s", cur_page->name);
                 curr_node->data.text = alloc_string(str);
                 break;
             }
@@ -464,8 +464,8 @@ parse_HyperDoc(void)
 
                 curr_node->type = Word;
                 curr_node->space = 0;
-                str = halloc(5, "parse");
-                sprintf(str, "%d", example_number);
+                str = halloc(12, "parse");
+                snprintf(str, 12, "%d", example_number);
                 curr_node->data.text = alloc_string(str);
                 break;
             }

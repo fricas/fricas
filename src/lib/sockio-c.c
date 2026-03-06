@@ -758,7 +758,13 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
   /* connect socket using name specified in command line */
   struct sockaddr_un *uaddr = &(sock->addr.u_addr);
   uaddr->sun_family = FRICAS_AF_LOCAL;
-  strncpy(uaddr->sun_path, name, sizeof(uaddr->sun_path) - 1);
+  if (snprintf(uaddr->sun_path, sizeof(uaddr->sun_path), "%s", name)
+      >= sizeof(uaddr->sun_path)) {
+    errno = ENAMETOOLONG;
+    perror("socket path too long");
+    free(sock);
+    return NULL;
+  }
   for(i=0; i<max_con; i++) {
     code = connect(sock->socket, (struct sockaddr *)uaddr, sizeof(*uaddr));
     if (code == -1) {
@@ -937,7 +943,13 @@ open_server(char *server_name)
     Sock * sock = &(server[1]);
     struct sockaddr_un * uaddr = &(sock->addr.u_addr);
     uaddr->sun_family = FRICAS_AF_LOCAL;
-    strncpy(uaddr->sun_path, name, sizeof(uaddr->sun_path) - 1);
+    if (snprintf(uaddr->sun_path, sizeof(uaddr->sun_path), "%s", name)
+        >= sizeof(uaddr->sun_path)) {
+      errno = ENAMETOOLONG;
+      perror("socket path too long");
+      server[1].socket = 0;
+      return -2;
+    }
     if (bind(sock->socket, (struct sockaddr *)uaddr, sizeof(*uaddr))) {
       perror("binding local server socket");
       server[1].socket = 0;

@@ -50,7 +50,7 @@ halloc(int bytes,char * msg)
 
     result = (char *) malloc(bytes);
     if (result == NULL) {
-        sprintf(buf, "Ran out of memory allocating %s.\b", msg);
+      snprintf(buf, sizeof(buf), "Ran out of memory allocating %s.\b", msg);
         exit(-1);
     }
     return result;

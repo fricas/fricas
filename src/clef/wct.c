@@ -459,7 +459,7 @@ static void
 fatal(char *fmt,char * s) {
     static char fbuf[256];
 
-    sprintf(fbuf, fmt, s);
+    snprintf(fbuf, sizeof(fbuf), fmt, s);
 
     perror(fbuf);
     exit(1);

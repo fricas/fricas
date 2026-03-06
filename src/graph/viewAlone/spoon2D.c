@@ -60,7 +60,7 @@ spoonView2D(void)
   char * env_fricas;
   char * run_view;
 
-  fricas_sprintf_to_buf1(errorStr, "%s", "creating pipes");
+  fricas_snprintf_to_buf1(errorStr, "%s", "creating pipes");
   check(pipe(pipe0));
   check(pipe(pipe1));
   switch(fork()) {
@@ -76,7 +76,7 @@ spoonView2D(void)
      ************/
     /* printf("(spoon2D child) mapping of pipes to standard I/O for view2D\n");
       */
-    fricas_sprintf_to_buf1(errorStr, "%s",
+    fricas_snprintf_to_buf1(errorStr, "%s",
         "(viewAlone) mapping of pipes to standard I/O for view2D");
     check(dup2(pipe0[0],0));
     check(dup2(pipe1[1],1));
@@ -84,7 +84,7 @@ spoonView2D(void)
     close(pipe0[1]);
     close(pipe1[0]);
     close(pipe1[1]);
-    fricas_sprintf_to_buf1(errorStr, "%s",
+    fricas_snprintf_to_buf1(errorStr, "%s",
         "(viewAlone) execution of the TwoDimensionalViewport process");
     env_fricas = getenv("FRICAS");
     {
@@ -301,7 +301,7 @@ makeView2DFromFileData(view2DStruct *doView2D)
   for (i=0; i<maxGraphs; i++) {
     if (graphArray[i].key) {
       /** OPEN FILE FOR GRAPHS **/
-      fricas_sprintf_to_buf3(graphFilename, "%s%s%d", pathname, "/graph", i);
+      fricas_snprintf_to_buf3(graphFilename, "%s%s%d", pathname, "/graph", i);
       if ((graphFile = fopen(graphFilename,"r")) == NULL) {
         fprintf(stderr,"   Error: Cannot find the file %s\n",graphFilename);
         perror("fopen");

@@ -327,7 +327,7 @@ fix_env(char **envp, int spadnum)
   new_envp = (char **) malloc((len + 3) * sizeof(char *));
   new_envp[0] = "SPADSERVER=TRUE";
   sn = (char *) malloc(20 * sizeof(char));
-  sprintf(sn, "SPADNUM=%d", spadnum);
+  snprintf(sn, 20, "SPADNUM=%d", spadnum);
   new_envp[1] = sn;
   for(i=0; i<=len; i++)
     new_envp[i+2] = envp[i];
@@ -386,9 +386,9 @@ clean_up_old_sockets(void)
   char com[512], tmp_file[128];
   FILE *file;
   int len;
-  sprintf(tmp_file, "/tmp/socks.%d", server_num);
-  sprintf(com, "ls /tmp/.d* /tmp/.s* /tmp/.i* /tmp/.h* 2> %s > %s",
-          tmp_file, tmp_file);
+  snprintf(tmp_file, sizeof(tmp_file), "/tmp/socks.%d", server_num);
+  snprintf(com, sizeof(com), "ls /tmp/.d* /tmp/.s* /tmp/.i* /tmp/.h* 2> %s > %s",
+           tmp_file, tmp_file);
   system(com);
   file = fopen(tmp_file, "r");
   if (file == NULL) {
@@ -429,7 +429,7 @@ static void
 exec_command_env(char *command,char ** env)
 {
   char new_command[512];
-  sprintf(new_command, "exec %s", command);
+  snprintf(new_command, sizeof(new_command), "exec %s", command);
   execle("/bin/sh","/bin/sh", "-c", new_command, NULL, env);
 }
 
@@ -454,13 +454,13 @@ start_the_spadclient(void)
       TERM = "xterm";
   }
   if (start_clef)
-    sprintf(command,
-          "%s -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s %s",
-          TERM, ClefProgram, SpadClientProgram);
+    snprintf(command, sizeof(command),
+             "%s -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s %s",
+             TERM, ClefProgram, SpadClientProgram);
   else
-    sprintf(command,
-          "%s -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s",
-          TERM, SpadClientProgram);
+    snprintf(command, sizeof(command),
+             "%s -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s",
+             TERM, SpadClientProgram);
   if (tpd == 1)
     fprintf(stderr,"sman:start_the_spadclient: %s\n",command);
   spawn_of_hell(command, NadaDelShitsky);
@@ -471,9 +471,9 @@ start_the_local_spadclient(void)
 {
   char command[256];
   if (start_clef)
-    sprintf(command, "%s  %s", ClefProgram, SpadClientProgram);
+    snprintf(command, sizeof(command), "%s  %s", ClefProgram, SpadClientProgram);
   else
-    sprintf(command, "%s", SpadClientProgram);
+    snprintf(command, sizeof(command), "%s", SpadClientProgram);
   if (tpd == 1)
     fprintf(stderr,"sman:start_the_local_spadclient: %s\n",command);
   spawn_of_hell(command, NadaDelShitsky);
@@ -491,15 +491,15 @@ start_the_hypertex(void)
   char prog[512];
 
   if (PasteFile){
-    sprintf(prog, "%s -k -ip %s", HypertexProgram, PasteFile);
+    snprintf(prog, sizeof(prog), "%s -k -ip %s", HypertexProgram, PasteFile);
     spawn_of_hell(prog, NadaDelShitsky);
   }
   else if (MakeRecordFile){
-    sprintf(prog, "%s -k -rm %s", HypertexProgram,MakeRecordFile );
+    snprintf(prog, sizeof(prog), "%s -k -rm %s", HypertexProgram,MakeRecordFile );
     spawn_of_hell(prog, NadaDelShitsky);
   }
   else if (VerifyRecordFile){
-    sprintf(prog, "%s -k -rv %s", HypertexProgram, VerifyRecordFile);
+    snprintf(prog, sizeof(prog), "%s -k -rv %s", HypertexProgram, VerifyRecordFile);
     spawn_of_hell(prog, NadaDelShitsky);
   }
   else  spawn_of_hell(HypertexProgram, CleanHypertexSocket);
@@ -611,7 +611,7 @@ static void
 clean_hypertex_socket(void)
 {
    char name[256];
-   sprintf(name, "%s%d", MenuServerName, server_num);
+   snprintf(name, sizeof(name), "%s%d", MenuServerName, server_num);
    unlink(name);
 }
 
@@ -619,11 +619,11 @@ static void
 clean_up_sockets(void)
 {
   char name[256];
-  sprintf(name, "%s%d", SpadServer, server_num);
+  snprintf(name, sizeof(name), "%s%d", SpadServer, server_num);
   unlink(name);
-  sprintf(name, "%s%d", SessionServer, server_num);
+  snprintf(name, sizeof(name), "%s%d", SessionServer, server_num);
   unlink(name);
-  sprintf(name, "%s%d", SessionIOName, server_num);
+  snprintf(name, sizeof(name), "%s%d", SessionIOName, server_num);
   unlink(name);
   clean_hypertex_socket();
 }
@@ -740,7 +740,7 @@ kill_all_children(void)
   for(proc = spad_process_list; proc != NULL; proc = proc->next) {
     kill(proc->proc_id, SIGTERM);
   }
-  sprintf(name, "/tmp/hyper%d.input",server_num);
+  snprintf(name, sizeof(name), "/tmp/hyper%d.input",server_num);
   unlink(name);
 
 }

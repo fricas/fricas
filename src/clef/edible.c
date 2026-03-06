@@ -155,7 +155,7 @@ main(int argc, char *argv[])
   skim_wct();
 
 #ifdef log
-  sprintf(logpath, "/tmp/cleflog%d", getpid());
+  snprintf(logpath, sizeof(logpath), "/tmp/cleflog%d", getpid());
   logfd = open(logpath, O_CREAT | O_RDWR, 0666);
 #endif
 
@@ -255,7 +255,7 @@ main(int argc, char *argv[])
 #ifdef log
     {
       char modepath[30];
-      sprintf(modepath, "\nMODE = %d\n", MODE);
+      snprintf(modepath, sizeof(modepath), "\nMODE = %d\n", MODE);
       write(logfd, modepath, strlen(modepath));
     }
 #endif
@@ -264,8 +264,9 @@ main(int argc, char *argv[])
       struct termio ptermio;
       char pbuff[1024];
       tcgetattr(contNum, &ptermio);
-      sprintf(pbuff, "child's settings: Lflag = %d, Oflag = %d, Iflag = %d\n",
-              ptermio.c_lflag, ptermio.c_oflag, ptermio.c_iflag);
+            snprintf(pbuff, sizeof(pbuff),
+               "child's settings: Lflag = %d, Oflag = %d, Iflag = %d\n",
+               ptermio.c_lflag, ptermio.c_oflag, ptermio.c_iflag);
       write(logfd, pbuff, strlen(pbuff));
     }
 #endif
@@ -295,10 +296,14 @@ main(int argc, char *argv[])
         /* now do the printing to the screen */
         if(MODE!= CLEFRAW) {
             back_up_and_blank(buff_pntr);
-            write(1,out_buff, num_read);
+            if (write(1, out_buff, num_read) == -1) {
+              perror("clef write stdout");
+            }
             print_whole_buff();    /* reprint the input buffer */
         } else {
-            write(1,out_buff, num_read);
+            if (write(1, out_buff, num_read) == -1) {
+              perror("clef write stdout");
+            }
         }
       }
     } /* done the child stuff */
@@ -312,7 +317,9 @@ main(int argc, char *argv[])
 #endif
         check_flip();
         if(MODE == CLEFRAW )
-          write(contNum, in_buff, num_read);
+          if (write(contNum, in_buff, num_read) == -1) {
+            perror("clef write child");
+          }
         else
           do_reading();
       }
@@ -479,7 +486,7 @@ static void
 catch_signals(void)
 {
 #ifdef siglog
-  sprintf(sigbuff, "/tmp/csig%d", getpid());
+  snprintf(sigbuff, sizeof(sigbuff), "/tmp/csig%d", getpid());
   sigfile = open(sigbuff, O_RDWR | O_TRUNC | O_CREAT);
   write(sigfile, "Started \n", strlen("Started \n"));
   close(sigfile);

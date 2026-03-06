@@ -77,23 +77,23 @@ print_page_and_filename(void)
          * Now try to inform the user as close to possible where the error
          * occurred
          */
-        fricas_sprintf_to_buf3(obuff,
+        fricas_snprintf_to_buf3(obuff,
                 "(HyperDoc) While parsing %s on line %d\n\tin the file %s\n",
                 gPageBeingParsed->name, line_number,
                 gPageBeingParsed->filename);
     }
     else if (gPageBeingParsed->type == SpadGen) {
-        fricas_sprintf_to_buf1(obuff,
+        fricas_snprintf_to_buf1(obuff,
                 "While parsing %s from the Spad socket\n",
                 gPageBeingParsed->name);
     }
     else if (gPageBeingParsed->type == Unixfd) {
-        fricas_sprintf_to_buf1(obuff, "While parsing %s from a Unix pipe\n",
+        fricas_snprintf_to_buf1(obuff, "While parsing %s from a Unix pipe\n",
                 gPageBeingParsed->name);
     }
     else {
         /* Unknown page type */
-        fricas_sprintf_to_buf1(obuff, "While parsing %s\n",
+        fricas_snprintf_to_buf1(obuff, "While parsing %s\n",
                                gPageBeingParsed->name);
     }
     fprintf(stderr, "%s", obuff);
@@ -186,7 +186,7 @@ token_name(int type)
             strcpy(ebuffer, "~");
             break;
           case Cond:
-            sprintf(ebuffer, "\\%s", token.id);
+            snprintf(ebuffer, sizeof(ebuffer), "\\%s", token.id);
             break;
           case Icorrection:
             strcpy(ebuffer, "\\/");
@@ -198,7 +198,7 @@ token_name(int type)
             strcpy(ebuffer, "\\begin{patch}");
             break;
           default:
-            sprintf(ebuffer, " %d ", type);
+            snprintf(ebuffer, sizeof(ebuffer), " %d ", type);
         }
         /*return 1;*/
     }
@@ -211,10 +211,10 @@ htperror(char *msg, int err_no)
     /* The first thing I do is create the error message */
 
     if (err_no <= Numerrors) {
-        fricas_sprintf_to_buf2(obuff, "%s:%s\n", msg, errmess[err_no]);
+        fricas_snprintf_to_buf2(obuff, "%s:%s\n", msg, errmess[err_no]);
     }
     else {
-        fricas_sprintf_to_buf1(obuff, "%s:\n", msg);
+        fricas_snprintf_to_buf1(obuff, "%s:\n", msg);
         fprintf(stderr, "Unknown error type %d\n", err_no);
     }
     fprintf(stderr, "%s", obuff);

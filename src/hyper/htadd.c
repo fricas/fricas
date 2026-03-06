@@ -214,16 +214,16 @@ build_db_filename(short flag, char *db_dir, char *dbfilename)
             fprintf(stderr, "build_db_filename: $FRICAS is empty\n");
             exit(-1);
         }
-        sprintf(dbfilename, "%s/share/hypertex/pages/%s", SPAD, db_file_name);
-        sprintf(path, "%s/share/hypertex/pages", SPAD);
+        snprintf(dbfilename, 2048, "%s/share/hypertex/pages/%s", SPAD, db_file_name);
+        snprintf(path, sizeof(path), "%s/share/hypertex/pages", SPAD);
     }
     else if (flag & Named) {
-        sprintf(dbfilename, "%s/%s", db_dir, db_file_name);
+        snprintf(dbfilename, 2048, "%s/%s", db_dir, db_file_name);
         strcpy(path, db_dir);
     }
     else {                      /* use the current directory */
-        sprintf(dbfilename, "./%s", db_file_name);
-        sprintf(path, "./");
+        snprintf(dbfilename, 2048, "./%s", db_file_name);
+        snprintf(path, sizeof(path), "./");
     }
 /*    fprintf(stderr,"htadd:build_db_filename:dbfilename=%s\n",dbfilename);*/
     /* Now see if I can write to the file  */

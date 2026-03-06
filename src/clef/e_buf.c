@@ -2,6 +2,7 @@
 
 #include <unistd.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "e_buf.h"
 
@@ -137,7 +138,9 @@ buff_cmp(char *s) {
 
 void
 write_buff(int fd) {
-    write(fd, buff, buff_pntr);
+    if (write(fd, buff, buff_pntr) == -1) {
+        perror("write_buff");
+    }
 }
 
 void

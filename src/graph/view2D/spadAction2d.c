@@ -232,11 +232,11 @@ spadAction(void)
     readViewman(&i2,intSize);           /* slot to drop graph onto 0..8*/
     readViewman(&viewGoAhead,intSize);
     if (viewGoAhead < 0) {
-      fricas_sprintf_to_buf2(control->message, "%s%d",
+      fricas_snprintf_to_buf2(control->message, "%s%d",
                              "Couldn't put into graph ", i2 + 1);
       writeControlMessage();
     } else {
-      fricas_sprintf_to_buf2(control->message, "%s%d",
+      fricas_snprintf_to_buf2(control->message, "%s%d",
                              "Dropped onto graph ", i2 + 1);
       writeControlMessage();
       freeGraph(i2);

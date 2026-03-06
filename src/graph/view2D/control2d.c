@@ -100,13 +100,13 @@ makeMessageFromData(int whichGraph)
     if ((graphStateArray[whichGraph].scaleX) > 99.0) {
       strcpy(scaleXReport,"big");
     } else {
-      fricas_sprintf_to_buf1(scaleXReport, "%4.1f",
+      fricas_snprintf_to_buf1(scaleXReport, "%4.1f",
                              graphStateArray[whichGraph].scaleX);
     }
     if ((graphStateArray[whichGraph].scaleY) > 99.0) {
       strcpy(scaleYReport,"big");
     } else {
-      fricas_sprintf_to_buf1(scaleYReport, "%4.1f",
+      fricas_snprintf_to_buf1(scaleYReport, "%4.1f",
                              graphStateArray[whichGraph].scaleY);
     }
     if ((graphStateArray[whichGraph].centerX) > 999.0) {
@@ -114,7 +114,7 @@ makeMessageFromData(int whichGraph)
     } else if ((graphStateArray[whichGraph].centerX) < -999.0) {
       strcpy(deltaXReport,"-big");
     } else {
-      fricas_sprintf_to_buf1(deltaXReport, "%4.0f",
+      fricas_snprintf_to_buf1(deltaXReport, "%4.0f",
               -graphStateArray[whichGraph].centerX /
               graphArray[whichGraph].unitX);
     }
@@ -123,12 +123,14 @@ makeMessageFromData(int whichGraph)
     } else if ((graphStateArray[whichGraph].centerY) < -999.0) {
       strcpy(deltaYReport,"-big");
     } else {
-      fricas_sprintf_to_buf1(deltaYReport, "%4.0f",
+      fricas_snprintf_to_buf1(deltaYReport, "%4.0f",
               -graphStateArray[whichGraph].centerY /
               graphArray[whichGraph].unitY);
     }
-    sprintf(viewport->controlPanel->message,"[%s,%s] >%d< [%s,%s]",
-            scaleXReport,scaleYReport,whichGraph+1,deltaXReport,deltaYReport);
+    snprintf(viewport->controlPanel->message,
+         sizeof(viewport->controlPanel->message),
+         "[%s,%s] >%d< [%s,%s]",
+         scaleXReport,scaleYReport,whichGraph+1,deltaXReport,deltaYReport);
   }  /* if haveControl */
 
 } /* makeMessageFromData() */

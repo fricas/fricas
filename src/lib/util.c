@@ -158,7 +158,7 @@ readViewman(void *info, int size)
   int m = 0;
   char errorStr[80];
 
-  fricas_sprintf_to_buf3(errorStr, "%s %d %s", "read of ", size,
+  fricas_snprintf_to_buf3(errorStr, "%s %d %s", "read of ", size,
                          " bytes from viewport manager\n");
   m = check(read(0, info, size));
 
@@ -176,7 +176,7 @@ readViewmanStr(char *buf, int size, int buf_size)
   int m = 0;
   char errorStr[80];
 
-  fricas_sprintf_to_buf3(errorStr, "%s %d %s", "read of ", size,
+  fricas_snprintf_to_buf3(errorStr, "%s %d %s", "read of ", size,
                          " bytes from viewport manager\n");
   if (size < buf_size) {
     m = check(read(0, buf, size));

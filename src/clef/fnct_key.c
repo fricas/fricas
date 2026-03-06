@@ -78,7 +78,7 @@ set_editor_key(void)
 {
     int pid;
 
-    fricas_sprintf_to_buf1(editorfilename, "/tmp/clef%d", pid = getpid());
+    fricas_snprintf_to_buf1(editorfilename, "/tmp/clef%d", pid = getpid());
 
     if (function_key[12].str == NULL) {
         (function_key[12]).type = SPECIAL;
@@ -107,7 +107,7 @@ define_function_keys(void) {
     }
     /** see if the user has a .clef file       ***/
     HOME = getenv("HOME");
-    sprintf(path, "%s/.clef", HOME);
+    snprintf(path, sizeof(path), "%s/.clef", HOME);
     if ((fd = open(path, O_RDONLY)) == -1) {
         return;
     } else {
@@ -149,7 +149,7 @@ define_function_keys(void) {
             if (type != -1) {
                 (function_key[key]).str =
                     (char *) malloc(strlen(string) + 1);
-                sprintf((function_key[key]).str, "%s", string);
+                snprintf((function_key[key]).str, strlen(string) + 1, "%s", string);
             }
         }
     }
@@ -194,14 +194,20 @@ get_str(int fd,char * string) {
     int count = 0;
     char *trace = string;
 
-    read(fd, &c, 1);
+    if (read(fd, &c, 1) != 1) {
+        *trace = '\0';
+        return 0;
+    }
     while (c == ' ') {
-        read(fd, &c, 1);
+        if (read(fd, &c, 1) != 1) {
+            *trace = '\0';
+            return count;
+        }
     }
     while (c != '\n') {
         count++;
         *trace++ = c;
-        if (read(fd, &c, 1) == 0) {
+        if (read(fd, &c, 1) != 1) {
             break;
         }
     }

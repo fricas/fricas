@@ -397,7 +397,7 @@ kill_fricas_page(HyperDocPage * page)
 {
     char command[2048];
 
-    sprintf(command, "(|htpDestroyPage| '%s)", page->name);
+    snprintf(command, sizeof(command), "(|htpDestroyPage| '%s)", page->name);
     send_lisp_command(command);
 }
 
