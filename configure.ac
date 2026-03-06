@@ -4,6 +4,9 @@ AC_INIT([FriCAS], [2025.12.23git],
         [fricas],
         [https://fricas.github.io])
 
+# Copyright year for web documentation
+PACKAGE_YEAR=2026
+
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([config/fricas_c_macros.h])
@@ -779,6 +782,8 @@ if test x"$fricas_has_xpm" = xyes; then
                    ],
                    [AC_MSG_NOTICE([HyperDoc is disabled.])])
 fi
+
+AC_SUBST(PACKAGE_YEAR)
 # We need the Makefile (for util.ht) even if we do not build HyperDoc.
 FRICAS_MAKEFILE([src/hyper/Makefile])
 FRICAS_MAKEFILE([src/doc/Makefile])

@@ -58,7 +58,7 @@ Other resources
 
 * `Language Differences <http://wiki.fricas.org/LanguageDifferences>`_
 
-* `The )set command <fricas-notebooks/system-command-set.html>`_
+* `The )set command <https://fricas.github.io/fricas-notebooks/system-command-set.html>`_
 
 * `Aldor User Guide <http://www.aldor.org/docs/aldorug.pdf>`_
 

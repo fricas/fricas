@@ -14,31 +14,39 @@ contributed to |FriCAS| since its fork from the Axiom code base in 2007
 * Broadbery, Peter
 * Bourquin, Raoul
 * Chapoton, Frédéric
+* Cyganski, David
 * Daly, Tim
 * Dos Reis, Gabriel
 * Einstein, David
 * Fauser, Bertfried
 * Grabmeier, Johannes
+* Grozin, Andrey
 * Guida, Riccardo
-* `Hebisch, Waldek <http://www.math.uni.wroc.pl/~hebisch/>`_ (lead developer)
+* `Hebisch, Waldek <https://fricas.org/~hebisch/>`_ (lead developer)
 * `Hemmecke, Ralf <http://www.hemmecke.org>`_
 * Joswig, Rainer
+* Kostyaev, Sergey
 * Lehner, Franz
 * Maltey, Francois
+* Maguire, Camm
 * van Oostrum, Piet
+* Onions, Paul
 * Ortiz-Zuazaga, Humberto
 * Pagani, Kurt
 * Page, Bill
+* Pasechnik, Dima
 * Portes, Alfredo
 * Ralfs, Arthur C.
 * Raportirenko, Anatoly
 * Rioboo, Renaud
 * Rubey, Martin
+* Sajko, Neven
 * Sarnitskiy, Grigory
 * Saushev, Aleksej
 * Schrempf, Konrad
 * Solovets, Alexander
 * Smith, Robert
+* Strong, Hill
 * Vanuxem, Gregory
 * Wilson, Stephen
 * Yun, Qian
