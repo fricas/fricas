@@ -1239,8 +1239,8 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
         for x in shortlist repeat
             i := i+1
             if x ~= 0 then
-                newlist := cons(x/retract(eval(zeros, xx::EXPRR, i::EXPRR))@F,
-                                newlist)
+                vi := retract(eval(zeros, xx::EXPRR, i::EXPRR))@Integer
+                newlist := cons(x/(vi::F), newlist)
                 xValues := cons(i, xValues)
 
         newlist := reverse newlist
@@ -3805,7 +3805,11 @@ GuessFiniteFunctions(F : Join(FiniteFieldCategory, ConvertibleTo Integer)):
     Implementation == add
 
       F2EXPRR(p : F) : EXPRR == convert(p)@Integer::EXPRR
-      EXPRR2F(p : EXPRR) : F == retract(p)@Fraction(Integer)::F
+
+      expr_to_F(p : EXPRR) : F == (retract(p)@Integer)::F
+
+      EXPRR2F(p : EXPRR) : F ==
+          expr_to_F(numer(p)::EXPRR)/expr_to_F(denom(p)::EXPRR)
 
 
 )abbrev package GUESSF GuessFinite
