@@ -44,11 +44,11 @@ upDEF t ==
   t isnt [op,def,pred,.] => nil
   v:=addDefMap(['DEF,:def],pred)
   null(LISTP(def)) or null(def) =>
-    keyedSystemError("S2GE0016",['"upDEF",'"bad map definition"])
+        unexpected_error(['"upDEF", '"bad map definition"])
   mapOp := first def
   if LISTP(mapOp) then
     null mapOp =>
-      keyedSystemError("S2GE0016",['"upDEF",'"bad map definition"])
+          unexpected_error(['"upDEF", '"bad map definition"])
     mapOp := first mapOp
   putIntSymTab(mapOp, 'value, v, $e)
   putValue(op,objNew(voidValue(), $Void))
@@ -100,8 +100,8 @@ upDollar t ==
 
   (ms := upDollarTuple(op, f, t, t2, rest form, nargs)) => ms
 
-  f ~= 'construct and null isOpInDomain(f,t,nargs) =>
-    throwKeyedMsg("S2IS0023",[f,t])
+  f ~= 'construct and null isOpInDomain(f,t,nargs) => throw_msg("S2IS0023",
+        '"The function %1b is not implemented in %2bp ", [f,t])
   if (sig := findCommonSigInDomain(f,t,nargs)) then
     for x in sig for y in form repeat
       if x then putTarget(y,x)
@@ -284,7 +284,7 @@ IFcodeTran(code,m,m1) ==
     m = $Void => code
     code' := coerceInteractive(objNew(quote2Wrapped code,m1),m) =>
       wrapped2Quote objVal code'
-    throwKeyedMsgCannotCoerceWithValue(quote2Wrapped code,m1,m)
+    throwMsgCannotCoerceWithValue(quote2Wrapped(code), m1, m)
   a1:=IFcodeTran(a1,m,m1)
   a2:=IFcodeTran(a2,m,m1)
   ['COND,[p1,a1],[''T,a2]]
@@ -326,7 +326,7 @@ upisAndIsnt(t:=[op,a,pattern]) ==
   -- handler for "is" pattern matching
   mS:= bottomUp a
   mS isnt [m] =>
-    keyedSystemError("S2GE0016",['"upisAndIsnt",'"non-unique modeset"])
+        unexpected_error(['"upisAndIsnt",'"non-unique modeset"])
   putPvarModes(removeConstruct pattern,m)
   evalis(op,rest t,m)
   putModeSet(op,[$Boolean])
@@ -435,8 +435,7 @@ isPatMatch(l,pats) ==
       isPatMatch(DROP(m,l),restPats)
     isPatMatch(first l,pat) = 'failed => 'failed
     isPatMatch(rest l,restPats)
-  keyedSystemError("S2GE0016",['"isPatMatch",
-     '"unknown form of is predicate"])
+  unexpected_error(['"isPatMatch", '"unknown form of is predicate"])
 
 --% Handler for iterate
 
@@ -555,7 +554,7 @@ evalLET(lhs,rhs) ==
           '" the type %1bp of the left-hand side."), [t2])
     t2 and objNew(($genValue => wrap timedEVALFUN v ; v),t2)
   value => evalLETput(lhs,value)
-  throwKeyedMsgCannotCoerceWithValue(objVal v,t1,getMode lhs)
+  throwMsgCannotCoerceWithValue(objVal(v), t1, getMode(lhs))
 
 evalLETput(lhs,value) ==
   -- put value into the cell for lhs
@@ -892,8 +891,7 @@ transformREPEAT [:itrl,body] ==
     it is [op,b] and (op in '(UNTIL VALUE)) =>
       [[op,mkAtree1 b]]
     it is ['_|,pred] => nil
-    keyedSystemError("S2GE0016",
-      ['"transformREPEAT",'"Unknown type of iterator"])
+    unexpected_error(['"transformREPEAT", '"Unknown type of iterator"])
   [:iterList,bodyTree]
 
 upREPEAT t ==
@@ -995,7 +993,7 @@ interpLoopIter(exp,indexList,indexVals,indexTypes,requiredType) ==
     null requiredType => v
     coerceInteractive(v,requiredType)
   null val =>
-    throwKeyedMsgCannotCoerceWithValue(objVal v,objMode v,requiredType)
+        throwMsgCannotCoerceWithValue(objVal(v), objMode(v), requiredType)
   objValUnwrap val
 
 --% Handler for return
@@ -1032,8 +1030,7 @@ upSEQ u ==
   if (target := getTarget(op)) then putTarget(last args, target)
   for x in args repeat bottomUp x
   null (m := computedMode last args) =>
-    keyedSystemError("S2GE0016",['"upSEQ",
-      '"last line of SEQ has no mode"])
+        unexpected_error(['"upSEQ", '"last line of SEQ has no mode"])
   evalSEQ(op,args,m)
   putModeSet(op,[m])
 

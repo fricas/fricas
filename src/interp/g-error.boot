@@ -168,7 +168,6 @@ sayErrorly1(errorLabel, msg) ==
     mathprint mathexpr
   sayBrightly msg
 
--- systemError is being phased out. Please use keyedSystemError.
 systemError(x) == errorSupervisor($SystemError, x)
 
 userError x == errorSupervisor($UserError,x)

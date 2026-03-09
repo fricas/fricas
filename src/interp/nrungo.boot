@@ -45,7 +45,7 @@ compiledLookupCheck(op,sig,dollar) ==
   fn := compiledLookup(op,sig,dollar)
 
   fn = nil =>
-    keyedSystemError("S2NR0001",[op,formatSignature sig,dollar.0])
+        report_bad_fun([op, formatSignature(sig), dollar.0])
   fn
 
 --=======================================================
@@ -207,9 +207,11 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
   or/[null INTEGERP n for n in specialValues] => false
   minIndex:= "MIN"/specialValues
   not (and/[i=x for i in minIndex..(minIndex+n-1) for x in specialValues]) =>
-    sayKeyedMsg("S2IX0005",
-      ["append"/[['" ",sv]  for sv in specialValues]])
-    return nil
+        say_msg("S2IX0005", CONCAT(
+            '"Recurrence relation must give consecutive special values.",
+            '" Given values are: %l %1"),
+            ["append"/[['" ",sv]  for sv in specialValues]])
+        return nil
 
   --Determine the order k of the recurrence and index n of first general term
   k:= #specialValues
@@ -236,7 +238,9 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
           is_op_slot(lt_slot, dom, slot, minivectorName, integer, bf_vec) => m
     return nil
   INTEGERP predOk and predOk ~= n =>
-    sayKeyedMsg("S2IX0006",[n,m])
+    say_msg("S2IX0006",
+      '"Wrong predicate for general term of recurrence: should be %1b not %2b",
+      [n, m])
     return nil
 
   --Check general term for references to just the k previous values

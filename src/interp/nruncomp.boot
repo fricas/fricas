@@ -69,7 +69,8 @@ deltaTran(item,compItem) ==
   sig := substitute('%, dc, substitute("$$", '%,sig))
   dcCode :=
     dc = '% => 0
-    NRTassocIndex dc or keyedSystemError("S2NR0004",[dc])
+    NRTassocIndex(dc) or system_error("S2NR0004",
+        '"Cannot find domain in template: %1s", [dc])
   formalSig:= SUBLISLIS($FormalMapVariableList,$formalArgList,sig)
   kindFlag:= (kind = 'CONST => 'CONST; nil)
   newSig := [NRTassocIndex x or x for x in formalSig]
@@ -793,7 +794,7 @@ NRTaddInner(x, e) ==
     getConstructorSignature x is [., :ml] =>
         for y in rest x for m in ml | not (y = '%) repeat
             isCategoryForm(m) => NRTinnerGetLocalIndex(y, e)
-    keyedSystemError("S2NR0003", [x])
+    system_error("S2NR0003", '"Error while instantiating type %1b", [x])
   x
 
 -- NRTaddInner should call following function instead of NRTgetLocalIndex

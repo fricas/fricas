@@ -450,10 +450,12 @@ getTraceOptions options ==
   optionList:= [getTraceOption x for x in options]
   $traceErrorStack =>
     null rest $traceErrorStack =>
-      [key,parms] := first $traceErrorStack
-      throwKeyedMsg(key,['"",:parms])
-    throwListOfKeyedMsgs("S2IT0017",[# $traceErrorStack],
-      NREVERSE $traceErrorStack)
+      [key, msg, args] := first($traceErrorStack)
+      throw_msg(key, msg, ['"", :args])
+    throw_msg_list("S2IT0017",
+            '"There are %1b problems with your %b )trace %d system command:",
+            [# $traceErrorStack],
+            NREVERSE($traceErrorStack))
   optionList
 
 saveMapSig(funNames) ==
@@ -476,50 +478,64 @@ getTraceOption (x is [key,:l]) ==
     null l => ['break,'before]
     opts := [selectOptionLC(y,'(before after),NIL) for y in l]
     and/[IDENTP y for y in opts] => ['break,:opts]
-    stackTraceOptionError ["S2IT0008",NIL]
-  key='restore =>
-    null l => x
-    stackTraceOptionError ["S2IT0009",[STRCONC('")",object2String key)]]
+    stack_trace_option_error("S2IT0008", CONCAT(
+            '"%1 The %b )trace %d option %b )break %d can only have one",
+            '" or both of %b before %d and %b after %d as arguments."), [])
+  key='restore or key='mathprint =>
+        null l => x
+        stack_trace_option_error("S2IT0009",
+            '"%1 The %b )trace %d option %2b can have no arguments.",
+            [STRCONC('")", object2String(key))])
   key='only => ['only,:transOnlyOption l]
   key='within =>
-    l is [a] and IDENTP a => x
-    stackTraceOptionError ["S2IT0010",['")within"]]
+        l is [a] and IDENTP a => x
+        stack_trace_option_error("S2IT0010", CONCAT(
+            '"%1 The %b )trace %d option %2b takes exactly one name",
+            '" as an argument."), ['")within"])
   MEMQ(key,'(cond before after)) =>
-    key:=
-      key="cond" => "when"
-      key
-    l is [a] => [key,:l]
-    stackTraceOptionError ["S2IT0011",[STRCONC('")",object2String key)]]
-  key='depth =>
-    l is [n] and FIXP n => x
-    stackTraceOptionError ["S2IT0012",['")depth"]]
-  key='count =>
-    (null l) or (l is [n] and FIXP n) => x
-    stackTraceOptionError ["S2IT0012",['")count"]]
+    l is [a] =>
+        key:=
+            key="cond" => "when"
+            key
+        [key,:l]
+    stack_trace_option_error("S2IT0011", CONCAT(
+        '"%1 The %b )trace %d option %2b takes exactly one",
+        '" expression as an argument."), [STRCONC('")", object2String(key))])
+  key='depth or key='count =>
+        (key='count and null(l)) or l is [n] and FIXP n => x
+        stack_trace_option_error("S2IT0012", CONCAT(
+            '"%1 The %b )trace %d option %2b takes exactly one integer",
+            '" argument."), ['")depth"])
   key="of" =>
-    ["of",:[hn y for y in l]] where
-      hn x ==
-        atom x and not UPPER_-CASE_-P (STRINGIMAGE x).(0) =>
-          isDomainOrPackage EVAL x => x
-          stackTraceOptionError ["S2IT0013",[x]]
-        g:= domainToGenvar x => g
-        stackTraceOptionError ["S2IT0013",[x]]
+        ["of", :[hn(y) for y in l]] where hn(x) ==
+            res :=
+                atom x and not UPPER_-CASE_-P (STRINGIMAGE x).(0) =>
+                    isDomainOrPackage EVAL x => x
+                    false
+                domainToGenvar x
+            res => res
+            stack_trace_option_error("S2IT0013", CONCAT(
+                '"%1 The %b )trace %d option %b )of %d should be followed",
+                '" by the name of a domain and %2b is not one."), [x])
   MEMQ(key,'(local ops vars)) =>
     null l or l is ["all"] => [key,:"all"]
     isListOfIdentifiersOrStrings l => x
-    stackTraceOptionError ["S2IT0015",[STRCONC('")",object2String key)]]
+    stack_trace_option_error("S2IT0015", CONCAT(
+            '"%1 The %b )trace %d option %2b should be followed by a",
+            '" list of names."), [STRCONC('")", object2String(key))])
   key='varbreak =>
     null l or l is ["all"] => ["varbreak",:"all"]
     isListOfIdentifiers l => x
-    stackTraceOptionError ["S2IT0016",[STRCONC('")",object2String key)]]
-  key='mathprint =>
-    null l => x
-    stackTraceOptionError ["S2IT0009",[STRCONC('")",object2String key)]]
+    stack_trace_option_error("S2IT0016", CONCAT(
+            '"%1 The %b )trace %d option %2b should be followed by a",
+            '" list of variable names."), [STRCONC('")", object2String(key))])
   key => throw_msg("S2IT0005", '"The %1b option is not implemented yet.",
                    [key])
 
-traceOptionError(opt,keys) ==
-  null keys => stackTraceOptionError ["S2IT0007",[opt]]
+traceOptionError(opt, keys) ==
+  null(keys) => stack_trace_option_error("S2IT0007", CONCAT(
+        '"%1 FriCAS does not understand the %b )trace %d option %2b",
+        '" which you used."), [opt])
   commandAmbiguityError('"trace option",opt,keys)
 
 resetTimers () ==
@@ -547,12 +563,14 @@ transOnlyOption l ==
   l is [n,:y] =>
     FIXP n => [n,:transOnlyOption y]
     MEMQ(n:= UPCASE n,'(V A C)) => [n,:transOnlyOption y]
-    stackTraceOptionError ["S2IT0006",[n]]
+    stack_trace_option_error("S2IT0006", CONCAT(
+            '"%1 The %b )trace %d option %b )only %d does not permit",
+            '" %2b as a legal option."), [n])
     transOnlyOption y
   nil
 
-stackTraceOptionError x ==
-  $traceErrorStack:= [x,:$traceErrorStack]
+stack_trace_option_error(key, msg, args) ==
+  $traceErrorStack:= [[key, msg, args], :$traceErrorStack]
   nil
 
 removeOption(op,options) ==

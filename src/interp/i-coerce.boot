@@ -81,7 +81,7 @@ spad2BootCoerce(x,source,target) ==
   null isValidType target => throwKeyedMsg("S2IE0004",[target])
   x' := coerceInteractive(objNewWrap(x,source),target) =>
     objValUnwrap(x')
-  throwKeyedMsgCannotCoerceWithValue(wrap x,source,target)
+  throwMsgCannotCoerceWithValue(wrap(x), source, target)
 
 --%  Functions for Coercion or Else We'll Get Rough
 
@@ -101,10 +101,10 @@ coerceOrCroak(triple, t, mapName) ==
   t' := coerceOrConvertOrRetract(triple,t)
   t' => objValUnwrap(t')
   mapName = 'noMapName =>
-    throwKeyedMsgCannotCoerceWithValue(objVal triple,objMode triple, t)
+        throwMsgCannotCoerceWithValue(objVal(triple), objMode(triple), t)
   say_msg("S2IC0005", '"Conversion failed in the compiled user function %1b .",
           [mapName])
-  throwKeyedMsgCannotCoerceWithValue(objVal triple,objMode triple, t)
+  throwMsgCannotCoerceWithValue(objVal(triple), objMode(triple), t)
 
 coerceOrThrowFailure(value, t1, t2) ==
   (result := coerceOrRetract(objNewWrap(value, t1), t2)) or
@@ -563,8 +563,7 @@ canCoerceUnion(t1,t2) ==
   t1 is ['Union,d1, ='"failed"] and t2 = d1 => true
   isUnion1 =>
     and/[canCoerce(ud,t2) for ud in unionDoms1]
-  keyedSystemError("S2GE0016",['"canCoerceUnion",
-     '"called with 2 non-Unions"])
+  unexpected_error(['"canCoerceUnion", '"called with 2 non-Unions"])
 
 canCoerceByMap(t1,t2) ==
   -- idea is this: if t1 is D U1 and t2 is D U2, then look for
@@ -1337,7 +1336,7 @@ catchCoerceFailure(fn,x,t1,t2) ==
   -- compiles a catchpoint for compiling boot coercions
   c:= CATCH('coerceFailure,FUNCALL(fn,x,t1,t2))
   c = $coerceFailure =>
-    throwKeyedMsgCannotCoerceWithValue(wrap unwrap x,t1,t2)
+        throwMsgCannotCoerceWithValue(wrap(unwrap(x)), t1, t2)
   c
 
 coercionFailure() ==

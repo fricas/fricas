@@ -159,7 +159,8 @@ DescendCodeAdd(base, flag, kvec, e) ==
          then formalArgs:= take(#formalArgModes,$FormalMapVariableList)
                 --argument substitution if parameterized?
 
-         else keyedSystemError("S2OR0001",[opOf base])
+         else system_error("S2OR0001",
+                           '"Category or domain %1b not known.", [opOf base])
       DescendCodeAdd1(base, flag, target, formalArgs, formalArgModes, kvec, e)
   for [[[.,:formalArgs],target,:formalArgModes],.] in modemap repeat
       (ans := DescendCodeAdd1(base, flag, target, formalArgs,
@@ -319,7 +320,7 @@ SetFunctionSlots(sig, body, flag, kvec) ==
               not $SetFunctions.index=>flag --JHD didn't set $SF on this branch
               ["or",$SetFunctions.index,flag]
       else
-          keyedSystemError("S2OR0002",[catImplem])
+          system_error("S2OR0002", '"Unknown implementation: %1s". [catImplem])
   body is ['SETELT,:.] => body
   body is ['QSETREFV,:.] => body
   nil

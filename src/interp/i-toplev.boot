@@ -142,20 +142,21 @@ interpsysInitialization(display_messages) ==
   initNewWorld()
   open_interp_db(display_messages)
   createInitializers()
-  if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"interpreter"])
+  init_msg := '"FriCAS initialization: %1b"
+  if $displayStartMsgs then say_msg("S2IZ0053", init_msg, ['"interpreter"])
   initializeTimedNames()
   $InteractiveFrame := makeInitialModemapFrame()
   initializeInterpreterFrameRing()
   setOutputAlgebra "%initialize%"
   loadExposureGroupData()
-  if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"database"])
+  if $displayStartMsgs then say_msg("S2IZ0053", init_msg, ['"database"])
   mkLowerCaseConTable()
   if not $ruleSetsInitialized then initializeRuleSets()
-  if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"constructors"])
+  if $displayStartMsgs then say_msg("S2IZ0053", init_msg, ['"constructors"])
   makeConstructorsAutoLoad()
   GCMSG(NIL)
   SETQ($IOindex,1)
-  if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"history"])
+  if $displayStartMsgs then say_msg("S2IZ0053", init_msg, ['"history"])
   initHist()
   if $displayStartMsgs then spadStartUpMsgs()
   $superHash := MAKE_HASHTABLE('EQUAL)
@@ -289,18 +290,19 @@ printType(x, m) ==  -- m is the mode/type of the result
     m' := objMode x'
     m := ['Union, :[arg for arg in argl | sameUnionBranch(arg, m')], '"..."]
   if $printTypeIfTrue then
+    type_msg := '"%rjon Type: %1 %rjoff"
     type_string := outputDomainConstructor(m)
     $collectOutput =>
         $outputLines :=
-            [justifyMyType msgText("S2GL0012", [type_string]), :$outputLines]
-    sayKeyedMsg("S2GL0012", [type_string])
+            [justifyMyType msgText(type_msg, [type_string]), :$outputLines]
+    say_msg("S2GL0012", type_msg, [type_string])
 
 sameUnionBranch(uArg, m) ==
   uArg is [":", ., t] => t = m
   uArg = m
 
-msgText(key, args) ==
-  msg := segmentKeyedMsg getKeyedMsg key
+msgText(msg, args) ==
+  msg := segmentKeyedMsg(msg)
   msg := substituteSegmentedMsg(msg,args)
   msg := flowSegmentedMsg(msg,$LINELENGTH,$MARGIN)
   concatenateStringList([STRINGIMAGE x for x in CDAR msg])
@@ -383,5 +385,5 @@ interpret2(object,m1,posnForm) ==
     systemErrorHere '"interpret2"
   m1 =>
     if (ans := coerceInteractive(object,m1)) then ans
-    else throwKeyedMsgCannotCoerceWithValue(x,m,m1)
+    else throwMsgCannotCoerceWithValue(x, m, m1)
   object

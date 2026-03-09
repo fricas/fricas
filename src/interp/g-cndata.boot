@@ -88,7 +88,8 @@ mkUserConstructorAbbreviation(c,a,type) ==
 
 abbQuery(x) ==
     abb := get_database(x, 'ABBREVIATION) =>
-        sayKeyedMsg("S2IZ0001", [abb, get_database(x, 'CONSTRUCTORKIND), x])
+        say_msg("S2IZ0001", '"%1b abbreviates %b %2 %3 %d",
+                [abb, get_database(x, 'CONSTRUCTORKIND), x])
     say_msg("S2IZ0003",
         '"%1b is neither a constructor name nor a constructor abbreviation.",
             [x])
@@ -109,7 +110,9 @@ constructorAbbreviationErrorCheck(c,a,typ) ==
       throw_error_msg('precompilation, "S2IL0006", _
    '"Abbreviations must have 8 or fewer characters and should be uppercase.",
           [])
-  if s ~= UPCASE s then throwKeyedMsg("S2IL0006",NIL)
+  if s ~= UPCASE s then throw_msg("S2IL0006",
+    '"Abbreviations must have 8 or fewer characters and should be uppercase.",
+    [])
   abb := get_database(c, 'ABBREVIATION)
   name := get_database(a, 'CONSTRUCTOR)
   type := get_database(c, 'CONSTRUCTORKIND)

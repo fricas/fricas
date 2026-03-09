@@ -153,10 +153,14 @@ commandUserLevelError(x,u) == userLevelErrorMessage("command",x,u)
 
 optionUserLevelError(x,u) == userLevelErrorMessage("option",x,u)
 
+say_user_level_msg(args) == say_msg("S2IZ0007", CONCAT(
+    '"Your user access level is %1b and this %2 is therefore not available.",
+    '" See the %b )set userlevel %d command for more information."), args)
+
 userLevelErrorMessage(kind,x,u) ==
   null u =>
-    sayKeyedMsg("S2IZ0007",[$UserLevel,kind])
-    terminateSystemCommand()
+        say_user_level_msg([$UserLevel, kind])
+        terminateSystemCommand()
   commandAmbiguityError(kind,x,u)
 
 commandError(x,u) == commandErrorMessage("command",x,u)
@@ -169,12 +173,14 @@ commandErrorIfAmbiguous(x, u) ==
 
 commandErrorMessage(kind,x,u) ==
   null u =>
-    sayKeyedMsg("S2IZ0008",[kind,x])
-    terminateSystemCommand()
+        say_Msg("S2IZ0008", '"No %1 begins with %2b .", [kind, x])
+        terminateSystemCommand()
   commandAmbiguityError(kind,x,u)
 
 commandAmbiguityError(kind,x,u) ==
-  sayKeyedMsg("S2IZ0009",[kind,x])
+  say_msg("S2IZ0009",
+        '"Your %1 is ambiguous. The following are abbreviated by %2b :",
+        [kind, x])
   for a in u repeat sayMSG ['"     ",:bright a]
   terminateSystemCommand()
 
@@ -213,7 +219,7 @@ abbreviationsSpad2Cmd l ==
       SETDATABASE(b,'ABBREVIATION,a)
       SETDATABASE(b,'CONSTRUCTORKIND,type)
     null quiet =>
-      sayKeyedMsg("S2IZ0001",[a,type,opOf b])
+      say_msg("S2IZ0001", '"%1b abbreviates %b %2 %3 %d", [a, type, opOf(b)])
       nil
   nil
 
@@ -240,6 +246,13 @@ cd(args) ==
 
 clear l == clearSpad2Cmd l
 
+say_clear_msg(args) == say_msg("S2IZ0010", CONCAT(
+    '"Use %b )clear all %d to clear everything in the workspace.  Use %b",
+    '" )clear completely %d to clear everything in the workspace and",
+    '" internal tables.  Other %b )clear %d keyword arguments are %1 %l",
+    '" or abbreviations thereof.  Issue %b )clear ? %d for more information."),
+    args)
+
 clearSpad2Cmd l ==
   -- new version which changes the environment and updates history
   $clearExcept: local := nil
@@ -248,7 +261,7 @@ clearSpad2Cmd l ==
              'except for [opt,:.] in $options]
   null l =>
     optList:= "append"/[['%l,'"       ",x] for x in $clearOptions]
-    sayKeyedMsg("S2IZ0010",[optList])
+    say_clear_msg([optList])
   arg := selectOptionLC(first l,'(all completely scaches),NIL)
   arg = 'all          => clearCmdAll()
   arg = 'completely   => clearCmdCompletely()
@@ -260,12 +273,14 @@ clearSpad2Cmd l ==
 clearCmdCompletely() ==
   clearCmdAll()
   $localExposureData := COPY_-SEQ $localExposureDataDefault
-  sayKeyedMsg("S2IZ0013",NIL)
+  say_msg("S2IZ0013",
+        '"All %b )browse %d facility databases have been cleared.", [])
   clearClams()
   clearConstructorCaches()
-  sayKeyedMsg("S2IZ0014",NIL)
+  say_msg("S2IZ0014",
+        '"Internally cached functions and constructors have been cleared.", [])
   RECLAIM()
-  sayKeyedMsg("S2IZ0015",NIL)
+  say_msg("S2IZ0015", '"%b )clear completely %d is finished.", [])
   NIL
 
 clearCmdAll() ==
@@ -285,8 +300,11 @@ clearCmdAll() ==
   updateCurrentInterpreterFrame()
   $currentLine := '")clear all"    --restored 3/94; needed for undo (RDJ)
   clearMacroTable()
-  if $frameMessages then sayKeyedMsg("S2IZ0011",[$interpreterFrameName])
-  else sayKeyedMsg("S2IZ0012",NIL)
+  if $frameMessages then say_msg("S2IZ0011", CONCAT(
+        '"All user variables and function definitions have been cleared",
+        '" in the current frame ( %1b )."), [$interpreterFrameName])
+  else say_msg("S2IZ0012",
+        '"All user variables and function definitions have been cleared.", [])
 
 clearCmdExcept(l is [opt,:vl]) ==
   --clears elements of vl of all options EXCEPT opt
@@ -435,7 +453,13 @@ compile args ==
     afe = '"spad" => compileSpad2Cmd  [af1]
     afe = '"asy" => compileAsharpArchiveCmd [af1]
 
-    throwKeyedMsg("S2IZ0039", nil)
+    throw_msg("S2IZ0039", CONCAT(
+        '"Only FriCAS source files with file extensions",
+        '" %b .as, .ao, .al, %d or %b .spad %d can be compiled."), [])
+
+unknown_compile_file(args) == throw_msg("S2IZ0036",
+    '"%1b is an unknown or unavailable for the %b )compile %d command.",
+    args)
 
 compileAsharpCmd args ==
     compileAsharpCmd1 args
@@ -490,7 +514,7 @@ compileAsharpCmd1 args ==
         fullopt = 'library   => doLibrary  := true
         fullopt = 'nolibrary => doLibrary  := false
 
-        throwKeyedMsg("S2IZ0036",[STRCONC('")",object2String optname)])
+        unknown_compile_file([STRCONC('")", object2String(optname))])
 
     tempArgs :=
         path_ext = '"ao" =>
@@ -515,7 +539,11 @@ compileAsharpCmd1 args ==
             s
         tempArgs
 
-    if not beQuiet then sayKeyedMsg("S2IZ0038A", [path, asharpArgs])
+    if not beQuiet then say_msg("S2IZ0038A", CONCAT(
+        '"Compiling FriCAS source code from file %1b using Aldor compiler",
+        '" and options %b %ceon %2 %ceoff %d . Use the system command",
+        '" %b )set compiler args %d to change these options."),
+        [path, asharpArgs])
 
     command :=
        STRCONC(getEnv('"ALDOR_COMPILER"),_
@@ -627,7 +655,7 @@ compileAsharpLispCmd args ==
         fullopt = 'library   => doLibrary  := true
         fullopt = 'nolibrary => doLibrary  := false
 
-        throwKeyedMsg("S2IZ0036",[STRCONC('")",object2String optname)])
+        unknown_compile_file([STRCONC('")", object2String(optname))])
 
     if fnameReadable?(path) then
         if not beQuiet then sayKeyedMsg("S2IZ0089", [path])
@@ -673,7 +701,7 @@ compileSpadLispCmd args ==
         fullopt = 'library   => doLibrary  := true
         fullopt = 'nolibrary => doLibrary  := false
 
-        throwKeyedMsg("S2IZ0036",[STRCONC('")",object2String optname)])
+        unknown_compile_file([STRCONC('")", object2String(optname))])
 
     if fnameReadable?(path) then
         if not beQuiet then sayKeyedMsg("S2IZ0089", [path])
@@ -1043,7 +1071,9 @@ helpSpad2Cmd args ==
 newHelpSpad2Cmd args ==
   if null args then args := ["?"]
   # args > 1 =>
-    sayKeyedMsg("S2IZ0026",NIL)
+    say_msg("S2IZ0026",
+            '"The %b )help %d system command supports at most one argument.",
+            [])
     true
   sarg := PNAME first args
   if sarg = '"?" then args := ['nullargs]
@@ -1113,11 +1143,14 @@ frameSpad2Cmd args ==
   NIL
 
 addNewInterpreterFrame(name) ==
-  null name => throwKeyedMsg("S2IZ0018",NIL)
+  null name => throw_msg("S2IZ0018",
+        '"You must provide a name for the new frame.", [])
   updateCurrentInterpreterFrame()
   -- see if we already have one by that name
   for f in $interpreterFrameRing repeat
-    name = frameName(f) => throwKeyedMsg("S2IZ0019",[name])
+    name = frameName(f) => throw_msg("S2IZ0019", CONCAT(
+            '"You cannot use the name %1b for a new frame because an",
+            '" existing frame already has that name."), [name])
   initHistList()
   $interpreterFrameRing := CONS(emptyInterpreterFrame(name),
     $interpreterFrameRing)
@@ -1141,8 +1174,14 @@ closeInterpreterFrame(name) ==
   -- if name = NIL then it means the current frame
   null rest $interpreterFrameRing =>
     name and (name ~= $interpreterFrameName) =>
-      throwKeyedMsg("S2IZ0020",[$interpreterFrameName])
-    throwKeyedMsg("S2IZ0021",NIL)
+      throw_msg("S2IZ0020", CONCAT(
+            '"There is only one frame active and therefore that cannot",
+            '" be closed. Furthermore, the frame name you gave is not the",
+            '" name of the current frame. The current frame is called %1b ."),
+            [$interpreterFrameName])
+    throw_msg("S2IZ0021", CONCAT(
+        '"The current frame is the only active one.  Issue %b )clear",
+        '" all %d to clear its contents."), [])
   if null name then $interpreterFrameRing := rest $interpreterFrameRing
   else   -- find the frame
     found := nil
@@ -1150,7 +1189,9 @@ closeInterpreterFrame(name) ==
     for f in $interpreterFrameRing repeat
       found or (name ~= frameName(f)) => ifr := CONS(f,ifr)
       found := true
-    not found => throwKeyedMsg("S2IZ0022",[name])
+    not found => throw_msg("S2IZ0022", CONCAT(
+            '"There is no frame called %1b and so your command cannot be",
+            '" processed."), [name])
     erase_lib(makeHistFileName(name))
     $interpreterFrameRing := nreverse ifr
   updateFromCurrentInterpreterFrame()
@@ -1234,7 +1275,9 @@ findFrameInRing(name) ==
 displayFrameNames() ==
   fs := "append"/[ ['%l,'"     ",:bright frameName f] for f in
     $interpreterFrameRing]
-  sayKeyedMsg("S2IZ0024",[fs])
+  say_msg("S2IZ0024", CONCAT(
+        '"The names of the existing frames are: %1 %l
+        '" The current frame is the first one listed."), [fs])
 
 importFromFrame args ==
   -- args should have the form [frameName,:varNames]
@@ -1922,9 +1965,13 @@ quit() == quitSpad2Cmd()
 
 quitSpad2Cmd() ==
   $quitCommandType ~= 'protected => leaveScratchpad()
-  x := UPCASE queryUserKeyedMsg("S2IZ0031",NIL)
+  x := UPCASE(query_user_msg("S2IZ0031", CONCAT(
+        '"Please enter %b y %d or %b yes %d if you really want to leave the",
+        '" interactive environment and return to the operating system:"), []))
   MEMQ(STRING2ID_N(x, 1), '(Y YES)) => leaveScratchpad()
-  sayKeyedMsg("S2IZ0032",NIL)
+  say_msg("S2IZ0032", CONCAT(
+        '"You have chosen to remain in the %b FriCAS %d
+        '" interactive environment."), [])
   terminateSystemCommand()
 
 leaveScratchpad () == QUIT()
@@ -1967,8 +2014,15 @@ readSpad2Cmd l ==
   downft := DOWNCASE(ft)
   not(member(downft, fileTypes)) =>
       fs := l
-      member(downft, devFTs) => throwKeyedMsg("S2IZ0033",[fs])
-      throwKeyedMsg("S2IZ0034", [fs])
+      member(downft, devFTs) => throw_msg("S2IZ0033", CONCAT(
+            '"You cannot %b )read %d the file %1b because your user-level",
+            '" is not high enough.  For more information about your",
+            '" user-level, issue %b )set userlevel %d ."), [fs])
+      throw_msg("S2IZ0034", CONCAT(
+            '"You cannot %b )read %d the file %1b because it is not",
+            '" suitable for reading by FriCAS.  Note that files with",
+            '" file extension %b .spad %d and %b .as %d can now only be",
+            '" compiled with the %b )compile %d system command."), [fs])
   do_read(ll, quiet, $nopiles)
 
 do_read(ll, quiet, pile_mode) ==
@@ -2041,7 +2095,9 @@ reportOperations(oldArg,u) ==
   unitForm' := evaluateType unitForm
   tree := mkAtree removeZeroOneDestructively unitForm
   (unitForm' := isType tree) => reportOpsFromUnitDirectly0 unitForm'
-  sayKeyedMsg("S2IZ0041",[unitForm])
+  say_msg("S2IZ0041", CONCAT(
+        '"It is not known what %1bp is, so no information about it can",
+        '" be displayed."), [unitForm])
 
 reportOpsFromUnitDirectly0 D ==
   $useEditorForShowOutput =>
@@ -2420,7 +2476,13 @@ whatSpad2Cmd l ==
   null l => reportWhatOptions()
   [key0,:args] := l
   key := selectOptionLC(key0,$whatOptions,nil)
-  null key => sayKeyedMsg("S2IZ0043",NIL)
+  null key => say_msg("S2IZ0043", CONCAT(
+        '"Your argument is not valid for the %b )what %d system command.",
+        '"  %l %l Use the %b )show %d system command to display the",
+        '" operations for a constructor.  Use the %b )display operations",
+        '" %d system command to see information about an operation.  These",
+        '" may be abbreviated to %b )sh %d and %b )d op %d , respectively."),
+        [])
   args := [fixpat p for p in args] where
     fixpat x ==
       x is [x',:.] => DOWNCASE x'
@@ -2615,6 +2677,10 @@ doSystemCommand1(string) ==
 doSystemCommand(string) ==
     CATCH('SPAD_READER, doSystemCommand1(string))
 
+say_invalid_args() ==
+    say_msg("S2IV0005", '"Your argument list is not valid.", [])
+    nil
+
 )if false
 The system commands given by the global variable
 [[|$noParseCommands|]]\cite{1} require essentially no
@@ -2635,17 +2701,15 @@ handleNoParseCommands(unab, string) ==
   spaceIndex := SEARCH('" ", string)
   unab = "lisp" =>
     if (null spaceIndex) then
-      sayKeyedMsg("S2IV0005", NIL)
-      nil
+            say_invalid_args()
     else nplisp(stripLisp string)
   unab = "boot" =>
     if (null spaceIndex) then
-      sayKeyedMsg("S2IV0005", NIL)
-      nil
+            say_invalid_args()
     else npboot(SUBSEQ(string, spaceIndex+1))
   unab = "system" =>
     if (null spaceIndex) then
-      sayKeyedMsg("S2IV0005", NIL)
+            say_invalid_args()
       nil
     else npsystem(unab, string)
   unab = "synonym" =>
@@ -2658,8 +2722,7 @@ handleNoParseCommands(unab, string) ==
                   pquit    _
                   credits  _
                   copyright )) =>
-    sayKeyedMsg("S2IV0005", NIL)
-    nil
+        say_invalid_args()
   funName := INTERN CONCAT('"np",STRING unab)
   FUNCALL(funName, SUBSEQ(string, spaceIndex+1))
 

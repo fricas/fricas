@@ -564,6 +564,9 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   nil
 
 --------------------> NEW DEFINITION (override in nrunfast.boot)
+report_bad_fun(args) == system_error("S2NR0001",
+    '"The function %1b with signature %2 is missing from domain %3b", args)
+
 replaceGoGetSlot env ==
   [thisDomain,index,:op] := env
   thisDomainForm := devaluate thisDomain
@@ -588,7 +591,7 @@ replaceGoGetSlot env ==
       ['nowhere,:goGetDomain]  --see newGetDomainOpTable
     sayBrightly concat('"Function: ",formatOpSignature(op,sig),
       '" is missing from domain: ",form2String goGetDomain.0)
-    keyedSystemError("S2NR0001",[op,sig,goGetDomain.0])
+    report_bad_fun([op, sig, goGetDomain.0])
   if $monitorNewWorld then
     sayLooking1(['"goget stuffing slot",:bright thisSlot,'"of "],thisDomain)
   SETELT(thisDomain,thisSlot,slot)
@@ -709,7 +712,8 @@ getFunctionFromDomain1(op, dc, target, args) ==
     for mm in nreverse p until b repeat
       [[.,:osig],nsig,:.] := mm
       b := compiledLookup(op,nsig,domain)
-    b or  throwKeyedMsg("S2IS0023",[op,dc])
+    b or  throw_msg("S2IS0023",
+        '"The function %1b is not implemented in %2bp .", [op, dc])
   throw_msg("S2IF0004", '"The function %1b cannot be found in %2bp .",
             [op, dc])
 

@@ -580,8 +580,8 @@ eltModemapFilter(name,mmList,e) ==
 
 substituteIntoFunctorModemap(argl,modemap is [[dc,:sig],:.],e) ==
   #dc~=#sig =>
-    keyedSystemError("S2GE0016",['"substituteIntoFunctorModemap",
-      '"Incompatible maps"])
+        unexpected_error(['"substituteIntoFunctorModemap",
+                          '"Incompatible maps"])
   #argl=#rest sig =>
                         --here, we actually have a functor form
     sig:= EQSUBSTLIST(argl,rest dc,sig)
@@ -1156,8 +1156,9 @@ compIs(["is",a,b],m,e) ==
 -- Type in returned triple is m when m is not $EmptyMode,
 -- otherwise it is type from T
 coerce(T,m) ==
-  $InteractiveMode => keyedSystemError("S2GE0016",['"coerce",
+  $InteractiveMode => unexpected_error(['"coerce",
       '"function coerce called from the interpreter."])
+  -- FIXME: Hardcoded assuption about Rep
   rplac(CADR(T), substitute("%", $Rep, CADR(T)))
   T':= coerceEasy(T,m) => T'
   T' := constant_coerce(T, m) => T'
@@ -1422,9 +1423,7 @@ compileSpad2Cmd args ==
         fullopt = 'break       => $scanIfTrue := nil
         fullopt = 'vartrace      =>
           $QuickLet  := false
-        throw_msg("S2IZ0036", _
-  '"%1b is an unknown or unavailable for the %b )compile %d command.",
-           [STRCONC('")", object2String(optname))])
+        unknown_compile_file([STRCONC('")", object2String(optname))])
 
     compilerDoit(lib, path)
     extendLocalLibdb $newConlist

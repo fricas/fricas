@@ -101,7 +101,9 @@ startTimingProcess name ==
 
 stopTimingProcess name ==
   (name ~= peekTimedName()) and null $InteractiveMode =>
-    keyedSystemError("S2GL0015",[name,peekTimedName()])
+        system_error("S2GL0015",
+     '"Internal timings are not balanced: timing classes are %1b and %2b",
+            [name, peekTimedName()])
   updateTimedName peekTimedName()
   popTimedName()
 

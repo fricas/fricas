@@ -107,7 +107,7 @@ set1(l,setTree) ==
 
   -- check is the user is authorized for the set variable
   null satisfiesUserLevel setData.setLevel =>
-    sayKeyedMsg("S2IZ0007",[$UserLevel,'"set option"])
+        say_user_level_msg([$UserLevel, '"set option"])
 
   1 = #l => displaySetOptionInformation(arg,setData)
   st := setData.setType
@@ -611,6 +611,17 @@ try_open(fn, ft, append) ==
     (testStream := makeStream(append, filename)) => [testStream, filename]
     [NIL, NIL]
 
+say_printing_msg(args) == say_msg("S2IV0002", CONCAT(
+    '"To toggle %1 printing on and off, specify %l",
+    '" %b )set output %2 yes/no/on/off %d %l",
+    '" Yes, no, on and off cannot be abbreviated.", args)
+
+say_failed_open(args) == say_msg("S2IV0003",
+    '"It is not possible to open or create a file called %b %1 %2 %d .", args)
+
+say_writing(args) == say_msg("S2IV0004",
+    '"%1 output will be written to file %2b .", args)
+
 setOutputAlgebra arg ==
   arg = "%initialize%" =>
     $algebraOutputStream := mkOutputConsoleStream()
@@ -632,8 +643,7 @@ setOutputAlgebra arg ==
       else arg := [fn,'spout]
 
   arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) =>
-      sayKeyedMsg("S2IV0002",'(algebra algebra))
+    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(algebra algebra))
     UPCASE(fn) in '(NO OFF)  => $algebraFormat := NIL
     UPCASE(fn) in '(YES ON) => $algebraFormat := true
     UPCASE(fn) = 'CONSOLE =>
@@ -647,10 +657,10 @@ setOutputAlgebra arg ==
       stream_close($algebraOutputStream)
       $algebraOutputStream := testStream
       $algebraOutputFile := filename
-      sayKeyedMsg("S2IV0004",['"Algebra",$algebraOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft])
+      say_writing(['"Algebra", $algebraOutputFile])
+    say_failed_open([fn, ft])
 
-  sayKeyedMsg("S2IV0005",NIL)
+  say_invalid_args()
   describeSetOutputAlgebra()
 
 describeSetOutputAlgebra() == describeSetOutputU(
@@ -723,8 +733,7 @@ setOutputFortran arg ==
       else arg := [fn,'sfort]
 
   arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) =>
-      sayKeyedMsg("S2IV0002",'(FORTRAN fortran))
+    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(FORTRAN fortran))
     UPCASE(fn) in '(NO OFF)  => $fortranFormat := NIL
     UPCASE(fn) in '(YES ON)  => $fortranFormat := true
     UPCASE(fn) = 'CONSOLE =>
@@ -738,9 +747,9 @@ setOutputFortran arg ==
       stream_close($fortranOutputStream)
       $fortranOutputStream := testStream
       $fortranOutputFile := filename
-      if null quiet then sayKeyedMsg("S2IV0004",['FORTRAN,$fortranOutputFile])
-    if null quiet then sayKeyedMsg("S2IV0003",[fn,ft])
-  if null quiet then sayKeyedMsg("S2IV0005",NIL)
+      if null quiet then say_writing(['FORTRAN, $fortranOutputFile])
+    if null quiet then say_failed_open([fn, ft])
+  if null quiet then say_invalid_args()
   describeSetOutputFortran()
 
 describeSetOutputFortran() == describeSetOutputU(
@@ -767,8 +776,7 @@ setOutputMathml arg ==
       else arg := [fn,'smml]
 
   arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) =>
-      sayKeyedMsg("S2IV0002",'(MathML mathml))
+    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(MathML mathml))
     UPCASE(fn) in '(NO OFF)  => $mathmlFormat := NIL
     UPCASE(fn) in '(YES ON) => $mathmlFormat := true
     UPCASE(fn) = 'CONSOLE =>
@@ -782,10 +790,10 @@ setOutputMathml arg ==
       stream_close($mathmlOutputStream)
       $mathmlOutputStream := testStream
       $mathmlOutputFile := filename
-      sayKeyedMsg("S2IV0004",['"MathML",$mathmlOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft])
+      say_writing(['"MathML", $mathmlOutputFile])
+    say_failed_open([fn, ft])
 
-  sayKeyedMsg("S2IV0005",NIL)
+  say_invalid_args()
   describeSetOutputMathml()
 
 describeSetOutputMathml() == describeSetOutputU(
@@ -812,8 +820,7 @@ setOutputTexmacs arg ==
       else arg := [fn,'stmx]
 
   arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) =>
-      sayKeyedMsg("S2IV0002",'(Texmacs texmacs))
+    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(Texmacs texmacs))
     UPCASE(fn) in '(NO OFF)  => $texmacsFormat := NIL
     UPCASE(fn) in '(YES ON) => $texmacsFormat := true
     UPCASE(fn) = 'CONSOLE =>
@@ -827,10 +834,10 @@ setOutputTexmacs arg ==
       stream_close($texmacsOutputStream)
       $texmacsOutputStream := testStream
       $texmacsOutputFile := filename
-      sayKeyedMsg("S2IV0004",['"TeXmacs",$texmacsOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft])
+      say_writing(['"TeXmacs", $texmacsOutputFile])
+    say_failed_open([fn, ft])
 
-  sayKeyedMsg("S2IV0005",NIL)
+  say_invalid_args()
   describeSetOutputTexmacs()
 
 describeSetOutputTexmacs() == describeSetOutputU(
@@ -858,8 +865,7 @@ setOutputHtml arg ==
       else arg := [fn,'shtml]
 
   arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) =>
-      sayKeyedMsg("S2IV0002",'(HTML html))
+    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(HTML html))
     UPCASE(fn) in '(NO OFF)  => $htmlFormat := NIL
     UPCASE(fn) in '(YES ON) => $htmlFormat := true
     UPCASE(fn) = 'CONSOLE =>
@@ -873,10 +879,10 @@ setOutputHtml arg ==
       stream_close($htmlOutputStream)
       $htmlOutputStream := testStream
       $htmlOutputFile := filename
-      sayKeyedMsg("S2IV0004",['"HTML",$htmlOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft])
+      say_writing(['"HTML", $htmlOutputFile])
+    say_failed_open([fn, ft])
 
-  sayKeyedMsg("S2IV0005",NIL)
+  say_invalid_args()
   describeSetOutputHtml()
 
 describeSetOutputHtml() == describeSetOutputU(
@@ -903,8 +909,7 @@ setOutputOpenMath arg ==
       else arg := [fn,'som]
 
   arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) =>
-      sayKeyedMsg("S2IV0002",'(OpenMath openmath))
+    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(OpenMath openmath))
     UPCASE(fn) in '(NO OFF)  => $openMathFormat := NIL
     UPCASE(fn) in '(YES ON) => $openMathFormat := true
     UPCASE(fn) = 'CONSOLE =>
@@ -918,10 +923,10 @@ setOutputOpenMath arg ==
       stream_close($openMathOutputStream)
       $openMathOutputStream := testStream
       $openMathOutputFile := filename
-      sayKeyedMsg("S2IV0004",['"OpenMath",$openMathOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft])
+      say_writing(['"OpenMath", $openMathOutputFile])
+    say_failed_open([fn, ft])
 
-  sayKeyedMsg("S2IV0005",NIL)
+  say_invalid_args()
   describeSetOutputOpenMath()
 
 describeSetOutputOpenMath() == describeSetOutputU(
@@ -949,8 +954,7 @@ setOutputTex arg ==
       else arg := [fn,'stex]
 
   arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) =>
-      sayKeyedMsg("S2IV0002",'(TeX tex))
+    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(TeX tex))
     UPCASE(fn) in '(NO OFF)  => $texFormat := NIL
     UPCASE(fn) in '(YES ON) => $texFormat := true
     UPCASE(fn) = 'CONSOLE =>
@@ -964,10 +968,10 @@ setOutputTex arg ==
       stream_close($texOutputStream)
       $texOutputStream := testStream
       $texOutputFile := filename
-      sayKeyedMsg("S2IV0004",['"TeX",$texOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft])
+      say_writing(['"TeX", $texOutputFile])
+    say_failed_open([fn, ft])
 
-  sayKeyedMsg("S2IV0005",NIL)
+  say_invalid_args()
   describeSetOutputTex()
 
 describeSetOutputTex() == describeSetOutputU(
@@ -995,8 +999,7 @@ setOutputFormatted arg ==
       else arg := [fn,'formatted]
 
   arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) =>
-      sayKeyedMsg("S2IV0002",'(FORMATTED formatted))
+    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(FORMATTED formatted))
     UPCASE(fn) in '(NO OFF) => $formattedFormat := NIL
     UPCASE(fn) in '(YES ON) => $formattedFormat := true
     UPCASE(fn) = 'CONSOLE =>
@@ -1010,10 +1013,10 @@ setOutputFormatted arg ==
       stream_close($formattedOutputStream)
       $formattedOutputStream := testStream
       $formattedOutputFile := filename
-      sayKeyedMsg("S2IV0004",['"FORMATTED",$formattedOutputFile])
-    sayKeyedMsg("S2IV0003",[fn,ft])
+      say_writing(['"FORMATTED", $formattedOutputFile])
+    say_failed_open([fn, ft])
 
-  sayKeyedMsg("S2IV0005",NIL)
+  say_invalid_args()
   describeSetOutputFormatted()
 
 describeSetOutputFormatted() == describeSetOutputU(
@@ -1033,4 +1036,9 @@ setStreamsCalculate arg ==
     terminateSystemCommand()
   $streamCount := n
 
-describeSetStreamsCalculate() == sayKeyedMsg("S2IV0001",[$streamCount])
+describeSetStreamsCalculate() == say_msg("S2IV0001", CONCAT(
+    '"%b )set streams calculate %d is used to tell FriCAS",
+    '" how many elements of a stream to calculate when a computation",
+    '" uses the stream.  The value given after %b calculate %d must",
+    '" either be the word %b all %d or a positive integer.  %l %l The",
+    '" current setting is %1b ."), [$streamCount])

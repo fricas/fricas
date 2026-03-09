@@ -143,7 +143,9 @@ clearClams() ==
     clearClam fn
 
 clearClam fn ==
-  infovec := GET(fn, 'cacheInfo) or keyedSystemError("S2GE0003", [fn])
+  infovec := GET(fn, 'cacheInfo) or system_error("S2GE0003", CONCAT(
+        '"The cache for %1b cannot be cleared because that function is not",
+        '" privately clammed."), [fn])
   ir := infovec.cacheReset
   ir is ["SETQ", var , ['MAKE_HASHTABLE, ["QUOTE", mode]]] =>
      SETF(SYMBOL_-VALUE(var), MAKE_HASHTABLE(mode))
@@ -447,7 +449,9 @@ globalHashtableStats(x,sortFn) ==
   for key in keys repeat
     u:= HGET(x,key)
     for [argList,n,:.] in u repeat
-      not INTEGERP n =>   keyedSystemError("S2GE0013",[x])
+      not INTEGERP n => system_error("S2GE0013",
+          '"%1b has the wrong format: the reference counts are missing.",
+          [x])
       argList1:= [constructor2ConstructorForm x for x in argList]
       reportList:= [[n,key,argList1],:reportList]
   sayBrightly ["%b",'"  USE  NAME ARGS","%d"]
@@ -461,7 +465,7 @@ constructor2ConstructorForm x ==
 
 rightJustifyString(x,maxWidth) ==
   size:= entryWidth x
-  size > maxWidth => keyedSystemError("S2GE0014",[x])
+  size > maxWidth => system_error("S2GE0014", '"%1b is too large", [x])
   [filler_spaces(maxWidth - size), x]
 
 -- Should be better, but ATM this must do

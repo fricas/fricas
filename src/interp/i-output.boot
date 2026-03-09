@@ -2270,7 +2270,9 @@ maPrin u ==
   null u => nil
   c := CATCH('outputFailure,charybdis(u, $MARGIN, $LINELENGTH))
   c ~= 'outputFailure => c
-  sayKeyedMsg("S2IX0009",NIL)
+  say_msg("S2IX0009", CONCAT(
+        '"The system cannot print your result.",
+        '" It will be lisp pretty-printed: %l"), [])
   u is ['EQUATNUM,num,form] or u is [['EQUATNUM,:.],num,form] =>
     charybdis(['EQUATNUM,num], $MARGIN, $LINELENGTH)
     if not $collectOutput then

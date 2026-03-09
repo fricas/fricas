@@ -708,8 +708,8 @@ findUniqueOpInDomain(op,opName,dom) ==
   -- return function named op in domain dom if unique, choose one if not
   mmList := ASSQ(opName, getOperationAlistFromLisplib first dom)
   mmList := subCopy(mmList,constructSubst dom)
-  null mmList =>
-    throwKeyedMsg("S2IS0021",[opName,dom])
+  null mmList => throw_msg("S2IS0021",
+        '"The function %1b is not implemented in %2bp .", [opName, dom])
   mmList := rest mmList   -- ignore the operator name
   -- use evaluation type context to narrow down the candidate set
   if target := getTarget op then
@@ -730,7 +730,8 @@ findUniqueOpInDomain(op,opName,dom) ==
          compiledLookupCheck(opName,sig,evalDomain dom)
       NRTcompileEvalForm(opName, sig, evalDomain dom)
   NULL(fun) or NULL(PAIRP(fun)) => NIL
-  first fun = function(Undef) => throwKeyedMsg("S2IS0023", [opName, dom])
+  first fun = function(Undef) => throw_msg("S2IS0023",
+        '"The function %1b is not implemented in %2bp .", [opName, dom])
   binVal :=
     $genValue => wrap fun
     fun
@@ -900,8 +901,7 @@ matchMmCond(cond) ==
     cond is ['has,dom,x] =>
       hasCaty(dom,x,NIL) ~= 'failed
     cond is ['not,cond1] => not matchMmCond cond1
-    keyedSystemError("S2GE0016",
-      ['"matchMmCond",'"unknown form of condition"])
+    unexpected_error(['"matchMmCond", '"unknown form of condition"])
 
 matchMmSig(mm, tar, args1, args2, rtcp) ==
   -- matches the modemap signature against  args1 -> tar
@@ -1158,8 +1158,8 @@ evalMmStack(mmC) ==
 
 evalMmStackInner(mmC) ==
   mmC is ['OR,:args] =>
-    keyedSystemError("S2GE0016",
-      ['"evalMmStackInner",'"OR condition nested inside an AND"])
+      unexpected_error(['"evalMmStackInner",
+                        '"OR condition nested inside an AND"])
   mmC is ['partial,:mmD] => evalMmStackInner mmD
   mmC is ['ofCategory,pvar,cat] and cat is ['Join,:args] =>
     [['ofCategory, pvar, c] for c in args]
@@ -1256,7 +1256,7 @@ makeConstrArg(arg1, arg2, t1, t2, cs) ==
   t1 = t2 => arg2
   obj1 := objNewWrap(arg1, t1)
   obj2 := coerceInt(obj1, t2)
-  null obj2 => throwKeyedMsgCannotCoerceWithValue(wrap arg1,t1,t2)
+  null obj2 => throwMsgCannotCoerceWithValue(wrap arg1,t1,t2)
   objValUnwrap obj2
 
 evalMmDom(st) ==
@@ -1498,8 +1498,7 @@ hasCaty1(cond,SL) ==
       x is ['has,a,b] => hasCate(a,b,copy SL)
       hasCaty1(x, copy SL)
     S
-  keyedSystemError("S2GE0016",
-    ['"hasCaty1",'"unexpected condition from category table"])
+  unexpected_error(['"hasCaty1", '"unexpected condition from category table"])
 
 hasAttSig(d,x,SL) ==
   -- d is domain, x a list of attributes and signatures
@@ -1507,8 +1506,7 @@ hasAttSig(d,x,SL) ==
   for y in x until SL='failed repeat SL:=
     y is ['ATTRIBUTE,a] => BREAK()
     y is ['SIGNATURE,foo,s] => hasSig(d,foo,s,SL)
-    keyedSystemError("S2GE0016",
-      ['"hasAttSig",'"unexpected form of unnamed category"])
+    unexpected_error(['"hasAttSig", '"unexpected form of unnamed category"])
   SL
 
 hasSigAnd(andCls, S0, SL) ==
@@ -1519,8 +1517,7 @@ hasSigAnd(andCls, S0, SL) ==
       atom cls => copy SL
       cls is ['has,a,b] =>
         hasCate(subCopy(a,S0),subCopy(b,S0),copy SL)
-      keyedSystemError("S2GE0016",
-        ['"hasSigAnd",'"unexpected condition for signature"])
+      unexpected_error(['"hasSigAnd", '"unexpected condition for signature"])
     if SA = 'failed then dead := true
   SA
 
@@ -1534,8 +1531,7 @@ hasSigOr(orCls, S0, SL) ==
         hasCate(subCopy(a,S0),subCopy(b,S0),copy SL)
       cls is ['AND,:andCls] or cls is ['and,:andCls] =>
         hasSigAnd(andCls, S0, SL)
-      keyedSystemError("S2GE0016",
-        ['"hasSigOr",'"unexpected condition for signature"])
+      unexpected_error(['"hasSigOr", '"unexpected condition for signature"])
     if SA ~= 'failed then found := true
   SA
 
@@ -1555,8 +1551,7 @@ hasSig(dom,foo,sig,SL) ==
             hasSigAnd(andCls, S0, SL)
           cond is ['OR,:orCls] or cond is ['or,:orCls] =>
             hasSigOr(orCls, S0, SL)
-          keyedSystemError("S2GE0016",
-             ['"hasSig",'"unexpected condition for signature"])
+          unexpected_error(['"hasSig", '"unexpected condition for signature"])
         not (S='failed) => S:= unifyStruct(subCopy(x,S0),sig,S)
       S
     'failed
@@ -1568,8 +1563,7 @@ hasCatExpression(cond,SL) ==
   cond is ['AND,:l] =>
     and/[(SL:= hasCatExpression(x,SL)) ~= 'failed for x in l] => SL
   cond is ['has,a,b] => hasCate(a,b,SL)
-  keyedSystemError("S2GE0016",
-    ['"hasSig",'"unexpected condition for attribute"])
+  unexpected_error(['"hasSig", '"unexpected condition for attribute"])
 
 unifyStruct(s1,s2,SL) ==
   -- tests for equality of s1 and s2 under substitutions SL and $Subst

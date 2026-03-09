@@ -186,8 +186,7 @@ optSpecialCall(x,y,n) ==
   yval := optCallEval y
   CAAAR x="CONST" =>
     IFCAR yval.n = function Undef =>
-      keyedSystemError("S2GE0016",['"optSpecialCall",
-        '"invalid constant"])
+          unexpected_error(['"optSpecialCall", '"invalid constant"])
     MKQ yval.n
   fn := GETL(compileTimeBindingOf first yval.n,'SPADreplace) =>
     rplac(rest x,CDAR x)
@@ -201,7 +200,8 @@ optSpecialCall(x,y,n) ==
   x
 
 compileTimeBindingOf u ==
-  NULL(name:= BPINAME u)  => keyedSystemError("S2OO0001",[u])
+  NULL(name:= BPINAME u)  => system_error("S2OO0001",
+      '"Irregular slot entry: %1s", [u])
   name="Undef" => MOAN '"optimiser found unknown function"
   name
 
@@ -295,24 +295,27 @@ optSEQ ["SEQ",:l] ==
       l is ["SEQ",[op,a]] and MEMQ(op,'(EXIT RETURN THROW)) => a
       l
 
+record_error(ind) ==
+    system_error("S2OO0002", '"Bad index in record optimization: %1b", [ind])
+
 optRECORDELT ["RECORDELT",name,ind,len] ==
   len=1 =>
     ind=0 => ["QCAR",name]
-    keyedSystemError("S2OO0002",[ind])
+    record_error(ind)
   len=2 =>
     ind=0 => ["QCAR",name]
     ind=1 => ["QCDR",name]
-    keyedSystemError("S2OO0002",[ind])
+    record_error(ind)
   ["QVELT",name,ind]
 
 optSETRECORDELT ["SETRECORDELT",name,ind,len,expr] ==
   len=1 =>
     ind=0 => ["PROGN",["RPLACA",name,expr],["QCAR",name]]
-    keyedSystemError("S2OO0002",[ind])
+    record_error(ind)
   len=2 =>
     ind=0 => ["PROGN",["RPLACA",name,expr],["QCAR",name]]
     ind=1 => ["PROGN",["RPLACD",name,expr],["QCDR",name]]
-    keyedSystemError("S2OO0002",[ind])
+    record_error(ind)
   ["QSETVELT",name,ind,expr]
 
 optRECORDCOPY ["RECORDCOPY",name,len] ==

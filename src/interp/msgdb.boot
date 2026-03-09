@@ -340,9 +340,6 @@ say_msg_local(msg, args) ==
 
 throw_error_msg(kind, key, msg, args) == throw_msg(key, msg, args)
 
-throwKeyedErrorMsg(kind, key, args) ==
-    throw_error_msg(kind, key, getKeyedMsg(key), args)
-
 throw_msg_pos(key, msg, args, tree) ==
     if tree and (sp := getSrcPos(tree)) then
         sayMSG '" "
@@ -362,18 +359,18 @@ throw_msg(key, msg, args) ==
     say_msg(key, msg, args)
     spadThrow()
 
-throwListOfKeyedMsgs(descKey,descArgs,l) ==
-  -- idea is that descKey and descArgs are the message describing
-  -- what the list is about and l is a list of [key,args] messages
+throw_msg_list(k1, msg1, arg1, l) ==
+  -- idea is that k1, msg1 and arg1 are the message describing
+  -- what the list is about and l is a list of [key, msg, args] messages
   -- the messages in the list are numbered and should have a %1 as
   -- the first token in the message text.
   sayMSG '" "
   if $testingSystem then sayMSG $testingErrorPrefix
-  sayKeyedMsg(descKey,descArgs)
+  say_msg(k1, msg1, arg1)
   sayMSG '" "
-  for [key,args] in l for i in 1.. repeat
+  for [key, msg, args] in l for i in 1.. repeat
     n := STRCONC(object2String i,'".")
-    sayKeyedMsg(key,[n,:args])
+    say_msg(key, msg, [n, :args])
   spadThrow()
 
 --  breakKeyedMsg is like throwKeyedMsg except that the user is given
@@ -387,13 +384,13 @@ system_error(key, msg, args) ==
     say_msg("S2GE0000", '"Internal Error", NIL)
     break_msg(key, msg, args)
 
-keyedSystemError(key, args) == system_error(key, getKeyedMsg(key), args)
-
 systemErrorHere(fname) ==
     system_error("S2GE0017",
                  '"Unexpected error in call to system function %1b", [fname])
 
-queryUserKeyedMsg(key, args) == query_user_msg(key, getKeyedMsg(key), args)
+unexpected_error(args) ==
+    system_error("S2GE0016",
+        '"Unexpected error or improper call to system function %1b: %2", args)
 
 query_user_msg(key, msg, args) ==
   -- display message and return reply
@@ -487,7 +484,7 @@ keyedMsgCompFailure(key, args) ==
 keyedMsgCompFailureSP(key, args, atree) ==
     msg_comp_failure1(key, getKeyedMsg(key), args, atree)
 
-throwKeyedMsgCannotCoerceWithValue(val,t1,t2) ==
+throwMsgCannotCoerceWithValue(val,t1,t2) ==
   val' :=
      not($genValue) => nil
      coerceInteractive(mkObj(val,t1),$OutputForm)

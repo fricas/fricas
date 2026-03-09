@@ -78,6 +78,16 @@ isMap x ==
   y := getI(x, 'value) =>
     objVal y is ['SPADMAP, :.] => x
 
+check_partial(mode) ==
+    if isPartialMode(mode) then throw_msg("S2IM0004", CONCAT(
+        '"Partial types are not allowed in the declarations of",
+        '" function arguments or return types."), [])
+
+msg_wrong_arg_number(op) ==
+    throw_msg("S2IM0008", CONCAT(
+        '"The number of parameters in your definition for %1bp does not",
+        '" correspond to the declared number of arguments."), [op])
+
 addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
   -- Create a new map, add to an existing one, or define a variable
   --   compute the dependencies for a map
@@ -127,7 +137,7 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
     if d then
       someDecs := true
       d' := evaluateType unabbrev d
-      isPartialMode d' => throwKeyedMsg("S2IM0004",NIL)
+      check_partial(d')
       mapmode := [d',:mapmode]
     else allDecs := false
   if allDecs then
@@ -147,7 +157,7 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
           throw_msg("S2IM0027", CONCAT( _
     '"No arguments are allowed on the left had side of a rule definition", _
     '" and you supplied %1b for rule %2b"), [numargs, op])
-      #rest lhs ~= #mapargs => throwKeyedMsg("S2IM0008",[op])
+      #rest lhs ~= #mapargs => msg_wrong_arg_number(op)
   --get all the user variables in the map definition.  This is a multi
   --step process as this should not include recursive calls to the map
   --itself, or the formal parameters
@@ -247,8 +257,8 @@ getUserIdentifiersInIterators itl ==
     x is ["ON",.,y]   => varList:= [:getUserIdentifiersIn y,:varList]
     x is [op,a] and op in '(_| WHILE UNTIL) =>
       varList:= [:getUserIdentifiersIn a,:varList]
-    keyedSystemError("S2GE0016",['"getUserIdentifiersInIterators",
-      '"unknown iterator construct"])
+    unexpected_error(['"getUserIdentifiersInIterators",
+                      '"unknown iterator construct"])
   REMDUP varList
 
 getIteratorIds itl ==
@@ -791,8 +801,7 @@ mapRecurDepth(opName,opList,body) ==
       mapRecurDepth(opName, opList, getMapBody(op, mapDef))
         + argc
     argc
-  keyedSystemError("S2GE0016",['"mapRecurDepth",
-    '"unknown function form"])
+  unexpected_error(['"mapRecurDepth", '"unknown function form"])
 
 analyzeUndeclaredMap(op,argTypes,mapDef,$mapList) ==
   -- Computes the signature of the map named op, and compiles the body
@@ -908,8 +917,7 @@ expandRecursiveBody(alreadyExpanded, body) ==
         expandRecursiveBody([op,:alreadyExpanded],newBody)
       [op,:[expandRecursiveBody(alreadyExpanded,arg) for arg in argl]]
     [op,:[expandRecursiveBody(alreadyExpanded,arg) for arg in argl]]
-  keyedSystemError("S2GE0016",['"expandRecursiveBody",
-    '"unknown form of function body"])
+  unexpected_error(['"expandRecursiveBody", '"unknown form of function body"])
 
 nonRecursivePart1(opName, funBody) ==
   -- returns a function body which contains only the parts of funBody
@@ -944,8 +952,7 @@ notCalled(opName,form) ==
   form is [op,:argl] =>
     op=opName => false
     and/[notCalled(opName,x) for x in argl]
-  keyedSystemError("S2GE0016",['"notCalled",
-    '"unknown form of function body"])
+  unexpected_error(['"notCalled", '"unknown form of function body"])
 
 mapDefsWithCorrectArgCount(n, mapDef) ==
   [def for def in mapDef | (numArgs first def) = n]
@@ -968,8 +975,7 @@ combineMapParts(mapTail) ==
     isSharpVarWithNum cond or (cond is ['Tuple,:args] and
       and/[isSharpVarWithNum arg for arg in args]) or (null cond) => part
     ['IF,mkMapPred cond,part,combineMapParts restMap]
-  keyedSystemError("S2GE0016",['"combineMapParts",
-    '"unknown function form"])
+  unexpected_error(['"combineMapParts", '"unknown function form"])
 
 mkMapPred cond ==
   -- create the predicate on map arguments, derived from "when" clauses

@@ -339,11 +339,8 @@ phIntReportMsgs(carrier, interactive?) ==
     ncPutQ(carrier, 'ok?, nerr = 0)
     nerr = 0 => 'OK
     processMsgList(msgs, lines)
-    intSayKeyedMsg ('S2CTP010,[nerr])
+    say_msg("S2CTP010", '"%b %1 error(s) parsing %d", [nerr])
     'OK
-
-intSayKeyedMsg(key, args) ==
-  sayKeyedMsg(key, args)
 
 mkLineList lines ==
   l := [rest line for line in lines | nonBlank rest line]
@@ -423,7 +420,7 @@ phMacro carrier ==
 
     ptree  := macroExpanded ptree
     if $ncmMacro then
-        intSayKeyedMsg ('S2CTP007,[%pform ptree] )
+        say_msg("S2CTP007", '"Macro expanded: %U %1fl", [%pform ptree])
 
     ncPutQ(carrier, 'ptree, ptree)
     'OK
@@ -448,4 +445,4 @@ ncloopPrefix?(prefix,whole) ==
 
 phBegin id ==
     $convPhase := id
-    if $ncmPhase then intSayKeyedMsg('S2CTP021,[id])
+    if $ncmPhase then say_msg("S2CTP021", '"%1 ...", [id])

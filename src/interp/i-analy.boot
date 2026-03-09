@@ -282,7 +282,7 @@ bottomUp t ==
   m := getBasicMode t => [m]
   IDENTP (id := getUnname t) =>
     putModeSet(t,bottomUpIdentifier(t,id))
-  keyedSystemError("S2GE0016",['"bottomUp",'"unknown object form"])
+  unexpected_error(['"bottomUp", '"unknown object form"])
 
 computeTypeWithVariablesTarget(p, q) ==
     polyVarlist(p) or polyVarlist(q) =>
@@ -324,9 +324,8 @@ bottomUpIdentifier(t,id) ==
   m := isType t => bottomUpType(t, m)
   EQ(id,'noMapVal) => throw_msg("S2IB0002",
       '"The function is not defined for given value.", nil)
-  EQ(id,'noBranch) =>
-    keyedSystemError("S2GE0016",
-      ['"bottomUpIdentifier",'"trying to evaluate noBranch"])
+  EQ(id,'noBranch) => unexpected_error(
+        ['"bottomUpIdentifier", '"trying to evaluate noBranch"])
   transferPropsToNode(id,t)
   defaultType := ['Variable,id]
   -- This was meant to stop building silly symbols but had some unfortunate
@@ -343,8 +342,8 @@ bottomUpIdentifier(t,id) ==
       bottomUpDefault(t,id,defaultType,getTarget t)
     interpRewriteRule(t, id) or
       (isMapExpr expr and [objMode(u)]) or
-        keyedSystemError("S2GE0016",
-          ['"bottomUpIdentifier",'"cannot evaluate identifier"])
+          unexpected_error(['"bottomUpIdentifier",
+                            '"cannot evaluate identifier"])
   bottomUpDefault(t,id,defaultType,getTarget t)
 
 bottomUpDefault(t,id,defaultMode,target) ==

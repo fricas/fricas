@@ -319,8 +319,8 @@ getDomainFromMm mm ==
                "arbitraryPrecision", "canonicalUnitNormal"]))_
              => return opOf cat
   null val =>
-    keyedSystemError("S2GE0016",
-      ['"getDomainFromMm",'"Can't find domain in modemap condition"])
+        unexpected_error(['"getDomainFromMm",
+                          '"Can't find domain in modemap condition"])
   val
 
 getFirstArgTypeFromMm mm ==
@@ -386,15 +386,14 @@ mkAlistOfExplicitCategoryOps target ==
               atomizeOp op ==
                 atom op => op
                 op is [a] => a
-                keyedSystemError("S2GE0016",
+                unexpected_error(
                   ['"mkAlistOfExplicitCategoryOps",'"bad signature"])
     opList:= REMDUP ASSOCLEFT u
     [[x,:fn(x,u)] for x in opList] where
       fn(op,u) ==
         u is [[a,:b],:c] => (a=op => [b,:fn(op,c)]; fn(op,c))
   isCategoryForm(target) => nil
-  keyedSystemError("S2GE0016",
-    ['"mkAlistOfExplicitCategoryOps",'"bad signature"])
+  unexpected_error(['"mkAlistOfExplicitCategoryOps", '"bad signature"])
 
 flattenSignatureList(x) ==
   atom x => nil

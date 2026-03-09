@@ -278,9 +278,11 @@ transformOperationAlist operationAlist ==
       implementation is [impOp,:.] =>
         impOp = 'XLAM => implementation
         impOp = CONST => impOp
-        keyedSystemError("S2IL0025",[impOp])
+        system_error("S2IL0025", '"Unexpected type of entry in domain: %1s",
+                     [impOp])
       implementation = 'mkRecord => 'mkRecord
-      keyedSystemError("S2IL0025",[implementation])
+      system_error("S2IL0025", '"Unexpected type of entry in domain: %1s",
+                   [implementation])
     signatureItem:=
       if u:= assoc([op,sig],$functionLocations) then n := [n,:rest u]
       kind = 'ELT =>

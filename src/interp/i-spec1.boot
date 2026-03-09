@@ -266,15 +266,14 @@ upAlgExtension t ==
   triple:= getValue algExtension
   upmode:= resolveTMOrCroak(objMode(triple),upmode)
   null (T:= coerceInteractive(triple,upmode)) =>
-    throwKeyedMsgCannotCoerceWithValue(objVal(triple),
-      objMode(triple),upmode)
+      throwMsgCannotCoerceWithValue(objVal(triple), objMode(triple), upmode)
   newmode := objMode T
   (field := resolveTCat(CADDR newmode,'(Field))) or
       throw_msg("S2IS0002",
                 '"Cannot pass to a field from the domain %1pb .", [eq])
   pd:= ['UnivariatePolynomial,a,field]
   null (canonicalAE:= coerceInteractive(T,pd)) =>
-    throwKeyedMsgCannotCoerceWithValue(objVal T,objMode T,pd)
+      throwMsgCannotCoerceWithValue(objVal(T), objMode(T), pd)
   sae:= ['SimpleAlgebraicExtension,field,pd,objValUnwrap canonicalAE]
   saeTypeSynonym := INTERN STRCONC('"SAE",STRINGIMAGE a)
   saeTypeSynonymValue := objNew(sae,'(Type))
@@ -476,10 +475,10 @@ evalCOERCE(op,tree,m) ==
             resolveTM(['UnivariatePolynomial,objValUnwrap(v),'(Integer)],m)
           resolveTM(t1,m)
         else m
-    null t2 => throwKeyedMsgCannotCoerceWithValue(e,t1,m)
+    null(t2) => throwMsgCannotCoerceWithValue(e, t1, m)
     $genValue => coerceOrRetract(v,t2)
     objNew(getArgValue(tree,t2),t2)
-  val:= value or throwKeyedMsgCannotCoerceWithValue(e,t1,m)
+  val := value or throwMsgCannotCoerceWithValue(e, t1, m)
   if categoryForm?(m) then
       putValue(op, objNew(devaluate objValUnwrap val, m))
   else
@@ -503,8 +502,7 @@ transformCollect [:itrl,body] ==
     it is ['_|,pred] =>
       [['SUCHTHAT,mkAtree1 pred]]
     it is [op,:.] and (op in '(VALUE UNTIL)) => nil
-    keyedSystemError("S2GE0016",
-        ['"transformCollect",'"Unknown type of iterator"])
+    unexpected_error(['"transformCollect", '"Unknown type of iterator"])
   bodyTree:=mkAtree1 body
   iterList:=NCONC(iterList,[:iterTran2 for it in itrl]) where
     iterTran2 ==
@@ -515,8 +513,7 @@ transformCollect [:itrl,body] ==
       it is [op,b] and (op in '(UNTIL)) =>
         [[op,mkAtree1 b]]
       it is ['_|,pred] => nil
-      keyedSystemError("S2GE0016",
-        ['"transformCollect",'"Unknown type of iterator"])
+      unexpected_error(['"transformCollect", '"Unknown type of iterator"])
   [:iterList,bodyTree]
 
 upCOLLECT t ==
@@ -596,20 +593,25 @@ upLoopIterIN(iter,index,s) ==
   putIntSymTab(index, 'mode, ud, $env)
   mkLocalVar('"the iterator expression",index)
 
+report_bound(kind) ==
+    throw_msg("S2IS0007", '"The %1 bound in a loop must be an integer.",
+              [kind])
+
 upLoopIterSTEP(index,lower,step,upperList) ==
   null IDENTP index => throwKeyedMsg("S2IS0005",[index])
   ltype := IFCAR bottomUpUseSubdomain(lower)
   not (typeIsASmallInteger(ltype) or isEqualOrSubDomain(ltype,$Integer))=>
-    throwKeyedMsg("S2IS0007",['"lower"])
+        report_bound('"lower")
   stype := IFCAR bottomUpUseSubdomain(step)
   not (typeIsASmallInteger(stype) or isEqualOrSubDomain(stype,$Integer))=>
-    throwKeyedMsg("S2IS0008",NIL)
+      throw_msg("S2IS0008",
+          '"The step value in a loop must be a constant integer.", [])
   types := [ltype]
   utype := nil
   for upper in upperList repeat
     utype := IFCAR bottomUpUseSubdomain(upper)
     not (typeIsASmallInteger(utype) or isEqualOrSubDomain(utype,$Integer))=>
-      throwKeyedMsg("S2IS0007",['"upper"])
+        report_bound('"upper")
   if utype then types := [utype, :types]
   else types := [stype, :types]
   type := resolveTypeListAny REMDUP types
@@ -712,7 +714,8 @@ interpCOLLECTbodyIter(exp,indexList,indexVals,indexTypes) ==
   $collectTypeList:=
     null $collectTypeList => [rm:=m]
     [:$collectTypeList,rm:=resolveTT(m,last $collectTypeList)]
-  null rm => throwKeyedMsg("S2IS0010",NIL)
+  null(rm) => throw_msg("S2IS0010",
+        '"Cannot resolve types in collect body.", [])
   value:=
     rm ~= m => coerceInteractive(getValue exp,rm)
     getValue exp
@@ -785,15 +788,17 @@ upStreamIterIN(iter,index,s) ==
 
 upStreamIterSTEP(index,lower,step,upperList) ==
   null isEqualOrSubDomain(ltype := IFCAR bottomUpUseSubdomain(lower),
-    $Integer) => throwKeyedMsg("S2IS0007",['"lower"])
+        $Integer) => report_bound('"lower")
   null isEqualOrSubDomain(stype := IFCAR bottomUpUseSubdomain(step),
-    $Integer) => throwKeyedMsg("S2IS0008",NIL)
+    $Integer) => throw_msg("S2IS0008",
+        '"The step value in a loop must be a constant integer.", [])
   for upper in upperList repeat
     null isEqualOrSubDomain(IFCAR bottomUpUseSubdomain(upper),
-      $Integer) => throwKeyedMsg("S2IS0007",['"upper"])
+        $Integer) => report_bound('"upper")
 
   putIntSymTab(index, 'mode, type := resolveTT(ltype, stype), $env)
-  null type => throwKeyedMsg("S2IS0010", nil)
+  null(type) => throw_msg("S2IS0010",
+        '"Cannot resolve types in collect body.", [])
   mkLocalVar('"the iterator expression",index)
 
   s :=
@@ -856,7 +861,7 @@ mkIterFun([index,:s],funBody,$localVars) ==
   -- transform funBody into a lambda with index as the parameter
   mode := objMode getValue s
   mode isnt ['Stream, indMode] and mode isnt ['InfiniteTuple, indMode] =>
-    keyedSystemError('"S2GE0016", '("mkIterFun" "bad stream index type"))
+        unexpected_error( '("mkIterFun" "bad stream index type"))
   putIntSymTab(index, 'mode, indMode, $env)
   mkLocalVar($mapName,index)
   [m]:=bottomUpCompile funBody
@@ -1183,7 +1188,7 @@ up_tagged_construct1(op, tag, val, um) ==
     bottomUp(val)
     obj := getValue(val)
     (code := coerceInteractive(obj, tar1)) or
-        throwKeyedMsgCannotCoerceWithValue(objVal(obj), objMode(obj), tar1)
+        throwMsgCannotCoerceWithValue(objVal(obj), objMode(obj), tar1)
     code := ["CONS", n, objVal(code)]
     if $genValue then code := wrap(timedEVALFUN(code))
     putValue(op, objNew(code, um))
@@ -1202,7 +1207,7 @@ upTaggedUnionConstruct(op,l,tar) ==
   bottomUp(a1)
   obj := getValue(a1)
   (code := coerceInteractive(getValue(a1), tar)) or
-    throwKeyedMsgCannotCoerceWithValue(objVal obj, objMode obj,tar)
+        throwMsgCannotCoerceWithValue(objVal(obj), objMode(obj), tar)
   putValue(op,code)
   putModeSet(op,[tar])
 
@@ -1211,7 +1216,7 @@ upRecordConstruct(op,l,tar) ==
   tar isnt [.,:types] => nil
   for arg in l repeat bottomUp arg
   argCode :=
-    [(getArgValue(arg,type) or throwKeyedMsgCannotCoerceWithValue(
+    [(getArgValue(arg,type) or throwMsgCannotCoerceWithValue(
       objVal getValue arg,objMode getValue arg,type))
         for arg in l for ['_:,.,type] in types]
   len := #l
@@ -1283,7 +1288,7 @@ declare(var,mode) ==
       null margs => 0
       PAIRP margs => -1 + #margs
       1
-    nargs ~= #args => throwKeyedMsg("S2IM0008",[var])
+    nargs ~= #args => msg_wrong_arg_number(var)
   if $compilingMap then mkLocalVar($mapName,var)
   else clearDependencies(var)
   isLocalVar(var) => putIntSymTab(var, 'mode, mode, $env)
@@ -1308,7 +1313,7 @@ declareMap(var,mode) ==
       throw_msg("S2IS0019", CONCAT(
           '"Cannot process mapping declaration on %1b since it already",
           '" has a value."), [var])
-  isPartialMode mode => throwKeyedMsg("S2IM0004",NIL)
+  check_partial(mode)
   putHist(var,'mode,mode,$e)
 
 containsLocalVar(tree) ==

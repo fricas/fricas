@@ -412,27 +412,30 @@ transferPropsToNode(x,t) ==
 
 isLeaf x == atom x     --may be a number or a vector
 
+not_vector(x) == system_error("S2II0001",
+    '"The attributed tree form %1s is not a vector.", [x])
+
 getMode x ==
   x is [op,:.] => getMode op
   VECP x => x.1
   m := getBasicMode x => m
-  keyedSystemError("S2II0001",[x])
+  not_vector(x)
 
 putMode(x,y) ==
   x is [op,:.] => putMode(op,y)
-  null VECP x => keyedSystemError("S2II0001",[x])
+  null(VECP(x)) => not_vector(x)
   x.1 := y
 
 getValue x ==
   VECP x => x.2
   atom x =>
     t := getBasicObject x => t
-    keyedSystemError("S2II0001",[x])
+    not_vector(x)
   getValue first x
 
 putValue(x,y) ==
   x is [op,:.] => putValue(op,y)
-  null VECP x => keyedSystemError("S2II0001",[x])
+  null(VECP(x)) => not_vector(x)
   x.2 := y
 
 putValueValue(vec,val) ==
@@ -451,16 +454,16 @@ getUnname x ==
 
 getUnname1 x ==
   VECP x => x.0
-  null atom x => keyedSystemError("S2II0001",[x])
+  null(atom(x)) => not_vector(x)
   x
 
 computedMode t ==
-  getModeSet t is [m] => m
-  keyedSystemError("S2GE0016",['"computedMode",'"non-singleton modeset"])
+    getModeSet(t) is [m] => m
+    unexpected_error(['"computedMode", '"non-singleton modeset"])
 
 putModeSet(x,y) ==
   x is [op,:.] => putModeSet(op,y)
-  not VECP x => keyedSystemError("S2II0001",[x])
+  not(VECP(x)) => not_vector(x)
   x.3 := y
   y
 
@@ -483,11 +486,10 @@ getModeSet x ==
       (y = [$EmptyMode]) and ((m := getMode x) is ['Mapping,:.]) =>
         [m]
       y
-    keyedSystemError("S2GE0016",['"getModeSet",'"no mode set"])
+    unexpected_error(['"getModeSet", '"no mode set"])
   m:= getBasicMode x => [m]
   null atom x => getModeSet first x
-  keyedSystemError("S2GE0016",['"getModeSet",
-    '"not an attributed tree"])
+  unexpected_error(['"getModeSet", '"not an attributed tree"])
 
 getModeSetUseSubdomain x ==
   x and PAIRP x => getModeSetUseSubdomain first x
@@ -509,12 +511,10 @@ getModeSetUseSubdomain x ==
         INTEGERP(f := objValUnwrap val) =>
           [getBasicMode0(f,true)]
       y
-    keyedSystemError("S2GE0016",
-      ['"getModeSetUseSubomain",'"no mode set"])
+    unexpected_error(['"getModeSetUseSubomain", '"no mode set"])
   m := getBasicMode0(x,true) => [m]
   null atom x => getModeSetUseSubdomain first x
-  keyedSystemError("S2GE0016",
-    ['"getModeSetUseSubomain",'"not an attributed tree"])
+  unexpected_error(['"getModeSetUseSubomain", '"not an attributed tree"])
 
 
 --% Environment Utilities
