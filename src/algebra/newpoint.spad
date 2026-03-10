@@ -13,18 +13,14 @@
 
 PointCategory(R : Ring) : Category == VectorCategory(R) with
   point : List R -> %
-    ++ point(l) returns a point category defined by a list l of elements from
-    ++ the domain R.
+    ++ point(l) returns the point defined by l.
   dimension : % -> PositiveInteger
-    ++ dimension(s) returns the dimension of the point category s.
+    ++ dimension(s) returns the dimension of the point s.
   convert : List R -> %
     ++ convert(l) takes a list of elements, l, from the domain Ring and
-    ++ returns the form of point category.
-  cross : (%, %) -> %
-      ++ cross(p, q) computes the cross product of the two points \spad{p}
-      ++ and \spad{q}. Error if the p and q are not 3 dimensional
+    ++ returns the point defined by l.
   extend : (%, List R) -> %
-        ++ extend(x, l, r) \undocumented
+        ++ extend(x, l) adds to x extra coordinates from l.
 
 )abbrev domain POINT Point
 ++ Description:
@@ -39,19 +35,9 @@ Point(R : Ring) : Exports == Implementation where
   Implementation ==> Vector (R) add
     PI   ==> PositiveInteger
 
-    point(l : List R) : % ==
-      pt := new(#l, R)
-      for x in l for i in minIndex(pt).. repeat
-        pt.i := x
-      pt
+    point(l : List R) : % == construct(l)
     dimension p == (# p)::PI  -- Vector returns NonNegativeInteger...?
     convert(l : List R) : % == point(l)
-    cross(p0, p1) ==
-      #p0 ~= 3 or #p1 ~= 3 =>
-         error "Arguments to cross must be three dimensional"
-      point [p0.2 * p1.3 - p1.2 * p0.3, _
-             p1.1 * p0.3 - p0.1 * p1.3, _
-             p0.1 * p1.2 - p1.1 * p0.2]
     extend(p, l) == concat(p, point l)
 
 )abbrev domain COMPPROP SubSpaceComponentProperty
