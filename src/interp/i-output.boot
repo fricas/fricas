@@ -204,13 +204,22 @@ DEFCONST(MATBORCH, '"*")
 DEFCONST($EmptyString, '"")
 DEFCONST($DoubleQuote, '"_"")
 
-DEFVAR($algebraFormat, true) -- produce 2-d algebra output
-DEFVAR($fortranFormat, false) -- if true produce fortran output
-DEFVAR($htmlFormat, false) -- if true produce HTML output
-DEFVAR($mathmlFormat, false) -- if true produce Math ML output
-DEFVAR($texFormat, false) -- if true produce tex output
-DEFVAR($texmacsFormat, false) -- if true produce Texmacs output
-DEFVAR($formattedFormat, false) -- if true produce formatted output
+-- Below we emulate records using vectors and offsets
+-- Record describing current state of an output stream
+-- Should be
+-- Record(stream : File, file : String, on : Boolean)
+DEFCONST($stream_off, 0)
+DEFCONST($file_off, 1)
+DEFCONST($on_off, 2)
+
+$algebra_out_rec := GETREFV(3)
+$fortran_out_rec := GETREFV(3)
+$mathml_out_rec := GETREFV(3)
+$texmacs_out_rec := GETREFV(3)
+$html_out_rec := GETREFV(3)
+$openmath_out_rec := GETREFV(3)
+$tex_out_rec := GETREFV(3)
+$formatted_out_rec := GETREFV(3)
 
 $LINELENGTH := 77
 $MARGIN := 3
@@ -264,21 +273,38 @@ DEFPARAMETER($specialCharacterAlist, '(
 DEFVAR($print_equatnum, true)
 $collectOutput := nil
 
+new_alg_rec(stream) ==
+    res := GETREFV(3)
+    ref.$stream_off := CONS([], stream)
+    ref.$file_off := '"CONSOLE"
+    ref.$on_off := true
+
 get_lisp_stream(fs) == REST(fs)
 
-get_algebra_stream() == get_lisp_stream($algebraOutputStream)
+get_algebra_stream() == get_lisp_stream($algebra_out_rec.$stream_off)
 
-get_fortran_stream() == get_lisp_stream($fortranOutputStream)
+get_fortran_stream() == get_lisp_stream($fortran_out_rec.$stream_off)
 
-get_mathml_stream() == get_lisp_stream($mathmlOutputStream)
+get_mathml_stream() == get_lisp_stream($mathml_out_rec.$stream_off)
 
-get_texmacs_stream() == get_lisp_stream($texmacsOutputStream)
+get_texmacs_stream() == get_lisp_stream($texmacs_out_rec.$stream_off)
 
-get_html_stream() == get_lisp_stream($htmlOutputStream)
+get_html_stream() == get_lisp_stream($html_out_rec.$stream_off)
 
-get_tex_stream() == get_lisp_stream($texOutputStream)
+get_tex_stream() == get_lisp_stream($tex_out_rec.$stream_off)
 
-get_formatted_stream() == get_lisp_stream($formattedOutputStream)
+get_formatted_stream() == get_lisp_stream($formatted_out_rec.$stream_off)
+
+get_out_rec(branch) ==
+    branch = 'fortran => $fortran_out_rec
+    branch = 'mathml => $mathml_out_rec
+    branch = 'texmacs => $texmacs_out_rec
+    branch = 'html => $html_out_rec
+    branch = 'openmath => $openmath_out_rec
+    branch = 'tex => $tex_out_rec
+    branch = 'formatted => $formatted_out_rec
+    nil
+
 
 specialChar(symbol) ==
   -- looks up symbol in $specialCharacterAlist, gets the index
@@ -1277,15 +1303,6 @@ texFormat expr ==
   ioHook("endOfTeXOutput")
   NIL
 
-texFormat1 expr ==
-  tf := '(TexFormat)
-  formatFn := getFunctionFromDomain("coerce",tf, [$OutputForm])
-  displayFn := getFunctionFromDomain("display",tf,[tf])
-  SPADCALL(SPADCALL(expr,formatFn),displayFn)
-  TERPRI(get_tex_stream())
-  FORCE_-OUTPUT(get_tex_stream())
-  NIL
-
 mathmlFormat expr ==
   mml := '(MathMLFormat)
   mmlrep := '(String)
@@ -1328,13 +1345,13 @@ formattedFormat expr ==
   NIL
 
 do_formatters(x, was_type) ==
-    if $fortranFormat and not(was_type) then fortranFormat(x)
-    if $algebraFormat then mathprintWithNumber(x)
-    if $texFormat     then texFormat(x)
-    if $mathmlFormat  then mathmlFormat(x)
-    if $texmacsFormat then texmacsFormat(x)
-    if $htmlFormat    then htmlFormat(x)
-    if $formattedFormat then formattedFormat(x)
+    if $fortran_out_rec.$on_off and not(was_type) then fortranFormat(x)
+    if $algebra_out_rec.$on_off then mathprintWithNumber(x)
+    if $tex_out_rec.$on_off then texFormat(x)
+    if $mathml_out_rec.$on_off  then mathmlFormat(x)
+    if $texmacs_out_rec.$on_off then texmacsFormat(x)
+    if $html_out_rec.$on_off then htmlFormat(x)
+    if $formatted_out_rec.$on_off then formattedFormat(x)
 
 output(expr,domain) ==
   $resolve_level : local := 0

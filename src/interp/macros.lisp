@@ -375,10 +375,10 @@ This function respects intermediate #\Newline characters and drops
   (let* ((*standard-output* (make-string-output-stream))
          (curoutstream *standard-output*)
          (*error-output* *standard-output*)
-         (|$algebraOutputStream| (CONS NIL *standard-output*))
+         (|$algebra_out_rec| (|new_alg_rec| *standard-output*))
         val)
     (declare (special curoutstream
-                      |$algebraOutputStream|))
+                      |$algebra_out_rec|))
     (setq val (catch 'spad_reader
                   (apply (symbol-function func) args)))
     (cons val (get-output-stream-string *standard-output*))))

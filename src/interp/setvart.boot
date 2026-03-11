@@ -462,18 +462,8 @@ DEFPARAMETER($setOptions, '(
       interpreter
       FUNCTION
       setOutputFortran
-      (("create output in FORTRAN format"
-        LITERALS
-        $fortranFormat
-        (off on)
-        off)
-       (break $fortranFormat)
-       ("where FORTRAN output goes (enter {\em console} or a a pathname)"
-        FILENAME
-        $fortranOutputFile
-        chkOutputFileName
-        "console"))
-      NIL)
+      NIL
+      htSetOutputPage)
      (fraction
       "how fractions are formatted"
       interpreter
@@ -493,18 +483,8 @@ DEFPARAMETER($setOptions, '(
       interpreter
       FUNCTION
       setOutputOpenMath
-      (("create output in OpenMath format"
-        LITERALS
-        $openMathFormat
-        (off on)
-        off)
-       (break $openMathFormat)
-       ("where OpenMath output goes (enter {\em console} or a pathname)"
-        FILENAME
-        $openMathOutputFile
-        chkOutputFileName
-        "console"))
-      NIL)
+      NIL
+      htSetOutputPage)
      (scripts
       "show subscripts,... linearly"
       interpreter
@@ -524,86 +504,36 @@ DEFPARAMETER($setOptions, '(
       interpreter
       FUNCTION
       setOutputTex
-      (("create output in TeX format"
-        LITERALS
-        $texFormat
-        (off on)
-        off)
-       (break $texFormat)
-       ("where TeX output goes (enter {\em console} or a pathname)"
-        FILENAME
-        $texOutputFile
-        chkOutputFileName
-        "console"))
-      NIL)
+      NIL
+      htSetOutputPage)
      (mathml
       "create output in MathML style"
       interpreter
       FUNCTION
       setOutputMathml
-      (("create output in MathML format"
-        LITERALS
-        $mathmlFormat
-        (off on)
-        off)
-       (break $mathmlFormat)
-       ("where MathML output goes (enter {\em console} or a pathname)"
-        FILENAME
-        $mathmlOutputFile
-        chkOutputFileName
-        "console"))
-      NIL)
+      NIL
+      htSetOutputPage)
      (texmacs
       "create output in TeXmacs style"
       interpreter
       FUNCTION
       setOutputTexmacs
-      (("create output in TeXmacs format"
-        LITERALS
-        $texmacsFormat
-        (off on)
-        off)
-       (break $texmacsFormat)
-       ("where TeXmacs output goes (enter {\em console} or a pathname)"
-        FILENAME
-        $texmacsOutputFile
-        chkOutputFileName
-        "console"))
-      NIL)
+      NIL
+      htSetOutputPage)
      (html
       "create output in HTML style"
       interpreter
       FUNCTION
       setOutputHtml
-      (("create output in HTML format"
-        LITERALS
-        $htmlFormat
-        (off on)
-        off)
-       (break $htmlFormat)
-       ("where HTML output goes (enter {\em console} or a pathname)"
-        FILENAME
-        $htmlOutputFile
-        chkOutputFileName
-        "console"))
-      NIL)
+      NIL
+      htSetOutputPage)
      (formatted
       "create output in formatted style"
       interpreter
       FUNCTION
       setOutputFormatted
-      (("create output via format engine"
-        LITERALS
-        $formattedFormat
-        (off on)
-        off)
-       (break $formattedFormat)
-       ("where formatted output goes (enter {\em console} or a pathname)"
-        FILENAME
-        $formattedOutputFile
-        chkOutputFileName
-        "console"))
-      NIL)
+      NIL
+      htSetOutputPage)
  ))
   (quit
    "protected or unprotected quit"

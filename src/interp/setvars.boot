@@ -601,8 +601,12 @@ stream_close(st) ==
     if first(st) then CLOSE(rest(st))
 
 try_open(fn, ft, append) ==
-    fn := PNAME(fn)
-    ft := PNAME(ft)
+    fn :=
+        STRINGP(fn) => fn
+        PNAME(fn)
+    ft :=
+        STRINGP(ft) => ft
+        PNAME(ft)
     if not((ptype := file_extention(fn)) = '"") then
         fn := drop_extention(fn)
         ft := ptype
@@ -622,49 +626,85 @@ say_failed_open(args) == say_msg("S2IV0003",
 say_writing(args) == say_msg("S2IV0004",
     '"%1 output will be written to file %2b .", args)
 
-setOutputAlgebra arg ==
-  arg = "%initialize%" =>
-    $algebraOutputStream := mkOutputConsoleStream()
-    $algebraOutputFile := '"CONSOLE"
-    $algebraFormat := true
+-- Below we emulate records using vectors and offsets
+-- Record describing default parameters of an output stream
+-- Should be
+--   Record(describe : () -> Void, ext : Symbol, pr_msg : SEexpression,
+--          label : String, def_on : Boolean, appendable : Boolean)
+DEFCONST($describe_off, 0)
+DEFCONST($ext_off, 1)
+DEFCONST($pr_msg_off, 2)
+DEFCONST($label_off, 3)
+DEFCONST($def_on_off, 4)
+DEFCONST($appendable_off, 5)
 
-  arg = "%display%" =>
-    if $algebraFormat then label := '"On:" else label := '"Off:"
-    STRCONC(label,$algebraOutputFile)
+set_output_gen(arg, out_rec, def_rec) ==
+    arg = "%initialize%" =>
+        out_rec.$stream_off := mkOutputConsoleStream()
+        out_rec.$file_off := '"CONSOLE"
+        out_rec.$on_off := def_rec.$def_on_off
 
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeSetOutputAlgebra()
+    arg = "%display%" =>
+        if out_rec.$on_off then label := '"On:" else label := '"Off:"
+        STRCONC(label, out_rec.$file_off)
 
-  -- try to figure out what the argument is
+    null(arg) or (arg = "%describe%") or (first(arg) = '_?) =>
+        FUNCALL(def_rec.$describe_off)
 
-  if arg is [fn] and
-    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
-      then 'ok
-      else arg := [fn,'spout]
+    -- try to figure out what the argument is
 
-  arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(algebra algebra))
-    UPCASE(fn) in '(NO OFF)  => $algebraFormat := NIL
-    UPCASE(fn) in '(YES ON) => $algebraFormat := true
-    UPCASE(fn) = 'CONSOLE =>
-      stream_close($algebraOutputStream)
-      $algebraOutputStream := mkOutputConsoleStream()
-      $algebraOutputFile := '"CONSOLE"
+    append := false
+    quiet := false
 
-  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    [testStream, filename] := try_open(fn, ft, false)
-    testStream =>
-      stream_close($algebraOutputStream)
-      $algebraOutputStream := testStream
-      $algebraOutputFile := filename
-      say_writing(['"Algebra", $algebraOutputFile])
-    say_failed_open([fn, ft])
+    if def_rec.$appendable_off then
+        while LISTP(arg) and UPCASE(first(arg)) in '(APPEND QUIET) repeat
+            if UPCASE first(arg) = 'APPEND then
+                append := true
+            else if UPCASE first(arg) = 'QUIET then
+                quiet := true
+            arg := rest(arg)
 
-  say_invalid_args()
-  describeSetOutputAlgebra()
+    if not(arg is [fn] and fn in '(Y N YE YES NO O ON OF OFF CONSOLE _
+                                   y n ye yes no o on of off console)) then
+        arg := [fn, def_rec.$ext_off]
+
+    arg is [fn] =>
+        UPCASE(fn) in '(Y N YE O OF) => say_printing_msg(def_rec.$pr_msg_off)
+        UPCASE(fn) in '(NO OFF)  => out_rec.$on_off := false
+        UPCASE(fn) in '(YES ON) => out_rec.$on_off := true
+        UPCASE(fn) = 'CONSOLE =>
+            stream_close(out_rec.$stream_off)
+            out_rec.$stream_off := mkOutputConsoleStream()
+            out_rec.$file_off := '"CONSOLE"
+
+    (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
+        [testStream, filename] := try_open(fn, ft, append)
+        testStream =>
+            stream_close(out_rec.$stream_off)
+            out_rec.$stream_off := testStream
+            out_rec.$file_off := filename
+            if not(quiet) then
+                say_writing([def_rec.$label_off, out_rec.$file_off])
+        if not(quiet) then
+            say_failed_open([fn, ft])
+
+    if not(quiet) then
+        say_invalid_args()
+    FUNCALL(def_rec.$describe_off)
 
 describeSetOutputAlgebra() == describeSetOutputU(
     '"algebra", '"algebra", '"spout", true, setOutputAlgebra "%display%")
+
+$algebra_def_rec := GETREFV(6)
+$algebra_def_rec.$describe_off := 'describeSetOutputAlgebra
+$algebra_def_rec.$ext_off := 'spout
+$algebra_def_rec.$pr_msg_off := '(algebra algebra)
+$algebra_def_rec.$label_off := '"Algebra"
+$algebra_def_rec.$def_on_off := true
+$algebra_def_rec.$appendable_off := false
+
+setOutputAlgebra(arg) ==
+    set_output_gen(arg, $algebra_out_rec, $algebra_def_rec)
 
 setOutputCharacters arg ==
   -- this sets the special character set
@@ -705,322 +745,103 @@ makeStream(append,filename) ==
   append => make_append_stream(filename)
   make_out_stream(filename)
 
-setOutputFortran arg ==
-  arg = "%initialize%" =>
-    $fortranOutputStream := mkOutputConsoleStream()
-    $fortranOutputFile := '"CONSOLE"
-    $fortranFormat := NIL
-
-  arg = "%display%" =>
-    if $fortranFormat then label := '"On:" else label := '"Off:"
-    STRCONC(label,$fortranOutputFile)
-
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeSetOutputFortran()
-
-  -- try to figure out what the argument is
-
-  append := NIL
-  quiet := NIL
-  while LISTP arg and UPCASE(first arg) in '(APPEND QUIET) repeat
-    if UPCASE first(arg) = 'APPEND then append := true
-    else if UPCASE first(arg) = 'QUIET then quiet := true
-    arg := rest(arg)
-
-  if arg is [fn] and
-    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
-      then 'ok
-      else arg := [fn,'sfort]
-
-  arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(FORTRAN fortran))
-    UPCASE(fn) in '(NO OFF)  => $fortranFormat := NIL
-    UPCASE(fn) in '(YES ON)  => $fortranFormat := true
-    UPCASE(fn) = 'CONSOLE =>
-      stream_close($fortranOutputStream)
-      $fortranOutputStream := mkOutputConsoleStream()
-      $fortranOutputFile := '"CONSOLE"
-
-  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    [testStream, filename] := try_open(fn, ft, append)
-    testStream =>
-      stream_close($fortranOutputStream)
-      $fortranOutputStream := testStream
-      $fortranOutputFile := filename
-      if null quiet then say_writing(['FORTRAN, $fortranOutputFile])
-    if null quiet then say_failed_open([fn, ft])
-  if null quiet then say_invalid_args()
-  describeSetOutputFortran()
-
 describeSetOutputFortran() == describeSetOutputU(
     '"fortran", '"FORTRAN", '"sfort", false, setOutputFortran "%display%")
 
-setOutputMathml arg ==
-  arg = "%initialize%" =>
-    $mathmlOutputStream := mkOutputConsoleStream()
-    $mathmlOutputFile := '"CONSOLE"
-    $mathmlFormat := NIL
+$fortran_def_rec := GETREFV(6)
+$fortran_def_rec.$describe_off := 'describeSetOutputFortran
+$fortran_def_rec.$ext_off := 'sfort
+$fortran_def_rec.$pr_msg_off := '(FORTRAN fortran)
+$fortran_def_rec.$label_off := '"FORTRAN"
+$fortran_def_rec.$def_on_off := false
+$fortran_def_rec.$appendable_off := true
 
-  arg = "%display%" =>
-    if $mathmlFormat then label := '"On:" else label := '"Off:"
-    STRCONC(label,$mathmlOutputFile)
-
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeSetOutputMathml()
-
-  -- try to figure out what the argument is
-
-  if arg is [fn] and
-    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
-      then 'ok
-      else arg := [fn,'smml]
-
-  arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(MathML mathml))
-    UPCASE(fn) in '(NO OFF)  => $mathmlFormat := NIL
-    UPCASE(fn) in '(YES ON) => $mathmlFormat := true
-    UPCASE(fn) = 'CONSOLE =>
-      stream_close($mathmlOutputStream)
-      $mathmlOutputStream := mkOutputConsoleStream()
-      $mathmlOutputFile := '"CONSOLE"
-
-  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    [testStream, filename] := try_open(fn, ft, false)
-    testStream =>
-      stream_close($mathmlOutputStream)
-      $mathmlOutputStream := testStream
-      $mathmlOutputFile := filename
-      say_writing(['"MathML", $mathmlOutputFile])
-    say_failed_open([fn, ft])
-
-  say_invalid_args()
-  describeSetOutputMathml()
+setOutputFortran(arg) ==
+    set_output_gen(arg, $fortran_out_rec, $fortran_def_rec)
 
 describeSetOutputMathml() == describeSetOutputU(
     '"mathml", '"MathML", '"smml", false, setOutputMathml "%display%")
 
-setOutputTexmacs arg ==
-  arg = "%initialize%" =>
-    $texmacsOutputStream := mkOutputConsoleStream()
-    $texmacsOutputFile := '"CONSOLE"
-    $texmacsFormat := NIL
+$mathml_def_rec := GETREFV(6)
+$mathml_def_rec.$describe_off := 'describeSetOutputFortran
+$mathml_def_rec.$ext_off := 'smml
+$mathml_def_rec.$pr_msg_off := '(MathML mathml)
+$mathml_def_rec.$label_off := '"MathML"
+$mathml_def_rec.$def_on_off := false
+$mathml_def_rec.$appendable_off := false
 
-  arg = "%display%" =>
-    if $texmacsFormat then label := '"On:" else label := '"Off:"
-    STRCONC(label,$texmacsOutputFile)
-
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeSetOutputTexmacs()
-
-  -- try to figure out what the argument is
-
-  if arg is [fn] and
-    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
-      then 'ok
-      else arg := [fn,'stmx]
-
-  arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(Texmacs texmacs))
-    UPCASE(fn) in '(NO OFF)  => $texmacsFormat := NIL
-    UPCASE(fn) in '(YES ON) => $texmacsFormat := true
-    UPCASE(fn) = 'CONSOLE =>
-      stream_close($texmacsOutputStream)
-      $texmacsOutputStream := mkOutputConsoleStream()
-      $texmacsOutputFile := '"CONSOLE"
-
-  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    [testStream, filename] := try_open(fn, ft, false)
-    testStream =>
-      stream_close($texmacsOutputStream)
-      $texmacsOutputStream := testStream
-      $texmacsOutputFile := filename
-      say_writing(['"TeXmacs", $texmacsOutputFile])
-    say_failed_open([fn, ft])
-
-  say_invalid_args()
-  describeSetOutputTexmacs()
+setOutputMathml(arg) ==
+    set_output_gen(arg, $mathml_out_rec, $mathml_def_rec)
 
 describeSetOutputTexmacs() == describeSetOutputU(
     '"texmacs", '"TeXmacs", '"stmx", false, setOutputTexmacs "%display%")
 
+$texmacs_def_rec := GETREFV(6)
+$texmacs_def_rec.$describe_off := 'describeSetOutputTexmacs
+$texmacs_def_rec.$ext_off := 'spout
+$texmacs_def_rec.$pr_msg_off := '(Texmacs texmacs)
+$texmacs_def_rec.$label_off := '"TeXmacs"
+$texmacs_def_rec.$def_on_off := false
+$texmacs_def_rec.$appendable_off := false
 
-setOutputHtml arg ==
-  arg = "%initialize%" =>
-    $htmlOutputStream := mkOutputConsoleStream()
-    $htmlOutputFile := '"CONSOLE"
-    $htmlFormat := NIL
-
-  arg = "%display%" =>
-    if $htmlFormat then label := '"On:" else label := '"Off:"
-    STRCONC(label, $htmlOutputFile)
-
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeSetOutputHtml()
-
-  -- try to figure out what the argument is
-
-  if arg is [fn] and
-    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
-      then 'ok
-      else arg := [fn,'shtml]
-
-  arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(HTML html))
-    UPCASE(fn) in '(NO OFF)  => $htmlFormat := NIL
-    UPCASE(fn) in '(YES ON) => $htmlFormat := true
-    UPCASE(fn) = 'CONSOLE =>
-      stream_close($htmlOutputStream)
-      $htmlOutputStream := mkOutputConsoleStream()
-      $htmlOutputFile := '"CONSOLE"
-
-  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    [testStream, filename] := try_open(fn, ft, false)
-    testStream =>
-      stream_close($htmlOutputStream)
-      $htmlOutputStream := testStream
-      $htmlOutputFile := filename
-      say_writing(['"HTML", $htmlOutputFile])
-    say_failed_open([fn, ft])
-
-  say_invalid_args()
-  describeSetOutputHtml()
+setOutputTexmacs(arg) ==
+    set_output_gen(arg, $texmacs_out_rec, $texmacs_def_rec)
 
 describeSetOutputHtml() == describeSetOutputU(
     '"html", '"HTML", '"shtml", false, setOutputHtml "%display%")
 
-setOutputOpenMath arg ==
-  arg = "%initialize%" =>
-    $openMathOutputStream := mkOutputConsoleStream()
-    $openMathOutputFile := '"CONSOLE"
-    $openMathFormat := NIL
+$html_def_rec := GETREFV(6)
+$html_def_rec.$describe_off := 'describeSetOutputHtml
+$html_def_rec.$ext_off := 'shtml
+$html_def_rec.$pr_msg_off := '(HTML html)
+$html_def_rec.$label_off := '"HTML"
+$html_def_rec.$def_on_off := false
+$html_def_rec.$appendable_off := false
 
-  arg = "%display%" =>
-    if $openMathFormat then label := '"On:" else label := '"Off:"
-    STRCONC(label,$openMathOutputFile)
-
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeSetOutputOpenMath()
-
-  -- try to figure out what the argument is
-
-  if arg is [fn] and
-    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
-      then 'ok
-      else arg := [fn,'som]
-
-  arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(OpenMath openmath))
-    UPCASE(fn) in '(NO OFF)  => $openMathFormat := NIL
-    UPCASE(fn) in '(YES ON) => $openMathFormat := true
-    UPCASE(fn) = 'CONSOLE =>
-      stream_close($openMathOutputStream)
-      $openMathOutputStream := mkOutputConsoleStream()
-      $openMathOutputFile := '"CONSOLE"
-
-  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    [testStream, filename] := try_open(fn, ft, false)
-    testStream =>
-      stream_close($openMathOutputStream)
-      $openMathOutputStream := testStream
-      $openMathOutputFile := filename
-      say_writing(['"OpenMath", $openMathOutputFile])
-    say_failed_open([fn, ft])
-
-  say_invalid_args()
-  describeSetOutputOpenMath()
+setOutputHtml(arg) ==
+    set_output_gen(arg, $html_out_rec, $html_def_rec)
 
 describeSetOutputOpenMath() == describeSetOutputU(
     '"openmath", '"OpenMath", '"som", false, setOutputOpenMath "%display%")
 
+$openmath_def_rec := GETREFV(6)
+$openmath_def_rec.$describe_off := 'describeSetOutputOpenMath
+$openmath_def_rec.$ext_off := 'som
+$openmath_def_rec.$pr_msg_off := '(OpenMath openmath)
+$openmath_def_rec.$label_off := '"OpenMath"
+$openmath_def_rec.$def_on_off := false
+$openmath_def_rec.$appendable_off := false
 
-setOutputTex arg ==
-  arg = "%initialize%" =>
-    $texOutputStream := mkOutputConsoleStream()
-    $texOutputFile := '"CONSOLE"
-    $texFormat := NIL
-
-  arg = "%display%" =>
-    if $texFormat then label := '"On:" else label := '"Off:"
-    STRCONC(label,$texOutputFile)
-
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeSetOutputTex()
-
-  -- try to figure out what the argument is
-
-  if arg is [fn] and
-    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
-      then 'ok
-      else arg := [fn,'stex]
-
-  arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(TeX tex))
-    UPCASE(fn) in '(NO OFF)  => $texFormat := NIL
-    UPCASE(fn) in '(YES ON) => $texFormat := true
-    UPCASE(fn) = 'CONSOLE =>
-      stream_close($texOutputStream)
-      $texOutputStream := mkOutputConsoleStream()
-      $texOutputFile := '"CONSOLE"
-
-  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    [testStream, filename] := try_open(fn, ft, false)
-    testStream =>
-      stream_close($texOutputStream)
-      $texOutputStream := testStream
-      $texOutputFile := filename
-      say_writing(['"TeX", $texOutputFile])
-    say_failed_open([fn, ft])
-
-  say_invalid_args()
-  describeSetOutputTex()
+setOutputOpenMath(arg) ==
+    set_output_gen(arg, $openmath_out_rec, $openmath_def_rec)
 
 describeSetOutputTex() == describeSetOutputU(
     '"tex", '"TeX", '"stex", false, setOutputTex "%display%")
 
+$tex_def_rec := GETREFV(6)
+$tex_def_rec.$describe_off := 'describeSetOutputTex
+$tex_def_rec.$ext_off := 'stex
+$tex_def_rec.$pr_msg_off := '(TeX tex)
+$tex_def_rec.$label_off := '"TeX"
+$tex_def_rec.$def_on_off := false
+$tex_def_rec.$appendable_off := false
 
-setOutputFormatted arg ==
-  arg = "%initialize%" =>
-    $formattedOutputStream := mkOutputConsoleStream()
-    $formattedOutputFile := '"CONSOLE"
-    $formattedFormat := NIL
-
-  arg = "%display%" =>
-    if $formattedFormat then label := '"On:" else label := '"Off:"
-    STRCONC(label, $formattedOutputFile)
-
-  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
-    describeSetOutputFormatted()
-
-  -- try to figure out what the argument is
-
-  if arg is [fn] and
-    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
-      then 'ok
-      else arg := [fn,'formatted]
-
-  arg is [fn] =>
-    UPCASE(fn) in '(Y N YE O OF) => say_printing_msg('(FORMATTED formatted))
-    UPCASE(fn) in '(NO OFF) => $formattedFormat := NIL
-    UPCASE(fn) in '(YES ON) => $formattedFormat := true
-    UPCASE(fn) = 'CONSOLE =>
-      stream_close($formattedOutputStream)
-      $formattedOutputStream := mkOutputConsoleStream()
-      $formattedOutputFile := '"CONSOLE"
-
-  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    [testStream, filename] := try_open(fn, ft, false)
-    testStream =>
-      stream_close($formattedOutputStream)
-      $formattedOutputStream := testStream
-      $formattedOutputFile := filename
-      say_writing(['"FORMATTED", $formattedOutputFile])
-    say_failed_open([fn, ft])
-
-  say_invalid_args()
-  describeSetOutputFormatted()
+setOutputTex(arg) ==
+    set_output_gen(arg, $tex_out_rec, $tex_def_rec)
 
 describeSetOutputFormatted() == describeSetOutputU(
     '"formatted",'"formatted",'"formatted",false,setOutputFormatted "%display%")
+
+$formatted_def_rec := GETREFV(6)
+$formatted_def_rec.$describe_off := 'describeSetOutputFormatted
+$formatted_def_rec.$ext_off := 'formatted
+$formatted_def_rec.$pr_msg_off := '(FORMATTED formatted)
+$formatted_def_rec.$label_off := '"FORMATTED"
+$formatted_def_rec.$def_on_off := false
+$formatted_def_rec.$appendable_off := false
+
+setOutputFormatted(arg) ==
+    set_output_gen(arg, $formatted_out_rec, $formatted_def_rec)
 
 setStreamsCalculate arg ==
   arg = "%initialize%" =>

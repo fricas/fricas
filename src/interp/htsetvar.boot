@@ -117,13 +117,16 @@ htShowLiteralsPage(htPage, setData) ==
 htSetLiterals(htPage,name,message,variable,values,functionToCall) ==
   page := htInitPage('"Set Command", htpPropertyList htPage)
   htpSetProperty(page, 'variable, variable)
+  htSetLiterals2(page, name, message, EVAL(variable), values, functionToCall)
+
+htSetLiterals2(page, name, message, cval, values, functionToCall) ==
   bcHt ['"\centerline{Set {\em ", name, '"}}\newline"]
   bcHt ['"{\em Description: } ", message, '"\newline\vspace{1} "]
   bcHt '"Select one of the following: \newline\tab{3} "
   links := [[STRCONC('"",STRINGIMAGE opt), '"\newline\tab{3}", functionToCall, opt] for opt in values]
   htMakePage [['bcLispLinks, :links]]
   bcHt ['"\indent{0}\newline\vspace{1} The current setting is: {\em ",
-        translateTrueFalse2YesNo EVAL variable, '"} "]
+        translateTrueFalse2YesNo(cval), '"} "]
   htShowPage()
 
 htSetLiteral(htPage, val) ==
@@ -169,8 +172,8 @@ htSetInteger(htPage) ==
   htKill(htPage,val)
 
 htShowFunctionPage(htPage,setData) ==
+  htpSetProperty(htPage, 'setData, setData)
   fn := setData.setDef => FUNCALL(fn,htPage)
-  htpSetProperty(htPage,'setData,setData)
   htpSetProperty(htPage,'parts, setData.setLeaf)
   htShowFunctionPageContinued(htPage)
 
@@ -183,16 +186,20 @@ htShowFunctionPageContinued(htPage) ==
   htpSetProperty(htPage, 'parts, restParts)
   kind = 'LITERALS => htSetLiterals(htPage,setData.setName,
                                     phrase,variable,checker,'htFunctionSetLiteral)
+  htShowFunctionPageContinued2(htPage, setData, EVAL(variable) checker,
+                               phrase, 'htSetFunCommand)
+
+htShowFunctionPageContinued2(htPage, setData, cval, checker, phrase,
+                             fun_to_call) ==
   page := htInitPage(mkSetTitle(), htpPropertyList htPage)
   bcHt ['"\centerline{Set {\em ", setData.setName, '"}}\newline"]
   bcHt ['"{\em Description: } ", setData.setLabel, '"\newline\vspace{1} "]
-  currentValue := EVAL variable
   htMakePage
     [ ['domainConditions, ['Satisfies,'S,checker]],
       ['text,:phrase],
         ['inputStrings,
-          [ '"", '"", 60, currentValue, 'value, 'S]]]
-  htSetvarDoneButton('"Select To Set Value",'htSetFunCommand)
+          [ '"", '"", 60, cval, 'value, 'S]]]
+  htSetvarDoneButton('"Select To Set Value", fun_to_call)
   htShowPage()
 
 htSetvarDoneButton(message, func) ==
@@ -353,6 +360,38 @@ htSetExpose htPage ==
 
 htSetOutputCharacters htPage ==
   htSetNotAvailable(htPage,'")set output characters")
+
+htSetOutputPage(page) ==
+    setData := htpProperty(page, 'setData)
+    branch := first(setData)
+    rec := get_out_rec(branch)
+    htpSetProperty(page, 'output_rec, rec)
+    page := htInitPage('"Set Command", htpPropertyList(page))
+    htSetLiterals2(page, setData.setName, setData.setLabel,
+                   (rec.$on_off => 'on; 'off), '(on off),
+                   'htSetOutputPage2)
+
+htSetOutputPage2(page, val) ==
+    rec := htpProperty(page, 'output_rec)
+    rec.$on_off := translateYesNo2TrueFalse(val)
+    rec.$on_off =>
+        setData := htpProperty(page, 'setData)
+        branch := first(setData)
+        phrase := CONCAT('"where ", STRINGIMAGE(branch),
+                    '" printing goes (enter {\em console} or a pathname)?")
+        checker := 'chkOutputFileName
+        htpSetProperty(page, 'checker, checker)
+        htShowFunctionPageContinued2(page, setData, rec.$file_off,
+                                     checker, phrase,
+                                     'htSetOutputPage3)
+    htKill(page, val)
+
+htSetOutputPage3(page) ==
+    setData := htpProperty(page, 'setData)
+    checker := htpProperty(page, 'checker)
+    val := htCheck(checker, htpLabelInputString(page, 'value))
+    FUNCALL(setData.setVar, [val])
+    htKill(page, val)
 
 htSetCache(htPage,:options) ==
   $path := '(functions cache)

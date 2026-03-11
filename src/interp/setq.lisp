@@ -33,9 +33,6 @@
 
 (setq |$printTimeIfTrue| nil)
 
-;;; In case 'setvart.boot' does not work...
-(setq |$algebraOutputStream| (|mkOutputConsoleStream|))
-
 (defvar |$frameMessages| nil)
 (defvar |$displayStartMsgs| nil)
 

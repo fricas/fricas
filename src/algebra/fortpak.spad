@@ -178,17 +178,20 @@ FortranOutputStackPackage() : specification == implementation where
     -- top value accordingly.
     fortranOutputStack : Stack String := empty()@(Stack String)
 
-    topFortranOutputStack() : String == string(_$fortranOutputFile$Lisp)
+    fort_out_file ==> ELT(_$fortran_out_rec$Lisp, _$file_off$Lisp)$Lisp
+
+    topFortranOutputStack() : String ==
+        string(fort_out_file)
 
     pushFortranOutputStack(fn : FileName) : Void ==
         pushFortranOutputStack(fn::String)
 
     pushFortranOutputStack(fn : String) : Void ==
       if empty? fortranOutputStack then
-        push!(string(_$fortranOutputFile$Lisp), fortranOutputStack)
-      else if not(top(fortranOutputStack)=string(_$fortranOutputFile$Lisp)) then
-        pop! fortranOutputStack
-        push!(string(_$fortranOutputFile$Lisp), fortranOutputStack)
+        push!(string(fort_out_file), fortranOutputStack)
+      else if not(top(fortranOutputStack) = string(fort_out_file)) then
+        pop!(fort_out_file)
+        push!(string(fort_out_file), fortranOutputStack)
       push!( fn, fortranOutputStack)
       systemCommand concat(["set output fortran quiet ", fn])$String
       void()
