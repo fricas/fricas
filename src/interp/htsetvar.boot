@@ -186,7 +186,7 @@ htShowFunctionPageContinued(htPage) ==
   htpSetProperty(htPage, 'parts, restParts)
   kind = 'LITERALS => htSetLiterals(htPage,setData.setName,
                                     phrase,variable,checker,'htFunctionSetLiteral)
-  htShowFunctionPageContinued2(htPage, setData, EVAL(variable) checker,
+  htShowFunctionPageContinued2(htPage, setData, EVAL(variable), checker,
                                phrase, 'htSetFunCommand)
 
 htShowFunctionPageContinued2(htPage, setData, cval, checker, phrase,
