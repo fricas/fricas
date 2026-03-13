@@ -618,7 +618,7 @@ try_open(fn, ft, append) ==
 say_printing_msg(args) == say_msg("S2IV0002", CONCAT(
     '"To toggle %1 printing on and off, specify %l",
     '" %b )set output %2 yes/no/on/off %d %l",
-    '" Yes, no, on and off cannot be abbreviated.", args)
+    '" Yes, no, on and off cannot be abbreviated."), args)
 
 say_failed_open(args) == say_msg("S2IV0003",
     '"It is not possible to open or create a file called %b %1 %2 %d .", args)

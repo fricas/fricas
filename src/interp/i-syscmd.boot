@@ -1276,7 +1276,7 @@ displayFrameNames() ==
   fs := "append"/[ ['%l,'"     ",:bright frameName f] for f in
     $interpreterFrameRing]
   say_msg("S2IZ0024", CONCAT(
-        '"The names of the existing frames are: %1 %l
+        '"The names of the existing frames are: %1 %l",
         '" The current frame is the first one listed."), [fs])
 
 importFromFrame args ==
@@ -1970,7 +1970,7 @@ quitSpad2Cmd() ==
         '" interactive environment and return to the operating system:"), []))
   MEMQ(STRING2ID_N(x, 1), '(Y YES)) => leaveScratchpad()
   say_msg("S2IZ0032", CONCAT(
-        '"You have chosen to remain in the %b FriCAS %d
+        '"You have chosen to remain in the %b FriCAS %d",
         '" interactive environment."), [])
   terminateSystemCommand()
 
@@ -2710,7 +2710,6 @@ handleNoParseCommands(unab, string) ==
   unab = "system" =>
     if (null spaceIndex) then
             say_invalid_args()
-      nil
     else npsystem(unab, string)
   unab = "synonym" =>
     npsynonym(unab, (null spaceIndex => '""; SUBSEQ(string, spaceIndex+1)))
