@@ -151,7 +151,7 @@ DEFVAR($statsInfo)
 
 initializeTimedNames() ==
   for [name, :.] in $interpreterTimedNames for i in 0.. repeat
-    PUT(name, 'index, i)
+        MAKEPROP(name, 'index, i)
   initializeTimedStack()
 
 initializeTimedStack() ==

@@ -345,6 +345,8 @@ npEqPeek s ==  EQ(CAAR $stok,"key") and EQ(s,$ttok)
 npEqKey s ==
     EQ(CAAR $stok,"key") and EQ(s,$ttok) and npNext()
 
+npCompMissing(s) == npEqKey(s) or npMissing(s)
+
 $npTokToNames:= ["~","#","[]","{}", "[||]","{||}"]
 
 npId() ==

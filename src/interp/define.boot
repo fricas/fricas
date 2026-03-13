@@ -782,12 +782,13 @@ spadCompileOrSetq (form is [nam,[lam,vl,body]]) ==
   CONTAINED($ClearBodyToken, body) =>
       sayBrightly ['"  ", :bright nam, '" not compiled"]
   if vl is [:vl',E] and body is [nam',: =vl'] then
-      output_lisp_form(['PUT,MKQ nam,MKQ 'SPADreplace,MKQ nam'])
+      output_lisp_form(['MAKEPROP, MKQ(nam), MKQ('SPADreplace), MKQ(nam')])
       sayBrightly ['"     ",:bright nam,'"is replaced by",:bright nam']
   else if (ATOM body or and/[ATOM x for x in body])
          and vl is [:vl',E] and not CONTAINED(E,body) then
            macform := ['XLAM,vl',body]
-           output_lisp_form(['PUT,MKQ nam,MKQ 'SPADreplace,MKQ macform])
+           output_lisp_form(['MAKEPROP, MKQ(nam), MKQ('SPADreplace),
+                             MKQ(macform)])
            sayBrightly ['"     ",:bright nam,'"is replaced by",:bright body]
   $insideCapsuleFunctionIfTrue => first COMP form
   compileConstructor form

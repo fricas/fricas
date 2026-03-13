@@ -1210,7 +1210,7 @@ coerceIntCommute(obj,target) ==
     fun := GETL(D,'coerceCommute) or
            INTERN STRCONC('"commute",STRINGIMAGE D)
     functionp fun =>
-      PUT(D,'coerceCommute,fun)
+      MAKEPROP(D, 'coerceCommute, fun)
       u := objValUnwrap obj
       c := CATCH('coerceFailure,FUNCALL(fun,u,source,S,target,T))
       (c = $coerceFailure) => NIL

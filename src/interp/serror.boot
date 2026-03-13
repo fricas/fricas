@@ -53,8 +53,6 @@ npMissing s==
    ncSoftError(tokPosn $stok,'S2CY0007, [PNAME s])
    THROW("TRAPPOINT","TRAPPED")
 
-npCompMissing s == npEqKey s or npMissing s
-
 pfSourceStok x==
        if pfLeaf? x
        then x

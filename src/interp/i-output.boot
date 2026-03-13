@@ -180,23 +180,23 @@ init_output_properties() ==
 init_output_properties()
 
 DEFPARAMETER($plainRTspecialCharacters, [
-    '_+,      -- upper left corner   (+)
-    '_+,      -- upper right corner  (+)
-    '_+,      -- lower left corner   (+)
-    '_+,      -- lower right corner  (+)
-    '_|,      -- vertical bar
-    '_-,      -- horizontal bar      (-)
-    '_?,      -- APL quad            (?)
-    '_[,      -- left bracket
-    '_],      -- right bracket
-    '_{,      -- left brace
-    '_},      -- right brace
-    '_+,      -- top    box tee      (+)
-    '_+,      -- bottom box tee      (+)
-    '_+,      -- right  box tee      (+)
-    '_+,      -- left   box tee      (+)
-    '_+,      -- center box tee      (+)
-    '_\       -- back slash
+    '"+",      -- upper left corner   (+)
+    '"+",      -- upper right corner  (+)
+    '"+",      -- lower left corner   (+)
+    '"+",      -- lower right corner  (+)
+    '"|",      -- vertical bar
+    '"-",      -- horizontal bar      (-)
+    '"?",      -- APL quad            (?)
+    '"[",      -- left bracket
+    '"]",      -- right bracket
+    '"{",      -- left brace
+    '"}",      -- right brace
+    '"+",      -- top    box tee      (+)
+    '"+",      -- bottom box tee      (+)
+    '"+",      -- right  box tee      (+)
+    '"+",      -- left   box tee      (+)
+    '"+",      -- center box tee      (+)
+    '"\"       -- back slash
      ])
 
 DEFPARAMETER($tallPar, false)
@@ -226,26 +226,26 @@ $MARGIN := 3
 DEFCONST(BLANK, '" ")
 DEFCONST(UNDERBAR, '"__")
 
-makeCharacter n == INTERN(NUM2USTR(n))
+makeCharacter(n) == NUM2USTR(n)
 
 DEFPARAMETER($RTspecialCharacters, [
-    makeCharacter 9484,     -- upper left corner   (+)
-    makeCharacter 9488,     -- upper right corner  (+)
-    makeCharacter 9492,     -- lower left corner   (+)
-    makeCharacter 9496,     -- lower right corner  (+)
-    makeCharacter 9474,     -- vertical bar
-    makeCharacter 9472,     -- horizontal bar      (-)
-    '_?,  -- APL quad
-    '_[,      -- left bracket
-    '_],      -- right bracket
-    '_{,      -- left brace
-    '_},      -- right brace
-    makeCharacter 9516,     -- top    box tee      (+)
-    makeCharacter 9524,     -- bottom box tee      (+)
-    makeCharacter 9508,     -- right  box tee      (+)
-    makeCharacter 9500,     -- left   box tee      (+)
-    makeCharacter 9532,     -- center box tee      (+)
-    '_\       -- back slash
+    makeCharacter(9484),     -- upper left corner   (+)
+    makeCharacter(9488),     -- upper right corner  (+)
+    makeCharacter(9492),     -- lower left corner   (+)
+    makeCharacter(9496),     -- lower right corner  (+)
+    makeCharacter(9474),     -- vertical bar
+    makeCharacter(9472),     -- horizontal bar      (-)
+    '"?",  -- APL quad
+    '"[",      -- left bracket
+    '"]",      -- right bracket
+    '"{",      -- left brace
+    '"}",      -- right brace
+    makeCharacter(9516),     -- top    box tee      (+)
+    makeCharacter(9524),     -- bottom box tee      (+)
+    makeCharacter(9508),     -- right  box tee      (+)
+    makeCharacter(9500),     -- left   box tee      (+)
+    makeCharacter(9532),     -- center box tee      (+)
+    '"\"       -- back slash
      ])
 
 DEFPARAMETER($specialCharacters, $plainRTspecialCharacters)
@@ -312,10 +312,10 @@ specialChar(symbol) ==
   null (code := IFCDR ASSQ(symbol,$specialCharacterAlist)) => '"?"
   ELT($specialCharacters,code)
 
-rbrkSch() == PNAME specialChar 'rbrk
-lbrkSch() == PNAME specialChar 'lbrk
-quadSch() == PNAME specialChar 'quad
-hbar_special_char() == PNAME(specialChar('hbar))
+rbrkSch() == specialChar('rbrk)
+lbrkSch() == specialChar('lbrk)
+quadSch() == specialChar('quad)
+hbar_special_char() == specialChar('hbar)
 
 isBinaryInfix x ==
     x in '(_= _+ _- _* _/ _*_* _^ "=" "+" "-" "*" "/" "**" "^")
@@ -362,7 +362,6 @@ atom2String x ==
 -- these functions return an updated "layout so far" in general
 
 appChar(string,x,y,d) ==
-  if CHARP string then string := PNAME string
   line:= LASSOC(y,d) =>
         RPLACSTR(line, x, n := #string, string, 0, n)
         d

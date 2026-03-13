@@ -257,7 +257,7 @@ printEnv E ==
         TERPRI()
         SAY('"Properties Of: ",first z)
         for u in rest z repeat
-          PRIN0 first u
+          PRIN1(first(u))
           printString '": "
           PRETTYPRINT tran(rest u,first u) where
             tran(val,prop) ==
@@ -272,7 +272,7 @@ prEnv E ==
         TERPRI()
         SAY('"Properties Of: ",first z)
         for u in rest z repeat
-          PRIN0 first u
+          PRIN1(first(u))
           printString '": "
           PRETTYPRINT tran(rest u,first u) where
             tran(val,prop) ==
@@ -287,7 +287,7 @@ prModemaps E ==
         (modemap:= LASSOC("modemap",rest z)) repeat
           listOfOperatorsSeenSoFar:= [first z,:listOfOperatorsSeenSoFar]
           TERPRI()
-          PRIN0 first z
+          PRIN1(first(z))
           printString '": "
           PRETTYPRINT modemap
 
@@ -498,7 +498,7 @@ stackAndThrow msg ==
 
 printString x == PRINTEXP (STRINGP x => x; PNAME x)
 
-printAny x == if atom x then printString x else PRIN0 x
+printAny x == if atom x then printString x else PRIN1(x)
 
 printSignature(before,op,[target,:argSigList]) ==
   printString before

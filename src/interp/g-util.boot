@@ -209,15 +209,6 @@ removeZeroOne x ==
   atom x => x
   [removeZeroOne first x,:removeZeroOne rest x]
 
-removeZeroOneDestructively t ==
-  -- replace all occurrences of (Zero) and (One) with
-  -- 0 and 1 destructively
-  t = $Zero => 0
-  t = $One => 1
-  atom t => t
-  RPLNODE(t,removeZeroOneDestructively first t,
-    removeZeroOneDestructively rest t)
-
 --% Inplace Merge Sort for Lists
 -- MBM April/88
 

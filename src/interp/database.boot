@@ -422,14 +422,6 @@ updateDatabase(cname) ==
     if GET(cname, 'LOADED) then
       clearConstructorCaches()
 
-REMOVER(lst,item) ==
-  --destructively removes item from lst
-  not PAIRP lst =>
-    lst=item => nil
-    lst
-  first lst=item => rest lst
-  RPLNODE(lst,REMOVER(first lst,item),REMOVER(rest lst,item))
-
 allLASSOCs(op,alist) ==
   [value for [key,:value] in alist | key = op]
 
@@ -505,7 +497,6 @@ displayHiddenConstructors() ==
 
 getOperationAlistFromLisplib x ==
     u := get_database(x, 'OPERATIONALIST)
-    --  u := removeZeroOneDestructively u
     null u => u          -- this can happen for Object
     CAAR u = '_$unique => rest u
     f := addConsDB '(NIL T ELT)

@@ -42,6 +42,7 @@ $mathTrace := false
 $mathTraceList := []
 $tracedSpadModemap := nil
 $traceletFunctions := []
+$letAssoc := []
 
 DEFPARAMETER($traceNoisely, NIL)  -- give trace and untrace messages
 
@@ -876,7 +877,7 @@ letPrint(x,val,currentFunction) ==
       if (y="all" or MEMQ(x,y)) and
         not (IS_GENVAR(x) or isSharpVarWithNum(x) or GENSYMP x) then
          sayBrightlyNT [:bright x,'": "]
-         PRIN0 shortenForPrinting val
+         PRIN1(shortenForPrinting(val))
          TERPRI()
       if (y:= hasPair("BREAK",y)) and
         (y="all" or MEMQ(x,y) and
@@ -982,7 +983,7 @@ spadUntrace(domain,options) ==
       rplac(first domain.n, bpiPointer)
       rplac(CDDDR pair, nil)
       if assocPair:= assoc(BPINAME bpiPointer,$letAssoc) then
-        $letAssoc := REMOVER($letAssoc,assocPair)
+            $letAssoc := DELASC($letAssoc, assocPair)
   newSigSlotNumberAlist:= [x for x in sigSlotNumberAlist | CDDDR x]
   newSigSlotNumberAlist => rplac(rest pair, newSigSlotNumberAlist)
   $trace_names := DELASC(domain, $trace_names)
@@ -1233,7 +1234,7 @@ monitor_print(x, trace_str) ==
 
 PRINMATHOR0(x, trace_str) ==
     $mathTrace => maprinSpecial(outputTran2(x), $monitor_depth, $LINELENGTH)
-    PRIN0(x, trace_str)
+    PRIN1(x, trace_str)
 
 _/TRACELET_-PRINT(X, Y) ==
     PRINC(STRCONC(PNAME(X), '": "), $trace_stream)
@@ -1246,12 +1247,12 @@ monitor_x0(TRACECODE, C, TYPE, name, name1) ==
     TRACECODE = '"000" => []
     TAB(0, $trace_stream)
     monitor_blanks($monitor_depth - 1)
-    PRIN0($monitor_fun_depth, $trace_stream)
+    PRIN1($monitor_fun_depth, $trace_stream)
     sayBrightlyNT2(['"<enter", "%b", PNAME(name1), "%d"], $trace_stream)
     if not(C = 0) then
         EQ(TYPE, 'MACRO) => PRINT('" expanded", $trace_stream)
         PRINT('" from ", $trace_stream)
-        PRIN0($monitor_caller, $trace_stream)
+        PRIN1($monitor_caller, $trace_stream)
     c_args := coerceTraceArgs2E(name1, name, $monitor_args)
     if SPADSYSNAMEP(PNAME(name)) then
          c_args := NREVERSE(REVERSE(c_args))
@@ -1263,7 +1264,7 @@ monitor_x1(TRACECODE, name, name1, V, TIMERNAM, EVAL_TIME) ==
     TRACECODE = '"000" => []
     TAB(0, $trace_stream)
     monitor_blanks($monitor_depth - 1)
-    PRIN0($monitor_fun_depth, $trace_stream)
+    PRIN1($monitor_fun_depth, $trace_stream)
     sayBrightlyNT2(['">exit ", "%b", PNAME(name1), "%d"], $trace_stream)
     if TIMERNAM then
         sayBrightlyNT2('"(", $trace_stream) -- )

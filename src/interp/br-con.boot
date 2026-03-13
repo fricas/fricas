@@ -734,8 +734,7 @@ isAsharpFileName? con == false
 --             Special Code for Union, Mapping, and Record
 --=======================================================================
 
-PUT('Record,'documentation,'(
-  (constructor (NIL NIL))
+MAKEPROP('Record,'documentation,'(
   (_=  (((Boolean) _% _%)
    "\spad{r = s} tests for equality of two records \spad{r} and \spad{s}"))
   (coerce (((OutputForm) _%)
@@ -754,8 +753,7 @@ PUT('Record,'documentation,'(
    "\spad{r . b := y} destructively replaces the value stored in record \spad{r} under selector \spad{b} by the value of \spad{y}. Error: if \spad{r} has not been previously assigned a value."))
    ))
 
-PUT('UntaggedUnion, 'documentation, '(
-  (constructor (NIL NIL))
+MAKEPROP('UntaggedUnion, 'documentation, '(
   (_=  (((Boolean) % %)
     "\spad{u = v} tests if two objects of the union are equal, that is, u and v are hold objects of same branch which are equal."))
   (case (((Boolean) % "A")
@@ -772,8 +770,7 @@ PUT('UntaggedUnion, 'documentation, '(
     "\spad{coerce(y)}, where \spad{y} has type \spad{B}, returns \spad{y} as a union type."))
   ))
 
-PUT('Union, 'documentation, '(
-  (constructor (NIL NIL))
+MAKEPROP('Union, 'documentation, '(
   (_=  (((Boolean) % %)
     "\spad{u = v} tests if two objects of the union are equal, that is, \spad{u} and \spad{v} are objects of same branch which are equal."))
   (case (((Boolean) % "A")
@@ -790,14 +787,12 @@ PUT('Union, 'documentation, '(
     "\spad{coerce(y)}, where \spad{y} has type \spad{B}, returns \spad{y} as a union type."))
   ))
 
-PUT('Mapping, 'documentation, '(
-  (constructor (NIL NIL))
+MAKEPROP('Mapping, 'documentation, '(
   (_=  (((Boolean) % %)
     "\spad{u = v} tests if mapping objects are equal."))
    ))
 
-PUT('Enumeration, 'documentation, '(
-        (constructor (NIL NIL))
+MAKEPROP('Enumeration, 'documentation, '(
   (_= (((Boolean) _% _%)
     "\spad{e = f} tests for equality of two enumerations \spad{e} and \spad{f}"))
   (_^_= (((Boolean) _% _%)

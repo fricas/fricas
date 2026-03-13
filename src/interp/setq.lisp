@@ -233,8 +233,6 @@
 (SETQ |$DomainsWithoutLisplibs| '(
   CAPSULE |Union| |Record| |SubDomain| |Mapping| |Enumeration| |Mode|))
 
-(SETQ |$letAssoc| NIL)
-        ;" used for trace of assignments in SPAD code -- see macro LETT"
 (SETQ |$QuickCode| T)
          ;" controls generation of QREFELT etc."
 (SETQ |$QuickLet| T)

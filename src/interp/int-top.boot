@@ -367,17 +367,18 @@ ncloopDQlines (dq,stream)==
         b:= poGlobalLinePosn CAAR stream
         streamChop (a-b+1,stream)
 
-streamChop(n,s)==
-    if StreamNull s
-    then [nil,nil]
-    else if EQL(n,0)
-         then [nil,s]
-         else
-            [a,b]:= streamChop(n-1,cdr s)
-            line:=car s
-            c := ncloopPrefix?('")command", rest line)
-            d:= cons(car line,if c then c else cdr line)
-            [cons(d,a),b]
+streamChop(n, s) ==
+    res := []
+    while n > 0 repeat
+        StreamNull(s) =>
+            s := nil
+            n := 0
+        line := first(s)
+        c := ncloopPrefix?('")command", rest(line))
+        res := cons(cons(first(line), (c => c ; rest(line))), res)
+        n := n - 1
+        s := rest(s)
+    [NREVERSE(res), s]
 
 ncloopPrintLines lines ==
         for line in lines repeat WRITE_-LINE rest line

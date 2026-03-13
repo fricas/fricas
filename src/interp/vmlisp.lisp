@@ -58,7 +58,7 @@
 
 ; 9.5 Identifiers
 
-(defun gensymp (x) (and (symbolp x) (null (symbol-package x))))
+(defun GENSYMP (x) (and (symbolp x) (null (symbol-package x))))
 
 (defun DIGITP (x) (digit-char-p x))
 
@@ -70,14 +70,14 @@
 
 ; 11.1 Creation
 
-(defun upcase (l)
+(defun UPCASE (l)
   (cond ((stringp l) (string-upcase l))
         ((identp l) (intern (string-upcase (symbol-name l))))
         ((characterp l) (char-upcase l))
         ((atom l) l)
         (t (mapcar #'upcase l))))
 
-(defun downcase (l)
+(defun DOWNCASE (l)
   (cond ((stringp l) (string-downcase l))
         ((identp l) (intern (string-downcase (symbol-name l))))
         ((characterp l) (char-downcase L))
@@ -86,18 +86,11 @@
 
 ; 11.2 Accessing
 
-;; note it is important that PNAME returns nil not an error for non-symbols
 (defun PNAME (x) (symbol-name x))
 
-(defun put (sym ind val) (setf (get sym ind) val))
-
-(define-function 'MAKEPROP #'put)
+(defun MAKEPROP (sym ind val) (setf (get sym ind) val))
 
 ; 12.0 Operations on Numbers
-
-; 12.1 Conversion
-
-; 12.2 Predicates
 
 ; 12.3 Computation
 
@@ -106,21 +99,10 @@
   (cond ((or (floatp x) (floatp y)) (BREAK))
         (t (truncate x y))))
 
-(defun REMAINDER (x y)
-  (if (and (integerp x) (integerp y))
-      (rem x y)
-      (BREAK)))
-
 (defun DIVIDE (x y)
   (if (and (integerp x) (integerp y))
       (multiple-value-list (truncate x y))
       (BREAK)))
-
-; 13.3 Updating
-
-(defun RPLNODE (pair1 ca2 cd2)
- (RPLACA pair1 ca2)
- (RPLACD pair1 cd2) pair1)
 
 ; 14.0 Operations on Lists
 
@@ -153,12 +135,6 @@
 (DEFUN |intersection|  (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
     (PROG (I H V)
       (SETQ V (SETQ H (CONS NIL NIL)))
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-1))
-          (SETQ LIST-OF-ITEMS-1 (LIST LIST-OF-ITEMS-1)) ) )
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-2))
-          (SETQ LIST-OF-ITEMS-2 (LIST LIST-OF-ITEMS-2)) ) )
   LP  (COND
         ( (NOT (PAIRP LIST-OF-ITEMS-1))
           (RETURN (QCDR H)) )
@@ -173,12 +149,6 @@
 (DEFUN |union| (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
     (PROG (I H V)
       (SETQ H (SETQ V (CONS NIL NIL)))
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-1))
-          (SETQ LIST-OF-ITEMS-1 (LIST LIST-OF-ITEMS-1)) ) )
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-2))
-          (SETQ LIST-OF-ITEMS-2 (LIST LIST-OF-ITEMS-2)) ) )
   LP1 (COND
         ( (NOT (PAIRP LIST-OF-ITEMS-1))
           (COND
@@ -198,12 +168,6 @@
 (DEFUN SETDIFFERENCE (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
     (PROG (I H V)
       (SETQ H (SETQ V (CONS NIL NIL)))
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-1))
-          (SETQ LIST-OF-ITEMS-1 (LIST LIST-OF-ITEMS-1)) ) )
-      (COND
-        ( (NOT (LISTP LIST-OF-ITEMS-2))
-          (SETQ LIST-OF-ITEMS-2 (LIST LIST-OF-ITEMS-2)) ) )
   LP1 (COND
         ( (NOT (PAIRP LIST-OF-ITEMS-1))
           (RETURN (QCDR H)) )
@@ -271,14 +235,14 @@
 ; 16.2 Accessing
 
 
-(defun size (l)
+(defun SIZE (l)
   (cond ((vectorp l) (length l))
         ((consp l)   (list-length l))
         (t           0)))
 
 ; 17.0 Operations on Character and Bit Vectors
 
-(defun charp (a) (or (characterp a)
+(defun CHARP (a) (or (characterp a)
                      (and (identp a) (= (length (symbol-name a)) 1))))
 
 (defun NUM2CHAR (n) (code-char n))
@@ -418,13 +382,13 @@
                   (STRING2ID_N (subseq cvec end) (1- n))))
             0))))
 
-(defun substring (cvec start length)
+(defun SUBSTRING (cvec start length)
   (setq cvec (string cvec))
   (if length (subseq cvec start (+ start length)) (subseq cvec start)))
 
 ; 17.3 Searching
 
-(defun strpos (what in start dontcare)
+(defun STRPOS (what in start dontcare)
    (setq what (string what) in (string in))
    (if dontcare (progn (setq dontcare (character dontcare))
                        (search what in :start2 start
@@ -508,19 +472,18 @@
 
 (defun |substitute| (new old tree) (subst new old tree :test #'equal))
 
-(defun copy (x) (copy-tree x)) ; not right since should descend vectors
+(defun COPY (x) (copy-tree x)) ; not right since should descend vectors
 
-(defun eqsubstlist (new old list) (sublis (mapcar #'cons old new) list))
+(defun EQSUBSTLIST (new old list) (sublis (mapcar #'cons old new) list))
 
 
 ; 24.0 Printing
 
-(define-function 'prin2cvec #'princ-to-string)
+(define-function 'PRIN2CVEC #'princ-to-string)
 
-(define-function 'stringimage #'princ-to-string)
+(define-function 'STRINGIMAGE #'princ-to-string)
 
-(define-function 'printexp #'princ)
-(define-function 'prin0  #'prin1)
+(define-function 'PRINTEXP #'princ)
 
 (defun |limited_print1_stdout|(form) (|limited_print1| form *standard-output*))
 
@@ -528,14 +491,14 @@
     (let ((*print-level* 4) (*print-length* 4))
        (prin1 form stream) (terpri stream)))
 
-(defun prettyprint (x &optional (stream *standard-output*))
-  (prettyprin0 x stream) (terpri stream))
+(defun PRETTYPRINT (x &optional (stream *standard-output*))
+  (PRETTYPRIN0 x stream) (terpri stream))
 
-(defun prettyprin0 (x &optional (stream *standard-output*))
+(defun PRETTYPRIN0 (x &optional (stream *standard-output*))
   (let ((*print-pretty* t) (*print-array* t))
     (prin1 x stream)))
 
-(defun tab (sint &optional (stream t))
+(defun TAB (sint &optional (stream t))
   (format stream "~vT" sint))
 
 ; 27.0 Stream I/O
@@ -635,15 +598,6 @@
             (system:compiled-function-name func))
            (func)))))
 
-#+(OR IBCL)
-(defun BPINAME (func)
-  (if (functionp func)
-      (cond ((symbolp func) func)
-            ((and (consp func) (eq (car func) 'LAMBDA-BLOCK))
-              (cadr func))
-            ((compiled-function-p func)
-             (system:compiled-function-name func))
-            ('t func))))
 #+:cmu
 (defun BPINAME (func)
  (when (functionp func)
@@ -691,13 +645,13 @@
 
 ;; Contributed by Juergen Weiss from a suggestion by Arthur Norman.
 ;; This is a Mantissa and Exponent function.
-(defun manexp (u)
+(defun MANEXP (u)
   (multiple-value-bind (f e s)
     (decode-float u)
     (cons (* s f) e)))
 
 ;;; Contributed by Juergen Weiss from Arthur Norman's CCL.
-(defun cot (a)
+(defun COT (a)
   (if (or (> a 1000.0) (< a -1000.0))
     (/ (cos a) (sin a))
     (/ 1.0 (tan a))))
@@ -712,7 +666,7 @@
            (remove pr l :test #'eq)
            l) ))
 
-(defun log10 (u) (log u 10.0d0))
+(defun LOG10 (u) (log u 10.0d0))
 
 (defun |make_spaces| (len)
     (make-string len :initial-element #\ ))
