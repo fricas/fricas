@@ -628,6 +628,6 @@ MAKE_REASONABLE(s) ==
 SUBLISLIS(newl, oldl, form) ==
     SUBLIS(MAPCAR(FUNCTION CONS, oldl, newl), form)
 
-BLANKS(n) ==
+BLANKS(n, str) ==
     for i in 1..n repeat
-        PRINC(" ")
+        PRINC('" ", str)

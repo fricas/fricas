@@ -766,7 +766,7 @@ say2Split(l,short,long,width) ==
 sayLongOperation x ==
   sayWidth x > $LINELENGTH and (splitListOn(x,"if") is [front,back]) =>
     sayBrightly front
-    BLANKS (6 + # PNAME front.1)
+    BLANKS(6 + #PNAME(front.1), get_lisp_std_out())
     sayBrightly back
   sayBrightly x
 
