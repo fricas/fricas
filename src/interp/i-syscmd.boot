@@ -173,7 +173,7 @@ commandErrorIfAmbiguous(x, u) ==
 
 commandErrorMessage(kind,x,u) ==
   null u =>
-        say_Msg("S2IZ0008", '"No %1 begins with %2b .", [kind, x])
+        say_msg("S2IZ0008", '"No %1 begins with %2b .", [kind, x])
         terminateSystemCommand()
   commandAmbiguityError(kind,x,u)
 
@@ -211,7 +211,10 @@ abbreviationsSpad2Cmd l ==
       abbQuery(key)
     type is 'remove =>
       DELDATABASE(key,'ABBREVIATION)
-    ODDP SIZE al => sayKeyedMsg("S2IZ0002",[type])
+    ODDP(#al) => say_m0sg("S2IZ0002", CONCAT(
+            '"%1b must be followed by an alternating list of abbreviation(s)",
+            '" and name(s). Issue %b )abbrev ? %d for more information."),
+            [type])
     repeat
       null al => return 'fromLoop
       [a,b,:al] := al
@@ -224,12 +227,18 @@ abbreviationsSpad2Cmd l ==
   nil
 
 listConstructorAbbreviations() ==
-  x := UPCASE queryUserKeyedMsg("S2IZ0056",NIL)
+  x := query_user_msg("S2IZ0056", CONCAT(
+        '"You have requested that all abbreviations be displayed. As",
+        '" there are several hundred abbreviations, please confirm your",
+        '" request by typing %b y %d or %b yes %d and then pressing %b",
+        '" Enter %d :"), [])
   MEMQ(STRING2ID_N(x, 1), '(Y YES)) =>
     whatSpad2Cmd '(categories)
     whatSpad2Cmd '(domains)
     whatSpad2Cmd '(packages)
-  sayKeyedMsg("S2IZ0057",NIL)
+  say_msg("S2IZ0057",  CONCAT(
+        '"Since you did not respond with %b y %d or %b yes %d the list",
+        '" of abbreviations will not be displayed."), [])
 
 --% )cd
 
@@ -240,7 +249,9 @@ cd(args) ==
         first(args)
     if SYMBOLP(dname) then dname := SYMBOL_-NAME(dname)
     CHDIR(dname)
-    sayKeyedMsg("S2IZ0070", [get_current_directory()])
+    say_msg("S2IZ0070",
+        '"The current FriCAS default directory is %1b",
+        [get_current_directory()])
 
 --% )clear
 
@@ -327,7 +338,10 @@ clearCmdParts(l is [opt,:vl]) ==
     option = 'values => 'value
     option
 
-  null vl => sayKeyedMsg("S2IZ0055",NIL)
+  null vl => say_msg("S2IZ0055", CONCAT(
+        '"After the property you wish to clear you must give one or more",
+        '" identifiers or specify %b all %d to clear that property from",
+        '" everything."), [])
   umacs := get_user_macro_names()
   bmacs := get_builtin_macro_names()
   if vl='(all) then
@@ -369,7 +383,8 @@ queryClients () ==
 close args ==
   quiet:local:= false
   null $SpadServer =>
-    throwKeyedMsg("S2IZ0071", [])
+        throw_msg("S2IZ0071",
+            '"You cannot close this FriCAS session.", [])
   numClients := queryClients()
   numClients > 1 =>
     sockSendInt($SessionManager, $CloseClient)
@@ -383,10 +398,16 @@ close args ==
     sockSendInt($SessionManager, $CloseClient)
     sockSendInt($SessionManager, $currentFrameNum)
     closeInterpreterFrame(NIL)
-  x := UPCASE queryUserKeyedMsg("S2IZ0072", nil)
+  x := query_user_msg("S2IZ0072",
+        '"This is the last FriCAS session.  Do you want to kill FriCAS?", [])
   MEMQ(STRING2ID_N(x, 1), '(YES Y)) =>
     QUIT()
   nil
+
+must_find_file(af, ftl) ==
+    not(af1 := find_file(af, ftl)) => throw_msg("S2IL0003",
+        '"The file %1b is needed but does not exist.", [af])
+    af1
 
 --% )compile
 
@@ -409,7 +430,9 @@ compile args ==
         fullopt = 'constructor => haveOld := true
         fullopt = 'old => haveOld := true
 
-    haveNew and haveOld => throwKeyedMsg("S2IZ0081", nil)
+    haveNew and haveOld => throw_msg("S2IZ0081", CONCAT(
+        '"You can only specify one of the %b )new %d and %b )old %d for",
+        '" the %b )compile %d system command."), [])
 
     af  := first(args)
     if SYMBOLP(af) then af := SYMBOL_-NAME(af)
@@ -417,28 +440,22 @@ compile args ==
     afe := file_extention(af)
 
     haveNew or afe = '"as" =>
-        not (af1 := find_file(af, '("as"))) =>
-            throwKeyedMsg("S2IL0003", [af])
+        af1 := must_find_file(af, '("as"))
         compileAsharpCmd [af1]
     haveOld or afe = '"spad" =>
-        not (af1 := find_file(af, '("spad"))) =>
-            throwKeyedMsg("S2IL0003", [af])
+        af1 := must_find_file(af, '("spad"))
         compileSpad2Cmd  [af1]
     afe = '"lsp" =>
-        not (af1 := find_file(af, '("lsp"))) =>
-            throwKeyedMsg("S2IL0003", [af])
+        af1 := must_find_file(af, '("lsp"))
         compileAsharpLispCmd [af1]
     afe = '"NRLIB" =>
-        not (af1 := find_file(af, '("NRLIB"))) =>
-            throwKeyedMsg("S2IL0003", [af])
+        af1 := must_find_file(af, '("NRLIB"))
         compileSpadLispCmd [af1]
     afe = '"ao" =>
-        not (af1 := find_file(af, '("ao"))) =>
-            throwKeyedMsg("S2IL0003", [af])
+        af1 := must_find_file(af, '("ao"))
         compileAsharpCmd [af1]
     afe = '"al" =>    -- archive library of .ao files
-        not (af1 := find_file(af, '("al"))) =>
-            throwKeyedMsg("S2IL0003", [af])
+        af1 := must_find_file(af, '("al"))
         compileAsharpArchiveCmd [af1]
 
     -- see if we something with the appropriate file extension
@@ -457,14 +474,35 @@ compile args ==
         '"Only FriCAS source files with file extensions",
         '" %b .as, .ao, .al, %d or %b .spad %d can be compiled."), [])
 
-unknown_compile_file(args) == throw_msg("S2IZ0036",
-    '"%1b is an unknown or unavailable for the %b )compile %d command.",
+unknown_compile_option(args) == throw_msg("S2IZ0036",
+    '"%1b is unknown or unavailable for the %b )compile %d command.",
     args)
+
+do_compile_lisp(lsp) ==
+    if fnameReadable?(lsp) then
+        if not beQuiet then say_msg("S2IZ0089",
+            '"Compiling Lisp source code from file %1", [lsp])
+        compile_file_quietly(lsp)
+    else
+        say_msg("S2IL0003", '"The file %1b is needed but does not exist.",
+                [lsp])
+
+do_merge_info(doLibrary, beQuiet, path) ==
+    if doLibrary then
+        if not(beQuiet) then say_msg("S2IZ0090",
+            '"Issuing )library command for %1", [file_basename(path)])
+        merge_info_from_objects([file_basename(path)], [], false)
+    else if not(beQuiet) then say_msg("S2IZ0084",
+        '"The )library system command was not called after compilation.", [])
 
 compileAsharpCmd args ==
     compileAsharpCmd1 args
     terminateSystemCommand()
     spadPrompt()
+
+file_must_exit(path) ==
+    if not(PROBE_-FILE(path)) then throw_msg("S2IL0003",
+        '"The file %1b is needed but does not exist.", [path])
 
 compileAsharpCmd1 args ==
     -- Assume we entered from the "compile" function, so args ~= nil
@@ -473,8 +511,10 @@ compileAsharpCmd1 args ==
     path := first(args)
     path_ext := file_extention(path)
     (path_ext ~= '"as") and (path_ext ~= '"ao") =>
-        throwKeyedMsg("S2IZ0083", nil)
-    not(PROBE_-FILE(path)) => throwKeyedMsg("S2IL0003", [path])
+        throw_msg("S2IZ0083", CONCAT(
+            '"The Aldor compiler can only compile files with file extensions",
+            '" _".as_" or _".ao_"."), [])
+    file_must_exit(path)
 
     $edit_file := path
 
@@ -514,7 +554,7 @@ compileAsharpCmd1 args ==
         fullopt = 'library   => doLibrary  := true
         fullopt = 'nolibrary => doLibrary  := false
 
-        unknown_compile_file([STRCONC('")", object2String(optname))])
+        unknown_compile_option([STRCONC('")", object2String(optname))])
 
     tempArgs :=
         path_ext = '"ao" =>
@@ -551,20 +591,9 @@ compileAsharpCmd1 args ==
     rc := run_shell_command command
 
     if (rc = 0) and doCompileLisp then
-        lsp := make_filename2(file_basename(path), '"lsp")
-        if fnameReadable?(lsp) then
-            if not beQuiet then sayKeyedMsg("S2IZ0089", [lsp])
-            compile_file_quietly(lsp)
-        else
-            sayKeyedMsg("S2IL0003", [lsp])
+        do_compile_lisp(lsp)
 
-    if rc = 0 and doLibrary then
-        -- do we need to worry about where the compilation output went?
-        if not beQuiet then sayKeyedMsg("S2IZ0090", [file_basename(path)])
-        withAsharpCmd [file_basename(path)]
-    else if not beQuiet then
-        sayKeyedMsg("S2IZ0084", nil)
-
+    do_merge_info(rc = 0 and doLibrary, beQuiet, path)
     extendLocalLibdb $newConlist
 
 compileAsharpArchiveCmd args ==
@@ -573,8 +602,8 @@ compileAsharpArchiveCmd args ==
     -- the name is fully qualified.
 
     path := first(args)
-    file_kind(path) ~= 1 =>
-          throwKeyedMsg("S2IL0003", [path])
+    file_kind(path) ~= 1 => throw_msg("S2IL0003",
+        '"The file %1b is needed but does not exist.", [path])
 
     -- here is the plan:
     --   1. extract the file name and try to make a directory based
@@ -587,12 +616,14 @@ compileAsharpArchiveCmd args ==
 
     dir  := make_filename2(file_basename(path), '"axldir")
     isDir := file_kind(dir)
-    isDir = 0 =>
-        throwKeyedMsg("S2IL0027", [dir, path])
+    rc = 0
 
-    if isDir ~= 1 then
+    if isDir = -1 then
         rc := makedir(dir)
-        rc ~= 0 => throwKeyedMsg("S2IL0027", [dir, path])
+
+    isDir = 0 or rc ~= 0 => throw_msg("S2IL0027",
+      '"The directory %1 could not be created. The file %2 was not compiled.",
+      [dir, path])
 
     curDir := get_current_directory()
 
@@ -633,7 +664,7 @@ compileAsharpLispCmd args ==
     -- and is a file with file extension .lsp
 
     path := first(args)
-    not PROBE_-FILE(path) => throwKeyedMsg("S2IL0003", [path])
+    file_must_exit(path)
 
     optList :=  '( _
       quiet _
@@ -655,20 +686,11 @@ compileAsharpLispCmd args ==
         fullopt = 'library   => doLibrary  := true
         fullopt = 'nolibrary => doLibrary  := false
 
-        unknown_compile_file([STRCONC('")", object2String(optname))])
+        unknown_compile_option([STRCONC('")", object2String(optname))])
 
-    if fnameReadable?(path) then
-        if not beQuiet then sayKeyedMsg("S2IZ0089", [path])
-        compile_file_quietly(path)
-    else
-        sayKeyedMsg("S2IL0003", [path])
+    do_compile_lisp(lsp)
 
-    if doLibrary then
-        -- do we need to worry about where the compilation output went?
-        if not beQuiet then sayKeyedMsg("S2IZ0090", [file_basename(path)])
-        withAsharpCmd([file_basename(path)])
-    else if not beQuiet then
-        sayKeyedMsg("S2IZ0084", nil)
+    do_merge_info(doLibrary, beQuiet, path)
     terminateSystemCommand()
     spadPrompt()
 
@@ -679,7 +701,7 @@ compileSpadLispCmd args ==
     libname := first args
     basename := file_basename(libname)
     path := make_fname(libname, basename, '"lsp")
-    not(PROBE_-FILE(path)) => throwKeyedMsg("S2IL0003", [libname])
+    file_must_exit(path)
 
     optList :=  '( _
       quiet _
@@ -701,26 +723,14 @@ compileSpadLispCmd args ==
         fullopt = 'library   => doLibrary  := true
         fullopt = 'nolibrary => doLibrary  := false
 
-        unknown_compile_file([STRCONC('")", object2String(optname))])
+        unknown_compile_option([STRCONC('")", object2String(optname))])
 
-    if fnameReadable?(path) then
-        if not beQuiet then sayKeyedMsg("S2IZ0089", [path])
-        compile_lib_file(path)
-    else
-        sayKeyedMsg("S2IL0003", [path])
+    do_compile_lisp(lsp)
 
-    if doLibrary then
-        -- do we need to worry about where the compilation output went?
-        if not beQuiet then sayKeyedMsg("S2IZ0090", [file_basename(path)])
-        merge_info_from_objects([file_basename(libname)], [], false)
-    else if not beQuiet then
-        sayKeyedMsg("S2IZ0084", nil)
+    do_merge_info(doLibrary, beQuiet, path)
+
     terminateSystemCommand()
     spadPrompt()
-
-withAsharpCmd args ==
-    $options: local := nil
-    merge_info_from_objects(args, $options, false)
 
 --% )copyright -- display copyright notice
 
@@ -857,11 +867,17 @@ getWorkspaceNames() ==
 
 displayOperations l ==
   null l =>
-    x := UPCASE queryUserKeyedMsg("S2IZ0058",NIL)
-    if MEMQ(STRING2ID_N(x, 1), '(Y YES))
-      then for op in allOperations() repeat reportOpSymbol op
-      else sayKeyedMsg("S2IZ0059",NIL)
-    nil
+        x := query_user_msg("S2IZ0058", CONCAT(
+            '"You have requested that all information about all FriCAS",
+            '" operations (functions) be displayed.  As there are several",
+            '" hundred operations, please confirm your request by typing",
+            '" %b y %d or %b yes %d and then pressing %b Enter %d :"), [])
+        if MEMQ(STRING2ID_N(x, 1), '(Y YES)) then
+            for op in allOperations() repeat reportOpSymbol(op)
+        else say_msg("S2IZ0059", CONCAT(
+            '"Since you did not respond with %b y %d or %b yes %d the",
+            '" list of operations will not be displayed."), [])
+        nil
   for op in l repeat reportOpSymbol op
 
 interpFunctionDepAlists() ==
@@ -890,10 +906,14 @@ displayProperties(option,l) ==
   macros := REMDUP append(bmacs, umacs)
   if vl is ['all] or null vl then
     vl := MSORT append(getWorkspaceNames(),macros)
-  if $frameMessages then sayKeyedMsg("S2IZ0065",[$interpreterFrameName])
+  if $frameMessages then say_msg("S2IZ0065",
+         '"The name of the current frame is %1b .",
+        [$interpreterFrameName])
   null vl =>
-    null $frameMessages => sayKeyedMsg("S2IZ0066",NIL)
-    sayKeyedMsg("S2IZ0067",[$interpreterFrameName])
+        null($frameMessages) => say_msg("S2IZ0066",
+            '"The workspace is empty.", [])
+        say_msg("S2IZ0067", '"The current frame, %1b , is empty.",
+                [$interpreterFrameName])
   interpFunctionDepAlists()
   for v in vl repeat
     isInternalMapName(v) => 'iterate
@@ -938,7 +958,8 @@ displayProperties(option,l) ==
           val => displayValue(v,val,true)
         sayMSG ['"   ",prop,'":  ",val]
         propsSeen:= [prop,:propsSeen]
-    sayKeyedMsg("S2IZ0068",[option])
+    say_msg("S2IZ0068",
+            '"There is nothing to display for option %1b .", [option])
   terminateSystemCommand()
 
 sayFunctionDeps x ==
@@ -1123,21 +1144,21 @@ frameEnvironment fname ==
 
 frameSpad2Cmd args ==
   frameArgs := '(drop import last names new next)
-  $options => throwKeyedMsg("S2IZ0016",['")frame"])
+  $options => throw_msg("S2IZ0016",
+        '"The )frame system command takes arguments but no options.", [])
   null(args) => helpSpad2Cmd ['frame]
   arg  := selectOptionLC(first args,frameArgs,'optionError)
   args := rest args
   if args is [a] then args := a
   if ATOM args then args := object2Identifier args
-  arg = 'drop  =>
-    args and PAIRP(args) => throwKeyedMsg("S2IZ0017",[args])
-    closeInterpreterFrame(args)
+  arg = 'drop or arg = 'new =>
+        args and PAIRP(args) => throw_msg("S2IZ0017",
+            '"%1b is not a valid frame name.", [args])
+        arg = 'drop => closeInterpreterFrame(args)
+        addNewInterpreterFrame(args)
   arg = 'import =>  importFromFrame args
   arg = 'last  =>   previousInterpreterFrame()
   arg = 'names =>   displayFrameNames()
-  arg = 'new   =>
-    args and PAIRP(args) => throwKeyedMsg("S2IZ0017",[args])
-    addNewInterpreterFrame(args)
   arg = 'next  =>   nextInterpreterFrame()
 
   NIL
@@ -1282,15 +1303,32 @@ displayFrameNames() ==
 importFromFrame args ==
   -- args should have the form [frameName,:varNames]
   if args and atom args then args := [args]
-  null args => throwKeyedMsg("S2IZ0073",NIL)
+  null args => throw_msg("S2IZ0073", CONCAT(
+        '"%b )frame import %d must be followed by the frame name. The",
+        '" names of objects in that frame can then optionally follow the",
+        '" frame name.  For example, %ceon %b )frame import calculus %d",
+        '" %ceoff imports all objects in the %b calculus %d frame, and",
+        '" %ceon %b )frame import calculus epsilon delta %d %ceoff imports",
+        '" the objects named %b epsilon %d and %b delta %d from the frame",
+        '" %b calculus %d .  Please note that if the current frame",
+        '" contained any information about objects with these names, then",
+        '" that information would be cleared before the import took place."),
+        [])
   [fname,:args] := args
   not member(fname,frameNames()) =>
-    throwKeyedMsg("S2IZ0074",[fname])
+        throw_msg("S2IZ0074", CONCAT(
+            '"You cannot import anything from the frame %1b because that",
+            '" is not the name of an existing frame."), [fname])
   fname = frameName first $interpreterFrameRing =>
-    throwKeyedMsg("S2IZ0075",NIL)
+        throw_msg("S2IZ0075", CONCAT(
+            '"You cannot import from the current frame (nor is there a",
+            '" need!)."), [])
   fenv := frameEnvironment fname
   null args =>
-    x := UPCASE queryUserKeyedMsg("S2IZ0076",[fname])
+    x := query_user_msg("S2IZ0076", CONCAT(
+            '"User verification required: do you really want to import",
+            '" everything from the frame %1b ?  If so, please enter",
+            '" %b y %d or %b yes %d :"), [fname])
     MEMQ(STRING2ID_N(x, 1), '(Y YES)) =>
       vars := NIL
       for [v,:props] in CAAR fenv repeat
@@ -1298,7 +1336,9 @@ importFromFrame args ==
           for [m,:.] in props repeat vars := cons(m,vars)
         vars := cons(v,vars)
       importFromFrame [fname,:vars]
-    sayKeyedMsg("S2IZ0077",[fname])
+    say_msg("S2IZ0077",  CONCAT(
+            '"On your request, FriCAS will not import everything from",
+            '" frame %1b ."), [fname])
   for v in args repeat
     plist := GETALIST(CAAR fenv,v)
     plist =>
@@ -1308,8 +1348,13 @@ importFromFrame args ==
         putHist(v,prop,val,$InteractiveFrame)
     (m := get("--macros--",v,fenv)) =>
       putHist("--macros--",v,m,$InteractiveFrame)
-    sayKeyedMsg("S2IZ0079",[v,fname])
-  sayKeyedMsg("S2IZ0078",[fname])
+    say_msg("S2IZ0079", CONCAT(
+            '"FriCAS cannot import %1b from frame %2b because it cannot",
+            '" be found."), [v, fname])
+  say_msg("S2IZ0078", CONCAT(
+        '"Import from frame %1b is complete. Please issue %b )display all",
+        '" %d if you wish to see the contents of the current frame."),
+        [fname])
 
 
 
@@ -1387,10 +1432,10 @@ historySpad2Cmd() ==
         $HiFiAccess:= 'T
         initHistList()
         say_msg("S2IH0008", '"The history facility is now on.", NIL)
-      x := UPCASE query_user_msg("S2IH0009", CONCAT(
+      x := query_user_msg("S2IH0009", CONCAT(
          '"Turning on the history facility will clear the contents of",
          '"the workspace.  Please enter %b y %d or %b yes %d if you really",
-         '" want to do this:"), NIL)
+         '" want to do this:"), [])
       MEMQ(STRING2ID_N(x, 1), '(Y YES)) =>
         histFileErase histFileName()
         $HiFiAccess:= 'T
@@ -1965,9 +2010,9 @@ quit() == quitSpad2Cmd()
 
 quitSpad2Cmd() ==
   $quitCommandType ~= 'protected => leaveScratchpad()
-  x := UPCASE(query_user_msg("S2IZ0031", CONCAT(
+  x := query_user_msg("S2IZ0031", CONCAT(
         '"Please enter %b y %d or %b yes %d if you really want to leave the",
-        '" interactive environment and return to the operating system:"), []))
+        '" interactive environment and return to the operating system:"), [])
   MEMQ(STRING2ID_N(x, 1), '(Y YES)) => leaveScratchpad()
   say_msg("S2IZ0032", CONCAT(
         '"You have chosen to remain in the %b FriCAS %d",
@@ -2009,7 +2054,7 @@ readSpad2Cmd l ==
   ll := find_file(l, fileTypes)
   if null ll then
     ifthere => return nil    -- be quiet about it
-    throwKeyedMsg("S2IL0003", [l])
+    throw_msg("S2IL0003", '"The file %1b is needed but does not exist.", [l])
   ft := file_extention(ll)
   downft := DOWNCASE(ft)
   not(member(downft, fileTypes)) =>
@@ -2052,6 +2097,62 @@ show l ==
   showSpad2Cmd l
   ioHook("endSysCmd", "show")
 
+show_record_msg() == say_msg("S2IZ0044R", CONCAT(
+    '"Record(a:A,...,b:B) %l",
+    '" %b Record %d takes any number of selector-domain pairs as",
+    '" arguments: %i %l",
+    '" a, a selector, an element of domain Symbol %l",
+    '" A, a domain of category SetCategory %l ... %l",
+    '" b, a selector, an element of domain Symbol %l",
+    '" B, a domain of category SetCategory %u %l",
+    '" This constructor is a primitive in FriCAS.",
+    '" The selectors a,...,b of a Record type must be distinct. %l %l",
+    '" In order for more information to be displayed about %1b ,",
+    '" you must give it specific arguments. For example: %2b %l",
+    '" You can also use the HyperDoc Browser."),
+    ['Record, '")show Record(a: Integer, b: String)"])
+
+show_mapping_msg() == say_msg("S2IZ0044M", CONCAT(
+    '"Mapping(T, S, ...) %l",
+    '" %b Mapping %d takes any number of arguments of the form: %i %l",
+    '" T, a domain of category SetCategory %l",
+    '" S, a domain of category SetCategory %l ... %u %l",
+    '" Mapping(T, S, ...) denotes the class of objects which are",
+    '" mappings from a source domain (S, ...) into a target domain T.",
+    '" The Mapping constructor can take any number of arguments.",
+    '" All but the first argument is regarded as part of a source",
+    '" tuple for the mapping.",
+    '" For example, Mapping(T, A, B) denotes the",
+    '" class of mappings from (A, B) into T. %l",
+    '" This constructor is a primitive in FriCAS.",
+    '" For more information, use the HyperDoc Browser."), [])
+
+show_union_msg1() == say_msg("S2IZ0045T", CONCAT(
+    '"Tagged union: Union(a:A, ..., b:B) %l",
+    '" %b Union %d takes any number of _"tag_"-domain pairs of arguments:",
+    '" %i %l",
+    '" a, a tag, an element of domain Symbol %l",
+    '" A, a domain of category SetCategory %l ... %l",
+    '" b, a tag, an element of domain Symbol %l",
+    '" B, a domain of category SetCategory %u %l",
+    '" This constructor is a primitive in FriCAS.",
+    '" In tagged Union, tags a, ..., b must be distinct. %l %l",
+    '" In order for more information to be displayed about %1b ,",
+    '" you must give it specific arguments. For example: %2b %l",
+    '" You can also use the HyperDoc Browser."),
+    [Union, '")show Union(a: Integer, b: String)"])
+
+show_union_msg2() == say_msg("S2IZ0045U", CONCAT(
+    '"Untagged union: Union(A, ..., B) %l",
+    '" %b Union %d takes any number of domain arguments: %i %l",
+    '" A, a domain of category SetCategory %l ... %l",
+    '" B, a domain of category SetCategory %u %l",
+    '" In untagged form of Union, domains A, ..., B must be distinct.",
+    '" In order for more information to be displayed about %1b ,",
+    '" you must give it specific arguments. For example: %2b %l",
+    '" You can also use the HyperDoc Browser."),
+    [Union, '")show Union(a: Integer, b: String)"])
+
 showSpad2Cmd l ==
   l = [NIL] => helpSpad2Cmd '(show)
   $showOptions : local := '(operations)
@@ -2060,16 +2161,19 @@ showSpad2Cmd l ==
   $env : local := $InteractiveFrame
   l is [constr] =>
     constr in '(Union Record Mapping) =>
-      constr = 'Record =>
-        sayKeyedMsg("S2IZ0044R",[constr, '")show Record(a: Integer, b: String)"])
-      constr = 'Mapping =>
-        sayKeyedMsg("S2IZ0044M",NIL)
-      sayKeyedMsg("S2IZ0045T",[constr, '")show Union(a: Integer, b: String)"])
-      sayKeyedMsg("S2IZ0045U",[constr, '")show Union(Integer, String)"])
+            constr = 'Record => show_record_msg()
+            constr = 'Mapping => show_mapping_msg()
+            show_union_msg1()
+            show_union_msg2()
     constr is ['Mapping, :.] =>
-      sayKeyedMsg("S2IZ0044M",NIL)
+            show_mapping_msg()
     reportOperations(constr,constr)
   reportOperations(l,l)
+
+say_about_say() == say_msg("S2IZ0063", CONCAT(
+    '"The %b )show %d system command is used to display information about",
+    '" types or partial types.  For example, %b )show Integer %d will show",
+    '" information about %b Integer %d ."), [])
 
 reportOperations(oldArg,u) ==
   -- u might be an uppercased version of oldArg
@@ -2079,14 +2183,21 @@ reportOperations(oldArg,u) ==
   $resolve_level : local := 15
   null u => nil
   u = "%" =>
-    sayKeyedMsg("S2IZ0063",NIL)
-    sayKeyedMsg("S2IZ0064",NIL)
+        say_about_say()
+        say_msg("S2IZ0064", CONCAT(
+            '"%l %b %% %d is a special variable holding the result of",
+            '" the last computation. Issue %b )display properties %% %d",
+            '" to see this value."), [])
   u isnt ['Record,:.] and u isnt ['Union,:.] and
     null(isNameOfType u) and u isnt ['typeOf,.] =>
       if ATOM oldArg then oldArg := [oldArg]
-      sayKeyedMsg("S2IZ0063",NIL)
+      say_about_say()
       for op in oldArg repeat
-        sayKeyedMsg("S2IZ0062",[opOf op])
+                say_msg("S2IZ0062", CONCAT(
+                    '"%l %1b is not the name of a known type constructor.",
+                    '" If you want to see information about any operations",
+                    '" named %1b, issue %ceon %b )display operations %1 %d",
+                    '" %ceoff"), [opOf op])
   (v := isDomainValuedVariable u) =>  reportOpsFromUnitDirectly0 v
   unitForm:=
     atom u => opOf unabbrev u
@@ -2195,7 +2306,8 @@ reportOpsFromUnitDirectly unitForm ==
   NIL
 
 reportOpsFromLisplib(op,u) ==
-  null(fn:= constructor? op) => sayKeyedMsg("S2IZ0054",[u])
+  null(fn := constructor?(op)) => say_msg("S2IZ0054",
+        '"%1b is unknown to us, so no information is available.", [u])
   argml :=
     (s := getConstructorSignature op) => IFCDR s
     NIL
@@ -2580,7 +2692,13 @@ whatCommands(patterns) ==
     sayAsManyPerLineAsPossible l
     SAY '" "
   patterns => nil  -- don't be so verbose
-  sayKeyedMsg("S2IZ0046",NIL)
+  say_msg("S2IZ0046", CONCAT(
+        '"For more information about individual commands, use the %b",
+        '" )help %d system command followed by the command name or the",
+        '" command name followed by a question mark.  Some commands (such",
+        '" as %b )lisp %d ) may require the %b )help lisp %d format.  For",
+        '" example, issue %b )help help %d or %b )help %x1 ? %d to find",
+        '" out more about the help command itself."), [])
   nil
 
 reportWhatOptions() ==
@@ -2751,12 +2869,12 @@ nplisp str ==
 npsystem(unab, str) ==
   spaceIndex := SEARCH('" ", str)
   null spaceIndex =>
-    sayKeyedMsg("S2IZ0080", [str])
+        say_msg("S2IZ0080", '"Unknown system command: %1b", [str])
   sysPart := SUBSEQ(str, 0, spaceIndex)
   -- The following is a hack required by the fact that unAbbreviateKeyword
   -- returns the word "system" for unknown words
   null SEARCH(sysPart, STRING unab) =>
-    sayKeyedMsg("S2IZ0080", [sysPart])
+        say_msg("S2IZ0080", '"Unknown system command: %1b", [sysPart])
   command := SUBSEQ(str, spaceIndex+1)
   run_shell_command command
 

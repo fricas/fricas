@@ -329,8 +329,6 @@ say_msg(key, msg, args) ==
   say_msg_local(msg, args)
   ioHook("endOfKeyedMsg", key)
 
-sayKeyedMsg(key, args) == say_msg(key, getKeyedMsg(key), args)
-
 say_msg_local(msg, args) ==
   msg := segmentKeyedMsg msg
   msg := substituteSegmentedMsg(msg,args)
@@ -399,9 +397,7 @@ query_user_msg(key, msg, args) ==
   ioHook("startQueryUser")
   ans := read_line conStream
   ioHook("endOfQueryUser")
-  ans
-
-queryUserKeyedMsg(key, args) == query_user_msg(key, getKeyedMsg(key), args)
+  UPCASE(ans)
 
 flowSegmentedMsg(msg, len, offset) ==
   -- tries to break a sayBrightly-type input msg into multiple
@@ -477,9 +473,6 @@ msg_comp_failure1(key, msg, args, tree) ==
   THROW('mapCompiler,'tryInterpOnly)
 
 msg_comp_failure(key, msg, args) == msg_comp_failure1(key, msg, args, [])
-
-keyedMsgCompFailure(key, args) ==
-    msg_comp_failure(key, getKeyedMsg(key), args)
 
 keyedMsgCompFailureSP(key, args, atree) ==
     msg_comp_failure1(key, getKeyedMsg(key), args, atree)

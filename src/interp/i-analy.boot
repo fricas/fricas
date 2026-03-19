@@ -693,13 +693,14 @@ bottomUpPercent(tree is [op,:argl]) ==
     val:= fetchOutput(-1)
     putValue(op,val)
     putModeSet(op,[objMode(val)])
+  err_msg := '"The argument to %b %% %d must be a single integer."
   argl is [t] =>
     i:= getArgValue(t,$Integer) =>
       val:= fetchOutput i
       putValue(op,val)
       putModeSet(op,[objMode(val)])
-    throwKeyedMsgSP("S2IB0006", NIL, t)
-  throwKeyedMsgSP("S2IB0006", NIL, op)
+    throw_msg_pos("S2IB0006", err_msg, [], t)
+  throw_msg_pos("S2IB0006", err_msg, [], op)
 
 bottomUpFormRetract(t,op,opName,argl,amsl) ==
   -- tries to find one argument, which can be pulled back, and calls

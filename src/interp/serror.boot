@@ -36,21 +36,21 @@
 
 syGeneralErrorHere() ==
    pos := tokPosn($tok)
-   ncSoftError(pos, 'S2CY0002, [])
+   ncSoftError(pos, '"Improper syntax.", [])
 
 syIgnoredFromTo(pos1, pos2) ==
   if pfGlobalLinePosn pos1 = pfGlobalLinePosn pos2 then
-      ncSoftError(position_from_to(pos1, pos2), 'S2CY0005, [])
+      ncSoftError(position_from_to(pos1, pos2), '"Ignored.", [])
   else
-      ncSoftError(position_from(pos1), 'S2CY0003, [])
-      ncSoftError(position_to(pos2), 'S2CY0004, [])
+      ncSoftError(position_from(pos1), '"Ignored from here", [])
+      ncSoftError(position_to(pos2), '"to here.", [])
 
 npMissingMate(close,open)==
-   ncSoftError(tokPosn open, 'S2CY0008, [])
+   ncSoftError(tokPosn open, '"Missing mate.", [])
    npMissing close
 
 npMissing s==
-   ncSoftError(tokPosn $stok,'S2CY0007, [PNAME s])
+   ncSoftError(tokPosn($stok), '"Possibly missing a %b %1 %d", [PNAME(s)])
    THROW("TRAPPOINT","TRAPPED")
 
 pfSourceStok x==
@@ -65,12 +65,13 @@ npTrapForm(x)==
    EQ(a,'NoToken)=>
          syGeneralErrorHere()
          THROW("TRAPPOINT","TRAPPED")
-   ncSoftError(tokPosn a, 'S2CY0002, [])
+   np_trap_form(a)
+
+np_trap_form(a) ==
+   ncSoftError(tokPosn(a), '"Improper syntax.", [])
    THROW("TRAPPOINT","TRAPPED")
 
-npTrap()==
-   ncSoftError(tokPosn $stok,'S2CY0002,[])
-   THROW("TRAPPOINT","TRAPPED")
+npTrap()== np_trap_form($tok)
 
 npRecoverTrap()==
   npFirstTok()

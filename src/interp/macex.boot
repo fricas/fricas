@@ -109,7 +109,8 @@ macMacro pf ==
     lhs := pfMacroLhs pf
     rhs := pfMacroRhs pf
     not pfId? lhs =>
-        ncSoftError (pfSourcePosition lhs, 'S2CM0001, [%pform lhs] )
+        ncSoftError(pfSourcePosition(lhs),
+            '"%1 is improper for macro definition.  Ignored.", [%pform(lhs)])
         pf
     sy := pfIdSymbol lhs
 
@@ -157,11 +158,12 @@ mac0MLambdaApply(mlambda, args, opf, $pfMacros) ==
     body   := pfMLambdaBody  mlambda
     #args ~= #params =>
         pos := pfSourcePosition opf
-        ncHardError(pos,'S2CM0003, [#params,#args])
+        ncHardError(pos, '"Expected %1b arguments, but received %2b.",
+                    [#params, #args])
     for p in params for a in args repeat
         not pfId? p =>
             pos := pfSourcePosition opf
-            ncHardError(pos, 'S2CM0004, [%pform p])
+            ncHardError(pos, '"Macro parameter %1f is not an id", [%pform(p)])
         mac0Define(pfIdSymbol p, 'mparam, a)
 
     mac0ExpandBody( body , opf, $macActive, $posActive)
@@ -184,7 +186,7 @@ mac0InfiniteExpansion(posn, body, active) ==
             [sy,st] := got
             st = 'mlambda => CONCAT(PNAME sy, '"(...)")
             PNAME sy
-    ncSoftError (posn, 'S2CM0005, _
-       [ [:[n,'"==>"] for n in reverse rnames], fname, %pform body ]  )
+    ncSoftError(posn, '"Cycle in macro expansion: %l %1y %2 %l.  Left as: %3f",
+        [[:[n, '"==>"] for n in reverse(rnames)], fname, %pform(body)])
 
     body

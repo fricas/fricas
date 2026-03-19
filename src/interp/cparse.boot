@@ -49,15 +49,17 @@ npParse stream ==
     found:=CATCH("TRAPPOINT",npItem())
     if found="TRAPPED"
     then
-      ncSoftError(tokPosn $stok,'S2CY0006, [])
+      ncSoftError(tokPosn($stok), '"syntax error at top level", [])
       pfWrong(pfDocument  '"top level syntax error" ,pfListOf nil)
     else if not null $inputStream
          then
-          ncSoftError(tokPosn $stok,'S2CY0002,[])
+          ncSoftError(tokPosn($stok),'"Improper syntax.", [])
           pfWrong(pfDocument ['"input stream not exhausted"],pfListOf [])
          else if null $stack
               then
-                 ncSoftError(tokPosn $stok,'S2CY0009, [])
+                 ncSoftError(tokPosn($stok),
+                             '"System error while parsing, stack is empty.",
+                             [])
                  pfWrong(pfDocument ['"stack empty"],pfListOf [])
               else
                  first $stack

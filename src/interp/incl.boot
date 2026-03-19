@@ -399,26 +399,36 @@ inclHandleSay(pos, [key, args]) ==
     ncSoftError(pos, key, args)
 
 inclmsgSay str  ==
-    ['S2CI0001, [%id str]]
+    ['"%1f", [%id(str)]]
 inclmsgPrematureEOF ufo  ==
-    ['S2CI0002, [%origin ufo]]
+    [CONCAT('"File %1f ended where at least one )endif was still needed.",
+            '"An appropriate number of )endif lines has been assumed."),
+     [%origin(ufo)]]
 inclmsgPrematureFin ufo  ==
-    ['S2CI0003, [%origin ufo]]
+    [CONCAT('"A )fin command has been given in %1f where at least one",
+            '" endif was still needed.",
+            '"An appropriate number of )endif lines have been assumed."),
+     [%origin(ufo)]]
 inclmsgFileCycle(ufos,fn) ==
     flist := [porigin n for n in reverse ufos]
     f1    := porigin fn
     cycle := [:[:[n,'"==>"] for n in flist], f1]
-    ['S2CI0004, [%id cycle, %id f1]]
+    [CONCAT('"There is a cycle in the )include files: %i %l %1f %u %l.",
+            '" The inner occurrence of %2f has not been included."),
+     [%id(cycle), %id(f1)]]
 inclmsgFinSkipped() ==
-    ['S2CI0008, []]
+    [CONCAT('"A )fin command was skipped (along with everything else)",
+            '" in a false branch of an )if...)endif."), []]
 inclmsgIfSyntax(ufo,found,context) ==
     found := CONCAT('")", found)
-    ['S2CI0009, [%id found, %id context, %origin ufo]]
+    [CONCAT('"Incorrect )if...)endif syntax.  A %b %1f %d was found %2f.",
+             '" The processing of the source from %3f has been abandoned."),
+     [%id(found), %id(context), %origin(ufo)]]
 inclmsgNoFile() ==
-    ['S2CI0010, []]
+    ['"The )include directive contains no file.", []]
 inclmsgCannotRead fn ==
-    ['S2CI0011, [fn]]
+    ['"The )include file %b %1f %d does not exist or cannot be read.", [fn]]
 inclmsgIfBug() ==
-    ['S2CB0002, []]
+    ['"Unexpected state in )if...)endif.", []]
 inclmsgCmdBug() ==
-    ['S2CB0003, []]
+    ['"Unexpected command in source inclusion.", []]

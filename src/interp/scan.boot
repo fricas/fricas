@@ -491,7 +491,8 @@ scanString()==
 scanS()==
    if $n>=$sz
    then
-     ncSoftError(cons($linepos,lnExtraBlanks $linepos+$n),"S2CN0001",[])
+     ncSoftError(cons($linepos, lnExtraBlanks($linepos + $n)),
+                 '"Quote added at end of line.", [])
      '""
    else
            n:=$n
@@ -503,7 +504,7 @@ scanS()==
            then
                  $n:=$sz
                  ncSoftError(cons($linepos,lnExtraBlanks $linepos+$n),
-                         "S2CN0001",[])
+                         '"Quote added at end of line.", [])
                  SUBSTRING($ln,n,nil)
            else if mn=strsym
                 then
@@ -581,13 +582,14 @@ spleI1(dig,zro) ==
 scanCheckRadix(r,w)==
        ns:=#w
        ns = 0 =>
-            ncSoftError([$linepos, :lnExtraBlanks $linepos+$n], "S2CN0004", [])
+            ncSoftError([$linepos, :lnExtraBlanks($linepos + $n)],
+                 '"No digits after radix specification", [])
        done:=false
        for i in 0..ns-1  repeat
          a:=rdigit? w.i
-         if null a or a>=r
-         then  ncSoftError(cons($linepos,lnExtraBlanks $linepos+$n-ns+i),
-                    "S2CN0002", [w.i])
+         if null a or a>=r then
+            ncSoftError(cons($linepos, lnExtraBlanks($linepos + $n - ns + i)),
+                '"The character %b %1 %d is greater than the radix.", [w.i])
 
 scanNumber() ==
        a := spleI(function digit?)
@@ -669,7 +671,7 @@ scanError()==
       n:=$n
       $n:=$n+1
       ncSoftError(cons($linepos,lnExtraBlanks $linepos+$n),
-         "S2CN0003",[$ln.n])
+          '"The character %b %1 %d is not a FriCAS character.", [$ln.n])
       lferror ($ln.n)
 
 

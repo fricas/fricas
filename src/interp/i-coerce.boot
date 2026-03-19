@@ -1402,6 +1402,10 @@ hasCorrectTarget(m,sig is [dc,tar,:.]) ==
 
 --% COERCE
 
+$msg_undef_branch := CONCAT(
+    '"The user-defined function %1bp has branched to an undefined branch",
+    '" in conditional processing.")
+
 intCodeGenCOERCE(triple,t2) ==
   -- NOTE: returns a triple
   t1 := objMode triple
@@ -1442,9 +1446,9 @@ intCodeGenCOERCE(triple,t2) ==
 
   -- next is hack for if-then-elses
   (t1 = '$NoValueMode) and (val is ['COND,pred]) =>
-    code :=
-      ['COND,pred,
-        [MKQ true,['throwKeyedMsg,MKQ "S2IM0016",MKQ $mapName]]]
+    code := ['COND, pred,
+            [MKQ(true), ['throw_msg, MKQ("S2IM0016"),
+                          "$msg_undef_branch", [MKQ($mapName)]]]]
     objNew(code,t2)
 
   -- optimize coerces to OutputForm

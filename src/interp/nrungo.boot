@@ -179,8 +179,7 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
   -- gives k boundary values, one general term plus possibly an
   -- "out of domain" condition
   pcl := [x for x in pcl | not (x is [''T,:mess] and
-    (CONTAINED('throwMessage,mess) or
-      CONTAINED('throwKeyedMsg,mess)))]
+        CONTAINED('throw_msg, mess))]
   integer := EVAL $Integer
   iequalSlot := compiledLookupCheck("=", '((Boolean) % %), integer)
   lt_slot := compiledLookupCheck("<", '((Boolean) % %), integer)

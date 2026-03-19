@@ -368,6 +368,11 @@ upor x ==
 
 --% Handlers for case
 
+err_msg_local_type(obj) == msg_comp_failure("S2IC0006", CONCAT(
+    '"Cannot compile conversion for types involving local variables.  In",
+    '" particular, could not compile the expression involving %b :: %1p %d"),
+    [obj])
+
 upcase t ==
   t isnt [op,lhs,rhs] => nil
   bottomUp lhs
@@ -390,7 +395,7 @@ upcase t ==
               [''T, false]]
   else
     (not $genValue) and or/[CONTAINED(var,rhs) for var in $localVars] =>
-        keyedMsgCompFailure("S2IC0006",[rhs])
+            err_msg_local_type(rhs)
     rhs := evaluateType unabbrev rhs
     $genValue =>
         t' := coerceUnion2Branch triple
@@ -446,7 +451,7 @@ upCOERCE t ==
   $useConvertForCoercions : local := true
   -- do not (yet) support local variables on the rhs
   (not $genValue) and or/[CONTAINED(var,rhs) for var in $localVars] =>
-    keyedMsgCompFailure("S2IC0006",[rhs])
+        err_msg_local_type(rhs)
   $declaredMode: local := NIL
   m := evaluateType unabbrev rhs
   not isLegitimateMode(m,NIL,NIL) => throwKeyedMsg("S2IE0004",[m])
@@ -1113,10 +1118,13 @@ evalTupleConstruct(op,l,m,tar) ==
   putValue(op,val)
   putModeSet(op,[m])
 
+err_cannot_convert(type) == throw_msg("S2IC0007",
+    '"Cannot convert an element of the construct to type %1bp .", [type])
+
 evalInfiniteTupleConstruct(op,l,m,tar) ==
   ['Stream, ud] := m
   code := first [(getArgValue(x,['InfiniteTuple, ud]) or
-    throwKeyedMsg("S2IC0007",[['InifinteTuple, ud]])) for x in l]
+        err_cannot_convert(['InifinteTuple, ud])) for x in l]
   val :=
     $genValue => objNewWrap(timedEVALFUN code,m)
     objNew(code,m)
@@ -1131,7 +1139,7 @@ evalInfiniteTupleConstruct(op,l,m,tar) ==
 evalconstruct(op,l,m,tar) ==
   [agg,:.,underMode]:= m
   code := ['LIST, :(argCode:=[(getArgValue(x,underMode) or
-    throwKeyedMsg("S2IC0007",[underMode])) for x in l])]
+        err_cannot_convert(underMode))  for x in l])]
   val :=
     $genValue => objNewWrap(timedEVALFUN code,m)
     objNew(code,m)
@@ -1240,8 +1248,11 @@ upDeclare t ==
   mode = $Void => throw_msg_pos("S2IS0015",
       '"An identifier cannot be declared to have type %b Void %d:", [], op)
   not isLegitimateMode(mode,nil,nil) => throwKeyedMsgSP("S2IE0004",[mode],op)
-  categoryForm?(mode) => throwKeyedMsgSP("S2IE0011",[mode, 'category],op)
-  packageForm?(mode) => throwKeyedMsgSP("S2IE0011",[mode, 'package],op)
+  err_m := '"%1bp is a %2 , not a domain, and declarations require domains."
+  categoryForm?(mode) =>
+        throw_msg_pos("S2IE0011", err_m, [mode, 'category], op)
+  packageForm?(mode) =>
+        throw_msg_pos("S2IE0011", err_m, [mode, 'package], op)
   if true then
     lhs is ['free,['Tuple,:vars]] or lhs is ['free,['LISTOF,:vars]] or
       lhs is ['free,:vars] =>

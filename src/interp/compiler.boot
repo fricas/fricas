@@ -1372,8 +1372,7 @@ compileSpad2Cmd args ==
     not(has_extention?(path, '"spad")) => throw_msg("S2IZ0082", CONCAT(
       '"The FriCAS system compiler can only compile files with file",
         '" extension _".spad_"."), nil)
-    not(PROBE_-FILE(path)) => throw_msg("S2IL0003",
-            '"The file %1b is needed but does not exist.", [path])
+    file_must_exit(path)
 
     $edit_file := path
     say_msg("S2IZ0038",
@@ -1423,7 +1422,7 @@ compileSpad2Cmd args ==
         fullopt = 'break       => $scanIfTrue := nil
         fullopt = 'vartrace      =>
           $QuickLet  := false
-        unknown_compile_file([STRCONC('")", object2String(optname))])
+        unknown_compile_option([STRCONC('")", object2String(optname))])
 
     compilerDoit(lib, path)
     extendLocalLibdb $newConlist

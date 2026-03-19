@@ -38,24 +38,24 @@
 
 -- Pick off the tag
 ncTag x ==
-   not PAIRP x => ncBug('S2CB0031,[])
+   not(PAIRP(x)) => ncBug('"bad object", [])
    x := QCAR x
    IDENTP x => x
-   not PAIRP x => ncBug('S2CB0031,[])
+   not(PAIRP(x)) => ncBug('"bad object", [])
    QCAR x
 
 -- Pick off the property list
 ncAlist x ==
-   not PAIRP x => ncBug('S2CB0031,[])
+   not(PAIRP(x)) => ncBug('"bad object", [])
    x := QCAR x
    IDENTP x => NIL
-   not PAIRP x => ncBug('S2CB0031,[])
+   not(PAIRP(x)) => ncBug('"bad object", [])
    QCDR x
 
  --- Get the entry for key k on x's association list
 ncEltQ(x,k) ==
    r := ASSQ(k,ncAlist x)
-   NULL r => ncBug ('S2CB0007,[k])
+   NULL(r) => ncBug ('"Association list search failed on %1", [k])
    rest r
 
 -- Put (k . v) on the association list of x and return v

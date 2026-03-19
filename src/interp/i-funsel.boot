@@ -709,7 +709,8 @@ findUniqueOpInDomain(op,opName,dom) ==
   mmList := ASSQ(opName, getOperationAlistFromLisplib first dom)
   mmList := subCopy(mmList,constructSubst dom)
   null mmList => throw_msg("S2IS0021",
-        '"The function %1b is not implemented in %2bp .", [opName, dom])
+        '"There is no operation named %1b in the domain or package %2bp .",
+        [opName, dom])
   mmList := rest mmList   -- ignore the operator name
   -- use evaluation type context to narrow down the candidate set
   if target := getTarget op then

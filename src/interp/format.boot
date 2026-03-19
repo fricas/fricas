@@ -183,11 +183,11 @@ reportOpSymbol op1 ==
           '" would get by issuing %ceon %b )what operations %1 %d %ceoff"),
             [op1])
     if SIZE PNAME op1 < 3 then
-      x := UPCASE(query_user_msg("S2IZ0060", CONCAT(
+      x := query_user_msg("S2IZ0060", CONCAT(
           '"%l There are possibly a great many operation names containing".
           '" the substring %1b . Please confirm your request to have these",
           '" listed by typing %b y %d or %b yes %d and then pressing",
-          '" %b Enter %d :"), [op1]))
+          '" %b Enter %d :"), [op1])
       null MEMQ(STRING2ID_N(x, 1),'(Y YES)) =>
         ok := nil
         say_msg("S2IZ0061", CONCAT(

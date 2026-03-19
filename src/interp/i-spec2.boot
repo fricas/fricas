@@ -108,7 +108,9 @@ upDollar t ==
   putAtree(first form,'dollar,t)
   ms := bottomUp form
   f in '(One Zero) and PAIRP(ms) and first(ms) = $OutputForm =>
-    throwKeyedMsg("S2IS0021",[f,t])
+        throw_msg("S2IS0021",
+           '"There is no operation named %1b in the domain or package %2bp .",
+           [f, t])
   putValue(op,getValue first form)
   putModeSet(op,ms)
 
@@ -186,12 +188,16 @@ uplocal t ==
   putModeSet(t,[$Void])
 
 upfreeWithType(var,type) ==
-  sayKeyedMsg("S2IS0055",['"free",var])
-  var
+    say_msg("S2IS0055", CONCAT(
+        '"The reserved word %1b is not supported yet and so ignored",
+        '" for variable %2b"), ['"free", var])
+    var
 
 uplocalWithType(var,type) ==
-  sayKeyedMsg("S2IS0055",['"local",var])
-  var
+    say_msg("S2IS0055", CONCAT(
+        '"The reserved word %1b is not supported yet and so ignored",
+        '" for variable %2b"), ['"local", var])
+    var
 
 --% Handlers for has
 
@@ -254,12 +260,15 @@ compileIF(op,cond,a,b,t) ==
   evalIF(op,rest t,m)
   putModeSet(op,[m])
 
+$msg_fun_undefined :=
+    '"The function %1bp is not defined for the given argument(s)."
+
 evalIF(op,[cond,a,b],m) ==
   -- generate code form compiled IF
   elseCode:=
     b='noMapVal =>
-      [[MKQ true, ['throwKeyedMsg,MKQ "S2IM0018",
-        ['CONS,MKQ object2Identifier $mapName,NIL]]]]
+      [[MKQ(true), ['throw_msg, MKQ("S2IM0018"), $msg_fun_undefined,
+        ['CONS, MKQ(object2Identifier($mapName)), []]]]]
     b = 'noBranch => [[MKQ true, ['voidValue]]]
     [[MKQ true,genIFvalCode(b,m)]]
   code:=['COND,[getArgValue(cond,$Boolean),
@@ -486,10 +495,14 @@ upLET t ==
             " not allowed."), [var, var'])
     if get0(var, 'isInterpreterFunction, $e) then
       putHist(var,'isInterpreterFunction,false,$e)
-      sayKeyedMsg("S2IS0049",['"Function",var])
+      say_msg("S2IS0049",
+            '"%1 definition for %2b is being overwritten.",
+            ['"Function", var])
     else if get0(var, 'isInterpreterRule, $e) then
       putHist(var,'isInterpreterRule,false,$e)
-      sayKeyedMsg("S2IS0049",['"Rule",var])
+      say_msg("S2IS0049",
+            '"%1 definition for %2b is being overwritten.",
+            ['"Rule", var])
     not isTupleForm(rhs) and (m := isType rhs) => upLETtype(op,lhs,m)
     transferPropsToNode(var,lhs)
     if ( m:= getMode(lhs) ) then
@@ -1078,8 +1091,8 @@ upTuple t ==
 
 evalTuple(op,l,m,tar) ==
   [agg,:.,underMode]:= m
-  code := asTupleNewCode(#l,
-    [(getArgValue(x,underMode) or throwKeyedMsg("S2IC0007",[underMode])) for x in l])
+  code := asTupleNewCode(#l, [(getArgValue(x, underMode) or
+        err_cannot_convert(underMode)) for x in l])
   val :=
     $genValue => objNewWrap(timedEVALFUN code,m)
     objNew(code,m)
