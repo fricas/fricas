@@ -46,39 +46,26 @@ Point(R : Ring) : Exports == Implementation where
 
 SubSpaceComponentProperty() : Exports == Implementation where
 
-  O ==> OutputForm
-  I    ==> Integer
-  PI   ==> PositiveInteger
-  NNI  ==> NonNegativeInteger
-  L    ==> List
   B    ==> Boolean
 
   Exports ==> SetCategory with
-    new     : () -> %
-        ++ new() \undocumented
+    new     : (B, B) -> %
+      ++ new(closed?, solid?) creates new property with given values
+      ++ of closed? and solid?.
     closed? : % -> B
         ++ closed?(x) \undocumented
     solid?  : % -> B
         ++ solid?(x) \undocumented
-    close   : (%, B) -> B
-        ++ close(x, b) \undocumented
-    solid   : (%, B) -> B
-        ++ solid(x, b) \undocumented
     copy    : % -> %
         ++ copy(x) \undocumented
 
   Implementation ==> add
     Rep := Record(closed : B, solid : B)
-    closed? p == p.closed
-    solid? p == p.solid
-    close(p, b) == p.closed := b
-    solid(p, b) == p.solid := b
-    new() == [false, false]
-    copy p ==
-      annuderOne := new()
-      close(annuderOne, closed? p)
-      solid(annuderOne, solid? p)
-      annuderOne
+    (p1 : %) = (p2 : %) == p1.closed = p2.closed and p1.solid = p2.solid
+    closed?(p) == p.closed
+    solid?(p) == p.solid
+    new(closed?, solid?) == [closed?, solid?]
+    copy(p : %) : % == new(closed?(p), solid?(p))
     coerce p ==
       hconcat([message("Component is "),
               message(closed? p => ""; "not "), message("closed, "), _
@@ -291,7 +278,7 @@ SubSpace(n : PI, R : Ring) : Exports == Implementation where
     internal? space == not (root? space and leaf? space)
 
     new() ==
-      [point([])$POINT, 0, new()$PROP, [], [], 0, _
+      [point([])$POINT, 0, new(false, false)$PROP, [], [], 0, _
                                      [], [], 0, 0, []]$Rep
     subspace() == new()
 
@@ -369,7 +356,7 @@ SubSpace(n : PI, R : Ring) : Exports == Implementation where
         spaceList := cons(spc, spaceList)
       spaceList
 
-    addPoint(space : %, path : List NNI, point : POINT) ==
+    add_point1(space : %, point : POINT) : NNI ==
       if not(empty?(lastPt := space.lastPoint)) then
           not(empty?(rest(lastPt))) => error TELLWATT
       if empty?(lastPt) then
@@ -379,7 +366,9 @@ SubSpace(n : PI, R : Ring) : Exports == Implementation where
           setrest!(lastPt, [point])
           space.lastPoint := rest lastPt
       space.noPoints := space.noPoints + 1
-      which := space.noPoints
+
+    add_point2(space : %, path : List NNI, point : POINT, which : NNI
+              ) : % ==
       node := space
       depth : NNI := 0
       for i in path repeat
@@ -391,17 +380,12 @@ SubSpace(n : PI, R : Ring) : Exports == Implementation where
       node.index := which
       space
 
+    addPoint(space : %, path : List NNI, point : POINT) ==
+      which := add_point1(space, point)
+      add_point2(space, path, point, which)
+
     addPoint2(space : %, point : POINT) ==
-      if not(empty?(lastPt := space.lastPoint)) then
-          not(empty?(rest(lastPt))) => error TELLWATT
-      if empty?(lastPt) then
-          space.pointDataField := [point]
-          space.lastPoint := space.pointDataField
-      else
-          setrest!(lastPt, [point])
-          space.lastPoint := rest lastPt
-      space.noPoints := space.noPoints + 1
-      which := space.noPoints
+      which := add_point1(space, point)
       node := space
       node := birth node
       first := node
@@ -412,16 +396,7 @@ SubSpace(n : PI, R : Ring) : Exports == Implementation where
       first
 
     addPointLast(space : %, node : %, point : POINT, depth : NNI) ==
-      if not(empty?(lastPt := space.lastPoint)) then
-          not(empty?(rest(lastPt))) => error TELLWATT
-      if empty?(lastPt) then
-          space.pointDataField := [point]
-          space.lastPoint := space.pointDataField
-      else
-          setrest!(lastPt, [point])
-          space.lastPoint := rest lastPt
-      space.noPoints := space.noPoints + 1
-      which := space.noPoints
+      which := add_point1(space, point)
       if depth = 2 then node := child(node, 2)
       for more in depth..(n-1) repeat
         node := birth node
@@ -430,28 +405,11 @@ SubSpace(n : PI, R : Ring) : Exports == Implementation where
       node -- space
 
     addPoint(space : %, path : List NNI, which : NNI) ==
-      node := space
-      depth : NNI := 0
-      for i in path repeat
-        node := child(node, i)
-        depth := depth + 1
-      for more in depth..(n-1) repeat
-        node := birth node
-      node.pt := space.pointDataField.which   -- will be obsolete field
-      node.index := which
-      space
+        add_point2(space, path, space.pointDataField.which, which)
 
     addPoint(space : %, point : POINT) ==
       root?(space) =>
-        if not(empty?(lastPt := space.lastPoint)) then
-          not(empty?(rest(lastPt))) => error TELLWATT
-        if empty?(lastPt) then
-            space.pointDataField := [point]
-            space.lastPoint := space.pointDataField
-        else
-            setrest!(lastPt, [point])
-            space.lastPoint := rest lastPt
-        space.noPoints := space.noPoints + 1
+          add_point1(space, point)
       error "You need to pass a top level SubSpace (level should be zero)"
 
     modifyPoint(space : %, path : List NNI, point : POINT) ==
@@ -490,7 +448,7 @@ SubSpace(n : PI, R : Ring) : Exports == Implementation where
       node := space
       for i in path repeat
         node := child(node, i)
-      close(node.property, val)
+      node.property := new(val, solid?(node.property))$PROP
       space
 
     defineProperty(space, path, prop) ==
