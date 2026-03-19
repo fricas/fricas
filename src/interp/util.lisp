@@ -146,6 +146,8 @@ After this function is called the image is clean and can be saved.
 #+:GCL (setq compiler::*compile-verbose* nil)
 #+:GCL (setq compiler::*suppress-compiler-warnings* t)
 #+:GCL (setq compiler::*suppress-compiler-notes* t)
+#+:GCL (si::break-on-floating-point-exceptions :floating-point-overflow t
+                                               :division-by-zero t)
   (in-package "BOOT")
   (|initroot|)
 #+:poplog (setf POPLOG:*READ-PROMPT* "") ;; Turn off Poplog read prompts
