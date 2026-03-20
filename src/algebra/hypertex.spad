@@ -33,6 +33,7 @@ HyperdocPage() : Exports == Implementation where
   PSR ==> Record(var : Symbol, pvar : Symbol)
   Exports ==> with
     new : ALS -> %
+    destroy : SY -> Void
     name : % -> Symbol
     add_to : (%, List(SE)) -> Void
     add_to_description : (%, String) -> Void
@@ -41,6 +42,10 @@ HyperdocPage() : Exports == Implementation where
     get_property : (%, SY) -> SE
     set_property : (%, SY, SE) -> Void
     show : % -> Void
+    button_on? : (%, SY) -> Boolean
+    button_value : (%, SY) -> SY
+    input_string : (%, SY) -> Union(String, "failed")
+    set_input_string : (%, SY, String) -> Void
   Implementation ==> add
 
     import HyperdocConnection
@@ -63,6 +68,11 @@ HyperdocPage() : Exports == Implementation where
         lst : List(SY) := cons(name, _$activePageList$Lisp)
         SETF(_$activePageList$Lisp, lst)$Lisp
         res
+
+    destroy(name : SY) : Void ==
+        member?(name, _$activePageList$Lisp)$List(SY) =>
+            SET(name, false)$Lisp
+            remove!(name, _$activePageList$Lisp)$List(SY)
 
     get_property_list(page : %) : ALS ==
         pr : Rep := page
@@ -102,6 +112,42 @@ HyperdocPage() : Exports == Implementation where
             pr.property_list := cons([name, val]$ALR, props)
         ar := u1@ALR
         ar.entry := val
+
+    input_string(page : %, name : SY) : Union(String, "failed") ==
+        pr : Rep := page
+        alr := hd_assoc(name, pr.input_areas)
+        alr case "failed" => "failed"
+        null?(ae := alr.entry) => "failed"
+        sv := car(alr.entry)
+        string?(sv) => string(sv)
+        "failed"
+
+    set_input_string(page : %, name : SY, s : String) : Void ==
+        pr : Rep := page
+        alr := hd_assoc(name, pr.input_areas)
+        alr case "failed" => void()
+        ae := destruct(alr.entry)
+        ae(1) := convert(s)
+
+    button_on?(page : %, name : SY) : Boolean ==
+        pr : Rep := page
+        alr := hd_assoc(name, pr.input_areas)
+        alr case "failed" => false
+        null?(ae := alr.entry) => false
+        bv := car(alr.entry)
+        string?(bv) and string(bv) = " t"
+
+    button_value(page : %, name : SY) : SY ==
+        pr : Rep := page
+        alr := hd_assoc(name, pr.radio_buttons)
+        alr case "failed" =>
+            error "button_value: button group does not exist"
+        null?(ae := alr.entry) or not(list?(ae)) =>
+            error "button_value: button group should be a list"
+        sl := destruct(ae) pretend List(SY)
+        for s in sl repeat
+            button_on?(page, s) => return s
+        error "button_value: no button on!"
 
     process_add : (%, LSE) -> Void
 
@@ -627,7 +673,14 @@ BrowserInformation : Exports == Implementation where
        ++ ancestors(c, use_args?) computes ancestors of a constructor.
      parents : Con_form -> Cond_con_lst
        ++ parents(c) gives parents (that is direct ancestors) of a
-       ++ constructor.
+       ++ constructor c.
+     dependents : SY -> List(SY)
+       ++ dependents(c) gives dependents (that is constructor that
+       ++ use c either in exports or in type of an argument) of a
+       ++ constructor c.
+     users : SY -> List(SY)
+       ++ users(c) gives users (that is constructors that use c
+       ++ in its implementation) of a constructor c.
      operations : (Con_form, Boolean) -> Op_lst
        ++ operations(c, use_args?) computes operation list of a
        ++ constructor.
@@ -702,12 +755,14 @@ BrowserInformation : Exports == Implementation where
 
   Implementation ==> add
 
+    get_db_info(x, y) ==> get_database(x, y)$Lisp
+
     sublis_formal(args : List(SE), expr : SE) : SE ==
         sublisFormal(args, expr)$Lisp
 
     constructor_signature(conname : SY, args : List(SE)) : SE ==
         sig : SE := getConstructorSignature(conname)$Lisp
-        get_database(conname, 'CONSTRUCTORKIND)$Lisp = 'category =>
+        get_db_info(conname, 'CONSTRUCTORKIND) = 'category =>
             SUBLISLIS(args, _$TriangleVariableList$Lisp, sig)$Lisp
         sublis_formal(args, sig)
 
@@ -918,7 +973,7 @@ BrowserInformation : Exports == Implementation where
         con_name := symbol(car(dom_form))
         dom : None := EVAL(dom_form)$Lisp
         dom_name : SE := ELT(dom, 0$Integer)$Lisp
-        pred_lst : List(SE) := get_database(con_name, 'PREDICATES)$Lisp
+        pred_lst : List(SE) := get_db_info(con_name, 'PREDICATES)
         grd : List(Gr_rec) := []
         i : Integer := 1
         for opr in opl repeat
@@ -941,7 +996,7 @@ BrowserInformation : Exports == Implementation where
         find_symbol(name)$Lisp
 
     get_ops_doc(name : Symbol) : List(SE) ==
-        doc : List(SE) := get_database(name, 'DOCUMENTATION)$Lisp
+        doc : List(SE) := get_db_info(name, 'DOCUMENTATION)
         empty?(doc) => doc
         con_doc := destruct(first(doc))
         e1 := first(con_doc)
@@ -1120,6 +1175,18 @@ BrowserInformation : Exports == Implementation where
             --    error "merge_doc: unused documentation 2"
         reverse!(res)
 
+    dependents(c : SY) : List(SY) ==
+        lib := open("DEPENDENTS.DAASE"::FileName, "input")$BasicKeyedAccessFile
+        res := read(lib, string(c))
+        close!(lib)
+        res pretend List(SY)
+
+    users(c : SY) : List(SY) ==
+        lib := open("USERS.DAASE"::FileName, "input")$BasicKeyedAccessFile
+        res := read(lib, string(c))
+        close!(lib)
+        res pretend List(SY)
+
     exports(c : Con_form) : Exp_rec ==
         con_name := symbol(car(c))
         r1 : SE := getConstructorExports(constructor_form(con_name), true)$Lisp
@@ -1278,7 +1345,7 @@ BrowserInformation : Exports == Implementation where
         group_funs(fl)
 
     constructor_kind(name : SY) : SY ==
-        get_database(name, 'CONSTRUCTORKIND)$Lisp
+        get_db_info(name, 'CONSTRUCTORKIND)
 
     ancestors(form : Con_form, use_args? : Boolean) : Cond_con_lst ==
         domname : SE :=
@@ -1359,7 +1426,7 @@ BrowserInformation : Exports == Implementation where
         rest(form)
 
     constructor_documentation(name : SY) : String ==
-        doc : List(SExpression) := get_database(name, 'DOCUMENTATION)$Lisp
+        doc : List(SExpression) := get_db_info(name, 'DOCUMENTATION)
         empty?(doc) => ""
         doc := destruct(first(doc))
         e1 := first(doc)
