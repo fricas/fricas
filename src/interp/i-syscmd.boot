@@ -436,6 +436,7 @@ compile args ==
 
     af  := first(args)
     if SYMBOLP(af) then af := SYMBOL_-NAME(af)
+    not(STRINGP(af)) => BREAK()
 
     afe := file_extention(af)
 
@@ -478,7 +479,7 @@ unknown_compile_option(args) == throw_msg("S2IZ0036",
     '"%1b is unknown or unavailable for the %b )compile %d command.",
     args)
 
-do_compile_lisp(lsp) ==
+do_compile_lisp(lsp, beQuiet) ==
     if fnameReadable?(lsp) then
         if not beQuiet then say_msg("S2IZ0089",
             '"Compiling Lisp source code from file %1", [lsp])
@@ -591,10 +592,10 @@ compileAsharpCmd1 args ==
     rc := run_shell_command command
 
     if (rc = 0) and doCompileLisp then
-        do_compile_lisp(lsp)
+        lsp := make_filename2(file_basename(path), '"lsp")
+        do_compile_lisp(lsp, beQuiet)
 
     do_merge_info(rc = 0 and doLibrary, beQuiet, path)
-    extendLocalLibdb $newConlist
 
 compileAsharpArchiveCmd args ==
     -- Assume we entered from the "compile" function, so args ~= nil
@@ -688,7 +689,7 @@ compileAsharpLispCmd args ==
 
         unknown_compile_option([STRCONC('")", object2String(optname))])
 
-    do_compile_lisp(lsp)
+    do_compile_lisp(path, beQuiet)
 
     do_merge_info(doLibrary, beQuiet, path)
     terminateSystemCommand()
@@ -725,7 +726,7 @@ compileSpadLispCmd args ==
 
         unknown_compile_option([STRCONC('")", object2String(optname))])
 
-    do_compile_lisp(lsp)
+    do_compile_lisp(path, beQuiet)
 
     do_merge_info(doLibrary, beQuiet, path)
 
@@ -1956,7 +1957,6 @@ library(args) ==
    $newConlist : local := []
    original_directory := get_current_directory()
    merge_info_from_objects(args, $options, false)
-   extendLocalLibdb($newConlist)
    CHDIR(original_directory)
    terminateSystemCommand()
 
