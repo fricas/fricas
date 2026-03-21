@@ -485,7 +485,6 @@ parseAndEval1 string ==
   nil
 
 -- predefined filter strings
-bracketString string == CONCAT('"[",string,'"]")
 
 quoteString string == CONCAT('"_"", string, '"_"")
 

@@ -416,7 +416,7 @@ dcOpTable con ==
   name := abbreviation? con or con
   infovec := getInfovec(name)
   template := infovec.0
-  $predvec : local := get_database(name, 'PREDICATES)
+  preds := get_database(name, 'PREDICATES)
   opTable := infovec.1
   for i in 0..MAXINDEX opTable repeat
     op := opTable.i
@@ -427,9 +427,9 @@ dcOpTable con ==
       opTable.(i + 2)
     curIndex := startIndex
     while curIndex < stopIndex repeat
-        curIndex := dcOpPrint(op, curIndex, infovec)
+        curIndex := dcOpPrint(op, curIndex, infovec, preds)
 
-dcOpPrint(op, index, infovec) ==
+dcOpPrint(op, index, infovec, preds) ==
   numvec := getCodeVector1(infovec)
   segment := getOpSegment(index, numvec)
   numOfArgs := numvec.index
@@ -441,7 +441,7 @@ dcOpPrint(op, index, infovec) ==
   slotNumber := numvec.index
   suffix :=
     predNumber = 0 => nil
-    [:bright '"if",:pred2English $predvec.(predNumber - 1)]
+    [:bright('"if"), :pred2English(preds.(predNumber - 1))]
   namePart := bright
     slotNumber = 0 => '"subsumed by next entry"
     slotNumber = 1 => '"missing"
@@ -456,17 +456,17 @@ dcSig1(numvec,index, numOfArgs, infovec) ==
 
 dcPreds con ==
   name := abbreviation? con or con
-  $predvec := get_database(name, 'PREDICATES)
-  for i in 0..MAXINDEX $predvec repeat
+  preds := get_database(name, 'PREDICATES)
+  for i in 0..MAXINDEX(preds) repeat
     sayBrightlyNT bright (i + 1)
-    sayBrightly pred2English $predvec.i
+    sayBrightly(pred2English(preds.i))
 
 dcCats con ==
   name := abbreviation? con or con
   infovec := getInfovec name
   u := infovec.3
   VECP CDDR u => BREAK()
-  $predvec := get_database(name, 'PREDICATES)
+  preds := get_database(name, 'PREDICATES)
   catpredvec := first u
   catinfo := CADR u
   catvec := CADDR u
@@ -476,7 +476,7 @@ dcCats con ==
     predNumber := catpredvec.i
     suffix :=
       predNumber = 0 => nil
-      [:bright '"if",:pred2English $predvec.(predNumber - 1)]
+      [:bright('"if"), :pred2English(preds.(predNumber - 1))]
     extra :=
       null (info := catinfo.i) => nil
       IDENTP info => bright '"package"

@@ -58,8 +58,6 @@ $conArgstrings := nil        --bound by conPage so that kPage
                              --will display arguments if given
 $conformsAreDomains  := false     --are all arguments of a constructor given?
 $dbDataFunctionAlist := nil       --set by dbGatherData
-$domain   := nil             --bound in koOps
-$predvec  := nil             --bound in koOps
 $exposedOnlyIfTrue := nil    --see repeatSearch, dbShowOps, dbShowCon
 $bcMultipleNames := nil      --see bcNameConTable
 $docTableHash := MAKE_HASHTABLE('EQUAL)  --see dbExpandOpAlistIfNecessary
@@ -630,8 +628,6 @@ bcVectorGen vec == bcwords2liststring vec
 bcError string ==
   sayBrightlyNT '"NOTE: "
   sayBrightly string
-
-bcDrawIt(ind,a,b) == STRCONC(ind,'"=",a,'"..",b)
 
 bcNotReady htPage ==
   htInitPage('"Basic Command",nil)

@@ -202,13 +202,13 @@ ksPage(htPage) ==
   htpSetProperty(htPage,'thing,'"constructor")
   dbShowCons(htPage,'names)
 
-dbSearchOrder(conform,domname,$domain) ==  --domain = nil or set to live domain
+dbSearchOrder(conform, domname, domain) == --domain = nil or set to live domain
   conform := domname or conform
   name:= opOf conform
   infovec := dbInfovec name or return nil  --exit for categories
   u := infovec.3
-  $predvec:=
-        $domain => $domain.3
+  predvec :=
+        domain => domain.3
         get_database(name, 'PREDICATES)
   catpredvec := first u
   catinfo    := CADR u
@@ -216,8 +216,9 @@ dbSearchOrder(conform,domname,$domain) ==  --domain = nil or set to live domain
   catforms := [[pakform,:pred] for i in 0..MAXINDEX catvec | test ] where
     test ==
       pred := simpCatPredicate
-        p:=SUBLISLIS(rest conform,$FormalMapVariableList,kTestPred catpredvec.i)
-        $domain => EVAL p
+        p := SUBLISLIS(rest(conform), $FormalMapVariableList,
+                        kTestPred(catpredvec.i, domain, predvec))
+        domain => EVAL(p)
         p
       if domname and CONTAINED('%, pred) then pred := SUBST(domname, '%, pred)
       (pak := catinfo . i) and pred   --only those with default packages
@@ -531,10 +532,10 @@ dbGetDocTable(op, $sig, docTable) == main where
       '("")
     false
 
-kTestPred n ==
+kTestPred(n, dom, preds) ==
   n = 0 => true
-  $domain => testBitVector($predvec,n)
-  simpHasPred $predvec.(n - 1)
+  dom => testBitVector(preds, n)
+  simpHasPred(preds.(n - 1))
 
 dbAddChainDomain conform ==
   [name,:args] := conform

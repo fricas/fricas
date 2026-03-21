@@ -248,7 +248,6 @@ buildGloss() ==  --called by buildDatabase (database.boot)
 --starting with gloss.text, build glosskey.text and glossdef.text
   $constructorName : local := nil
   $exposeFlag : local := true
-  $outStream : local := MAKE_OUTSTREAM('"temp.text")
   $x : local := nil
   $attribute? : local := true     --do not surround first word
   pathname := '"gloss.text"
@@ -266,7 +265,7 @@ buildGloss() ==  --called by buildDatabase (database.boot)
   for [name,:line] in pairs repeat
     outP  := FILE_-POSITION outstream
     defP  := FILE_-POSITION defstream
-    lines := [transformAndRecheckComments(name,[line])]
+    n_line := transformAndRecheckComments(name,[line])
     PRINTEXP(name, outstream)
     PRINTEXP($tick,outstream)
     PRINTEXP(defP, outstream)
@@ -275,12 +274,11 @@ buildGloss() ==  --called by buildDatabase (database.boot)
     PRINTEXP(name,        htstream)
     PRINTEXP('"}\space{}",htstream)
     TERPRI(htstream)
-    for x in lines repeat
-      PRINTEXP(outP, defstream)
-      PRINTEXP($tick,defstream)
-      PRINTEXP(x,    defstream)
-      TERPRI defstream
-    PRINTEXP("STRCONC"/lines,htstream)
+    PRINTEXP(outP, defstream)
+    PRINTEXP($tick,defstream)
+    PRINTEXP(n_line, defstream)
+    TERPRI defstream
+    PRINTEXP(n_line, htstream)
     TERPRI htstream
   PRINTEXP('"\endmenu\endscroll",htstream)
   PRINTEXP('"\lispdownlink{Search}{(|htGloss| _"\stringvalue{pattern}_")} for glossary entry matching \inputstring{pattern}{24}{*}",htstream)
@@ -289,20 +287,6 @@ buildGloss() ==  --called by buildDatabase (database.boot)
   SHUT outstream
   SHUT defstream
   SHUT htstream
-  SHUT $outStream
-
-spreadGlossText(line) ==
---this function breaks up a line into chunks
---eventually long line is put into gloss.text as several chunks as follows:
------ key1`this is the first chunk
------ XXX`and this is the second
------ XXX`and this is the third
------ key2`and this is the fourth
---where XXX is the file position of key1
---this is because grepping will only pick up the first 512 characters
-  line = '"" => nil
-  MAXINDEX line > 500 => [SUBSTRING(line,0,500),:spreadGlossText(SUBSTRING(line,500,nil))]
-  [line]
 
 getGlossLines instream ==
 --instream has text of the form:

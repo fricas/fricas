@@ -298,7 +298,7 @@ checkRecordHash u ==
           null (key := checkIsValidType parse) =>
             checkDocError ['"Unknown \spadtype: ", s]
           atom key => 'ok
-          checkDocError ['"Wrong number of arguments: ",form2HtString key]
+          checkDocError(['"Wrong number of arguments: ", s])
       else if x = '"\spadop" and (u := checkLookForLeftBrace IFCDR u) and
               (u := IFCDR u) then
           x := intern checkGetStringBeforeRightBrace u

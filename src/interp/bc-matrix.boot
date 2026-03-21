@@ -55,6 +55,10 @@ bcReadMatrix(exitFunctionOrNil) ==
     (text . "\endmenu"))
   htShowPage()
 
+get_int_value(page, key) ==
+    null($bcParseOnly) => objValUnwrap(htpLabelSpadValue(page, key))
+    PARSE_-INTEGER(htpLabelInputString(page, key))
+
 bcInputMatrixByFormula(htPage, junk) ==
   page := htInitPage('"Basic Matrix Command", htpPropertyList htPage)
   htMakePage '(
@@ -78,12 +82,8 @@ bcInputMatrixByFormula(htPage, junk) ==
     (text . "\newline\tab{2} ")
     (bcStrings (40 "1/(x - i - j - 1)" formula FE)))
   htMakeDoneButton('"Continue", 'bcInputMatrixByFormulaGen)
-  nrows :=
-    null $bcParseOnly => objValUnwrap htpLabelSpadValue(htPage,'rows)
-    PARSE_-INTEGER htpLabelInputString(htPage,'rows)
-  ncols :=
-    null $bcParseOnly => objValUnwrap htpLabelSpadValue(htPage,'cols)
-    PARSE_-INTEGER htpLabelInputString(htPage,'cols)
+  nrows := get_int_value(htPage, 'rows)
+  ncols := get_int_value(htPage, 'cols)
   htpSetProperty(page, 'nrows, nrows)
   htpSetProperty(page, 'ncols, ncols)
   htShowPage()
@@ -99,12 +99,8 @@ bcInputMatrixByFormulaGen htPage ==
     STRINGIMAGE ncols,'"] for ",rowVar,'" in 1..",STRINGIMAGE nrows,'"])")
 
 bcInputExplicitMatrix(htPage,junk) ==
-  nrows :=
-    null $bcParseOnly => objValUnwrap htpLabelSpadValue(htPage,'rows)
-    PARSE_-INTEGER htpLabelInputString(htPage,'rows)
-  ncols :=
-    null $bcParseOnly => objValUnwrap htpLabelSpadValue(htPage,'cols)
-    PARSE_-INTEGER htpLabelInputString(htPage,'cols)
+  nrows := get_int_value(htPage, 'rows)
+  ncols := get_int_value(htPage, 'cols)
   cond := nil
   k := 0
   wrows := # STRINGIMAGE nrows
