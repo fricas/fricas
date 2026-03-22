@@ -18,18 +18,128 @@ make_float(int, frac, fraclen, expo) ==
     frac = 0 => make_BF(int, expo)
     make_BF(int*EXPT(10, fraclen) + frac, expo - fraclen)
 
+-- Should be Record(symbol : Symbol, kind, non_blank : Boolean,
+--                  line : Integer, char : Integer)
+$symbol_off := 0
+$kind_off := 1
+$non_blank_off := 2
+$line_off := 3
+$char_off := 4
+
+-- Should be Record(count : Integer, prior : Tok_rec, current : Tok_rec,
+--                  next : Tok_rec)
+$token_count_off := 0
+$prior_off := 1
+$current_off := 2
+$next_off := 3
+
+$token_fifo := GETREFV(4)
+$token_fifo.$token_count_off := 0
+$token_fifo.$prior_off := GETREFV(5)
+$token_fifo.$current_off := GETREFV(5)
+$token_fifo.$next_off := GETREFV(5)
+
+token_install(symbol, kind, non_blank, line_num, char_num, tok) ==
+    tok.$symbol_off := symbol
+    tok.$kind_off := kind
+    tok.$non_blank_off := non_blank
+    tok.$line_off := line_num
+    tok.$char_off := char_num
+    tok
+
+empty_token_fifo() ==
+    $token_fifo.$token_count_off := 0
+    tok := $token_fifo.$prior_off
+    tok.$kind_off := nil
+
+print_tok(tok, which, is_was) ==
+    FORMAT(true, '"The ~a token ~a:~%", which, is_was)
+    FORMAT(true, '"    ~a ~a ~a line ~a, character ~a~%", tok.$kind_off,
+           tok.$symbol_off, (tok.$non_blank_off => '"non blank"; '""),
+           tok.$line_off, tok.$char_off)
+
+show_token_fifo() ==
+    cnt := $token_fifo.$token_count_off
+    if not(0 < cnt) then
+        FORMAT(true, '"~%There are no valid tokens.~%")
+    else
+        FORMAT(true, '"~%The number of valid tokens is ~S.~%", cnt)
+    ptok := $token_fifo.$prior_off
+    if ptok.$kind_off then
+        print_tok(ptok, '"prior", '"was")
+    cnt = 0 => nil
+    print_tok($token_fifo.$current_off, '"current", '"is")
+    cnt = 1 => nil
+    print_tok($token_fifo.$next_off, '"next", '"is")
+
+current_token() ==
+    greater_SI($token_fifo.$token_count_off, 0) => $token_fifo.$current_off
+    $token_fifo.$token_count_off := 1
+    ntokreader($token_fifo.$current_off)
+
+next_token() ==
+    greater_SI($token_fifo.$token_count_off, 1) => $token_fifo.$next_off
+    current_token()
+    $token_fifo.$token_count_off := 2
+    ntokreader($token_fifo.$next_off)
+
+token_symbol(tok) == tok.$symbol_off
+
+prior_symbol() ==
+    tok := $token_fifo.$prior_off
+    tok.$kind_off => tok.$symbol_off
+    nil
+
+copy_prior_token() ==
+    tok := $token_fifo.$prior_off
+    res := GETREFV(5)
+    res.$symbol_off := tok.$symbol_off
+    res.$kind_off := tok.$kind_off
+    res.$non_blank_off := tok.$non_blank_off
+    res.$line_off := tok.$line_off
+    res.$char_off := tok.$char_off
+    res
+
+set_prior_token(tok) ==
+    $token_fifo.$prior_off := tok
+
+current_symbol() == (current_token()).$symbol_off
+
+next_symbol() == (next_token()).$symbol_off
+
+match_token(tok, kind, symbol) ==
+    not(EQ(tok.$kind_off, kind)) => nil
+    not(symbol) or EQ(tok.$symbol_off, symbol) => tok
+    nil
+
+match_current_token(kind, symbol) ==
+    match_token(current_token(), kind, symbol)
+
+match_next_token(kind, symbol) ==
+    match_token(next_token(), kind, symbol)
+
+advance_token() ==
+    cnt := $token_fifo.$token_count_off
+    cnt = 0 => current_token()
+    s_tok := $token_fifo.$prior_off
+    $token_fifo.$prior_off := $token_fifo.$current_off
+    $token_fifo.$current_off := $token_fifo.$next_off
+    $token_fifo.$next_off := s_tok
+    $token_fifo.$token_count_off := dec_SI(cnt)
+    if cnt = 1 then
+        current_token()
+
 current_line_number() ==
     tok := current_token()
     tok =>
-         pos := TOKEN_-LINE_NUM(tok)
+         pos := tok.$line_off
          pos and INTEGERP(pos) => pos
          nil
     nil
 
 current_token_is_nonblank() ==
     tok := current_token()
-    tok => TOKEN_-NONBLANK(tok)
-    nil
+    tok.$non_blank_off
 
 spad_syntax_error(wanted, parsing) ==
     FORMAT(true, '"******** Spad syntax error detected ********")
@@ -41,7 +151,7 @@ spad_syntax_error(wanted, parsing) ==
     if $curent_line then
         FORMAT(true, '"~&The current line is:~%~%~5D> ~A~%~%",
            $curent_line_number, $curent_line)
-    TOKEN_-STACK_-SHOW()
+    show_token_fifo()
     THROW('SPAD_READER, nil)
 
 fakeloopInclude(name, n) ==
@@ -235,7 +345,7 @@ fakeloopProcess1(tok_list) ==
     $maybe_insert_semi := false
     $docList := nil
     finish_comment()
-    TOKEN_-STACK_-CLEAR()
+    empty_token_fifo()
     parse_new_expr()
     parseout := pop_stack_1()
     if parseout then S_process(parseout)
