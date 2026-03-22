@@ -266,10 +266,6 @@ testBitVector(vec,i) ==
   EQ(i,0) => true
   LOGBITP(i - 1,vec)
 
-bitsOf n ==
-  n = 0 => 0
-  1 + bitsOf(QUOTIENT(n, 2))
-
 --=======================================================================
 --               Generate Slot 4 Constructor Vectors
 --=======================================================================

@@ -90,20 +90,6 @@
 
 (defun MAKEPROP (sym ind val) (setf (get sym ind) val))
 
-; 12.0 Operations on Numbers
-
-; 12.3 Computation
-
-
-(defun QUOTIENT (x y)
-  (cond ((or (floatp x) (floatp y)) (BREAK))
-        (t (truncate x y))))
-
-(defun DIVIDE (x y)
-  (if (and (integerp x) (integerp y))
-      (multiple-value-list (truncate x y))
-      (BREAK)))
-
 ; 14.0 Operations on Lists
 
 ; 14.1 Creation

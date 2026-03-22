@@ -649,8 +649,8 @@ brightPrintCenter(x, str, marg) ==
     x := object2String x
     wid := STRINGLENGTH x
     if wid < $LINELENGTH then
-      f := DIVIDE($LINELENGTH - wid,2)
-      x := LIST(filler_spaces(f.0), x)
+            f := quotient_INT($LINELENGTH - wid, 2)
+            x := LIST(filler_spaces(f), x)
     for y in x repeat
         marg := brightPrint0(y, str, marg)
     marg
@@ -663,8 +663,8 @@ brightPrintCenter(x, str, marg) ==
   y := NREVERSE y
   wid := sayBrightlyLength y
   if wid < $LINELENGTH then
-    f := DIVIDE($LINELENGTH - wid,2)
-    y := CONS(filler_spaces(f.0), y)
+        f := quotient_INT($LINELENGTH - wid, 2)
+        y := CONS(filler_spaces(f), y)
   for z in y repeat
       marg := brightPrint0(z, str, marg)
   if x then
@@ -732,7 +732,7 @@ sayAsManyPerLineAsPossible l ==
     NIL
   w := MIN(m + 3,$LINELENGTH)
   -- p is the number of elements per line
-  p := QUOTIENT($LINELENGTH,w)
+  p := quotient_INT($LINELENGTH, w)
   n := # l
   str := '""
   for i in 0..(n-1) repeat
@@ -742,7 +742,7 @@ sayAsManyPerLineAsPossible l ==
   if str ~= '"" then sayMSG str
   NIL
 
-say2PerLine l == say2PerLineWidth(l, QUOTIENT($LINELENGTH, 2))
+say2PerLine l == say2PerLineWidth(l, quotient_INT($LINELENGTH, 2))
 
 say2PerLineWidth(l,n) ==
   [short,long] := say2Split(l,nil,nil,n)
@@ -775,7 +775,7 @@ say2PerLineThatFit l ==
   while l repeat
     sayBrightlyNT first l
     sayBrightlyNT
-      filler_spaces((QUOTIENT($LINELENGTH, 2) - sayDisplayWidth first l))
+      filler_spaces((quotient_INT($LINELENGTH, 2) - sayDisplayWidth first l))
     (l:= rest l) =>
       sayBrightlyNT first l
       l:= rest l
@@ -802,7 +802,7 @@ pp2Cols(al) ==
     ppPair(abb,name)
     if canFit2ndEntry(name,al) then
       [[abb,:name],:al]:= al
-      TAB (QUOTIENT($LINELENGTH, 2))
+      TAB(quotient_INT($LINELENGTH, 2))
       ppPair(abb,name)
     sayNewLine()
   nil
@@ -811,7 +811,7 @@ ppPair(abb,name) ==
     sayBrightlyNT([:bright(abb), filler_spaces(8 - entryWidth(abb)), name])
 
 canFit2ndEntry(name,al) ==
-  wid := QUOTIENT($LINELENGTH, 2) - 10
+  wid := quotient_INT($LINELENGTH, 2) - 10
   null al => nil
   entryWidth name > wid => nil
   entryWidth CDAR al > wid => nil
@@ -826,11 +826,11 @@ centerAndHighlight(text,:argList) ==
   fillchar := IFCAR IFCDR argList or '" "
   wid := entryWidth text + 2
   wid >= width - 2 => sayBrightly ['%b,text,'%d]
-  f := DIVIDE(width - wid - 2,2)
+  [q, :r] := divide_INT(width - wid - 2, 2)
   fill1 := '""
-  for i in 1..(f.0) repeat
+  for i in 1..q repeat
     fill1 := STRCONC(fillchar,fill1)
-  if f.1 = 0 then fill2 := fill1 else fill2 := STRCONC(fillchar,fill1)
+  if r = 0 then fill2 := fill1 else fill2 := STRCONC(fillchar, fill1)
   sayBrightly [fill1,'%b,text,'%d,fill2]
   nil
 
@@ -842,11 +842,11 @@ center(text,argList) ==
   if (u:= splitSayBrightlyArgument text) then [text,:moreLines]:= u
   wid := sayBrightlyLength text
   wid >= width - 2 => sayBrightly text
-  f := DIVIDE(width - wid - 2,2)
+  [q, :r] := divide_INT(width - wid - 2, 2)
   fill1 := '""
-  for i in 1..(f.0) repeat
+  for i in 1..q repeat
     fill1 := STRCONC(fillchar,fill1)
-  if f.1 = 0 then fill2 := fill1 else fill2 := STRCONC(fillchar,fill1)
+  if r = 0 then fill2 := fill1 else fill2 := STRCONC(fillchar, fill1)
   concat(fill1,text,fill2)
 
 splitSayBrightly u ==

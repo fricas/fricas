@@ -1119,15 +1119,17 @@ bigopAppAux(bot,top,arg,x,y,d,kind) ==
     kind = 'pi => 5
     3
   maxWidth := MAX(opWidth,botWidth,topWidth)
-  xCenter := QUOTIENT(maxWidth - 1, 2) + x
+  xCenter := quotient_INT(maxWidth - 1, 2) + x
   d:=APP(arg,x+2+maxWidth,y,d)
   d:=
       atom bot and SIZE atom2String bot = 1 => APP(bot,xCenter,y-2,d)
-      APP(bot, x + QUOTIENT(maxWidth - botWidth, 2), y-2-superspan bot, d)
+      APP(bot, x + quotient_INT(maxWidth - botWidth, 2),
+          y - 2 - superspan(bot), d)
   if top then
     d:=
       atom top and SIZE atom2String top = 1 => APP(top,xCenter,y+2,d)
-      APP(top, x + QUOTIENT(maxWidth - topWidth, 2), y+2+subspan top, d)
+      APP(top, x + quotient_INT(maxWidth - topWidth, 2),
+          y + 2 + subspan(top), d)
   delta := (kind = 'pi => 2; 1)
   opCode :=
     kind = 'sigma =>
@@ -1198,7 +1200,7 @@ overlabelApp([.,a,b], x, y, d) ==
   -- if b is empty, we set the width to 1 to prevent overflow
   wb := MAX(WIDTH b, 1)
   endPoint := x + wb - 1
-  middle := QUOTIENT(x + endPoint,2)
+  middle := quotient_INT(x + endPoint, 2)
   h := y + superspan b + 1
   d := APP(a,middle,h + 1,d)
   apphor(x, endPoint, y+superspan b+1,d,"|")
@@ -1434,7 +1436,7 @@ charyTop(u,start,linelength) ==
   u is ['CENTER,a] =>
     b := charyTopWidth a
     (w := WIDTH(b)) > linelength-start => charyTop(a,start,linelength)
-    charyTop(b, QUOTIENT(linelength-start-w, 2), linelength)
+    charyTop(b, quotient_INT(linelength - start - w, 2), linelength)
   v := charyTopWidth u
   EQ(keyp u,'ELSE) => charyElse(u,v,start,linelength)
   WIDTH(v) > linelength => charyTrouble(u,v,start,linelength)
@@ -1743,14 +1745,14 @@ appfrac(u, x, y, d) ==
   -- not possible, expressions are offset to the right rather than left.
   -- MCD 16-8-95
   w := WIDTH u
-  tempx := x + QUOTIENT(1+w - WIDTH CADR rest u, 2)
-  tempy := y - superspan CADR rest u - 1
-  temparg3 := APP(CADR rest u, tempx, tempy, d)
+  u2 := first(rest(rest(u)))
+  tempx := x + quotient_INT(1 + w - WIDTH(u2), 2)
+  tempy := y - superspan(u2) - 1
+  temparg3 := APP(u2, tempx, tempy, d)
   temparg4 := apphor(x, x + w - 1, y, temparg3,specialChar('hbar))
-  APP(CADR u,
-        x + QUOTIENT(1+w - WIDTH CADR u, 2),
-          y + 1 + subspan CADR u,
-            temparg4)
+  u1 := first(rest(u))
+  APP(u1, x + quotient_INT(1 + w - WIDTH(u1), 2), y + 1 + subspan(u1),
+      temparg4)
 
 fracsub(u) == height CADR rest u
 
@@ -1885,12 +1887,13 @@ nothingApp(u, x, y, d) ==
 
 zagApp(u, x, y, d) ==
     w := WIDTH u
-    denx := x + QUOTIENT(w - WIDTH CADR rest u, 2)
-    deny := y - superspan CADR rest u - 1
-    d    := APP(CADR rest u, denx, deny, d)
-    numx := x + QUOTIENT(w - WIDTH CADR u, 2)
+    uu := first(rest(rest(u)))
+    denx := x + quotient_INT(w - WIDTH(uu), 2)
+    deny := y - superspan(uu) - 1
+    d    := APP(uu, denx, deny, d)
+    numx := x + quotient_INT(w - WIDTH(first(rest(u))), 2)
     numy := y+1 + subspan CADR u
-    d    := APP(CADR u, numx, numy, d)
+    d    := APP(first(rest(u)), numx, numy, d)
     a := 1 + zagSuper u
     b := 1 + zagSub u
     d := appvertline(specialChar('vbar), x,         y - b, y - 1, d)
@@ -1954,7 +1957,7 @@ appmat(u, x, y, d) ==
                      rows := rest rows
                      return(flag  := '"ON"; nil)
             d := APP(first row,
-                     xc + QUOTIENT(first w - WIDTH first row, 2),
+                     xc + quotient_INT(first(w) - WIDTH(first(row)), 2),
                      yc,
                      d)
             xc := xc + 2 + first w
@@ -1962,11 +1965,11 @@ appmat(u, x, y, d) ==
             w := rest w
 
 matSuper(x) ==
-  (x := x.1) => -1 + QUOTIENT(first x.1 + first x.2, 2)
+  (x := x.1) => -1 + quotient_INT(first(x.1) + first(x.2), 2)
   true => ERROR('MAT)
 
 matSub(x) ==
-  (x := x.1) => QUOTIENT(-1 + first x.1 + first x.2, 2)
+  (x := x.1) => quotient_INT(-1 + first(x.1) + first(x.2), 2)
   true => ERROR('MAT)
 
 matWidth(x) ==
@@ -2117,8 +2120,8 @@ binomApp(u,x,y,d) ==
   wden := WIDTH den
   wnum := WIDTH num
   w := MAX(wden,wnum)
-  d := APP(den, x + 1 + QUOTIENT(w - wden, 2), ysub, d)
-  d := APP(num, x + 1 + QUOTIENT(w - wnum, 2), ysup, d)
+  d := APP(den, x + 1 + quotient_INT(w - wden, 2), ysub, d)
+  d := APP(num, x + 1 + quotient_INT(w - wnum, 2), ysup, d)
   hnum := height num
   hden := height den
   w := 1 + w
@@ -2211,7 +2214,7 @@ vconcatapp(u, x, y, d) ==
   y := y + superspan u.1 + 1
   for a in rest u repeat
       y := y - superspan a - 1
-      xoff := QUOTIENT(w - WIDTH a, 2)
+      xoff := quotient_INT(w - WIDTH(a), 2)
       d := APP(a, x + xoff, y, d)
       y := y - subspan a
   d
@@ -2222,10 +2225,10 @@ binomialApp(u, x, y, d) ==
   d := APP('"(",x,y,d)
   x := x + 1
   y1 := y - height a
-  xoff := QUOTIENT(w - WIDTH a, 2)
+  xoff := quotient_INT(w - WIDTH(a), 2)
   d := APP(a, x + xoff, y1, d)
   y2 := y + height b
-  xoff := QUOTIENT(w - WIDTH b, 2)
+  xoff := quotient_INT(w - WIDTH(b), 2)
   d := APP(b, x + xoff, y2, d)
   x := x + w
   APP('")",x,y,d)

@@ -219,6 +219,25 @@
 (DEF_SIZED_IOPS 16)
 (DEF_SIZED_IOPS 8)
 
+;;; Integer operations
+
+(defun |divide_INT| (x y)
+    (declare (type integer x y))
+    (multiple-value-bind (q r) (truncate x y) (cons q r)))
+
+(defun |exquo_INT| (x y)
+    (declare (type integer x y))
+    (cond
+        ((= y 0) (cons 1 "failed"))
+        (t (multiple-value-bind (q r) (truncate x y)
+           (if (= r 0) (cons 0 q) (cons 1 "failed"))))
+    )
+)
+
+(defun |quotient_INT| (x y)
+    (declare (type integer x y))
+    (multiple-value-bind (q r) (truncate x y) q))
+
 ;;; Modular arithmetic
 
 (deftype machine_int () '(unsigned-byte 64))

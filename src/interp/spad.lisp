@@ -55,14 +55,6 @@
 ;         SYSTEM COMMANDS
 ;************************************************************************
 
-(defun QUOTIENT2 (X Y) (values (TRUNCATE X Y)))
-
-(defun INTEXQUO(X Y)
-    (multiple-value-bind (quo remv) (TRUNCATE X Y)
-         (if (= 0 remv) quo nil)))
-
-(defun DIVIDE2 (X Y) (multiple-value-call #'cons (TRUNCATE X Y)))
-
 (defun |makeSF| (mantissa exponent)
   (FLOAT (/ mantissa (expt 2 (- exponent))) 0.0d0))
 
