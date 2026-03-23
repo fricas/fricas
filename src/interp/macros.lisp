@@ -357,32 +357,6 @@ This function respects intermediate #\Newline characters and drops
     (t
      str)))
 
-;; stream handling for paste-in generation
-
-(defun |applyWithOutputToString| (func args)
-  ;; returns the cons of applying func to args and a string produced
-  ;; from standard-output while executing.
-  (let* ((*standard-output* (make-string-output-stream))
-         (curoutstream *standard-output*)
-         (*error-output* *standard-output*)
-         (|$algebra_out_rec| (|new_alg_rec| *standard-output*))
-        val)
-    (declare (special curoutstream
-                      |$algebra_out_rec|))
-    (setq val (catch 'spad_reader
-                  (apply (symbol-function func) args)))
-    (cons val (get-output-stream-string *standard-output*))))
-
-(defun |breakIntoLines| (str)
-  (let ((bol 0) (eol) (line-list nil))
-    (loop
-     (setq eol (position #\Newline str :start bol))
-     (if (null eol) (return))
-     (if (> eol bol)
-         (setq line-list (cons (subseq str bol eol) line-list)))
-     (setq bol (+ eol 1)))
-    (nreverse line-list)))
-
 ; moved from comp.lisp
 
 ;;; Common Block section

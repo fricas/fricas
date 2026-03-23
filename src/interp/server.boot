@@ -159,10 +159,6 @@ parseAndEvalToStringEqNum str ==
   v = 'restart => ['"error"]
   NREVERSE $outputLines
 
-parseAndInterpToString str ==
-  v := applyWithOutputToString('parseAndEvalStr, [str])
-  breakIntoLines rest v
-
 parseAndEvalStr string ==
   $InteractiveMode :fluid := true
   $e:fluid := $InteractiveFrame

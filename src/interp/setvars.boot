@@ -101,8 +101,8 @@ set l ==
 
 set1(l,setTree) ==
   null l => displaySetVariableSettings(setTree,"")
-  $setOptionNames : local := [x.0 for x in setTree]
-  arg := selectOption(DOWNCASE first l, $setOptionNames, 'optionError)
+  setOptionNames := [x.0 for x in setTree]
+  arg := selectOption(DOWNCASE first l, setOptionNames, 'optionError)
   setData := [arg,:LASSOC(arg,setTree)]
 
   -- check is the user is authorized for the set variable
@@ -722,7 +722,7 @@ set_output_gen(arg, out_rec, def_rec) ==
                 quiet := true
             arg := rest(arg)
 
-    if not(arg is [fn] and fn in '(Y N YE YES NO O ON OF OFF CONSOLE _
+    if arg is [fn] and not(fn in '(Y N YE YES NO O ON OF OFF CONSOLE _
                                    y n ye yes no o on of off console)) then
         arg := [fn, def_rec.$ext_off]
 

@@ -392,7 +392,7 @@ unexpected_error(args) ==
 
 query_user_msg(key, msg, args) ==
   -- display message and return reply
-  conStream := get_console_input()
+  conStream := get_lisp_std_in()
   say_msg(key, msg, args)
   ioHook("startQueryUser")
   ans := read_line conStream

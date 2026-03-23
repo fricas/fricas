@@ -56,7 +56,6 @@ bcReadMatrix(exitFunctionOrNil) ==
   htShowPage()
 
 get_int_value(page, key) ==
-    null($bcParseOnly) => objValUnwrap(htpLabelSpadValue(page, key))
     PARSE_-INTEGER(htpLabelInputString(page, key))
 
 bcInputMatrixByFormula(htPage, junk) ==

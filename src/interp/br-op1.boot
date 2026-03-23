@@ -377,7 +377,7 @@ dbSelectData(htPage,opAlist,key) ==
     dbReduceOpAlist(opAlist,data.key,branch)
   MEMQ(branch,'(origins conditions implementation)) =>
     key < 8192 => dbReduceOpAlist(opAlist,data.key,branch)
-    [newkey,binkey] := DIVIDE(key,8192)  --newkey is 1 too large
+    [newkey, :binkey] := divide_INT(key, 8192)  --newkey is 1 too large
     innerData := CDDR data.(newkey - 1)
     dbReduceOpAlist(opAlist,innerData.binkey,'signatures)
   [opAlist . key]
@@ -565,7 +565,7 @@ dbShowOpDocumentation(htPage, opAlist, data) ==
                         doc, index, 'dbChooseDomainOp, null(exposeFlag), true)
 
 dbChooseDomainOp(htPage, index) ==
-  [opKey,entryKey] := DIVIDE(index,8192)
+  [opKey, :entryKey] := divide_INT(index, 8192)
   opAlist := htpProperty(htPage, 'opAlist)
   [op, :entries] := opAlist(opKey)
   entry := entries(entryKey)

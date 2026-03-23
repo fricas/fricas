@@ -273,12 +273,6 @@ DEFPARAMETER($specialCharacterAlist, '(
 DEFVAR($print_equatnum, true)
 $collectOutput := nil
 
-new_alg_rec(stream) ==
-    res := GETREFV(3)
-    ref.$stream_off := CONS([], stream)
-    ref.$file_off := '"CONSOLE"
-    ref.$on_off := true
-
 get_lisp_stream(fs) == REST(fs)
 
 get_algebra_stream() == get_lisp_stream($algebra_out_rec.$stream_off)
@@ -350,7 +344,7 @@ APP(u,x,y,d) ==
 atom2String x ==
   IDENTP x => PNAME x
   STRINGP x => x
-  stringer x
+  STRINGIMAGE(x)
 
 -- General convention in the "app..." functions:
 -- Added from an attempt to fix bugs by JHD: 2 Aug 89
@@ -2100,12 +2094,6 @@ superSubApp(u, x, y, di) ==
   di := APP(e, x + (aox - we), y - 1 - MAX(superspan e, ab), di)
   di := APP(b, aox + aw + x, y - 1 - MAX(ab, superspan b), di)
   return di
-
-stringer x ==
-  STRINGP x => x
-  EQ('_|, FETCHCHAR(s:= STRINGIMAGE x, 0)) =>
-    RPLACSTR(s, 0, 1, "", nil, nil)
-  s
 
 superSubSub u ==
   a:= first (u:= rest u)

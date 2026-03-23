@@ -1516,7 +1516,7 @@ writeInputLines(fn,initial) ==
     vecl := first readHiFi i
     if STRINGP vecl then vecl := [vecl]
     for vec in vecl repeat
-      n := SIZE vec
+      n := #vec
       while n > maxn repeat
         -- search backwards for a blank
         done := nil
@@ -1527,7 +1527,7 @@ writeInputLines(fn,initial) ==
             lineList := [svec,:lineList]
             done := true
             vec := SUBSTRING(vec,k+1,NIL)
-            n := SIZE vec
+            n := #vec
         -- in case we can't find a breaking point
         if not done then n := 0
       lineList := [vec,:lineList]
@@ -2759,14 +2759,14 @@ processSynonyms() ==
   syn := STRING2ID_N (synstr, 1)
   null (fun := LASSOC (syn, $CommandSynonymAlist)) => NIL
   to := STRPOS('")",fun,1,NIL)
-  if to and to ~= SIZE(fun)-1 then
+  if to and to ~= #fun - 1 then
     opt := STRCONC('" ",SUBSTRING(fun,to,NIL))
     fun := SUBSTRING(fun,0,to-1)
   else opt := '" "
-  if (SIZE synstr) > (SIZE fun) then
-    for i in (SIZE fun)..(SIZE synstr) repeat
+  if (s_syn := #synstr) > (s_fun := #fun) then
+    for i in s_fun..s_syn repeat
       fun := CONCAT (fun, '" ")
-  cl := STRCONC(fill,RPLACSTR(line, 1, SIZE synstr, fun),opt)
+  cl := STRCONC(fill, RPLACSTR(line, 1, #synstr, fun, 0, #fun), opt)
   SETQ(LINE,cl)
   processSynonyms ()
 

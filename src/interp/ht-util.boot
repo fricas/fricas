@@ -34,8 +34,6 @@
 
 )package "BOOT"
 
-$bcParseOnly := true
-
 -- List of issued hypertex lines
 $htLineList := nil
 
@@ -425,64 +423,18 @@ typeCheckInputAreas htPage ==
       LASSOC(LASSOC(spadType,htpDomainPvarSubstList htPage),
              htpDomainVariableAlist htPage)
     string := htpLabelFilteredInputString(htPage, stringName)
-    $bcParseOnly =>
-      null ncParseFromString string =>
+    null(ncParseFromString(string)) =>
         -- FIXME: this effectively ignores errors, but otherwise
         -- search without parameters does not work
         -- errorCondition := true
         htpSetLabelErrorMsg(htPage, '"Syntax Error", '"Syntax Error")
-      nil
-    val := checkCondition(htpLabelInputString(htPage, stringName),
-                          string, condList)
-    STRINGP val =>
-      errorCondition := true
-      htpSetLabelErrorMsg(htPage, stringName, val)
-    htpSetLabelSpadValue(htPage, stringName, val)
+    nil
   errorCondition
-
-checkCondition(s1, string, condList) ==
-  condList is [['Satisfies, pvar, pred]] =>
-    val := FUNCALL(pred, string)
-    STRINGP val => val
-    ['(String), :wrap s1]
-  condList isnt [['isDomain, pvar, pattern]] =>
-    systemError '"currently invalid domain condition"
-  pattern is '(String) => ['(String), :wrap s1]
-  val := parseAndEval string
-  STRINGP val =>
-    val = '"Syntax Error " => '"Error: Syntax Error "
-    condErrorMsg pattern
-  [type, : data] := val
-  newType := CATCH('SPAD_READER, resolveTM(type, pattern))
-  null newType =>
-    condErrorMsg pattern
-  coerceInt(val, newType)
 
 condErrorMsg type ==
   typeString := form2String type
   if PAIRP typeString then typeString := concatenateStringList(typeString)
   CONCAT('"Error: Could not make your input into a ", typeString)
-
-parseAndEval string ==
-  $InteractiveMode :fluid := true
-  $e:fluid := $InteractiveFrame
-  $QuietCommand:local := true
-  parseAndEval1 string
-
-parseAndEval1 string ==
-  syntaxError := false
-  pform :=
-      v := applyWithOutputToString('ncParseFromString, [string])
-      CAR v => CAR v
-      syntaxError := true
-      CDR v
-  syntaxError =>
-     '"Syntax Error "
-  pform =>
-    val := applyWithOutputToString('processInteractive, [pform, nil])
-    CAR val => CAR val
-    '"Type Analysis Error"
-  nil
 
 -- predefined filter strings
 

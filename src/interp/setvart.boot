@@ -596,6 +596,4 @@ DEFPARAMETER($setOptions, '(
 
 -- The following creates a list of option names in the above table.
 
-DEFPARAMETER($setOptionNames, [x.0 for x in $setOptions])
-
 initializeSetVariables $setOptions

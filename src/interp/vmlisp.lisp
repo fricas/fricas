@@ -511,10 +511,10 @@
 ;;; OK if garbage collector prints no messages.
 #+:gcl
 (defun GCMSG (x)
-   (prog1 system:*gbc-message* (setq system:*gbc-message* x)))
+    (setq system:*gbc-message* x))
 #+:cmu
 (defun GCMSG (x)
-   (prog1 ext:*gc-verbose* (setq ext:*gc-verbose* x)))
+    (setq ext:*gc-verbose* x))
 #-(or :gcl :cmu)
 (defun GCMSG (x))
 

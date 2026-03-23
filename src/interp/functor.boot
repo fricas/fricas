@@ -341,8 +341,6 @@ SigSlotsMatch(sig,pattern,implem) ==
   pat' := SUBSTQ($definition, '%, CADR(pattern))
   sig' := SUBSTQ($definition, '%, CADR(sig))
   sig' = pat' => true
-  --If we don't have this next test, then we'll recurse in SetFunctionSlots
-  SourceLevelSubsume(sig',pat') => true
   nil
 
 makeMissingFunctionEntry(alist,i) ==
@@ -557,7 +555,7 @@ getViewsConditions(u, e) ==
 
 DescendCodeVarAdd(base, flag, kvec, e) ==
    princview := kvec
-   [SetFunctionSlots(sig, SUBST('ELT,'CONST,implem), flag, kvec) repeat
+   [SetFunctionSlots(sig, SUBST('ELT,'CONST,implem), flag, kvec)
        for i in 6..MAXINDEX princview |
          princview.i is [sig:=[op,types],:.] and
            LASSOC([base, :SUBST(base, '%, types)], get(op, 'modemap, e)) is

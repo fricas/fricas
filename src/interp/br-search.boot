@@ -403,7 +403,7 @@ showConstruct(htPage,count) ==
 
 showIt(htPage,index,searchAlist) ==
   filter      := htpProperty(htPage,'filter)
-  [relativeIndex,n] := DIVIDE(index,8)
+  [relativeIndex, :n] := divide_INT(index, 8)
   relativeIndex = 0 => showNamedConstruct(searchAlist.n)
   [kind,items,:.] := searchAlist . n
   for j in 1.. while j < relativeIndex repeat items := rest items

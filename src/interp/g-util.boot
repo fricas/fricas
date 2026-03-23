@@ -142,17 +142,6 @@ insertWOC(x,y) ==
 
 --% Miscellaneous Functions for Working with Strings
 
-centerString(text,width,fillchar) ==
-  wid := entryWidth text
-  wid >= width => text
-  f := DIVIDE(width - wid,2)
-  fill1 := ""
-  for i in 1..(f.0) repeat
-    fill1 := STRCONC(fillchar,fill1)
-  fill2:= fill1
-  if f.1 ~= 0 then fill1 := STRCONC(fillchar,fill1)
-  [fill1,text,fill2]
-
 stringPrefix?(pref,str) ==
   -- sees if the first #pref letters of str are pref
   -- replaces STRINGPREFIXP

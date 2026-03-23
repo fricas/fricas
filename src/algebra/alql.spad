@@ -92,16 +92,25 @@ IndexCard() : Exports == Implementation where
         symbol?(os) => string(symbol(os))
         ""
 
+    convert_params(params : List(SE)) : String ==
+        empty?(params) => ""
+        rl : List(String) := ["("]
+        first := true
+        for a1 in params repeat
+            if not(first) then
+                rl := cons(", ", rl)
+            rl := cons(string(symbol(a1)), rl)
+        rl := cons(")", rl)
+        concat(reverse!(rl))
+
     get_params(xr : Rep) : String ==
-        xr.kind = 'o =>
-            s1 : String := form2LispString(xr.sd.origin)$Lisp
-            k := position(char("("), s1)
-            k < 1 => ""
-            s1(k..)
-        al := rest(destruct(xr.sd.signature))
-        empty?(al) => ""
-        s2 : String := form2LispString(cons(convert('f), al))$Lisp
-        s2(2..)
+        not(xr.kind = 'o) =>
+            xr.name = 'Union or xr.name = 'Record =>
+                "(a : A, b : B)"
+            convert_params(destruct(xr.sd.origin))
+        op := symbol(car(xr.sd.origin))
+        cf := constructor_form(op)$BRI
+        convert_params(rest(destruct(cf)))
 
     short_oform(xr : Rep) : OutputForm ==
         hconcat([xr.name::OutputForm, message(" : ")$OutputForm,
