@@ -425,6 +425,45 @@ This function respects intermediate #\Newline characters and drops
              ((> k n) t)
            (if (not (digitp (elt str k))) (return nil))))))
 
+;************************************************************************
+;         SYSTEM COMMANDS
+;************************************************************************
+
+(defun |makeSF| (mantissa exponent)
+  (FLOAT (/ mantissa (expt 2 (- exponent))) 0.0d0))
+
+;; This is used in the domain Boolean
+(defun |BooleanEquality| (x y) (if x y (null y)))
+
+;;; (defun |evalSharpOne| (x \#1) (declare (special \#1)) (EVAL x))
+(defun |evalSharpOne| (x |#1|)
+   (declare (special |#1|))
+      (EVAL `(let () (declare (special |#1|)) ,x)))
+
+(DEFUN ASSOCIATER (FN LST)
+  (COND ((NULL LST) NIL)
+        ((NULL (CDR LST)) (CAR LST))
+        ((LIST FN (CAR LST) (ASSOCIATER FN (CDR LST))))))
+
+;; function to create byte and half-word vectors in new runtime system 8/90
+
+(defun |makeByteWordVec2| (maxelement initialvalue)
+  (let ((n (cond ((null initialvalue) 7) ('t maxelement))))
+    (make-array (length initialvalue)
+      :element-type (list 'mod (1+ n))
+      :initial-contents initialvalue)))
+
+(defun |knownEqualPred| (dom)
+  (let ((fun (|compiledLookup| '= '((|Boolean|) % %) dom)))
+    (if fun (get (bpiname (car fun)) '|SPADreplace|)
+      nil)))
+
+(defun |hashable| (dom)
+  (memq (|knownEqualPred| dom)
+        '(EQ EQL EQUAL)))
+
+(defun MAKEPROP (sym ind val) (setf (get sym ind) val))
+
 ; **********************************************************************
 ;            Utility functions for Tracing Package
 ; **********************************************************************

@@ -41,6 +41,29 @@
 
 ;; These were originally in SPAD LISP
 
+(defvar |$UserLevel| '|development|)
+(defvar |$reportInstantiations| nil)
+(defvar |$reportEachInstantiation| nil)
+(defvar |$reportCounts| nil)
+(defvar |$doNotCompileJustPrint| nil "switch for compile")
+(defvar |$PrintCompilerMessageIfTrue| t)
+(defvar |$Rep| '|$Rep| "should be bound to gensym? checked in coerce")
+(defvar |$scanIfTrue| nil "if t continue compiling after errors")
+(defvar |$Representation| nil "checked in compNoStacking")
+(defvar |$definition| nil "checked in DomainSubstitutionFunction")
+(defvar |$env| nil "checked in isDomainValuedVariable")
+(defvar |$e| nil "checked in isDomainValuedVariable")
+(defvar |$getPutTrace| nil)
+
+; **** X. Random tables
+
+(MAKEPROP '|~>| '|Led| '(|~>| |~>| 122 121))
+(MAKEPROP 'EQUATNUM '|Nud| '(|dummy| |dummy| 0 0))
+(MAKEPROP 'EQUATNUM '|Led| '(|dummy| |dummy| 10000 0))
+(MAKEPROP 'LET '|Led| '(|:=| LET 125 124))
+(MAKEPROP 'SEGMENT '|Led| '(\.\. SEGMENT 401 699 (|boot-Seg|)))
+(MAKEPROP 'SEGMENT '|isSuffix| 'T)
+
 (SETQ |$mutableDomains| NIL)     ; checked in DEFINE BOOT
 (SETQ |$maxSignatureLineNumber| 0)
 (SETQ |$functionLocations| NIL)

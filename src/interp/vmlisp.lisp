@@ -88,8 +88,6 @@
 
 (defun PNAME (x) (symbol-name x))
 
-(defun MAKEPROP (sym ind val) (setf (get sym ind) val))
-
 ; 14.0 Operations on Lists
 
 ; 14.1 Creation
