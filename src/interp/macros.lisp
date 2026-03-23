@@ -220,17 +220,7 @@
 
 ; 22 INPUT/OUTPUT
 
-; 22.2 Input Functions
-
-; 22.2.1 Input from Character Streams
-
-; 22.3 Output Functions
-
 ; 22.3.1 Output to Character Streams
-
-(defun |get_lisp_std_out| () *standard-output*)
-
-(defun |get_lisp_error_out| () *error-output*)
 
 (defvar |$highlightFontOn| (concat " " |$boldString|)
                      "switch to highlight font")

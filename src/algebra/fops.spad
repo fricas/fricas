@@ -279,11 +279,13 @@ BasicFile : Exports == Implementation where
 
     open(fn : FileName, mode : IOMode) : % ==
         mode = "input"  =>
-            not(readable?(fn)) => error ["File is not readable", fn]
-            MAKE_INSTREAM(fn::String)$Lisp
+            res1 : None := MAKE_INSTREAM(fn::String)$Lisp
+            NULL(res1)$Lisp => error ["Can not open for input", fn]
+            res1 pretend %
         mode = "output" =>
-            not(writable?(fn)) => error ["File is not writable", fn]
-            MAKE_OUTSTREAM(fn::String)$Lisp
+            res1 : None := MAKE_OUTSTREAM(fn::String)$Lisp
+            NULL(res1)$Lisp => error ["Can not open for output", fn]
+            res1 pretend %
         error ["IO mode must be input or output", mode]
 
     close!(f : %) : Void == SHUT(f)$Lisp

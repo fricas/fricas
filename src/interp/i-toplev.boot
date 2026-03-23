@@ -118,14 +118,14 @@ fricas_restart() ==
     -- Need to reinitialize various streams because
     -- CLISP closes them when dumping executable
     CUROUTSTREAM := $trace_stream := get_lisp_std_out()
-    $algebra_out_rec.$stream_off := mkOutputConsoleStream()
-    $fortran_out_rec.$stream_off := mkOutputConsoleStream()
-    $mathml_out_rec.$stream_off := mkOutputConsoleStream()
-    $texmacs_out_rec.$stream_off := mkOutputConsoleStream()
-    $html_out_rec.$stream_off := mkOutputConsoleStream()
-    $openmath_out_rec.$stream_off := mkOutputConsoleStream()
-    $tex_out_rec.$stream_off := mkOutputConsoleStream()
-    $formatted_out_rec.$stream_off := mkOutputConsoleStream()
+    $algebra_out_rec.$stream_off := make_std_out_stream()
+    $fortran_out_rec.$stream_off := make_std_out_stream()
+    $mathml_out_rec.$stream_off := make_std_out_stream()
+    $texmacs_out_rec.$stream_off := make_std_out_stream()
+    $html_out_rec.$stream_off := make_std_out_stream()
+    $openmath_out_rec.$stream_off := make_std_out_stream()
+    $tex_out_rec.$stream_off := make_std_out_stream()
+    $formatted_out_rec.$stream_off := make_std_out_stream()
     fricas_init()
     fricas_restart2()
 

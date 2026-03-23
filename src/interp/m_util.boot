@@ -194,3 +194,14 @@ is_system_path?(n) ==
     res
 
 delete_file(f) == DELETE_-FILE(f)
+
+MAKE_INSTREAM(name) ==
+    open_stream(make_input_filename1(name), 'input, false)
+
+MAKE_OUTSTREAM(name) == open_stream(name, 'output, false)
+
+make_out_stream(name) == cons(true, MAKE_OUTSTREAM(name))
+
+make_append_stream(name) == cons(true, open_stream(name, 'output, true))
+
+make_std_out_stream() == cons(false, get_lisp_std_out())

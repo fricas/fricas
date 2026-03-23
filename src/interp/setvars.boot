@@ -698,7 +698,7 @@ DEFCONST($appendable_off, 5)
 
 set_output_gen(arg, out_rec, def_rec) ==
     arg = "%initialize%" =>
-        out_rec.$stream_off := mkOutputConsoleStream()
+        out_rec.$stream_off := make_std_out_stream()
         out_rec.$file_off := '"CONSOLE"
         out_rec.$on_off := def_rec.$def_on_off
 
@@ -732,7 +732,7 @@ set_output_gen(arg, out_rec, def_rec) ==
         UPCASE(fn) in '(YES ON) => out_rec.$on_off := true
         UPCASE(fn) = 'CONSOLE =>
             stream_close(out_rec.$stream_off)
-            out_rec.$stream_off := mkOutputConsoleStream()
+            out_rec.$stream_off := make_std_out_stream()
             out_rec.$file_off := '"CONSOLE"
 
     (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file

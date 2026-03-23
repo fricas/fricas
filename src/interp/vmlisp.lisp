@@ -492,36 +492,6 @@
 
 ; 27.1 Creation
 
-(defun |get_console_input| () *standard-input*)
-
-(defun MAKE_INSTREAM (filespec)
-   (cond
-         ((not (STRINGP filespec)) (error "not handled yet"))
-         (t (open (|make_input_filename1| filespec)
-                  :direction :input :if-does-not-exist nil))))
-
-(defun MAKE_OUTSTREAM (filespec)
-   (cond
-         ((not (STRINGP filespec)) (error "not handled yet"))
-         (t (open filespec :direction :output
-               #+(or :cmucl :openmcl :sbcl) :if-exists
-               #+(or :cmucl :sbcl) :supersede
-               #+:openmcl :ignored))))
-
-(defun |make_out_stream| (filespec) (CONS T (MAKE_OUTSTREAM filespec)))
-
-(defun MAKE_APPENDSTREAM (filespec)
- "fortran support"
- (cond
-  ((not (STRINGP filespec)) (error "MAKE_APPENDSTREAM: not handled yet"))
-  (t (open filespec :direction :output
-          :if-exists :append :if-does-not-exist :create))))
-
-(defun |make_append_stream| (filespec)
-    (CONS T (MAKE_APPENDSTREAM filespec)))
-
-(defun |mkOutputConsoleStream| () (CONS NIL *standard-output*))
-
 (defun SHUT (st) (if (streamp st) (close st) -1))
 
 (defun EOFP (stream) (null (peek-char nil stream nil nil)))

@@ -106,3 +106,9 @@
         ((equal c #\/) 'T)
         (t nil)))
 
+(defun |get_lisp_std_out| () *standard-output*)
+
+(defun |get_lisp_error_out| () *error-output*)
+
+(defun |get_lisp_std_in| () *standard-input*)
+

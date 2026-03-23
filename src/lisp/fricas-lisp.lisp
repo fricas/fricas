@@ -1143,6 +1143,21 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defun |write_to_string_radix| (int radix)
     (write-to-string int :base radix))
 
+(defun |open_stream| (name direction append?)
+    (let ((dk (cond
+                    ((eq direction '|output|) :output)
+                    ((eq direction '|io|) :io)
+                    (t :input)))
+          (ek  (cond
+                    (append? :append)
+                    ((eq direction '|io|) :overwrite)
+                    (t #+:openmcl :ignored
+                       #-:openmcl :supersede)))
+          (dnk (cond
+                    ((eq direction '|input|) nil)
+                    (t :create))))
+        (open name :direction dk :if-exists ek :if-does-not-exist dnk)))
+
 (in-package "BOOTTRAN")
 
 (defmacro |doInBoottranPackage| (expr)
