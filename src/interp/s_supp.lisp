@@ -106,6 +106,16 @@
         ((equal c #\/) 'T)
         (t nil)))
 
+(defun |is_absolute_name?| (n)
+    (let ((l (length n)))
+        (cond
+            ;;; #+:win32
+            ((and (> l 1) (equal (aref n 1) #\:)) t)
+            (t (|is_dir_sepatator?| (aref n 0)))
+        )
+    )
+)
+            
 (defun |get_lisp_std_out| () *standard-output*)
 
 (defun |get_lisp_error_out| () *error-output*)
