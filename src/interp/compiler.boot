@@ -1425,7 +1425,6 @@ compileSpad2Cmd args ==
         unknown_compile_option([STRCONC('")", object2String(optname))])
 
     compilerDoit(lib, path)
-    extendLocalLibdb $newConlist
     terminateSystemCommand()
     spadPrompt()
 

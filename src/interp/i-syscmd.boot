@@ -36,7 +36,6 @@
 -- TRACE BOOT.  The list of system commands is $SYSCOMMANDS which is
 -- initialized in SETQ LISP.
 
-$newConlist := []
 $edit_file := nil
 $currentLine := '""
 $HiFiAccess := true
@@ -412,7 +411,6 @@ must_find_file(af, ftl) ==
 --% )compile
 
 compile args ==
-    $newConlist: local := nil    --reset by compDefineLisplib and astran
     null args and null $options and null($edit_file) =>
         helpSpad2Cmd '(compile)
     if null args then args := [$edit_file]
@@ -1954,7 +1952,6 @@ ScanOrPairVec(f, ob) ==
 --% )library
 
 library(args) ==
-   $newConlist : local := []
    original_directory := get_current_directory()
    merge_info_from_objects(args, $options, false)
    CHDIR(original_directory)

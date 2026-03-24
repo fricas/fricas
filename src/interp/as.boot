@@ -55,7 +55,6 @@ astran asyFile ==
   for con in conlist repeat
     parents := asyParents con
     HPUT($parentsHash,con,asyParents con)
-  $newConlist := union(conlist, $newConlist)
   [[x,:asMakeAlist x] for x in HKEYS $conHash]
 
 asyParents(conform) ==

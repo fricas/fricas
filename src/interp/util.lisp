@@ -82,7 +82,7 @@ After this function is called the image is clean and can be saved.
                    load-files))
       (let ((initforms nil))
           (dolist (el '(|$build_date| |$build_version|
-                        |$lisp_id_string| |$createLocalLibDb|))
+                        |$lisp_id_string|))
               (if (boundp el)
                   (push (list 'defparameter el (symbol-value el))
                         initforms)))

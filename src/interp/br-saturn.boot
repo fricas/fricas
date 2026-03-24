@@ -838,16 +838,3 @@ satTypeDownLink(s,code) ==
 
 mkButtonBox n == STRCONC('"\buttonbox{", STRINGIMAGE n, '"}")
 
-purgeNewConstructorLines(lines, conlist) ==
-  [x for x in lines | not screenLocalLine(x, conlist)]
-
-screenLocalLine(line, conlist) ==
-  k := dbKind line
-  con := INTERN
-    k = char 'o or k = char 'a =>
-      s := dbPart(line,5,1)
-      k := charPosition(char '_(,s,1)
-      SUBSTRING(s,1,k - 1)
-    dbName line
-  MEMQ(con, conlist)
-

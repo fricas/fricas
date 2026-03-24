@@ -43,7 +43,6 @@ grepConstruct(s,key,:options) == --key = a o c d p x k (all) . (aok) w (doc)
 --All searches of the database call this function to get relevant lines
 --from libdb.text. Returns either a list of lines (usual case) or else
 --an alist of the form ((kind . <list of lines for that kind>) ...)
-  $localLibdb : local := fricas_probe_file('"libdb.text") and '"libdb.text"
   lines := grepConstruct1(s,key)
   lines is ['error,:.] => lines
   IFCAR options => grepSplit(lines,key = 'w)    --leave now if a constructor
@@ -62,10 +61,6 @@ grepConstruct1(s,key) ==
 
 grepConstructDo(x, key) ==
 --atom x => grepFile(x, key,'i)
-  $localLibdb =>
-    oldLines := purgeNewConstructorLines(grepf(x,key,false),$newConstructorList)
-    newLines := grepf(x,$localLibdb,false)
-    union(oldLines, newLines)
   grepf(x,key,false)
 
 dbExposed?(line,kind) == -- does line come from an unexposed constructor?
@@ -80,10 +75,6 @@ isDefaultOpAtt x == x.(1 + dbTickIndex(x,4,0)) = char 'x
 
 applyGrep(x,filename) ==
   atom x => grepFile(x,filename,'i)
-  $localLibdb =>
-    a := purgeNewConstructorLines(grepf(x,filename,false),$newConstructorList)
-    b := grepf(x,$localLibdb,false)
-    grepCombine(a,b)
   grepf(x,filename,false)
 
 grepCombine(a,b) == MSORT union(a,b)
@@ -813,7 +804,6 @@ grepSource key ==
   STRINGP(key) => key
   key = 'libdb   => STRCONC($spadroot,'"/algebra/libdb.text")
   key = 'gloss   => STRCONC($spadroot,'"/algebra/glosskey.text")
-  key = $localLibdb => $localLibdb
   mkGrepTextfile
     MEMQ(key, '(_. a c d k o p x)) => 'libdb
     'comdb

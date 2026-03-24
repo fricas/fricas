@@ -650,21 +650,3 @@ buildDefaultPackageNamesHT() ==
 
 $defaultPackageNamesHT := buildDefaultPackageNamesHT()
 
---=======================================================================
---            Code for Private Libdbs
---=======================================================================
-$createLocalLibDb := false
-$newConstructorList := []
-
-extendLocalLibdb conlist ==   --  called by astran
-  not $createLocalLibDb => nil
-  null conlist => nil
-  buildLibdb conlist          --> puts datafile into temp.text
-  $newConstructorList := union(conlist, $newConstructorList)
-  localLibdb := '"libdb.text"
-  not PROBE_-FILE '"libdb.text" =>
-    RENAME_-FILE('"temp.text",'"libdb.text")
-  oldlines := purgeNewConstructorLines(dbReadLines localLibdb, conlist)
-  newlines := dbReadLines '"temp.text"
-  dbWriteLines(MSORT union(oldlines,newlines), '"libdb.text")
-  maybe_delete_file('"temp.text")

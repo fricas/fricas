@@ -200,7 +200,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   FRESH_-LINE(get_algebra_stream())
   sayMSG(filler_chars(72, '"-"))
   merge_info_from_objects([get_database(op, 'ABBREVIATION)], [], false)
-  $newConlist := [op, :$newConlist]  ---------->  bound in function "compiler"
   if $lisplibKind = 'category
     then updateCategoryFrameForCategory op
      else updateCategoryFrameForConstructor op
