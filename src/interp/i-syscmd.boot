@@ -403,8 +403,8 @@ close args ==
     QUIT()
   nil
 
-must_find_file(af, ftl) ==
-    not(af1 := find_file(af, ftl)) => throw_msg("S2IL0003",
+must_find_file(af, ft) ==
+    not(af1 := make_input_filename2(af, ft)) => throw_msg("S2IL0003",
         '"The file %1b is needed but does not exist.", [af])
     af1
 
@@ -439,22 +439,22 @@ compile args ==
     afe := file_extention(af)
 
     haveNew or afe = '"as" =>
-        af1 := must_find_file(af, '("as"))
+        af1 := must_find_file(af, '"as")
         compileAsharpCmd [af1]
     haveOld or afe = '"spad" =>
-        af1 := must_find_file(af, '("spad"))
+        af1 := must_find_file(af, '"spad")
         compileSpad2Cmd  [af1]
     afe = '"lsp" =>
-        af1 := must_find_file(af, '("lsp"))
+        af1 := must_find_file(af, '"lsp")
         compileAsharpLispCmd [af1]
     afe = '"NRLIB" =>
-        af1 := must_find_file(af, '("NRLIB"))
+        af1 := must_find_file(af, '"NRLIB")
         compileSpadLispCmd [af1]
     afe = '"ao" =>
-        af1 := must_find_file(af, '("ao"))
+        af1 := must_find_file(af, '"ao")
         compileAsharpCmd [af1]
     afe = '"al" =>    -- archive library of .ao files
-        af1 := must_find_file(af, '("al"))
+        af1 := must_find_file(af, '"al")
         compileAsharpArchiveCmd [af1]
 
     -- see if we something with the appropriate file extension
@@ -2743,11 +2743,10 @@ satisfiesRegularExpressions(name,patterns) ==
 processSynonyms() ==
   p := STRPOS('")",LINE,0,NIL)
   fill := '""
-  if p
-    then
+  if p then
       line := SUBSTRING(LINE,p,NIL)
       if p > 0 then fill := SUBSTRING(LINE,0,p)
-    else
+  else
       p := 0
       line := LINE
   to := STRPOS ('" ", line, 1, nil)
@@ -2760,10 +2759,11 @@ processSynonyms() ==
     opt := STRCONC('" ",SUBSTRING(fun,to,NIL))
     fun := SUBSTRING(fun,0,to-1)
   else opt := '" "
-  if (s_syn := #synstr) > (s_fun := #fun) then
-    for i in s_fun..s_syn repeat
-      fun := CONCAT (fun, '" ")
-  cl := STRCONC(fill, RPLACSTR(line, 1, #synstr, fun, 0, #fun), opt)
+  l_syn := #synstr
+  l_fun := #fun
+  fill2 := filler_spaces(l_syn - l_fun)
+  cl := STRCONC(fill, SUBSTRING(line, 0, 1), fun, fill2,
+                SUBSTRING(line, 1 + l_syn, nil), opt)
   SETQ(LINE,cl)
   processSynonyms ()
 

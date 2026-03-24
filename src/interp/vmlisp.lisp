@@ -391,65 +391,6 @@
       (position table cvec :test #'(lambda (x y) (position y x)) :start sint)
       (position table cvec :test-not #'(lambda (x y) (position y x)) :start sint)))
 
-; 17.4 Updating operators
-
-;;-- (defun rplacstr (cvec1 start1 length1 cvec2
-;;--                        &optional (start2 0) (length2 nil)
-;;--                        &aux end1 end2)
-;;--   (setq cvec2 (string cvec2))
-;;--   (if (null start1) (setq start1 0))
-;;--   (if (null start2) (setq start2 0))
-;;--   (if (null length1) (setq length1 (- (length cvec1) start1)))
-;;--   (if (null length2) (setq length2 (- (length cvec2) start2)))
-;;--   (if (numberp length1) (setq end1 (+ start1 length1)))
-;;--   (if (numberp length2) (setq end2 (+ start2 length2)))
-;;--   (if (/= length1 length2)
-;;--       (concatenate 'string (subseq cvec1 0 start1)
-;;--                            (subseq cvec2 start2 end2)
-;;--                            (subseq cvec1 end1))
-;;--       (replace cvec1 cvec2 :start1 start1 :end1 end1
-;;--              :start2 start2 :end2 end2)))
-
-; The following version has been provided to avoid reliance on the
-; Common Lisp concatenate and replace functions. These built-in Lisp
-; functions would probably end up doing the character-by-character
-; copying shown here, but would also need to cope with generic sorts
-; of sequences and unwarranted keyword generality
-
-(defun RPLACSTR (cvec1 start1 length1 cvec2
-                       &optional start2 length2
-                       &aux end1 end2)
-  (setq cvec2 (string cvec2))
-  (if (null start1) (setq start1 0))
-  (if (null start2) (setq start2 0))
-  (if (null length1) (setq length1 (- (length cvec1) start1)))
-  (if (null length2) (setq length2 (- (length cvec2) start2)))
-  (setq end1 (+ start1 length1))
-  (setq end2 (+ start2 length2))
-  (if (= length1 length2)
-      (do ()
-          ((= start1 end1) cvec1)
-          (setf (aref cvec1 start1) (aref cvec2 start2))
-          (setq start1 (1+ start1))
-          (setq start2 (1+ start2)))
-      (let* ((l1 (length cvec1))
-             (r (make-string (- (+ l1 length2) length1)))
-             (i 0))
-         (do ((j 0 (1+ j)))
-             ((= j start1))
-             (setf (aref r i) (aref cvec1 j))
-             (setq i (1+ i)))
-         (do ((j start2 (1+ j)))
-             ((= j end2))
-             (setf (aref r i) (aref cvec2 j))
-             (setq i (1+ i)))
-         (do ((j end1 (1+ j)))
-             ((= j l1))
-             (setf (aref r i) (aref cvec1 j))
-             (setq i (1+ i)))
-         r)
-  ))
-
 ; 19.0 Operations on Arbitrary Objects
 
 ; 19.1 Creating
@@ -621,9 +562,6 @@
            l) ))
 
 (defun LOG10 (u) (log u 10.0d0))
-
-(defun |make_spaces| (len)
-    (make-string len :initial-element #\ ))
 
 ;;; end of moved fragment
 

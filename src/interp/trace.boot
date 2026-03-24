@@ -387,7 +387,7 @@ trace3(fn, modemap, options, bin_def) ==
             caller =>  '"119"
             '"019"
         NL := APPEND(NL, [char('_0)])
-        buf := make_spaces(A => 3; 2 + #NL)
+        buf := filler_spaces(A => 3; 2 + #NL)
         buf.0 :=
             (C or caller) => char('_1)
             char('_0)

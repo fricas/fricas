@@ -230,7 +230,7 @@ compTran(x) ==
                             first(x3) = "SEQ" or _
                             not(CONTAINED("EXIT", x3))) => x3
         ["SEQ", :xl3]
-    $locVars := set_difference(REMDUP(NREVERSE($locVars)),
+    $locVars := SETDIFFERENCE(REMDUP(NREVERSE($locVars)),
                                LISTOFATOMS (x2))
     lvars := $locVars
     x3 :=

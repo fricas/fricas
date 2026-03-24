@@ -526,7 +526,7 @@ spadStartUpMsgs() ==
   say_msg("S2GL0018D",
       '"Issue %b )summary %d for a summary of useful system commands.", nil)
   say_msg("S2GL0003B",
-      '"Issue %b )quit %d to leave FriCAS and return to %1 .", [$opSysName])
+      '"Issue %b )quit %d to leave FriCAS and return to shell.", [])
   sayMSG bar
   sayMSG '" "
 

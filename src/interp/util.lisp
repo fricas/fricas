@@ -124,7 +124,6 @@ After this function is called the image is clean and can be saved.
 )
 
 ;; the following are for conditional reading
-(setq |$opSysName| '"shell")
 
 (defvar $openServerIfTrue t "t means try starting an open server")
 (defparameter $SpadServerName "/tmp/.d" "the name of the spad server socket")

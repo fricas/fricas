@@ -152,14 +152,6 @@
 
 ; 15.5 Using Lists as Sets
 
-(DEFUN |set_sum| (X Y)
-  (COND ((ATOM Y) X)
-        ((ATOM X) Y)
-        ((MEMBER (CAR X) Y :test #'equal) (|set_sum| (CDR X) Y))
-        ((|set_sum| (CDR X) (CONS (CAR X) Y)))))
-
-(defun |set_difference| (l1 l2) (set-difference l1 l2 :test #'equal))
-
 (defun remdup (l) (remove-duplicates l :test #'equalp))
 
 ; 15.6 Association Lists

@@ -357,7 +357,8 @@ atom2String x ==
 
 appChar(string,x,y,d) ==
   line:= LASSOC(y,d) =>
-        RPLACSTR(line, x, n := #string, string, 0, n)
+        for i in 0..(#string - 1) repeat
+            STR_SETELT(line, x + i, STR_ELT(string, i))
         d
   appChar(string, x, y, nconc(d,
             [[y, :filler_spaces(10 + $LINELENGTH + $MARGIN)]]))

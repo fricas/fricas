@@ -113,7 +113,7 @@ escapeString com ==   --this makes changes on single comment lines
     look >= SIZE com => look := []
     look := STRPOSL ('"${}#%", com, look, [])
     if look then
-      com := RPLACSTR (com,look,0,'"\")  --note RPLACSTR copies!!!
+      com := CONCAT(SUBSTRING(com, 0, look), '"\", SUBSTRING(com, look, nil))
       look := look + 2
   com
 

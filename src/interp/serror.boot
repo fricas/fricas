@@ -35,7 +35,7 @@
 )package "BOOT"
 
 syGeneralErrorHere() ==
-   pos := tokPosn($tok)
+   pos := tokPosn($stok)
    ncSoftError(pos, '"Improper syntax.", [])
 
 syIgnoredFromTo(pos1, pos2) ==
@@ -71,7 +71,7 @@ np_trap_form(a) ==
    ncSoftError(tokPosn(a), '"Improper syntax.", [])
    THROW("TRAPPOINT","TRAPPED")
 
-npTrap()== np_trap_form($tok)
+npTrap()== np_trap_form($stok)
 
 npRecoverTrap()==
   npFirstTok()
