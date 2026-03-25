@@ -1,5 +1,21 @@
 )package "BOOT"
 
+)if false
+
+The KAF file consists of header, entries and index.  Header is just
+byte offset to the index.  Index is a Lisp association list
+containing keys (strings) and byte offsets of corresponding entries.
+
+As an optimization, if the data is a simple thing (currently only
+Lisp NIL is considered simple enough), then the entry byte offset
+is replaced by immediate data.
+
+When opening a KAF file we read index into memory and keep there.
+Index is written back only when KAF is closed (higher level code
+frequently closes KAF files to force storing of the index).
+
+)endif
+
 DEFPARAMETER($error_mark, GENSYM())
 
 $mode_off := 0
