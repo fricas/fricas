@@ -523,7 +523,7 @@ posend(line,n)==
      while n<#line and idChar? line.n repeat n:=n+1
      n
 
-digit? x== DIGITP x
+digit? x== char_to_digit(x)
 
 scanW(b)==             -- starts pointing to first char
        n1:=$n         -- store starting character position

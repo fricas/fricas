@@ -428,7 +428,7 @@ quickOr(a,b) ==
 
 intern x ==
   STRINGP x =>
-    DIGITP x.0 => string2Integer x
+    char_to_digit(x.0) => string2Integer x
     INTERN x
   x
 
@@ -606,8 +606,8 @@ isSharpVarWithNum x ==
   ok := true
   c := 0
   for i in 1..(n-1) while ok repeat
-    d := ELT(p,i)
-    ok := DIGITP d => c := 10*c + DIG2FIX d
+        d := ELT(p,i)
+        ok := char_to_digit(d) => c := 10*c + ok
   if ok then c else nil
 
 MAKE_REASONABLE(s) ==

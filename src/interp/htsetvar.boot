@@ -271,7 +271,7 @@ htCheck(checker,value) ==
 
 parseWord x ==
   STRINGP x =>
-    and/[DIGITP x.i for i in 0..MAXINDEX x] => PARSE_-INTEGER x
+    and/[char_to_digit(x.i) for i in 0..MAXINDEX(x)] => PARSE_-INTEGER(x)
     INTERN x
   x
 

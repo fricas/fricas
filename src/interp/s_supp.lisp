@@ -115,10 +115,11 @@
         )
     )
 )
-            
+
 (defun |get_lisp_std_out| () *standard-output*)
 
 (defun |get_lisp_error_out| () *error-output*)
 
 (defun |get_lisp_std_in| () *standard-input*)
 
+(defun |char_to_digit|(x) (digit-char-p x))

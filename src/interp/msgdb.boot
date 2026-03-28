@@ -196,8 +196,7 @@ substituteSegmentedMsg(msg,args) ==
     n := STRINGLENGTH x
 
     -- x requires parameter substitution
-    (x.0 = char "%") and (n > 1) and (DIGITP x.1) =>
-      a := DIG2FIX x.1
+    (x.0 = char "%") and (n > 1) and (a := char_to_digit(x.1)) =>
       arg :=
         a <= nargs => args.(a-1)
         '"???"
@@ -713,7 +712,7 @@ sayBrightlyLength1 x ==
     1
   member(x,'("%l" %l)) => 0
   STRINGP x and STRINGLENGTH x > 2 and x.0 = char "%" and x.1 = char "x" =>
-      DIGITP(x.2)
+        char_to_digit(x.2)
   STRINGP x => STRINGLENGTH x
   IDENTP x => STRINGLENGTH PNAME x
   -- following line helps find certain bugs that slip through

@@ -45,9 +45,6 @@ $reportUndo := false
 
 DEFPARAMETER($compileRecurrence, true)
 
-DEFPARAMETER($SYSCOMMANDS, [first x for x in $systemCommands])
-
-
 DEFPARAMETER($whatOptions, '( _
     operations _
     categories _
@@ -77,6 +74,36 @@ DEFPARAMETER($displayOptions, '( _
   types _
   values _
   ))
+
+-- Pairs: commad, user level.
+$systemCommands := [
+   ['abbreviations, :'compiler   ], ['boot,          :'development], _
+   ['cd,            :'interpreter], ['clear,         :'interpreter], _
+   ['close,         :'interpreter], ['compile,       :'compiler   ], _
+   ['copyright,     :'interpreter], ['credits,       :'interpreter], _
+   ['display,       :'interpreter], ['edit,          :'interpreter], _
+   ['fin,           :'development], ['frame,         :'interpreter], _
+   ['help,          :'interpreter], ['history,       :'interpreter], _
+   ['lisp,          :'development], ['library,       :'interpreter], _
+   ['load,          :'interpreter], ['ltrace,        :'interpreter], _
+   ['nopiles,       :'interpreter], ['piles,         :'interpreter], _
+   ['pquit,         :'interpreter], ['quit,          :'interpreter], _
+   ['read,          :'interpreter], ['set,           :'interpreter], _
+   ['show,          :'interpreter], ['spool,         :'interpreter], _
+   ['summary,       :'interpreter], ['synonym,       :'interpreter], _
+   ['system,        :'interpreter], ['trace,         :'interpreter], _
+   ['undo,          :'interpreter], ['what,          :'interpreter], _
+   ['version,       :'interpreter]]
+
+$SYSCOMMANDS := [first x for x in $systemCommands]
+
+$noParseCommands := ['boot, 'copyright, 'credits, 'fin, 'lisp, 'piles,
+    'pquit, 'quit, 'suspend, 'synonym, 'system, 'version]
+
+$tokenCommands := ['abbreviations, 'cd, 'clear, 'close, 'compile,
+    'depends, 'display, 'edit, 'frame, 'frame, 'help, 'history, 'input, _
+    'library, 'load, 'ltrace, 'nopiles, 'read, 'set, 'spool, 'undo, _
+    'what, 'with]
 
 --% Top level system command
 
@@ -1078,11 +1105,11 @@ helpSpad2Cmd args ==
 
   sayBrightly '"Available help topics for system commands are:"
   sayBrightly '""
-  sayBrightly '" boot   cd     clear    close     compile   display"
-  sayBrightly '" edit   fin    frame    help      history   library"
-  sayBrightly '" lisp   load   ltrace   pquit     quit      read"
-  sayBrightly '" set    show   spool    synonym   system    trace"
-  sayBrightly '" undo   what"
+  sayBrightly '" boot   cd      clear    close    compile   display"
+  sayBrightly '" edit   fin     frame    help     history   library"
+  sayBrightly '" lisp   ltrace  pquit    quit     read      set"
+  sayBrightly '" show   spool   synonym  system   trace     undo"
+  sayBrightly '" what"
   sayBrightly '""
   sayBrightly '"Issue _")help help_" for more information about the help command."
 
@@ -1957,28 +1984,6 @@ library(args) ==
    CHDIR(original_directory)
    terminateSystemCommand()
 
-
---% )load
-
-load args == loadSpad2Cmd args
-
-loadSpad2Cmd args ==
-    say_msg("S2IU0003", CONCAT(
-        '"The %b )load %d system command is obsolete. Please use the %b",
-        '" )library %d command instead."), [])
-    nil
-
-reportCount () ==
-  centerAndHighlight('" Current Count Settings ",$LINELENGTH,specialChar 'hbar)
-  SAY '" "
-  sayBrightly [:bright('" cache"), filler_chars(30, '"."), '" ", $cacheCount]
-  if $cacheAlist then
-    for [a,:b] in $cacheAlist repeat
-      aPart:= linearFormatName a
-      n:= sayBrightlyLength aPart
-      sayBrightly concat('"     ",aPart,'" ",filler_chars(32 - n, '"."),'" ",b)
-  SAY '" "
-  sayBrightly [:bright '" stream",filler_chars(29, '"."), '" ", $streamCount]
 
 --% )nopiles
 
@@ -2892,8 +2897,8 @@ tokTran tok ==
 
 isIntegerString tok ==
   for i in 0..#tok-1 repeat
-    val := DIGIT_-CHAR_-P tok.i
-    not val => return nil
+        val := char_to_digit(tok.i)
+        not(val) => return(nil)
   val
 
 splitIntoOptionBlocks str ==

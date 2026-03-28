@@ -109,14 +109,6 @@
 
 (defun LEXLESSEQP (X Y) (|lt_sexp| X Y))
 
-
-; 10.3 Creating Symbols
-
-(DEFUN IS_GENVAR (X)
-  (AND (IDENTP X)
-       (let ((y (symbol-name x)))
-         (and (char= #\$ (elt y 0)) (> (size y) 1) (digitp (elt y 1))))))
-
 ; 14 SEQUENCES
 
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
@@ -406,8 +398,6 @@ This function respects intermediate #\Newline characters and drops
        (EQL (ELT (PNAME X) 0) #\#)
        (INTEGERP (parse-integer (symbol-name X) :start 1))))
 
-(defun |char_to_digit|(x) (digit-char-p x))
-
 (defun SPADSYSNAMEP (STR)
   (let (n i j)
     (AND (SETQ N (MAXINDEX STR))
@@ -415,7 +405,7 @@ This function respects intermediate #\Newline characters and drops
          (SETQ J (position #\, STR :start (1+ I)))
          (do ((k (1+ j) (1+ k)))
              ((> k n) t)
-           (if (not (digitp (elt str k))) (return nil))))))
+           (if (not (|char_to_digit| (elt str k))) (return nil))))))
 
 ;************************************************************************
 ;         SYSTEM COMMANDS

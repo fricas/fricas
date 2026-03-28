@@ -649,11 +649,12 @@ checkDecorate u ==
       x = char '_% or x = '"%"  => ['"\%",:acc]
       x = char '_, or x = '","  => ['",",:acc]
       x = '"\spad" => ['"\spad",:acc]
-      STRINGP x and DIGITP x.0 => [x,:acc]
+      STRINGP(x) and char_to_digit(x.0) => [x, :acc]
       null spadflag and
         (CHARP x and ALPHA_-CHAR_-P x and not MEMQ(x,$charExclusions) or
           member(x,$argl)) => [$charRbrace,x,$charLbrace,'"\spad",:acc]
-      null spadflag and ((STRINGP x and not (x.0 = $charBack) and DIGITP(x.(MAXINDEX x))) or member(x, '("true" "false"))) =>
+      not(spadflag) and ((STRINGP(x) and not(x.0 = $charBack) and
+            char_to_digit(x.(MAXINDEX x))) or member(x, '("true" "false"))) =>
         [$charRbrace,x,$charLbrace,'"\spad",:acc]  --wrap x1, alpha3, etc
       CHARP x => [checkAddBackSlashes x,:acc]
       xcount := #x
@@ -940,11 +941,6 @@ checkLookForRightBrace(u) ==  --return line beginning with right brace
     u := rest u
   found
 
-checkInteger s ==
-  CHARP s => false
-  s = '"" => false
-  and/[DIGIT_-CHAR_-P s.i for i in 0..MAXINDEX s]
-
 checkTransformFirsts(opname,u,margin) ==
 --case 1: \spad{...
 --case 2: form(args)
@@ -1048,7 +1044,7 @@ checkSkipIdentifierToken(u,i,m) ==
   i
 
 checkAlphabetic c ==
-  ALPHA_-CHAR_-P c or DIGITP c or MEMQ(c,$charIdentifierEndings)
+    ALPHA_-CHAR_-P(c) or char_to_digit(c) or MEMQ(c, $charIdentifierEndings)
 
 
 --=======================================================================

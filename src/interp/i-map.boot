@@ -56,7 +56,7 @@ isInternalMapName name ==
   (not IDENTP(name)) or (name = "*") or (name = "**") => false
   sz := SIZE (name' := PNAME name)
   (sz < 7) or (char("*") ~= name'.0) => false
-  null DIGITP name'.1 => false
+  null(char_to_digit(name'.1)) => false
   null STRPOS('"_;",name',1,NIL) => false
   -- good enough
   true

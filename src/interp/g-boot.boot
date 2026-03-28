@@ -276,7 +276,7 @@ compNewnam(x) ==
 PUSHLOCVAR(x) ==
     x ~= "$" and SCHAR('"$", 0) = SCHAR(PNAME(x), 0) _
       and (not(SCHAR('",", 0) = SCHAR(PNAME(x), 1)) or BREAK())
-      and not(DIGITP (SCHAR(PNAME(x), 1))) => nil
+        and not(char_to_digit(SCHAR(PNAME(x), 1))) => nil
     PUSH(x, $locVars)
 
 comp_expand(x) ==

@@ -60,10 +60,6 @@
 
 (defun GENSYMP (x) (and (symbolp x) (null (symbol-package x))))
 
-(defun DIGITP (x) (digit-char-p x))
-
-(defun DIG2FIX (x) (DIGITP x))
-
 (defun LOG2 (x) (LOG x 2.0))
 
 ; 11.0 Operations on Identifiers

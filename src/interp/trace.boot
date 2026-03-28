@@ -84,6 +84,10 @@ DEFVAR($trace_names, [])
 DEFVAR($count_list, [])
 DEFVAR($timer_list, [])
 
+IS_GENVAR(x) ==
+    IDENTP(x) and (y := PNAME(x); #y > 1 and '"$".0 = y.0 and
+                   char_to_digit(y.1))
+
 trace l == traceSpad2Cmd l
 
 traceSpad2Cmd l ==
