@@ -808,8 +808,8 @@ getDomainOpTable2(dom, fromIfTrue, ops, predicates) ==
                  for [op,:u] in opAlist] where
     memq(op,ops) ==   --dirty trick to get 0 and 1 instead of Zero and One
       MEMQ(op,ops) => op
-      EQ(op,'One)  => MEMQ(1,ops) and 1
-      EQ(op,'Zero) => MEMQ(0,ops) and 0
+      EQ(op, "1") => MEMQ(1, ops) and 1
+      EQ(op, "0") => MEMQ(0, ops) and 0
       false
     fn ==
       sig1 := sublisFormal(rest domname,sig)

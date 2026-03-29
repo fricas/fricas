@@ -233,8 +233,6 @@ formatOpSignature(op,sig) ==
   concat('%b,formatOpSymbol(op,sig),'%d,'": ",formatSignature sig)
 
 formatOpSymbol(op,sig) ==
-  if op = 'Zero then op := "0"
-  else if op = 'One then op := "1"
   null sig => op
   quad := specialChar 'quad
   n := #sig
@@ -368,8 +366,8 @@ form2String1 u ==
     STRINGIMAGE SIZE first argl
   op = 'Join => formJoin2String argl
   op = "ATTRIBUTE" => form2String1 first argl
-  op='Zero => 0
-  op='One => 1
+  op = "0" => 0
+  op = "1" => 1
   op = 'AGGLST => tuple2String [form2String1 x for x in argl]
   op = 'BRACKET =>
     argl' := form2String1 first argl
@@ -468,8 +466,8 @@ appOrParen(x) ==
      or op = 'BRACKET or op = 'AGGLST or op = "ATTRIBUTE"_
      or op = "#" =>
         concat('"(", form2String1(x), '")")
-   op = "Zero" => '"0"
-   op = "One" => '"1"
+   op = "0" => '"0"
+   op = "1" => '"1"
    form2String1 x
 
 

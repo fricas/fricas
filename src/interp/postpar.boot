@@ -145,8 +145,8 @@ postMakeCons l ==
   ['cons,postTran first l,postMakeCons rest l]
 
 postAtom x ==
-  x=0 => '(Zero)
-  x=1 => '(One)
+  x = 0 => ["0"]
+  x = 1 => ["1"]
   EQ(x,'T) => 'T_$ -- rename T in spad code to T$
   IDENTP x and get_database(x, 'NILADIC) => LIST x
   x

@@ -71,10 +71,10 @@ compReduce1(form is ["REDUCE",op,.,collectForm],m,e,$formalArgList) ==
   [finalCode,m,e]
 
 $identity_list := [ _
-   ["+", ["Zero"]], _
-   ["*", ["One"]], _
-   ['gcd, ["Zero"]], _
-   ['lcm, ["One"]], _
+   ["+", ["0"]], _
+   ["*", ["1"]], _
+   ['gcd, ["0"]], _
+   ['lcm, ["1"]], _
    ['append, ['construct]], _
    ['union, ['construct]], _
    ['strconc, '""], _

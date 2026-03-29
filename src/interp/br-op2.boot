@@ -283,9 +283,9 @@ koOps(conform, domname) ==
     listSort(function GLESSEQP, res)
 
 zeroOneConvert x ==
-  x = 'Zero => 0
-  x = 'One  => 1
-  x
+    x = "0" => 0
+    x = "1" => 1
+    x
 
 kFormatSlotDomain1(x, infovec) ==
               fn formatSlotDomain1(x, infovec) where fn x ==

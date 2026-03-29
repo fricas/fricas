@@ -848,8 +848,8 @@
 ;;; Used for Record arguments
 (defmacro |:| (tag expr) `(LIST '|:| ,(MKQ tag) ,expr))
 
-(defmacro |Zero|() 0)
-(defmacro |One|() 1)
+(defmacro |0|() 0)
+(defmacro |1|() 1)
 
 ;;; range tests and assertions
 

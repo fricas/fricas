@@ -83,7 +83,7 @@ upDollar t ==
     if f = '(construct) then f := "nil"
   ATOM(form) and (f ~= $immediateDataSymbol) and
     (u := findUniqueOpInDomain(op,f,t)) => u
-  f in '(One Zero true false nil) and constantInDomain?([f],t) =>
+  f in ["1", "0", 'true, 'false, 'nil] and constantInDomain?([f], t) =>
     isPartialMode t => throw_msg("S2IS0020", CONCAT(
           '"A fully specified type must follow $ when it qualifies a domain",
           '" constant."), [])
@@ -107,7 +107,7 @@ upDollar t ==
       if x then putTarget(y,x)
   putAtree(first form,'dollar,t)
   ms := bottomUp form
-  f in '(One Zero) and PAIRP(ms) and first(ms) = $OutputForm =>
+  f in ["1", "0"] and PAIRP(ms) and first(ms) = $OutputForm =>
         throw_msg("S2IS0021",
            '"There is no operation named %1b in the domain or package %2bp .",
            [f, t])

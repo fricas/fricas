@@ -335,11 +335,11 @@ axOpTran(name) ==
       name = 'elt => 'apply
       name = "setelt!" => "set!"
       name = 'SEGMENT => ".."
-      name = 1 => '_1
-      name = 0 => '_0
+      name = 1 => "1"
+      name = 0 => "0"
       name
-   opOf name = 'Zero => '_0
-   opOf name = 'One => '_1
+   opOf(name) = "0" => "0"
+   opOf(name) = "1" => "1"
    error '"bad op name"
 
 axFormatOpSig(name, [result,:argtypes]) ==

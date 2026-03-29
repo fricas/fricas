@@ -154,10 +154,7 @@ buildLibOp(op,sig,pred) ==
   pred := SUBST('T,"T$",pred)
   sigpart:= form2LispString ['Mapping,:nsig]
   predString := (pred = 'T => '""; form2LispString pred)
-  sop :=
-    (s := STRINGIMAGE op) = '"One" => '"1"
-    s = '"Zero" => '"0"
-    s
+  sop := STRINGIMAGE(op)
   header := STRCONC('"o",sop)
   conform:= STRCONC($kind,form2LispString $conform)
   comments:= libdbTrim concatWithBlanks LASSOC(sig,LASSOC(op,$doc))

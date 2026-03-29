@@ -504,8 +504,8 @@ dbAddDocTable conform ==
     ["%", :storedArgs], get_database(opOf(conform), 'DOCUMENTATION))
       repeat
        op1 :=
-         op = '(Zero) => 0
-         op = '(One) => 1
+         op = ["0"] => 0
+         op = ["1"] => 1
          op
        for [sig,doc] in alist repeat
          HPUT($docTable,op1,[[conform,:alist],:HGET($docTable,op1)])

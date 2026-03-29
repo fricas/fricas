@@ -277,8 +277,8 @@ oldAxiomDomainLookupExport _
   (domenv, self, op, sig, box, skipdefaults, env) ==
      domainVec := rest domenv
      if hashCode? op then
-         EQL(op, $hashOp1) => op := 'One
-         EQL(op, $hashOp0) => op := 'Zero
+         EQL(op, $hashOp1) => op := "1"
+         EQL(op, $hashOp0) => op := "0"
          EQL(op, $hashOpApply) => op := 'elt
          EQL(op, $hashOpSet) => op := "setelt!"
          EQL(op, $hashSeg) => op := 'SEGMENT
@@ -335,10 +335,10 @@ HasSignature(domain,[op,sig]) ==
 basicLookup(op,sig,domain,dollar) ==
   -- FIXME: We should use consistent representation, not hacks
   -- like this one
-  if op = 0 then op := 'Zero
-  if op = ['Zero] then op := 'Zero
-  if op = 1 then op := 'One
-  if op = ['One] then op := 'One
+  if op = 0 then op := "0"
+  if op = ["0"] then op := "0"
+  if op = 1 then op := "1"
+  if op = ["1"] then op := "1"
   -- Spad case
   VECP domain =>
      isNewWorldDomain domain => -- getting ops from yourself (or for defaults)
@@ -358,8 +358,8 @@ basicLookup(op,sig,domain,dollar) ==
            hashType(['Mapping,:sig], hashPercent)
 
        if SYMBOLP op then
-          op = 'Zero => op := $hashOp0
-          op = 'One => op := $hashOp1
+          op = "0" => op := $hashOp0
+          op = "1" => op := $hashOp1
           op = 'elt => op := $hashOpApply
           op = "setelt!" => op := $hashOpSet
           op := hashString SYMBOL_-NAME op
@@ -375,8 +375,8 @@ basicLookup(op,sig,domain,dollar) ==
   opIsHasCat op =>
       HasCategory(domain, sig)
   if hashCode? op then
-     EQL(op, $hashOp1) => op := 'One
-     EQL(op, $hashOp0) => op := 'Zero
+     EQL(op, $hashOp1) => op := "1"
+     EQL(op, $hashOp0) => op := "0"
      EQL(op, $hashOpApply) => op := 'elt
      EQL(op, $hashOpSet) => op := "setelt!"
      EQL(op, $hashSeg) => op := 'SEGMENT
@@ -486,8 +486,8 @@ getOpCode(op,vec,max) ==
 hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   opIsHasCat op =>
       HasCategory(domain, sig)
-  if hashCode? op and EQL(op, $hashOp1) then op := 'One
-  if hashCode? op and EQL(op, $hashOp0) then op := 'Zero
+  if hashCode?(op) and EQL(op, $hashOp1) then op := "1"
+  if hashCode?(op) and EQL(op, $hashOp0) then op := "0"
   hashPercent :=
     VECP dollar => hashType(dollar.0,0)
     hashType(dollar,0)

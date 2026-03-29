@@ -207,7 +207,7 @@
 (SETQ |$noEnv| NIL)
 
 (SETQ |$SideEffectFreeFunctionList| '(
-  |null| |case| |Zero| |One| \: |::| |has| |Mapping| |Record| |Union|
+  |null| |case| |0| |1| \: |::| |has| |Mapping| |Record| |Union|
   |Enumeration| |elt| = |>| |>=| |<| |<=| MEMBER |is| |isnt| ATOM
 ))
 
@@ -297,8 +297,8 @@
      |ComplexDoubleFloatMatrix| |Character| |SortedExponentVector|
      |HashState| ))
             ;" used by optCallSpecially"
-(SETQ |$Zero| '(|Zero|))
-(SETQ |$One| '(|One|))
+(SETQ |$Zero| '(|0|))
+(SETQ |$One| '(|1|))
 (SETQ |$NonMentionableDomainNames|
       '(% |Rep| |Record| |Union| |Mapping| |Enumeration|))
 

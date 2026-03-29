@@ -332,8 +332,8 @@ constantInDomain?(form,domainForm) ==
     key := opOf form
     entryList := LASSOC(key,opAlist)
     entryList is [[., ., ., type]] and type in '(CONST ASCONST) => true
-    key = "One" => constantInDomain?(["1"], domainForm)
-    key = "Zero" => constantInDomain?(["0"], domainForm)
+    key = "1" => constantInDomain?(["1"], domainForm)
+    key = "0" => constantInDomain?(["0"], domainForm)
     false
 
 -- [[getConstantFromDomain]] is used to look up the constants $0$ and $1$
@@ -347,8 +347,8 @@ getConstantFromDomain1(form,domainForm) ==
     key := opOf form
     entryList := LASSOC(key,opAlist)
     entryList isnt [[sig, ., ., .]] =>
-        key = "One" => getConstantFromDomain(["1"], domainForm)
-        key = "Zero" => getConstantFromDomain(["0"], domainForm)
+        key = "1" => getConstantFromDomain(["1"], domainForm)
+        key = "0" => getConstantFromDomain(["0"], domainForm)
         throw_msg("S2IC0008", '"No such constant %1b in domain %2bp .",
                   [form, domainForm])
     -- i.e., there should be exactly one item under this key of that form
@@ -356,19 +356,19 @@ getConstantFromDomain1(form,domainForm) ==
     SPADCALL compiledLookupCheck(key,sig,domain)
 
 
-domainOne(domain) == getConstantFromDomain('(One),domain)
+domainOne(domain) == getConstantFromDomain(["1"], domain)
 
-domainZero(domain) == getConstantFromDomain('(Zero),domain)
+domainZero(domain) == getConstantFromDomain(["0"], domain)
 
 equalOne(object, domain) ==
   -- tries using constant One and "=" from domain
   -- object should not be wrapped
-  algEqual(object, getConstantFromDomain('(One),domain), domain)
+    algEqual(object, getConstantFromDomain(["1"], domain), domain)
 
 equalZero(object, domain) ==
   -- tries using constant Zero and "=" from domain
   -- object should not be wrapped
-  algEqual(object, getConstantFromDomain('(Zero),domain), domain)
+    algEqual(object, getConstantFromDomain(["0"], domain), domain)
 
 algEqual(object1, object2, domain) ==
   -- sees if 2 objects of the same domain are equal by using the
@@ -984,11 +984,11 @@ coerceIntAlgebraicConstant(object,t2) ==
   t1 := objMode object
   val := objValUnwrap object
   ofCategory(t1,'(Monoid)) and ofCategory(t2,'(Monoid)) and
-    val = getConstantFromDomain('(One),t1) =>
-      objNewWrap(getConstantFromDomain('(One),t2),t2)
+        val = getConstantFromDomain(["1"], t1) =>
+            objNewWrap(getConstantFromDomain(["1"], t2), t2)
   ofCategory(t1,'(AbelianMonoid)) and ofCategory(t2,'(AbelianMonoid)) and
-    val = getConstantFromDomain('(Zero),t1) =>
-      objNewWrap(getConstantFromDomain('(Zero),t2),t2)
+        val = getConstantFromDomain(["0"], t1) =>
+            objNewWrap(getConstantFromDomain(["0"], t2), t2)
   NIL
 
 stripUnionTags doms ==

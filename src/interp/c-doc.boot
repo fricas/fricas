@@ -948,8 +948,8 @@ checkTransformFirsts(opname,u,margin) ==
 --case 4: op arg
 --case 5: arg op arg
   namestring :=
-      opname = ["Zero"] => '"0"
-      opname = ["One"] => '"1"
+      opname = ["0"] => '"0"
+      opname = ["1"] => '"1"
       PNAME(opname)
   margin > 0 =>
     s := leftTrim u

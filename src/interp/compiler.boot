@@ -469,9 +469,9 @@ compSel1(domain, op, argl, m, e) ==
     -- FIXME: we should handle 0 and 1 in systematic way, instead
     -- of renaming hacks like below
     if op = 0 then
-        op := "Zero"
+        op := "0"
     else if op = 1 then
-        op := "One"
+        op := "1"
     -- Next clause added JHD 8/Feb/94: the clause after doesn't work
     -- since addDomain refuses to add modemaps from Mapping
     domain=$Float and op="float" and m=$DoubleFloat =>
@@ -490,10 +490,10 @@ compSel1(domain, op, argl, m, e) ==
     nil
 
 try_constant_DF(mant, exp, m, e) ==
-    if mant = ["Zero"] then mant := 0
-    if mant = ["One"] then mant := 1
-    if exp = ["Zero"] then exp := 0
-    if exp = ["One"] then exp := 1
+    if mant = ["0"] then mant := 0
+    if mant = ["1"] then mant := 1
+    if exp = ["0"] then exp := 0
+    if exp = ["1"] then exp := 1
     INTEGERP(mant) and INTEGERP(exp) => [["mk_DF", mant, exp], m, e]
     nil
 
@@ -917,7 +917,7 @@ compReturn(["return", x], m, e) ==
 compSel(form is ["Sel", aDomain, anOp], m, E) ==
   aDomain="Lisp" =>
     [anOp',m,E] where anOp'() == (anOp=$Zero => 0; anOp=$One => 1; anOp)
-  anOp := (anOp = $Zero => "Zero"; anOp = $One => "One"; anOp)
+  anOp := (anOp = $Zero => "0"; anOp = $One => "1"; anOp)
   compSel1(aDomain, anOp, [], m, E)
 
 --% HAS
@@ -1275,8 +1275,8 @@ compCoerce1(x,m',e) ==
 
 constant_coerce([x, m, e], m') ==
     m' = $SingleInteger =>
-        if x = ["Zero"] then x = 0
-        if x = ["One"] then x = 1
+        if x = ["0"] then x = 0
+        if x = ["1"] then x = 1
         not(INTEGERP(x)) => nil
         -- Check if in range of FIXNUM on all supported implementations
         x > 8000000 or x < -8000000 => nil
@@ -1330,13 +1330,13 @@ modeEqual(x,y) ==
   -- of hacks like below
   atom x =>
       x = y => true
-      x = 0 => y = ["Zero"]
-      x = 1 => y = ["One"]
+      x = 0 => y = ["0"]
+      x = 1 => y = ["1"]
       false
   atom y =>
       x = y => true
-      y = 0 => x = ["Zero"]
-      y = 1 => x = ["One"]
+      y = 0 => x = ["0"]
+      y = 1 => x = ["1"]
       false
   #x ~=#y => nil
   (and/[modeEqual(u,v) for u in x for v in y])
