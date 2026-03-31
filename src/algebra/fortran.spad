@@ -127,8 +127,6 @@ FortranCode() : public == private where
                   commonBranch : COMMON, printBranch : PRINTLIST)
 
   public == SetCategory with
-    coerce : % -> O
-      ++ coerce(f) returns an object of type OutputForm.
     forLoop : (SegmentBinding PIN, %) -> %
      ++ forLoop(i=1..10, c) creates a representation of a FORTRAN DO loop with
      ++ \spad{i} ranging over the values 1 to 10.
@@ -751,37 +749,17 @@ FortranProgram(name, returnType, arguments, symbols) : Exports == Implement wher
   MCMPLX ==> MachineComplex
   REP    ==> Record(localSymbols : SymbolTable, code : List FortranCode)
 
-  Exports ==> FortranProgramCategory with
-    coerce      : FortranCode -> %
-        ++ coerce(fc) \undocumented{}
-    coerce      : List FortranCode -> %
-        ++ coerce(lfc) \undocumented{}
-    coerce      : REP -> %
-        ++ coerce(r) \undocumented{}
-    coerce      : EXPR MINT -> %
-        ++ coerce(e) \undocumented{}
-    coerce      : EXPR MFLOAT -> %
-        ++ coerce(e) \undocumented{}
-    coerce      : EXPR MCMPLX -> %
-        ++ coerce(e) \undocumented{}
-    coerce      : Equation EXPR MINT -> %
-        ++ coerce(eq) \undocumented{}
-    coerce      : Equation EXPR MFLOAT -> %
-        ++ coerce(eq) \undocumented{}
-    coerce      : Equation EXPR MCMPLX -> %
-        ++ coerce(eq) \undocumented{}
-    coerce      : EXPR INT -> %
-        ++ coerce(e) \undocumented{}
-    coerce      : EXPR Float -> %
-        ++ coerce(e) \undocumented{}
-    coerce      : EXPR CMPX Float -> %
-        ++ coerce(e) \undocumented{}
-    coerce      : Equation EXPR INT -> %
-        ++ coerce(eq) \undocumented{}
-    coerce      : Equation EXPR Float -> %
-        ++ coerce(eq) \undocumented{}
-    coerce      : Equation EXPR CMPX Float -> %
-        ++ coerce(eq) \undocumented{}
+  Exports ==> Join(FortranProgramCategory, CoercibleFrom(FortranCode),
+        CoercibleFrom(List(FortranCode)), CoercibleFrom(REP),
+        CoercibleFrom(EXPR(MINT)), CoercibleFrom(EXPR(MFLOAT)),
+        CoercibleFrom(EXPR(MCMPLX)), CoercibleFrom(Equation(EXPR(MINT))),
+        CoercibleFrom(Equation(EXPR(MFLOAT))),
+        CoercibleFrom(Equation(EXPR(MCMPLX))),
+        CoercibleFrom(EXPR(INT)), CoercibleFrom(EXPR(Float)),
+        CoercibleFrom(EXPR(CMPX(Float))),
+        CoercibleFrom(Equation(EXPR(INT))),
+        CoercibleFrom(Equation(EXPR(Float))),
+        CoercibleFrom(Equation(EXPR(CMPX(Float)))))
 
   Implement ==> add
 
@@ -1260,9 +1238,7 @@ Switch() : public == private where
   EXPR ==> Union(I : Expression Integer, F : Expression Float,
                  CF : Expression Complex Float, switch : %)
 
-  public ==  CoercibleTo OutputForm with
-    coerce : Symbol -> %
-        ++ coerce(s) \undocumented{}
+  public ==  Join(CoercibleTo(OutputForm), CoercibleFrom(Symbol)) with
     LT : (EXPR, EXPR) -> %
       ++ LT(x, y) returns the \spadtype{Switch} expression representing \spad{x<y}.
     GT : (EXPR, EXPR) -> %
@@ -1443,19 +1419,8 @@ FortranExpression(basicSymbols, subscriptedSymbols, R):
   POLY ==> Polynomial
 
   Exports ==> Join(ExpressionSpace, Algebra(R), RetractableTo(R),
-                   PartialDifferentialRing(Symbol)) with
-    retract : EXPR R -> %
-      ++ retract(e) takes e and transforms it into a
-      ++  FortranExpression checking that it contains no non-Fortran
-      ++  functions, and that it only contains the given basic symbols
-      ++  and subscripted symbols which correspond to scalar and array
-      ++  parameters respectively.
-    retractIfCan : EXPR R -> Union(%,"failed")
-      ++ retractIfCan(e) takes e and tries to transform it into a
-      ++  FortranExpression checking that it contains no non-Fortran
-      ++  functions, and that it only contains the given basic symbols
-      ++  and subscripted symbols which correspond to scalar and array
-      ++  parameters respectively.
+                   PartialDifferentialRing(Symbol),
+                   RetractableFrom(EXPR(R))) with
     retract : S -> %
       ++ retract(e) takes e and transforms it into a FortranExpression
       ++  checking that it is one of the given basic symbols
@@ -1466,8 +1431,6 @@ FortranExpression(basicSymbols, subscriptedSymbols, R):
       ++  checking that it is one of the given basic symbols
       ++  or subscripted symbols which correspond to scalar and array
       ++  parameters respectively.
-    coerce : % -> EXPR R
-        ++ coerce(x) \undocumented{}
     if (R has RetractableTo(Integer)) then
       retract : EXPR Integer -> %
         ++ retract(e) takes e and transforms it into a

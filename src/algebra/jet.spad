@@ -34,6 +34,53 @@
 -- (C) Version 2  1994  Werner M. Seiler
 --
 
+)abbrev category JBOPCAT JetBundleOperationsCategory
+++ Description:
+++ This category defines common operations provided by various jet
+++ bundles.
+JetBundleOperationsCategory() : Category == Exports where
+  L ==> List
+  NNI ==> NonNegativeInteger
+  PI ==> PositiveInteger
+  SY ==> Symbol
+  Exports ==> with
+    setNotation : SY -> SY
+       ++ \spad{setNotation(s)} chooses the notation used for derivatives.
+       ++ Returns the old value.
+    getNotation : () -> SY
+       ++ \spad{getNotation()} shows the currently used notation.
+    X : PI -> %
+       ++ \spad{X(i)} generates the \spad{i}-th independent variable.
+    U : PI -> %
+       ++ \spad{U(i)} generates the \spad{i}-th dependent variable.
+    P : (PI, L(NNI)) -> %
+       ++ \spad{P(i, ind)} generates the derivative of the \spad{i}-th
+       ++ dependent variable wrt the index \spad{ind}. Whether \spad{ind}
+       ++ is interpreted as multi-index or as repeated index depends on the
+       ++ chosen notation.
+    numIndVar : () -> PI
+       ++ \spad{numIndVar} returns the number of independent variables.
+    numDepVar : () -> PI
+       ++ \spad{numDepVar} returns the number of dependent variables.
+
+    -- We provide simpler calls for the special cases of only one
+    -- independent or only one dependent variable.
+    X : () -> %
+       ++ \spad{X()} generates the only independent variable.
+    U : () -> %
+       ++ \spad{U()} generates the only dependent variable.
+    P : L(NNI) -> %
+       ++ \spad{P(ind)} generates the derivative of the only dependent
+       ++ variable wrt the index \spad{ind}.
+    P : (PI, NNI) -> %
+       ++ \spad{P(i, j)} generates the \spad{j}-th derivative of the
+       ++ \spad{i}-th independent variable wrt the only independent
+       ++ variable.
+    P : NNI -> %
+       ++ \spad{P(i)} generates the \spad{i}-th derivative of the only
+       ++ dependent variable wrt the only independent variable.
+
+
 )abbrev category JBC JetBundleCategory
 ++ Description:
 ++ \spadtype{JetBundleCategory} provides basic data structures and
@@ -70,56 +117,37 @@ JetBundleCategory() : Category == Def where
   Repeated ==> "Repeated"::SY
   DerMode  ==> [Multi, Repeated]@L(SY)
 
-
-  Def ==> Join(OrderedSet, CoercibleTo EI) with
-
-      setNotation : SY -> SY
-        ++ \spad{setNotation(s)} chooses the notation used for derivatives.
-        ++ Returns the old value.
-
-      getNotation : () -> SY
-        ++ \spad{getNotation()} shows the currently used notation.
+  Def ==> Join(JetBundleOperationsCategory, OrderedSet, CoercibleTo EI) with
 
       multiIndex : % -> L NNI
         ++ \spad{multiIndex(jv)} returns the multi-index of the jet
         ++ variable \spad{jv}.
-
       repeatedIndex : % -> L PI
         ++ \spad{repeatedIndex(jv)} returns the multi-index of the jet
         ++ variable \spad{jv} in repeated index notation.
-
       r2m : L PI -> L NNI
         ++ \spad{r2m(ind)} transforms a repeated index into a multi-index.
-
       m2r : L NNI -> L PI
         ++ \spad{m2r(ind)} transforms a multi-index into a repeated index.
-
       allRepeated : L NNI -> L L PI
         ++ \spad{allRepeated(ind)} returns a list of all possible realizations
         ++ of a given multi-index as repeated index.
-
       index : % -> PI
         ++ \spad{index(jv)} yields number of the jet variable \spad{jv}.
-
       type : % -> SY
         ++ \spad{type(jv)} yields the type (\spad{Const, Indep, Dep, Deriv})
         ++ of the jet variable \spad{jv}.
-
       name : % -> SY
         ++ \spad{name(jv)} yields the name of the jet variable \spad{jv}.
-
       class : L NNI -> NNI
         ++ \spad{class(ind)} yields the class of the multi-index \spad{ind}
         ++ (Position for first non-vanishing entry).
-
       class : % -> NNI
         ++ \spad{class(jv)} yields the class of the jet variable \spad{jv}
         ++ (Class of multi-index for derivative, 0 else).
-
       order : % -> NNI
         ++ \spad{order(jv)} yields the order of the jet variable \spad{jv}
         ++ (Order as derivative).
-
       weight : % -> NNI
         ++ \spad{weight(jv)} assigns each jet variable a unique integer
         ++ reflecting its position in the internal ordering. The variable with
@@ -132,7 +160,6 @@ JetBundleCategory() : Category == Def where
       differentiate : (%, PI) -> Union(%, "0")
         ++ \spad{differentiate(jv, i)} differentiates \spad{jv} wrt the
         ++ \spad{i}-th independent variable.
-
       derivativeOf? : (%, %) -> L NNI
         ++ \spad{derivativeOf?(jv1, jv2)} checks whether \spad{jv1} is a
         ++ derivative of \spad{jv2}. In this case, the difference of their
@@ -141,20 +168,10 @@ JetBundleCategory() : Category == Def where
       integrateIfCan : (%, PI) -> Union(%, "failed")
         ++ \spad{integrate(jv, i)} integrates \spad{jv} wrt the \spad{i}-th
         ++ independent variable, if possible.
-
       integrate : (%, PI) -> %
         ++ \spad{integrate(jv, i)} is like \spad{integrateIfCan(jv, i)} but
         ++ yields an error, if the integration is not possible.
 
-      X : PI -> %
-        ++ \spad{X(i)} generates the \spad{i}-th independent variable.
-      U : PI -> %
-        ++ \spad{U(i)} generates the \spad{i}-th dependent variable.
-      P : (PI, L NNI) -> %
-        ++ \spad{P(i, ind)} generates the derivative of the \spad{i}-th
-        ++ dependent variable wrt the index \spad{ind}. Whether \spad{ind}
-        ++ is interpreted as multi-index or as repeated index depends on the
-        ++ chosen notation.
       Pm : (PI, L NNI) -> %
         ++ \spad{Pm(i, ind)} is like \spad{P(i, ind)} but \spad{ind} is
         ++ always a multi-index.
@@ -165,32 +182,13 @@ JetBundleCategory() : Category == Def where
       1 : constant -> %
         ++ \spad{1} generates the special "jet variable" 1, which is
         ++ needed for the representation of linear functions.
-
       one? : % -> B
         ++ \spad{one?(jv)} checks whether the jet variable \spad{jv}
         ++ is the special variable 1.
 
-      -- For the special cases of only one independent or only one dependent
-      -- variable simpler calls are provided.
-      X : () -> %
-        ++ \spad{X()} generates the only independent variable.
-      U : () -> %
-        ++ \spad{U()} generates the only dependent variable.
-      P : L NNI -> %
-        ++ \spad{P(ind)} generates the derivative of the only dependent
-        ++ variable wrt the index \spad{ind}.
-      P : (PI, NNI) -> %
-        ++ \spad{P(i, j)} generates the \spad{j}-th derivative of the
-        ++ \spad{i}-th independent variable wrt the only independent
-        ++ variable.
-      P : NNI -> %
-        ++ \spad{P(i)} generates the \spad{i}-th derivative of the only
-        ++ dependent variable wrt the only independent variable.
-
       variables : NNI -> L %
         ++ \spad{variables(q)} computes the list of all jet variables up to
         ++ order \spad{q}.
-
       variables : (NNI, PI) -> L %
         ++ \spad{variables(q, c)} computes all jet variables of order \spad{q}
         ++ whose class is greater than or equal to \spad{c}.
@@ -198,16 +196,9 @@ JetBundleCategory() : Category == Def where
       dimJ : NNI -> NNI
         ++ \spad{dimJ(q)} computes the (fibre) dimension of the \spad{q}-th
         ++ order jet bundle.
-
       dimS : NNI -> NNI
         ++ \spad{dimS(q)} computes dimension of SqT x VE
         ++ (= number of derivatives of order \spad{q}).
-
-      numIndVar : () -> PI
-        ++ \spad{numIndVar} returns the number of independent variables.
-
-      numDepVar : () -> PI
-        ++ \spad{numDepVar} returns the number of dependent variables.
 
     add
 
@@ -518,26 +509,8 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
   errmsg ==> "cannot simplify"
 
 
-  Def ==> Join(PartialDifferentialRing SY, _
-               GcdDomain, _
-               RetractableTo JB) with
-
-      -- The following procedures are copied from JetBundleCategory for
-      -- easier use.
-      X : PI -> %
-      U : PI -> %
-      P : (PI, L NNI) -> %
-      X : () -> %
-      U : () -> %
-      P : L NNI -> %
-      P : (PI, NNI) -> %
-      P : NNI -> %
-
-      setNotation : SY -> Void
-      getNotation : () -> SY
-
-      numIndVar : () -> PI
-      numDepVar : () -> PI
+  Def ==> Join(PartialDifferentialRing(SY), JetBundleOperationsCategory,
+               GcdDomain, RetractableTo(JB)) with
 
       coerce : JB -> %
         ++ \spad{coerce(jv)} coerces the jet variable \spad{jv}
@@ -713,7 +686,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
       P(i : PI, l : NNI) : % == P(i, l)$JB ::%
       P(i : NNI) : % == P(i)$JB ::%
 
-      setNotation(s : SY) : Void == setNotation(s)$JB
+      setNotation(s : SY) : SY == setNotation(s)$JB
       getNotation() : SY == getNotation()$JB
 
       numIndVar() : PI == numIndVar()$JB
@@ -1311,13 +1284,8 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
   iter ==> "iterated"::SY
   rand ==> "random"::SY
 
-  Cat ==> CoercibleTo OUT with
-
-    shallowlyMutable
-    finiteAggregate
-
-    coerce : % -> MD
-      ++ \spad{coerce(A)} yields the matrix \spad{A} in the usual matrix type.
+  Cat ==> Join(CoercibleTo(OUT), CoercibleTo(MD), shallowlyMutable,
+               finiteAggregate) with
 
     copy : % -> %
       ++ \spad{copy(A)} returns a copy of the matrix \spad{A}.
@@ -2395,14 +2363,9 @@ JetBundleExpression(JB : JBC) : Cat == Def where
   Dep     ==> "Dep"::SY
   Deriv   ==> "Deriv"::SY
 
-  Cat ==> Join(JBFC, FS, ACFS, TFC, COC, LFC, SFC) with
+  Cat ==> Join(JBFC, FS, ACFS, TFC, COC, LFC, SFC, CoercibleFrom(EI),
+               CoercibleTo(EI), CoercibleFrom(SMP), CoercibleFrom(JP)) with
 
-    coerce : EI -> %
-    coerce : %  -> EI
-
-    coerce : SMP -> %
-
-    coerce : JP -> %
     numerJP : % -> JP
       ++ \spad{numerJP(f)} writes \spad{f} as polynomial over \spad{JB}.
 
@@ -2843,18 +2806,8 @@ JetBundleXExpression(JB : JBC) : Cat == Def where
 
   errmsg ==> "Only functions of independent variables allowed"
 
-  Cat ==> Join(JBFC, BFC, FS, ACFS, TFC, COC, LFC, SFC) with
-
-    coerce : EI -> %
-    coerce : %  -> EI
-
-    retractIfCan : JBE -> Union(%, "failed")
-      ++ \spad{retractIfCan(p)} checks whether \spad{p} depends only on
-      ++ the independent variables. If yes, it is coerced.
-
-    retract : JBE -> %
-      ++ \spad{retract(p)} is like \spad{retractIfCan(p)} put yields a
-      ++ hard error, if \spad{p} contains further jet variables.
+  Cat ==> Join(JBFC, BFC, FS, ACFS, TFC, COC, LFC, SFC, CoercibleFrom(EI),
+               CoercibleTo(EI), RetractableFrom(JBE)) with
 
     reduce : % -> %
       ++ \spad{reduce(x)} reduces the algebraics in \spad{x}.
@@ -2881,6 +2834,7 @@ JetBundleXExpression(JB : JBC) : Cat == Def where
         px case "failed" => error errmsg
         px
 
+    coerce(x : %) : JBE == x::Rep
 
 )abbrev domain JBLF JetBundleLinearFunction
 ++ Description:
@@ -2917,8 +2871,6 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
     if D has lazyRepresentation then
         lazyRepresentation
 
-    coerce : D -> %
-
     coerce : L % -> SEMD
     coerce : SEMD -> L %
       ++ coercion to matrices over ground domain.
@@ -2930,15 +2882,8 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
     ground : % -> %
       ++ \spad{ground(l)} returns the ground part of \spad{l}.
 
-    if D has with retractIfCan : JBE -> Union(D, "failed") then
-
-        retractIfCan : JBE -> Union(%, "failed")
-          ++ \spad{retractIfCan(p)} tries to write a general expression as
-          ++ a linear function.
-
-        retract : JBE -> %
-          ++ \spad{retract(p)} is like \spad{retractIfCan(p)} put yields a
-          ++ hard error, if \spad{p} contains further jet variables.
+    if D has RetractableFrom(JBE) then
+        RetractableFrom(JBE)
 
   Def ==> add
 
@@ -3009,7 +2954,7 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
 
     denominator(l : %) : % == 1
 
-    if D has with retractIfCan : JBE -> Union(D, "failed") then
+    if D has RetractableFrom(JBE) then
 
         retractIfCan(ex : JBE) : Union(%, "failed") ==
             pd := retractIfCan(ex)$D
@@ -3026,6 +2971,10 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
             pl : Union(%, "failed") := retractIfCan ex
             pl case "failed" => error errmsg1
             pl
+
+        coerce(l : %) : JBE ==
+            reduce(_+, [(c::JBE)*(v::JBE) for c in l.Coeffs for v in l.JVars
+                       ], 0$JBE)$ListFunctions2(JBE, JBE)
 
     -- -------- --
     -- Equality --
@@ -5481,19 +5430,8 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
   Null   ==> "0"::SY
 
 
-  Cat ==> JBFC with
-
-    lazyRepresentation
-
-    coerce : D -> %
-      ++ \spad{coerce(d)} coerces an element of \spad{D} into the new domain.
-      ++ This includes the calculation of its leading derivative and its jet
-      ++ variables.
-
-    coerce : % -> D
-      ++ \spad{coerce(exp)} retracts an element to the base domain \spad{D}.
-      ++ This looses all information about its leading derivative and its
-      ++ jet variables and requires complete evaluation of the expression.
+  Cat ==> Join(JBFC, CoercibleTo(D), CoercibleFrom(D),
+               lazyRepresentation) with
 
     collect : % -> %
       ++ \spad{collect(exp)} "collects" former lazy terms which have been
@@ -6550,15 +6488,7 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
   GBP  ==> GroebnerPackage(R, E, %)
   JBP  ==> JetBundlePolynomial(R, JB)
 
-  Cat ==> PCD with
-
-    convert : JBP -> %
-      ++ \spad{convert(p)} converts a polynomial \spad{p} in recursive
-      ++ representation into a polynomial in distributive representation.
-
-    convert : % -> JBP
-      ++ \spad{convert(p)} converts a polynomial \spad{p} in distributive
-      ++ representation into a polynomial in recursive representation.
+  Cat ==> Join(PCD, ConvertibleTo(JBP), ConvertibleFrom(JBP)) with
 
     const : % -> R
       ++ \spad{const(p)} coerces a polynomial into an element of the
