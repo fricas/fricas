@@ -320,6 +320,9 @@ BasicKeyedAccessFile : Exports == Implementation where
       ++ close! closes the keyed access file.
     read : (%, String) -> None
       ++ read(f, key) reads item with the key \spad{key} from \spad{f}.
+    read : (%, String, None) -> None
+      ++ read(f, key, val) reads item with the key \spad{key} from
+      ++ \spad{f}.  If \spad{key} is not presents returns \spad{val}.
     write! : (%, String, None) -> Void
       ++ write! writes one item to the keyed access file.
     remove! : (%, String) -> Void
@@ -341,6 +344,9 @@ BasicKeyedAccessFile : Exports == Implementation where
 
     read(f : %, key : String) : None ==
         deserialize(kaf_read(f, key, _$error_mark$Lisp)$Lisp)
+
+    read(f : %, key : String, val : None) : None ==
+        deserialize(kaf_read(f, key, serialize(val))$Lisp)
 
     write!(f : %, key : String, val : None) : Void ==
         res1 : Union(None, "failed") := trappedSpadEval(serialize(val))$Lisp
