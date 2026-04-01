@@ -2251,15 +2251,31 @@ reportOpsFromLisplib1(unitForm,u)  ==
   editFile showFile
   delete_file(showFile)
 
+$get_operations_fun := [0, nil]
+
+$Sig_doc_rec_SE := ['Record, [":", 'signature, ['SExpression]],
+                             [":", 'condition, ['SExpression]],
+                             [":", 'origin, ['SExpression]],
+                             [":", 'documentation, ['String]]]
+
+get_operations(con, dom) ==
+    fun := SpadFun($get_operations_fun,
+             getFunctionFromDomain1("operations", '(BrowserInformation),
+                ['List, ['Record, [":", 'name, ['Symbol]],
+                            [":", 'sdl, ['List, $Sig_doc_rec_SE]]]],
+                '((SExpression) (SExpression))))
+    SPADCALL(con, dom, fun)
+
 get_op_alist(form) ==
     conname := first(form)
     conform := getConstructorForm(conname)
-    ops := koOps(conform, form)
+    opl := get_operations(conform, form)
     res := []
-    for op in ops repeat
-        [name, :sigs] := op
-        for sigm in sigs repeat
-            [sig, cond] := sigm
+    for opr in opl repeat
+        [name, :sds] := opr
+        for sd in sds repeat
+            sig := sd.0
+            cond := sd.1
             res := cons([[name, sig], cond], res)
     NREVERSE(res)
 
@@ -2291,8 +2307,6 @@ reportOpsFromUnitDirectly unitForm ==
           sigList := [[[a, b], true] for [a, b, c] in funlist]
       else
           sigList := get_op_alist(unitForm)
-
-      sigList := REMDUP(MSORT(sigList))
 
       ops := nil
 
