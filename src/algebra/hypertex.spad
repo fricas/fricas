@@ -656,10 +656,13 @@ BrowserInformation : Exports == Implementation where
      constructor_name? : SY -> Boolean
        ++ constructor_name?(s) returns true if and only if s is a name
        ++ of existing constructor.
-     constructor_signature : (SY, List(SE)) -> SE
+     constructor_signature : (SY) -> SE
        ++ constructor_signature(s) gives constructor signature, that
        ++ is S-expression (list) giving type of constructor and types
        ++ of arguments.
+     constructor_signature : (SY, List(SE)) -> SE
+       ++ constructor_signature(s, al) gives constructor signature,
+       ++ with formal argument symbols replaced by elements of al.
      default_name? : SY -> Boolean
        ++ default_name?(s) returns true if and only if s has format
        ++ of name of a default package, that is name of s ends in
@@ -669,8 +672,22 @@ BrowserInformation : Exports == Implementation where
        ++ a name of an exposed constructor.
      exports : Con_form -> Exp_rec
        ++ exports(c) gives explicit exports of a constructor.
-     ancestors : (Con_form, Boolean) -> Cond_con_lst
-       ++ ancestors(c, use_args?) computes ancestors of a constructor.
+     ancestors : (Con_form, SE) -> Cond_con_lst
+       ++ ancestors(cf, df) computes ancestors of a constructor.
+       ++ cf is constructor form with formal arguments, df when
+       ++ not null provides actual arguments.
+     children : (Con_form, SE) -> Cond_con_lst
+       ++ children(cf, df) computes childen (that is direct descendants)
+       ++ of a category.  cf is constructor form with formal arguments,
+       ++ df when not null provides actual arguments.
+     descendants : (Con_form, SE) -> Cond_con_lst
+       ++ descendants(cf, df) computes descendants of a category.
+       ++ cf is constructor form with formal arguments, df when
+       ++ not null provides actual arguments.
+     domains : (Con_form, SE) -> Cond_con_lst
+       ++ domains(cf, df) computes domains of a category.
+       ++ cf is constructor form with formal arguments, df when
+       ++ not null provides actual arguments.
      parents : Con_form -> Cond_con_lst
        ++ parents(c) gives parents (that is direct ancestors) of a
        ++ constructor c.
@@ -681,9 +698,20 @@ BrowserInformation : Exports == Implementation where
      users : SY -> List(SY)
        ++ users(c) gives users (that is constructors that use c
        ++ in its implementation) of a constructor c.
-     operations : (Con_form, Boolean) -> Op_lst
-       ++ operations(c, use_args?) computes operation list of a
-       ++ constructor.
+     uses : (SY, SE, SE) -> Cond_con_lst
+       ++ uses(cn, cf, df) computes constuctors used by constructor
+       ++ with name cn.  cf is constructor form with formal arguments,
+       ++ df when not null provides actual arguments.
+       ++ Note: for default packages cf is corresponding category form.
+     search_path : (SE, SE, None) -> Cond_con_lst
+       ++ search_path(cf, df, dv) computes search path of a constructor.
+       ++ cf is constructor form with formal arguments, df when
+       ++ not null provides actual arguments, dv is domain vector or
+       ++ nil.
+     operations : (Con_form, SE) -> Op_lst
+       ++ operations(cf, df) computes operation list of a constructor.
+       ++ cf is constructor form with formal arguments, df when
+       ++ not null provides actual arguments.
      simp_ops_conditions : (Op_lst, SE, SE) -> Op_lst
        ++ simp_ops_conditions(ol, cf, df) simplifies conditions of
        ++ operations in ol after arguments in df are substituted for
@@ -755,13 +783,55 @@ BrowserInformation : Exports == Implementation where
 
   Implementation ==> add
 
+    Fun_rec ==> Record(name : SY, sd : Sig_doc)
+
     get_db_info(x, y) ==> get_database(x, y)$Lisp
+
+    simp_has(p) ==> simpHasPred(p)$Lisp
 
     sublis_formal(args : List(SE), expr : SE) : SE ==
         sublisFormal(args, expr)$Lisp
 
+    is_symbol?(se : SE, sym : SY) : Boolean ==
+        symbol?(se) and symbol(se) = sym
+
+    try_eval(pred : SE, ancestors : Cond_con_lst) : SE ==
+        not(pair?(pred)) => pred
+        op := car(pred)
+        args := destruct(cdr(pred))
+        is_symbol?(op, 'OR) =>
+            nargs := [v for arg in args |
+                       not(null?(v := try_eval(arg, ancestors)))]
+            empty?(nargs) => false pretend SE
+            member?(true pretend SE, nargs) => true pretend SE
+            #nargs = 1 => first(nargs)
+            convert(cons(op, nargs))
+        is_symbol?(op, 'AND) =>
+            nargs := [v for arg in args |
+                      not((v := try_eval(arg, ancestors)) = true pretend SE)]
+            empty?(nargs) => true pretend SE
+            member?(false pretend SE, nargs) => false pretend SE
+            #nargs = 1 => first(nargs)
+            convert([op, :nargs])
+        is_symbol?(op, 'has) and #args = 2 and is_symbol?(args(1), "%"::SY) =>
+            av : SE := assoc(args(2), ancestors)$Lisp
+            null?(av) => false pretend SE
+            cdr(av) = true pretend SE => true pretend SE
+            pred
+        pred
+
+    simp_pred(pred : SE, ancestors : Cond_con_lst) : SE ==
+        npred : SE := simp_has(pred)
+        empty?(ancestors) => npred
+        null?(npred) => npred
+        npred = true pretend SE => npred
+        try_eval(npred, ancestors)
+
+    constructor_signature(conname : SY) : SE ==
+        getConstructorSignature(conname)$Lisp
+
     constructor_signature(conname : SY, args : List(SE)) : SE ==
-        sig : SE := getConstructorSignature(conname)$Lisp
+        sig := constructor_signature(conname)
         get_db_info(conname, 'CONSTRUCTORKIND) = 'category =>
             SUBLISLIS(args, _$TriangleVariableList$Lisp, sig)$Lisp
         sublis_formal(args, sig)
@@ -827,7 +897,7 @@ BrowserInformation : Exports == Implementation where
                 r1 : Sig_doc :=
                     sd.condition = (true pretend SE) => sd
                     np : SE := SUBLISLIS(dl, cl, sd.condition)$Lisp
-                    np := simpHasPred(np)$Lisp
+                    np := simp_has(np)
                     null?(np) => iterate
                     [sd.signature, np, sd.origin, sd.documentation]
                 res1 := cons(r1, res1)
@@ -835,59 +905,78 @@ BrowserInformation : Exports == Implementation where
                 res := cons([opr.name, reverse!(res1)], res)
         reverse!(res)
 
-    operations(form : SE, use_args? : Boolean) : Op_lst ==
-        dom_form : SE :=
-            -- use_args? => form
-            convert([])
-        form := constructor_form(symbol(car(form)))
-        SETF(_$docTableHash$Lisp, MAKE_HASHTABLE('EQUAL)$Lisp)$Lisp
-        docTable : None := dbDocTable(form)$Lisp
-        lst1 : List(SE) := koOps(form, dom_form)$Lisp
-        res : Op_lst := []
-        for op_mm in lst1 repeat
-            ope := car(op_mm)
-            op : SY :=
-                symbol?(ope) => symbol(ope)
-                integer?(ope) =>
-                    k := integer(ope)
-                    k = 0 => "0"::SY
-                    k = 1 => "1"::SY
-                    error "unexpected integer as operator"
-                error "unexpected operator form"
-            mms := destruct(cdr(op_mm))
-            -- print(op_mm::OutputForm)$OutputForm
-            res1 : List(Sig_doc) := []
-            for mm1 in mms repeat
-                (sig, cond) := destruct(mm1)
-                nd : SE := dbGetDocTable(ope, sig, docTable)$Lisp
-                -- print(nd::OutputForm)$OutputForm
-                doc : SE := convert([])
-                if null?(nd) then
-                    print(message("operations: op not found in doc table"
-                                 )$OutputForm)$OutputForm
-                    print(op_mm::OutputForm)$OutputForm
-                    print(mm1::OutputForm)$OutputForm
-                    -- error "operations: op not found in doc table"
-                    ori := form
-                else
-                    ori := car(nd)
-                    doc := cdr(nd)
-                doc_s : String :=
-                    null?(doc) => ""
-                    string(car(doc))
-                res1 := cons([sig, cond, ori, doc_s], res1)
-            res := cons([op, reverse!(res1)], res)
-        -- print(res::OutputForm)$OutputForm
-        reverse!(res)
+    fun_cmp : (Fun_rec, Fun_rec) -> Boolean
+
+    flatten_opll : List(Op_lst) -> List(Fun_rec)
+
+    group_funs : List(Fun_rec) -> Op_lst
+
+    fill_op_tab(dom_form : SE, op_tab : XHashTable(SE, Sig_doc)) : Void ==
+        opl := exports(dom_form).ops
+        fl := flatten_opll([opl])
+        for f1 in fl repeat
+            n_sd := f1.sd
+            n_sig := convert(cons(convert(f1.name),
+                                  destruct(n_sd.signature)))@SE
+            key?(n_sig, op_tab) => iterate
+            op_tab(n_sig) := [n_sd.signature, true pretend SE,
+                              n_sd.origin, n_sd.documentation]$Sig_doc
+        cl := parents(dom_form)
+        for c1 in cl repeat
+            fill_op_tab(c1.form, op_tab)
+
+    fix_ops(ops : List(SE), anc_lst : Cond_con_lst) : List(Fun_rec) ==
+        res : List(Fun_rec) := []
+        for opr in ops repeat
+            name := symbol(car(opr))
+            for sig_cond in destruct(cdr(opr)) repeat
+                scl := destruct(sig_cond)
+                n_sig := first(scl)
+                n_cond : SE :=
+                    #scl < 3 => true pretend SE
+                    scl(3)
+                n_cond := simp_pred(n_cond, anc_lst)
+                null?(n_cond) => iterate
+                sd := [n_sig, n_cond, convert([]), ""]$Sig_doc
+                res := cons([name, sd]$Fun_rec, res)
+        res
+
+    operations(form : SE, dom_form : SE) : Op_lst ==
+        op_tab := empty()$XHashTable(SE, Sig_doc)
+        fill_op_tab(dom_form, op_tab)
+        op := car(form)
+        args := rest(destruct(dom_form))
+        ople := sublis_formal(args,
+                              get_db_info(op, 'OPERATIONALIST))
+        anc_lst := ancestors(form, dom_form)
+        fl1 : List(Fun_rec) := fix_ops(destruct(ople), anc_lst)
+        fl2 : List(Fun_rec) := []
+        for opr in fl1 repeat
+            name := opr.name
+            o_sd := opr.sd
+            sig := o_sd.signature
+            n_sig := convert(cons(convert(name), destruct(sig)))@SE
+            n_sd := op_tab(n_sig)
+            -- A hack to avoid duplicate entries.  Condition field is
+            -- taken from o_sd, so we use condition field in n_sd to
+            -- store information that given signature was handled.
+            null?(n_sd.condition) => iterate
+            n_sd.condition := false pretend SE
+            sd2 := [sig, o_sd.condition, n_sd.origin, n_sd.documentation
+                   ]$Sig_doc
+            fl2 := cons([name, sd2]$Fun_rec, fl2)
+        fl2 := sort(fun_cmp, fl2)
+        group_funs(fl2)
 
     Gr_rec ==> Record(grp_tag : SE, i : Integer, name : SY, sd : Sig_doc)
     Aux_op_rec ==> Record(i : Integer, name : SY, sd : Sig_doc)
 
     -- The allowed atoms are symbols, integers and strings.  Lists should
-    -- be proper.
+    -- be proper.  Lists are sorted after atoms, to prefer simpler
+    -- signatures first.
     sex_order(s1 : SE, s2 : SE) : Boolean ==
-        list?(s1) =>
-            not(list?(s2)) => true
+        list?(s2) =>
+            not(list?(s1)) => true
             sl1 := destruct(s1)
             sl2 := destruct(s2)
             repeat
@@ -899,7 +988,7 @@ BrowserInformation : Exports == Implementation where
                     sl1 := rest(sl1)
                     sl2 := rest(sl2)
                 return sex_order(e1, e2)
-        list?(s2) => false
+        list?(s1) => false
         string?(s1) =>
              not(string?(s2)) => true
              string(s1) < string(s2)
@@ -939,7 +1028,7 @@ BrowserInformation : Exports == Implementation where
         ot := e1.grp_tag
         res1 : List(Aux_op_rec) := [[e1.i, e1.name, e1.sd]$Aux_op_rec]
         res : Grp_lst := []
-        for gr in grd repeat
+        for gr in rest(grd) repeat
             t := gr.grp_tag
             r1 := [gr.i, gr.name, gr.sd]$Aux_op_rec
             t = ot =>
@@ -977,17 +1066,13 @@ BrowserInformation : Exports == Implementation where
         grd : List(Gr_rec) := []
         i : Integer := 1
         for opr in opl repeat
-            name := opr.name
+            op := opr.name
             for sd in opr.sdl repeat
-                op : SY :=
-                    name = "0"::SY => "Zero"::SY
-                    name = "1"::SY => "One"::SY
-                    name
                 sig1 : SE := sublisFormal(cdr(dom_name), sd.signature,
                                           args)$Lisp
                 sig_imp : SE := get_op_implementation(op, sig1, sd.condition,
                                     pred_lst, dom, dom_name)$Lisp
-                r1 := [sig_imp, i, name, sd]$Gr_rec
+                r1 := [sig_imp, i, op, sd]$Gr_rec
                 i := i + 1
                 grd := cons(r1, grd)
         group_data(grd)
@@ -1063,32 +1148,24 @@ BrowserInformation : Exports == Implementation where
         n1 = n2 => sigs_cmp(r1.sigs, r2.sigs)
         n1 < n2
 
+    op_name(ne : SE) : SY ==
+        symbol?(ne) => symbol(ne)
+        integer?(ne) =>
+            ni := integer(ne)
+            ni = 0 => "0"::SY
+            ni = 1 => "1"::SY
+            error "Unexpected integer as operation name"
+        error "Unexpected operation name"
+
     convert_opl(opl1 : List(SE)) : List(Op_rec2) ==
         empty?(opl1) => []
         r1 := first(opl1)
         opl1 := rest(opl1)
-        need_sort := false
-        oname := symbol(car(r1))
-        oname :=
-            oname = "Zero"::SY =>
-                need_sort := true
-                "0"::SY
-            oname = "One"::SY =>
-                need_sort := true
-                "1"::SY
-            oname
+        oname := op_name(car(r1))
         res1 : List(Sig_rec) := [unpack_sig_cond(cdr(r1))]
         opl : List(Op_rec2) := []
         for r1 in opl1 repeat
-            name := symbol(car(r1))
-            name :=
-                name = "Zero"::SY =>
-                    need_sort := true
-                    "0"::SY
-                name = "One"::SY =>
-                    need_sort := true
-                    "1"::SY
-                name
+            name := op_name(car(r1))
             r2 := unpack_sig_cond(cdr(r1))
             name = oname =>
                 res1 := cons(r2, res1)
@@ -1096,8 +1173,7 @@ BrowserInformation : Exports == Implementation where
             oname := name
             res1 := [r2]
         opl := cons([oname, reverse!(res1)], opl)
-        need_sort => sort(opr2_cmp, opl)
-        reverse!(opl)
+        sort(opr2_cmp, opl)
 
     convert_doc1(d1 : SE) : SE ==
         symbol?(name := car(d1)) => d1
@@ -1147,10 +1223,6 @@ BrowserInformation : Exports == Implementation where
         res : Op_lst := []
         for r1 in opl2 repeat
             name := r1.name
-            name :=
-                name = "Zero"::SY => "0"::SY
-                name = "One"::SY => "1"::SY
-                name
             sdl : List(Sig_doc) :=
                 empty?(doc) => sdl := add_origin(r1.sigs, form)
                 d1 := first(doc)
@@ -1176,23 +1248,38 @@ BrowserInformation : Exports == Implementation where
 
     dependents(c : SY) : List(SY) ==
         lib := open("DEPENDENTS.DAASE"::FileName, "input")$BasicKeyedAccessFile
-        res := read(lib, string(c))
+        l : List(SY) := []
+        res := read(lib, string(c), l pretend None)
         close!(lib)
         res pretend List(SY)
 
     users(c : SY) : List(SY) ==
         lib := open("USERS.DAASE"::FileName, "input")$BasicKeyedAccessFile
-        res := read(lib, string(c))
+        l : List(SY) := []
+        res := read(lib, string(c), l pretend None)
         close!(lib)
         res pretend List(SY)
 
+    uses(c : SY, cf : SE, dom : SE) : Cond_con_lst ==
+        c_lst : List(SE) := getImports(c)$Lisp
+        if not(null?(dom)) then
+            con_args := cdr(cf) pretend List(Symbol)
+            c_lst := SUBLISLIS(cons(dom, rest(destruct(dom))),
+                               cons('%, con_args), c_lst)$Lisp
+        [[c, true pretend SE] for c in c_lst]
+
+    search_path(cf : SE, dom_form : SE, dom_vec : None) : Cond_con_lst ==
+        dbSearchOrder(cf, dom_form, dom_vec)$Lisp
+
     exports(c : Con_form) : Exp_rec ==
         con_name := symbol(car(c))
+        args := rest(destruct(c))
         r1 : SE := getConstructorExports(constructor_form(con_name), true)$Lisp
+        r1 := sublis_formal(args, r1)
         cl := car(r1) pretend Cond_con_lst
         opl1 := destruct(cdr(r1))
-        -- print(opl1::OutputForm)$OutputForm
-        doc : List(SE) := convert_doc(get_ops_doc(con_name))
+        doc := destruct(sublis_formal(args, convert(get_ops_doc(con_name))))
+        doc := convert_doc(doc)
         opl := merge_doc(opl1, doc, c)
         [cl, opl]
 
@@ -1200,10 +1287,8 @@ BrowserInformation : Exports == Implementation where
         cf : SE := constructor_form(c)
         null?(cf) =>
             print(c::OutputForm)$OutputForm
-            error "con_exports: not form"
+            error "con_exports: not a constructor"
         exports(cf)
-
-    Fun_rec ==> Record(name : SY, sd : Sig_doc)
 
     flatten_opll(ll : List(Op_lst)) : List(Fun_rec) ==
         empty?(ll) => []
@@ -1229,13 +1314,19 @@ BrowserInformation : Exports == Implementation where
                 orig1 = orig2 => sex_order(sd1.condition, sd2.condition)
                 sex_order(orig1, orig2)
             sex_order(sig1, sig2)
+        -- a hack so that 0 and 1 sort first
+        n1 = "0"::SY => true
+        n2 = "0"::SY => false
+        n1 = "1"::SY => true
+        n2 = "1"::SY => false
         n1 < n2
 
     group_funs(fl : List(Fun_rec)) : Op_lst ==
+        res : Op_lst := []
+        empty?(fl) => res
         f1 := first(fl)
         oname := f1.name
         sdl := [f1.sd]
-        res : Op_lst := []
         for f1 in rest(fl) repeat
             name := f1.name
             name = oname =>
@@ -1246,49 +1337,9 @@ BrowserInformation : Exports == Implementation where
         res := cons([oname, reverse!(sdl)], res)
         reverse!(res)
 
-    mangle_signature(sig : SE) : SE ==
-        sl := destruct(sig)
-        res : List(SE) := []
-        for s1 in sl repeat
-           ns1 :=
-               list?(s1) and not(null?(s1)) and null?(cdr(s1))
-                 and (s11 := car(s1); symbol?(s11)) => s11
-               list?(s1) => mangle_signature(s1)
-               s1
-           res := cons(ns1, res)
-        convert(reverse!(res))
-
-    mangle_condition(c : SE, args : List(SE)) : SE ==
-        cl := destruct(c)
-        if first(cl) = convert('AND) then
-            cl := cons(convert('and), rest(cl))
-        sublis_formal(args, mangle_signature(convert(cl)))
-
-    fix_args(args : SE) : List(SE) ==
-        al := destruct(args)
-        res : List(SE) := []
-        for a1 in al repeat
-            as := symbol(a1)
-            na : SE :=
-                as = "T$"::SY => convert("T"::SY)
-                a1
-            res := cons(na, res)
-        reverse!(res)
-
-    mangle_signatures(fl : List(Fun_rec)) : Void ==
-        for f1 in fl repeat
-            sd := f1.sd
-            args := fix_args(cdr(sd.origin))
-            sd.signature := sublis_formal(args, mangle_signature(sd.signature))
-            sd.condition = (true pretend SE) => iterate
-            -- sd.condition := sublis_formal(args,
-            --                               mangle_signature(sd.condition))
-            sd.condition := mangle_condition(sd.condition, args)
-
     convert_opll(ll : List(Op_lst)) : Op_lst ==
         empty?(ll) => []
         fl := flatten_opll(ll)
-        mangle_signatures(fl)
         fl := sort(fun_cmp, fl)
         group_funs(fl)
 
@@ -1302,8 +1353,6 @@ BrowserInformation : Exports == Implementation where
             cf := constructor_form(c)
             null?(cf) => iterate
             cfl := cons(cf, cfl)
-        -- cfl : List(SE) := [cf for c in cl | not(default_name?(c)) and (
-        --                       cf := constructor_form(c); not(null?(cf)))]
         opll : List(Op_lst) := [exports(cf).ops for cf in cfl]
         convert_opll(opll)
 
@@ -1346,15 +1395,74 @@ BrowserInformation : Exports == Implementation where
     constructor_kind(name : SY) : SY ==
         get_db_info(name, 'CONSTRUCTORKIND)
 
-    ancestors(form : Con_form, use_args? : Boolean) : Cond_con_lst ==
-        domname : SE :=
-            use_args? => form
-            convert([])$SE
-        ancestorsOf(form, domname)$Lisp
+    ancestors(cf : Con_form, dom : SE) : Cond_con_lst ==
+        ancestorsOf(cf, dom)$Lisp
 
-    parents(form : Con_form) : Cond_con_lst ==
-        symbol?(form) => parentsOf(form)$Lisp
-        parentsOfForm(form)$Lisp
+    children(cf : Con_form, dom : SE) : Cond_con_lst ==
+        c_lst : Cond_con_lst := childrenOf(cf)$Lisp
+        c_lst := augmentHasArgs(c_lst, cf)$Lisp
+        c_lst
+
+    descendants(cf : Con_form, dom : SE) : Cond_con_lst ==
+        c_lst : Cond_con_lst := descendantsOf(cf, dom)$Lisp
+        augmentHasArgs(c_lst, cf)$Lisp
+
+    domains2(cf : Con_form, dom : SE) : Cond_con_lst ==
+        domainsOf(cf, dom)$Lisp
+
+    filter_doms(ls : Cond_con_lst, cf : Con_form, dom : SE)
+                : Cond_con_lst ==
+        pair?(cf) and is_symbol?(car(cf), 'CATEGORY) =>
+            pl := destruct(cdr(cdr(cf)))
+            nl : Cond_con_lst := []
+            for p in pl repeat
+                nl : Cond_con_lst := []
+                for r1 in ls repeat
+                    np : SE := quickAnd(p, r1.condition)$Lisp
+                    nl := cons([r1.form, np]$Cond_rec, nl)
+                ls := nl
+            ls
+        ls2 := domains2(cf, dom)
+        nl : Cond_con_lst := []
+        for r2 in ls2 repeat
+            form1 := r2.form
+            for r1 in ls repeat
+                if form1 = r1.form then
+                    nl := cons([form1, quickAnd(r1.condition,
+                                                r2.condition)$Lisp]$Cond_rec,
+                               nl)
+                    break
+        ls := []
+        for r1 in nl repeat
+            npred : SE := simp_has(r1.condition)
+            null?(npred) => iterate
+            ls := cons([r1.form, npred]$Cond_rec, ls)
+        ls
+
+    domains_of_join(cf : Con_form, dom : SE) : Cond_con_lst ==
+        args := rest(destruct(cf))
+        dom_args : List(SE) :=
+            null?(dom) => [convert([]) for arg in args]
+            rest(destruct(dom))
+        res := domains2(first(args), first(dom_args))
+        for arg in rest(args) for dom_arg in rest(dom_args) repeat
+            res := filter_doms(res, arg, dom_arg)
+        res
+
+    domains1(cf : Con_form, dom : SE) : Cond_con_lst ==
+        not(pair?(cf)) => domains2(cf, dom)
+        op := car(cf)
+        is_symbol?(op, 'CATEGORY) => []
+        is_symbol?(op, 'Join) => domains_of_join(cf, dom)
+        domains2(cf, dom)
+
+    domains(cf : Con_form, dom : SE) : Cond_con_lst ==
+        c_lst := domains1(cf, dom)
+        augmentHasArgs(c_lst, cf)$Lisp
+
+    parents(cf : Con_form) : Cond_con_lst ==
+        symbol?(cf) => parentsOf(cf)$Lisp
+        parentsOfForm(cf)$Lisp
 
     default_name?(n : SY) : Boolean ==
         ns := string(n)
