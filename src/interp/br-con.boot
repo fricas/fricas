@@ -202,6 +202,51 @@ ksPage(htPage) ==
   htpSetProperty(htPage,'thing,'"constructor")
   dbShowCons(htPage,'names)
 
+evalDomainOpPred(dom, pred, preds) == process(dom, pred, preds) where
+  process(dom, pred, preds) ==
+    u := convert(dom, pred)
+    u = 'T => true
+    evpred(dom, u, preds)
+  convert(dom, pred) ==
+      pred is [op, :argl] =>
+          op = 'AND => ['AND, :[convert(dom, x) for x in argl]]
+          op = 'OR => ['OR, :[convert(dom, x) for x in argl]]
+          op = 'NOT => ['NOT, convert(dom, first(argl))]
+          op = 'has =>
+              [arg, p] := argl
+              ['HasCategory, arg, convertCatArg(p)]
+          systemError '"unknown predicate form"
+      pred = 'T => true
+      systemError([])
+  convertCatArg p ==
+    SYMBOLP(p) and member(p, $FormalMapVariableList) => ["devaluate", p]
+    atom p or #p = 1 => MKQ p
+    ['LIST,MKQ first p,:[convertCatArg x for x in rest p]]
+  evpred(dom, pred, preds) ==
+      k := POSN1(pred, preds) => testBitVector(dom.3, k + 1)
+      evpred1(dom, pred, preds)
+  evpred1(dom, pred, preds) ==
+      pred is [op,:argl] =>
+          op = 'AND => "and"/[evpred1(dom, x, preds) for x in argl]
+          op = 'OR  => "or"/[evpred1(dom, x, preds) for x in argl]
+          op = 'NOT => not evpred1(dom, first(argl), preds)
+          k := POSN1(pred, preds) => testBitVector(dom.3, k + 1)
+          nil
+      pred = 'T => true
+      systemError '"unknown atomic predicate form"
+
+kFormatSlotDomain1(x, infovec) ==
+              fn formatSlotDomain1(x, infovec) where fn x ==
+  atom x => x
+  (op := first x) = '_% => '_%
+  op = 'local => CADR x
+  op = ":" => [":",CADR x,fn CADDR x]
+  MEMQ(op,$Primitives) or constructor? op =>
+    [fn y for y in x]
+  INTEGERP op => op
+  op = 'QUOTE and atom CADR x => CADR x
+  x
+
 dbSearchOrder(conform, domname, domain) == --domain = nil or set to live domain
   conform := domname or conform
   name:= opOf conform

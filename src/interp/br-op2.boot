@@ -287,18 +287,6 @@ zeroOneConvert x ==
     x = "1" => 1
     x
 
-kFormatSlotDomain1(x, infovec) ==
-              fn formatSlotDomain1(x, infovec) where fn x ==
-  atom x => x
-  (op := first x) = '_% => '_%
-  op = 'local => CADR x
-  op = ":" => [":",CADR x,fn CADDR x]
-  MEMQ(op,$Primitives) or constructor? op =>
-    [fn y for y in x]
-  INTEGERP op => op
-  op = 'QUOTE and atom CADR x => CADR x
-  x
-
 koCatOps(conform, domname, ancestors) ==
   conname := opOf conform
   oplist := REVERSE(get_database(conname, 'OPERATIONALIST))
