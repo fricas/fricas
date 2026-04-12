@@ -493,7 +493,7 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
     hashType(dollar,0)
   if hashCode? sig and EQL(sig, hashPercent) then
          sig := hashType('(Mapping %), hashPercent)
-  dollar = nil => systemError()
+  dollar = nil => systemError nil
   $lookupDefaults = true =>
       -- lookup first in my cats
       newLookupInCategories(op, sig, domain, dollar, false)

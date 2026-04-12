@@ -629,13 +629,6 @@ bcError string ==
   sayBrightlyNT '"NOTE: "
   sayBrightly string
 
-bcNotReady htPage ==
-  htInitPage('"Basic Command",nil)
-  htMakePage '(
-     (text .
-        "{\centerline{\em This facility will soon be available}}"))
-  htShowPage()
-
 htStringPad(n,w) ==
   s := STRINGIMAGE n
   ws := #s

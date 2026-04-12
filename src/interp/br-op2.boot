@@ -85,7 +85,7 @@ htSayExplicitExports r ==
     x is ['ATTRIBUTE, a] => BREAK()
     x is ['IF,:.] =>
       htSay('"{\em if ...}")
-    systemError()
+    systemError nil
 
 displayBreakIntoAnds pred ==
   pred is [op,:u] and member(op,'(and AND)) => u
@@ -343,7 +343,7 @@ modemap2Sig(op,mm) ==
       target := sig.0
       ntarget := ['Union, target, '"failed"]
       sig := substitute(ntarget, target, sig)
-  alist := findSubstitutionOrder? pairlis(vlist, flist) or systemError()
+  alist := findSubstitutionOrder? pairlis(vlist, flist) or systemError nil
   predList := substInOrder(alist, predList)
   nsig := substInOrder(alist, sig)
   if hasPatternVar nsig or hasPatternVar predList then
@@ -382,7 +382,7 @@ getDcForm(dc, condlist) ==
     [conform, ["*1", :rest cform], ["%", :rest conform]]
   ofWord = 'isDomain =>
     [conform, ["*1", :rest cform], ["%", :rest conform]]
-  systemError()
+  systemError nil
 
 getSigSubst(u, pl, vl, fl) ==
   u is [item, :r] =>
@@ -395,7 +395,7 @@ getSigSubst(u, pl, vl, fl) ==
     key = 'ofType    => getSigSubst(r, pl, vl, fl)
     key = 'has => getSigSubst(r, [item, :pl], vl, fl)
     key = 'not => getSigSubst(r, [item, :pl], vl, fl)
-    systemError()
+    systemError nil
   [pl, vl, fl]
 
 

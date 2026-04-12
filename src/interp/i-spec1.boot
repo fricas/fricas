@@ -567,7 +567,7 @@ upLoopIters itrl ==
       -- following is an optimization
       typeIsASmallInteger(get0(index, 'mode, $env)) =>
         RPLACA(iter,'ISTEP)
-    throwKeyedMsg('"Malformed iterator")
+    throwKeyedMsg('"Malformed iterator", [])
 
 upLoopIterIN(iter,index,s) ==
   iterMs := bottomUp s

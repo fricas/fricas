@@ -320,7 +320,7 @@ SetFunctionSlots(sig, body, flag, kvec) ==
               not $SetFunctions.index=>flag --JHD didn't set $SF on this branch
               ["or",$SetFunctions.index,flag]
       else
-          system_error("S2OR0002", '"Unknown implementation: %1s". [catImplem])
+          system_error("S2OR0002", '"Unknown implementation: %1s", [catImplem])
   body is ['SETELT,:.] => body
   body is ['QSETREFV,:.] => body
   nil

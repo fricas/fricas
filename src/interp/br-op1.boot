@@ -201,7 +201,7 @@ conform2StringList(form, opFn, argFn) ==
       if x is ['QUOTE,a] then x := a
       u := mathform2HtString algCoerceInteractive(x,typ,'(OutputForm)) => [u]
       NUMBERP x or STRINGP x => [x]
-      systemError()
+      systemError nil
     keyword => [keyword,'": ",:res]
     res
   op = 'Mapping => dbMapping2StringList sargl

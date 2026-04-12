@@ -234,7 +234,7 @@ htShowSetTreeValue(setData) ==
   st = 'LITERALS =>
     object2String translateTrueFalse2YesNo eval setData.setVar
   st = 'TREE     => '"..."
-  systemError()
+  systemError nil
 
 mkSetTitle() == STRCONC('"Command {\em )set ",listOfStrings2String $path,'"}")
 

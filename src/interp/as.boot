@@ -488,7 +488,7 @@ asytranCategory(form,levels,predlist,local?) ==
   catTable := MAKE_HASHTABLE('EQUAL)
   catList  := nil
   for x in items | x repeat
-    if null x then systemError()
+    if null x then systemError nil
     dform := asytranCategoryItem(x,levels,predlist,local?)
     null dform => nil
     dform is ['Declare,id,record,r] =>
@@ -877,7 +877,7 @@ asyCattranConstructors(item, predlist) ==
     x is ['IF,:.] => "append"/[asyCattranConstructors(x, [pred,:predlist])]
     form := ['ATTRIBUTE, asyJoinPart x]
     [['IF, asySimpPred(pred,predlist), form, 'noBranch]]
-  systemError()
+  systemError nil
 
 asySimpPred(p, predlist) ==
   while predlist is [q,:predlist] repeat p := quickAnd(q,p)
@@ -944,7 +944,7 @@ asyComma? op == MEMQ(op,'(Comma Multi))
 
 
 hput(table,name,value) ==
-  if null name then systemError()
+  if null name then systemError nil
   HPUT(table,name,value)
 
 --============================================================================

@@ -515,7 +515,7 @@ koPage(htPage) ==
   conform := htpProperty(htPage,'conform)
   opAlist := koOps(conform, domname)
   if selectedOperation := htpProperty(htPage,'selectedOperation) then
-    opAlist := [assoc(selectedOperation,opAlist) or systemError()]
+    opAlist := [assoc(selectedOperation,opAlist) or systemError nil]
   dbShowOperationsFromConform(htPage, opAlist)
 
 --=======================================================================
@@ -692,7 +692,7 @@ dbShowConsDoc(htPage,conlist) ==
       while CAAAR cAlist ~= x repeat
         index := index + 1
         cAlist := rest cAlist
-        null cAlist => systemError ()
+        null cAlist => systemError nil
       index
 
 dbShowConsDoc1(htPage,conform,indexOrNil) ==
