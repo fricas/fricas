@@ -332,8 +332,6 @@ constantInDomain?(form,domainForm) ==
     key := opOf form
     entryList := LASSOC(key,opAlist)
     entryList is [[., ., ., type]] and type in '(CONST ASCONST) => true
-    key = "1" => constantInDomain?(["1"], domainForm)
-    key = "0" => constantInDomain?(["0"], domainForm)
     false
 
 -- [[getConstantFromDomain]] is used to look up the constants $0$ and $1$
@@ -347,8 +345,6 @@ getConstantFromDomain1(form,domainForm) ==
     key := opOf form
     entryList := LASSOC(key,opAlist)
     entryList isnt [[sig, ., ., .]] =>
-        key = "1" => getConstantFromDomain(["1"], domainForm)
-        key = "0" => getConstantFromDomain(["0"], domainForm)
         throw_msg("S2IC0008", '"No such constant %1b in domain %2bp .",
                   [form, domainForm])
     -- i.e., there should be exactly one item under this key of that form
