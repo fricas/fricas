@@ -328,6 +328,7 @@ retractByFunction(object,u) ==
 -- returns the representation of 1 in the domain S.
 
 constantInDomain?(form,domainForm) ==
+    STRINGP(domainForm) => false
     opAlist := getOperationAlistFromLisplib first domainForm
     key := opOf form
     entryList := LASSOC(key,opAlist)
@@ -341,7 +342,9 @@ constantInDomain?(form,domainForm) ==
 -- that the domain is not fully formed. In this case we return [[NIL]].
 getConstantFromDomain1(form,domainForm) ==
     isPartialMode domainForm => NIL
-    opAlist := getOperationAlistFromLisplib first domainForm
+    opAlist :=
+        STRINGP(domainForm) => nil
+        getOperationAlistFromLisplib(first(domainForm))
     key := opOf form
     entryList := LASSOC(key,opAlist)
     entryList isnt [[sig, ., ., .]] =>

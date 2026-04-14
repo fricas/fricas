@@ -676,6 +676,7 @@ hitListOfTarget(t) ==
 isOpInDomain(opName,dom,nargs) ==
   -- returns true only if there is an op in the given domain with
   -- the given number of arguments
+  STRINGP(dom) => false
   mmList := ASSQ(opName, getOperationAlistFromLisplib first dom)
   mmList := subCopy(mmList,constructSubst dom)
   null mmList => NIL
@@ -706,8 +707,10 @@ findCommonSigInDomain(opName,dom,nargs) ==
 
 findUniqueOpInDomain(op,opName,dom) ==
   -- return function named op in domain dom if unique, choose one if not
-  mmList := ASSQ(opName, getOperationAlistFromLisplib first dom)
-  mmList := subCopy(mmList,constructSubst dom)
+  mmList :=
+        STRINGP(dom) => nil
+        l1 := ASSQ(opName, getOperationAlistFromLisplib(first(dom)))
+        subCopy(l1, constructSubst(dom))
   null mmList => throw_msg("S2IS0021",
         '"There is no operation named %1b in the domain or package %2bp .",
         [opName, dom])
@@ -765,6 +768,7 @@ findFunctionInDomain(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
   --   in the domain of computation dc
   -- tar may be NIL (= unknown)
   null isLegitimateMode(tar, nil, nil) => nil
+  STRINGP(dc) => nil
   dcName := first dc
   member(dcName,'(Union Record Mapping Enumeration)) =>
     -- First cut code that ignores args2, $Coerce and $SubDom
