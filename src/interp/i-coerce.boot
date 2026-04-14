@@ -735,22 +735,9 @@ typeIsASmallInteger x == (x = $SingleInteger)
 
 --% Interpreter Coercion Functions
 
-typeToInputForm(t) == typeToForm(t, '(InputForm))
+typeToInputForm(t) == constructor_to_InputForm(t)
 
 typeToOutputForm(t) == constructor_to_OutputForm(t)
-
-typeToForm(t, toForm) ==
-    t0 := devaluate(t)
-    [op,:argl] := t0
-    coSig := rest(get_database(op, 'COSIG))
-    sig := getConstructorSignature t0
-    ml := replaceSharps(rest sig, t0)
-    nl := [fn(x, t1, c, toForm) for x in argl for t1 in ml_
-                                for c in coSig] where
-        fn(x, t1, c, toForm) ==
-            c => typeToForm(x, toForm)
-            algCoerceInteractive(x, t1, toForm)
-    [op, :nl]
 
 coerceInteractive(triple,t2) ==
   -- bind flag for recording/reporting instantiations
