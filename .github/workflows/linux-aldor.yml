@@ -1,0 +1,29 @@
+name: FriCAS CI on Linux with Aldor
+
+on: [push, pull_request]
+permissions: {}
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install libgmp-dev libxpm-dev sbcl
+        wget https://github.com/aldorlang/aldor/releases/download/test-latest-master/aldor-linux-x86_64-1.4.0+20260315.tar.gz
+        tar xf aldor-linux-x86_64-1.4.0+20260315.tar.gz
+        sudo cp -rp aldor/usr/* /usr/
+
+    - name: configure
+      run: ./configure --enable-aldor --with-gmp --with-x || cat config.log
+
+    - name: make
+      run: make -j4 --output-sync
+
+    - name: make check
+      run: make check -j4 --output-sync
