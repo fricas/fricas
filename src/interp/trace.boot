@@ -1002,8 +1002,8 @@ spadUntrace(domain,options) ==
     anyifTrue or MEMQ(op,listOfOperations) repeat
       rplac(first domain.n, bpiPointer)
       rplac(CDDDR pair, nil)
-      if assocPair:= assoc(BPINAME bpiPointer,$letAssoc) then
-            $letAssoc := DELASC($letAssoc, assocPair)
+      if assoc(key := BPINAME bpiPointer, $letAssoc) then
+                $letAssoc := DELASC(key, $letAssoc)
   newSigSlotNumberAlist:= [x for x in sigSlotNumberAlist | CDDDR x]
   newSigSlotNumberAlist => rplac(rest pair, newSigSlotNumberAlist)
   $trace_names := DELASC(domain, $trace_names)
