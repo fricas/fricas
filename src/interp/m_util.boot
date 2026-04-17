@@ -251,6 +251,14 @@ make_fname(d, n, e) ==
     is_dir_sepatator?(d.(#d - 1)) => CONCAT(d, n)
     CONCAT(d, "/", n)
 
+new_fname(d, n, e) ==
+    good := false
+    res := nil
+    while not(good) repeat
+        res := make_fname(d, PNAME(GENSYM(n)), e)
+        good := not(fricas_probe_file(res))
+    res
+
 is_system_path?(n) ==
     #n < #(sr := $spadroot) => false
     res := true

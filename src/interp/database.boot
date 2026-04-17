@@ -85,27 +85,27 @@ augmentLisplibModemapsFromFunctor(form,opAlist,signature) ==
         $lisplibModemapAlist:= [[op,:interactiveModemapForm modemap],
           :$lisplibModemapAlist]
 
-saveUsersHashTable() ==
+saveUsersHashTable(usersTb) ==
   erase_lib('"USERS.DAASE")
   stream:= writeLib('"USERS.DAASE")
-  for k in MSORT HKEYS $usersTb repeat
-      kaf_write0(stream, k, HGET($usersTb, k))
+  for k in MSORT(HKEYS(usersTb)) repeat
+        kaf_write0(stream, k, HGET(usersTb, k))
   kaf_close(stream)
 
-saveDependentsHashTable() ==
+saveDependentsHashTable(depTb) ==
   erase_lib('"DEPENDENTS.DAASE")
   stream:= writeLib('"DEPENDENTS.DAASE")
-  for k in MSORT HKEYS $depTb repeat
-      kaf_write0(stream, k, HGET($depTb, k))
+  for k in MSORT(HKEYS(depTb)) repeat
+        kaf_write0(stream, k, HGET(depTb, k))
   kaf_close(stream)
 
 save_browser_data() ==
     buildLibdb([])
     dbSplitLibdb()
-    mkUsersHashTable()
-    saveUsersHashTable()
-    mkDependentsHashTable()
-    saveDependentsHashTable()
+    usersTb := mkUsersHashTable()
+    saveUsersHashTable(usersTb)
+    depTb := mkDependentsHashTable()
+    saveDependentsHashTable(depTb)
 
 getUsersOfConstructor(con) ==
   stream := readLib('"USERS.DAASE")

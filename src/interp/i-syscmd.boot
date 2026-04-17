@@ -505,7 +505,7 @@ unknown_compile_option(args) == throw_msg("S2IZ0036",
     args)
 
 do_compile_lisp(lsp, beQuiet) ==
-    if fnameReadable?(lsp) then
+    if can_open?(lsp) then
         if not beQuiet then say_msg("S2IZ0089",
             '"Compiling Lisp source code from file %1", [lsp])
         compile_file_quietly(lsp)

@@ -77,11 +77,31 @@ FileName() : FileNameCategory == add
         name(f : %) : String        == file_basename(f)$Lisp
         extension(f : %) : String   == file_extention(f)$Lisp
 
-        exists? f                == fnameExists?(f)$Lisp
-        readable? f              == fnameReadable?(f)$Lisp
-        writable? f              == fnameWritable?(f)$Lisp
+        exists?(f) ==
+            se : SExpression := fricas_probe_file(f)$Lisp
+            not(null?(se))
 
-        new(d, pref, e)            == fnameNew(d, pref, e)$Lisp
+        readable?(f) == can_open?(f)$Lisp
+
+        writable? f ==
+            n := f::String
+            if n = "" then
+                n := "."
+            r1 : Integer := writeablep(n)$Lisp
+            r1 > 0 => true
+            n := file_directory(n)$Lisp
+            r1 := writeablep(n)$Lisp
+            r1 > 0
+
+        new(d, pref, e) ==
+            if d = "" then
+                d := "."
+            r1 : Integer := file_kind(d)$Lisp
+            if r1 > 0 then
+                r1 := writeablep(d)$Lisp
+            not(r1 > 0) =>
+                error "new: directory must exist and be writable"
+            new_fname(d, pref, e)$Lisp
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.

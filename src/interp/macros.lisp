@@ -398,14 +398,6 @@ This function respects intermediate #\Newline characters and drops
        (EQL (ELT (PNAME X) 0) #\#)
        (INTEGERP (parse-integer (symbol-name X) :start 1))))
 
-(defun SPADSYSNAMEP (STR)
-  (let (n i j)
-    (AND (SETQ N (MAXINDEX STR))
-         (SETQ I (position #\. STR :start 1))
-         (SETQ J (position #\, STR :start (1+ I)))
-         (do ((k (1+ j) (1+ k)))
-             ((> k n) t)
-           (if (not (|char_to_digit| (elt str k))) (return nil))))))
 
 ;************************************************************************
 ;         SYSTEM COMMANDS
@@ -446,21 +438,3 @@ This function respects intermediate #\Newline characters and drops
 
 (defun MAKEPROP (sym ind val) (setf (get sym ind) val))
 
-; **********************************************************************
-;            Utility functions for Tracing Package
-; **********************************************************************
-
-(MAKEPROP '|coerce| '/TRANSFORM '(& & *))
-(MAKEPROP '|comp| '/TRANSFORM '(& * * &))
-(MAKEPROP '|compIf| '/TRANSFORM '(& * * &))
-
-;  by having no transform for the 3rd argument, it is simply not printed
-
-(MAKEPROP '|compFormWithModemap| '/TRANSFORM '(& * * & *))
-
-;;; A "resumable" break loop for use in trace etc. Unfortunately this
-;;; only worked for CCL. We need to define a Common Lisp version. For
-;;; now the function is defined but does nothing.
-(defun interrupt (&rest ignore))
-
-;;; end of moved fragment

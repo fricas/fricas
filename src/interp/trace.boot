@@ -84,6 +84,22 @@ DEFVAR($trace_names, [])
 DEFVAR($count_list, [])
 DEFVAR($timer_list, [])
 
+MAKEPROP('coerce, "/TRANSFORM", ["&", "&", "*"])
+MAKEPROP('comp, "/TRANSFORM", ["&", "*", "*", "&"])
+MAKEPROP('compIf, "/TRANSFORM", '["&", "*", "*", "&"])
+MAKEPROP('compFormWithModemap, "/TRANSFORM", ["&", "*", "*", "&", "*"])
+
+SPADSYSNAMEP(s) ==
+    n := MAXINDEX(s)
+    k := charPosition('".".0, s, 1)
+    k > n => false
+    k := charPosition('",".0, s, k + 1)
+    k > n => false
+    res := true
+    for i in (k + 1)..n while res repeat
+        res := char_to_digit(s.i) and res
+    res
+
 IS_GENVAR(x) ==
     IDENTP(x) and (y := PNAME(x); #y > 1 and '"$".0 = y.0 and
                    char_to_digit(y.1))
@@ -1107,8 +1123,8 @@ break msg ==
   -- backtraces appearing, MCD.
   ENABLE_BACKTRACE(nil)
   EVAL condition =>
-    sayBrightly msg
-    INTERRUPT()
+        sayBrightly(msg)
+        BREAK()
 
 compileBoot fn ==
   SAY('"need to recompile: ", fn)

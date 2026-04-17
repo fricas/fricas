@@ -76,6 +76,7 @@
 ;; cms file operations
 
 (defun |make_full_namestring| (filearg)
+    (if (not (STRINGP filearg)) (BREAK))
     (namestring (merge-pathnames filearg)))
 
 ;; ($ERASE filearg) -> 0 if succeeds else 1
@@ -121,42 +122,9 @@
 (defun copy-lib-directory (name1 name2)
    (|run_program| "cp" (list "-r" name1 name2)))
 
-;;; moved from fname.lisp
-
-;;
-;; Lisp support for cleaned up FileName domain.
-;;
-;; Created: June 20, 1991 (Stephen Watt)
-;;
-
-
-;; E.g.  "/"  "/u/smwatt"  "../src"
-
-(defun |myWritable?| (s)
-  (if (not (stringp s)) (|error| "``myWritable?'' requires a string arg."))
-  (if (string= s "") (setq s "."))
-  (if (not (|fnameExists?| s)) (setq s (|file_directory| s)))
-  (if (string= s "") (setq s "."))
-  (if (> (|writeablep| s) 0) 't nil) )
-
-(defun |fnameExists?| (f)
-  (if (|fricas_probe_file| (namestring f)) 't nil))
-
-(defun |fnameReadable?| (f)
+(defun |can_open?| (f)
   (let ((s
           (ignore-errors (open f :direction :input :if-does-not-exist nil))
         ))
     (cond (s (close s) 't) ('t nil)) )
   )
-
-(defun |fnameWritable?| (f)
-    (|myWritable?| f))
-
-(defun |fnameNew| (d n e)
-  (if (not (|myWritable?| d))
-    nil
-    (do ((fn))
-        (nil)
-        (setq fn (|make_fname| d (string (gensym n)) e))
-        (if (not (|fricas_probe_file| (namestring fn)))
-           (return-from |fnameNew| fn)) )))
