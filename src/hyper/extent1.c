@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /******************************************************************************
  *
- * extent1.h:  HyperDoc extent computation routines
+ * extent1.c:  HyperDoc extent computation routines
  *
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
@@ -242,7 +242,7 @@ compute_word_extent(TextNode * node)
 
     /*
      * Now what we should do is find all the things after us that have no
-     * space in front and add there width on.
+     * space in front and add their width on.
      */
 
     nextwidth = total_width(node->next, Endtokens);
@@ -262,7 +262,7 @@ compute_word_extent(TextNode * node)
     }
 
     /*
-     * Now see if we am on the beginning of a line, and if not add some space
+     * Now see if we are on the beginning of a line, and if not add some space
      * if we need to
      */
 
@@ -325,7 +325,7 @@ compute_dash_extent(TextNode *node)
 
     /*
      * Now what we should do is find all the things after us that have no
-     * space in front and add there width on.
+     * space in front and add their width on.
      */
 
     nextwidth = total_width(node->next, Endtokens);
@@ -344,7 +344,7 @@ compute_dash_extent(TextNode *node)
     }
 
     /*
-     * Now see if we am on the beginning of a line, and if not add some space
+     * Now see if we are on the beginning of a line, and if not add some space
      * if we need to
      */
 
@@ -659,8 +659,8 @@ compute_text_extent(TextNode *node)
           case Endscrolling:
 
             /*
-             * What we should do here is if we am in the middle of a line, we
-             * should end it here an now.
+             * What we should do here is if we are in the middle of a line, we
+             * should end it here and now.
              */
 
             if (gInLine)

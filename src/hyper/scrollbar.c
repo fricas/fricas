@@ -420,7 +420,7 @@ calculateScrollBarMeasures(void)
     int t;
 
     /*
-     * The scrollhieght is the height of the scrolling region visible in the
+     * The scrollheight is the height of the scrolling region visible in the
      * HT window. Notice how it is a multiple of line height. This was needed
      * to make everything scroll nicely.
      */

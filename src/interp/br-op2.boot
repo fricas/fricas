@@ -368,7 +368,7 @@ hasPatternVar x ==
 getDcForm(dc, condlist) ==
   -- FIXME: normally first condition on *1 gives origin, but not
   -- always.  In particular, if we get category with no operations
-  -- than this is clearly wrong, so try next (happens with attributes).
+  -- then this is clearly wrong, so try next (happens with attributes).
   -- We should make this reliable.
   candidates := [x for x in condlist | x is [k,=dc,:.]
                  and MEMQ(k, '(ofCategory isDomain))]

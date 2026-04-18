@@ -87,7 +87,7 @@ STATIC int still_reading  = 0;
 
 /* The function sleep is not available under Windows.  Instead they
    have Sleep(), with capital S, please.  Furthermore, it does not
-   take argument in second, but in milliseconds, three order
+   take argument in seconds, but in milliseconds, three order
    of magnitude of difference when compared to the Unix world.
    We abstract over that difference here.  */
 
@@ -784,7 +784,7 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
   send_int(sock, sock->purpose);
   send_int(sock, sock->socket);
   sock->pid = get_int(sock);
-/*  fprintf(stderr, "Got int form socket\n"); */
+/*  fprintf(stderr, "Got int from socket\n"); */
   sock->remote = get_int(sock);
   return sock;
 #endif
@@ -982,7 +982,7 @@ fricas_accept_connection(Sock *sock)
   return clients[client].purpose;
 }
 
-/* reads a the socket purpose declaration for classification */
+/* reads the socket purpose declaration for classification */
 void
 get_socket_type(Sock *sock)
 {

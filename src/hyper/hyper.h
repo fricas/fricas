@@ -269,7 +269,7 @@ typedef struct radio_boxes {
 typedef struct spadcom_depend {
   char *label;                  /* dependency label */
   TextNode *spadcom;            /* spadcommand defining the label */
-  short executed;               /* true iff spadcommand has benn executed */
+  short executed;               /* true iff spadcommand has been executed */
 } SpadcomDepend;
 
 typedef struct button_list {

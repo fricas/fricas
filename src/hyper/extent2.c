@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /******************************************************************************
  *
- * extent2.h:  HyperDoc extent computation routines
+ * extent2.c:  HyperDoc extent computation routines
  *
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
@@ -364,7 +364,7 @@ text_width(TextNode * node, int Ender)
           case Endspadsrc:
             break;
           case Newline:
-            /* WOw, I guess I should ertunr a really big number */
+            /* WOw, I guess I should return a really big number */
             twidth += gWindow->width;
             break;
           default:

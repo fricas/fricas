@@ -147,7 +147,7 @@ load_macro(MacroStore *macro)
     else
         macro->number_parameters = 0;
 
-    /*** Now I should be able to check the token, and insure that I have read
+    /*** Now I should be able to check the token, and ensure that I have read
       a leftbrace, then the string will follow                    ****/
     if (token.type != Lbrace) {
         /** The macro is not in a group, uh oh **/

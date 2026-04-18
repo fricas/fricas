@@ -59,7 +59,7 @@ halloc(int bytes, char *msg)
 #endif
     result = (char *) malloc(bytes);
 #ifdef DEBUG
-    fprintf(fp, "%d\tAlocating %d Bytes for %s\n", result,bytes, msg);
+    fprintf(fp, "%d\tAllocating %d Bytes for %s\n", result, bytes, msg);
 #endif
     if (result == NULL) {
         sprintf(buf, "Ran out of memory allocating %s.\b", msg);

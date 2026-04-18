@@ -41,7 +41,7 @@ These contain a number of slots in each node for information.
 The leaves are now all vectors, though the leaves for basic types
 such as integers and strings used to just be the objects themselves.
 The vectors for the leaves with such constants now have the value
-of $immediateDataSymbol as their name. Their are undoubtably still
+of $immediateDataSymbol as their name. There are undoubtedly still
 some functions that still check whether a leaf is a constant. Note
 that if it is not a vector it is a subtree.
 

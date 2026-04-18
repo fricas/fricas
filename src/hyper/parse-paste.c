@@ -199,7 +199,7 @@ parse_pastebutton(void)
 
 /*
  * this routine is responsible for parsing a patch from a file. To do this I
- * guess er will init_scanner, then parse, the parsed piece of text
+ * guess we will init_scanner, then parse, the parsed piece of text
  * will replace the current PasteNode which will be squashed down to
  * nothing, and then discarded.
  */

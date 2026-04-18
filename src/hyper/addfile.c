@@ -135,7 +135,7 @@ build_ht_filename(char *fname, char *aname, char *name)
     else {/** If not I am going to have to append path names to it **/
         HTPATH = (char *) getenv("HTPATH");
         if (HTPATH == NULL) {
-        /** The user does not have a HTPATH, so I will use the the directory
+        /** The user does not have a HTPATH, so I will use the directory
         $FRICAS/share/hypertex/pages/ as the default path ***/
           char *spad = (char *) getenv("FRICAS");
           if (spad == NULL) {
@@ -213,7 +213,7 @@ ht_file_open(char *fname, char *aname, char *name)
 /*
  * Modified on 12/3/89 to take a second argument. This argument tells the
  * open routine whether it is reading the db file, or writing it. If writing
- * is true, then I should check to insure I have proper write access.
+ * is true, then I should check to ensure I have proper write access.
  * -JMW
  */
 

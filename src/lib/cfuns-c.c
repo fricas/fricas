@@ -145,14 +145,14 @@ make_path_from_file(char *s, char *t)
       is denied.
 
    4. If the appropriate other access permission bit is set, access is
-      allowed.  Otherwise, permission is defined.   */
+      allowed.  Otherwise, permission is denied.   */
 
 /* Return
-     -1 if the file designated by PATH is inexistent.
+     -1 if the file designated by PATH is non-existent.
       0 if the file exists but write access is denied.
       1 if the file exists and process has write access.
-      2 if the file does not exists but process has write
-        has write access to the dirname of path.  */
+      2 if the file does not exist but process has write
+        access to the dirname of path.  */
 
 int
 writeablep(char *path)

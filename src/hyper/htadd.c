@@ -122,8 +122,8 @@ main(int argc, char **argv)
 }
 
 /*
- * This routine parses the command line arguments. It parses
- * the command line arguments. It returns a flag which tells the calling
+ * This routine parses the command line arguments.
+ * It returns a flag which tells the calling
  * routine what database file to use, and whether or not to delete files.
  */
 
@@ -258,7 +258,7 @@ build_db_filename(short flag, char *db_dir, char *dbfilename)
              addname <-- The name without any paths
              fullname <-- The name with a path prepended to it
      (2) If the user specifies a pathname, then it is the path name that
-           is used. If the user does not dpecify a path name, then possible
+           is used. If the user does not specify a path name, then possible
            paths are found as follows:
               (i) If the user has an environment variable HTPATH set, the
               paths mentioned are used.

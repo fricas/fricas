@@ -38,11 +38,11 @@ spadcolors. The routines will have names such as XSpadFill, ... The user
 simply gives the normal arguments as with the corresponding XFill routine,
 with two additional arguments which choose the shade and the hue.
 
-The file will maintain twoGC's: stippleGC - will be used when stippling the
+The file will maintain two GCs: stippleGC - will be used when stippling the
 backgrounds. solidGC - will be used when the background should be solid
 
 The user should call XSpadInit to get everything going. This routine has the
-job of Initializing the dithering routines, and getting the colors all
+job of initializing the dithering routines, and getting the colors all
 into place.
 
 */
@@ -109,7 +109,7 @@ XInitSpadFill(Display *dsply, int scr, Colormap * mapOfColors, int * hues,
      * Now I check to see if I am on a monochrome display. If so then I
      * simply set totalHues to be one, and total Shades to be 2. I also have
      * to allocate black and white colors. This I put into the first two
-     * memory locations of spadcolors.
+     * memory locations of spadColors.
      *
      * was      if(DisplayPlanes(dsply, scr) < 2)  changed temporarily to < 8
      * because of problems with screens with 4 planes . Now if we don't have
@@ -129,7 +129,7 @@ XInitSpadFill(Display *dsply, int scr, Colormap * mapOfColors, int * hues,
 
     /*
      * Now I have to get all the spad colors as every good spad program
-     * should Now I should initialize the dithering routines
+     * should. Now I should initialize the dithering routines
      */
 
     *dithered = totalDithered =

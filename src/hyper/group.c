@@ -56,7 +56,7 @@ pop_group_stack(void)
     GroupItem *junk;
 
     /*
-     * If the the stack has only a single item, then pop it anyway so the
+     * If the stack has only a single item, then pop it anyway so the
      * user can see the problem
      */
     if (! gTopOfGroupStack->next)

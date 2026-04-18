@@ -880,7 +880,7 @@ get_new_window(void)
 
     /*
      * If I am going to try and start a new window, then I should make sure I
-     * have a coonection to listen on
+     * have a connection to listen on
      *
      * BUT This code is entered when a socket selects
      *

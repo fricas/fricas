@@ -442,7 +442,7 @@
 (defun |read_line| (st) (read-line st nil nil))
 
 ;;; GCMSG when called with argument equal to NIL is supposed to
-;;; supress messages from garbage collector.  Empty body is
+;;; suppress messages from garbage collector.  Empty body is
 ;;; OK if garbage collector prints no messages.
 #+:gcl
 (defun GCMSG (x)

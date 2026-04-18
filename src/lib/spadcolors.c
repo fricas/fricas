@@ -172,9 +172,9 @@ HLStoRGB(HLS hls)
  * map to be used by all the FRICAS applications       *
  * that are to be run under X Windows that use        *
  * colors that may be user-definable (e.g. viewports, *
- * HyperTeX, etc). All these application should call  *
+ * HyperTeX, etc). All these applications should call *
  * this routine and then access the colors with the   *
- * the returned color map.                            *
+ * returned color map.                            *
  * For example, the following creates the map and     *
  * then sets the foreground color for a GC:           *
  *                                                    *
@@ -331,7 +331,7 @@ makeNewColorMap(Display *dsply, Colormap colorMap, int smoothHue)
 
     count = 0;
     for (i = 0; i < (smoothConst + 1); i++) {             /* i = 0 .. smoothConst */
-        lightness = (float) (i) / (float) (smoothConst);  /* lightnes = 0.0 .. 1.0 */
+        lightness = (float) (i) / (float) (smoothConst);  /* lightness = 0.0 .. 1.0 */
         hls.h = (float) smoothHue;
         hls.l = lightness;
         hls.s = saturation;

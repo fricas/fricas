@@ -138,7 +138,7 @@ read_ht_db(HashTable *page_hash, HashTable *macro_hash, HashTable *patch_hash)
 
 /*
  * This procedure reads a single HyperDoc database file. It is passed an already
- * initilaized file pointer. It reads the whole file, updating the
+ * initialized file pointer. It reads the whole file, updating the
  * page hash, or the macro hash only when a previous entry with the same name
  * is not found
  */

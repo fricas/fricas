@@ -284,7 +284,7 @@ parse_simplebox(void)
   filename = get_input_string();
   if (!make_input_file) {
     box->unselected = insert_image_struct(filename);
-    /* set the width and height for the maximaum of the two */
+    /* set the width and height for the maximum of the two */
     input_box->height = max(box->selected->height, box->unselected->height);
     input_box->width = max(box->selected->width, box->unselected->width);
     /* Make the window and stuff */

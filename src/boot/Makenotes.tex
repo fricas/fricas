@@ -56,7 +56,7 @@ and which either transform the state of the machine, or
 produce some object from the list or lists.
 
 
-\section{Boot To Common Lisp Translaters}
+\section{Boot To Common Lisp Translators}
 \label{sec:boot-to-cl}
 
 The Boot to Common Lisp translation is organized in several
@@ -112,7 +112,7 @@ transformation to Lisp.  The transformers are defined in
 \label{sec:boot-to-cl:utils}
 
 Finally, the file \File{ptyout.boot} is a pot-pourri of many utility
-functions.  It also contains the entry points to the Boot translater.
+functions.  It also contains the entry points to the Boot translator.
 
 
 \section{Boot}
@@ -122,7 +122,7 @@ functions.  It also contains the entry points to the Boot translater.
 
 If the first character of a line is a closing parenthesis the line
 is treated as a command which controls the lines that will be
-passed to the translater rather than being passed itself.
+passed to the translator rather than being passed itself.
 The command [[)include filename]] filemodifier will for example
 be replaced by the lines in the file [[filename filemodifier]].
 
@@ -148,7 +148,7 @@ SimpleLine::= PlainLine | Include | IncludeLisp |Say | Eval | EvalStrings
               | Package
 \end{verbatim}
 
-A [[PlainLine]] is delivered to the translater as is.
+A [[PlainLine]] is delivered to the translator as is.
 
 An [[Include]] delivers the lines in the file filename.filemodifier,
 treated as boot lines.
@@ -158,15 +158,15 @@ lines. The only comments allowed in lisp files that are included in
 this way require that the semicolon is at the beginning of the line.
 
 A [[Say]] outputs the remainder of the line to the console,
-   delivering nothing to the translater.
+   delivering nothing to the translator.
 
 An [[Eval]] translates the reminder of the line, assumed to be
    written in Boot, to Lisp, and evaluates it, delivering nothing to
-   the translater.
+   the translator.
 
 An [[EvalStrings]] also translates and evaluates the rest of the line
    but this time assumes that the Boot expression denotes a list
-   of strings which are then delivered to the translater
+   of strings which are then delivered to the translator
    instead of the EvalString line. The strings are treated as Boot lines.
 
 It is also possible to include or exclude lines based upon some
@@ -188,7 +188,7 @@ Conditional ::= If Components Elselines EndIf
 If the boot expression following the )if has value true then the
 Components are delivered but not the ElseLines,
 otherwise the Components are ignored ,and the ElseLines
-are delivered to the translater. In any case the lines after
+are delivered to the translator. In any case the lines after
 the EndIf are then processed.
 \begin{verbatim}
 ElseLines ::= Else Components | ElseIf Components ElseLines | empty
@@ -274,7 +274,7 @@ sexpression ::=identifier | integer | MINUS integer | float | string
 sexpression1 ::=sexpression (DOT sexpression | sexpression1)| empty
 \end{verbatim}
 
-There are two ways to quote an iddentifier: either 'name or "name", which
+There are two ways to quote an identifier: either 'name or "name", which
 both give rise to (QUOTE name). However a string that is a
 component of an sexpression will denote the string unless it is the
 sole component of the s-expression in which case it denotes a string
@@ -362,7 +362,7 @@ in parentheses converts them into a primary.
 An alternative method of grouping uses indentation to indicate the
 parenthetical structure.
 A number of lines whose first non-space characters are in the same
-column will be called a \emph{pile}.  The translater first tokenizes the
+column will be called a \emph{pile}.  The translator first tokenizes the
 lines producing identifier, key word, integer, string or float tokens,
 and then examines the pile structure of a Boot program
 in order to add additional tokens called [[SETTAB]], [[BACKTAB]]
@@ -611,7 +611,7 @@ When elements are separated by comma colon, however, the expression
 that follows will be assumed to denote a list which will be appended
 to the following list, rather than consed. An exception to this rule
 is that a colon preceding the last expression is translated to
-the expression itself. If it immediately preceded by a CONS
+the expression itself. If it is immediately preceded by a CONS
 then it need not denote a list.
 
 For example:
@@ -928,7 +928,7 @@ macrodefinition::=  name variable MDEF where
 
 The effect of a [[macrodefinition]] is to produce a Lisp macro
 which is applied to arguments that are treated as expressions, rather
-than their values, and whose result if formed by first substituting
+than their values, and whose result is formed by first substituting
 the expressions for occurrences of the variables within the body
 and then evaluating the resulting expression.
 
@@ -1004,8 +1004,8 @@ the common lisp file "filename.clisp"
 
 producing, for each function a
 hash table to store previously computed values indexed by argument
-list.  The function first looks in the hash table for the result
-if there returns it, if not computes the result and stores it in the
+list.  The function first looks in the hash table for the result;
+if there, it returns it; if not, it computes the result and stores it in the
 table.
 
 \begin{verbatim}
@@ -1108,14 +1108,14 @@ lisp image that contains the boot translator, called [[bootsys]], which
 lives in the [[$(axiom_target_bindir)]] directory.  This [[bootsys]] image
 is critical for the rest of the makefiles to succeed.
 
-There are two halves of this file. the first half compiles the .lisp files
-that live in the src/boot directory. the second half compiles the .clisp
+There are two halves of this file. The first half compiles the .lisp files
+that live in the src/boot directory. The second half compiles the .clisp
 files (which are generated from the .boot files). It is important that
 the .clisp files are kept in the src/boot directory for the boot translator
 as they cannot be recreated without a boot translator (a bootstrap problem).
 
 An important subtlety is that files in the boot translator depend on the
-file npextras. there are 3 macros in npextras that must be in the lisp
+file npextras. There are 3 macros in npextras that must be in the lisp
 workspace (\verb$|shoeOpenInputFile| |shoeOpenOutputFile| memq$).
 
 \section{Special Commands}

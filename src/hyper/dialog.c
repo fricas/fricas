@@ -646,7 +646,7 @@ move_rest_back(LineStruct *line, int size)
     }
 
     /*
-     * once I get here I should be one the last line, so I can just copy all
+     * once I get here I should be on the last line, so I can just copy all
      * the characters back one and then return from whence I came                                                  ***
      */
     if (line->len > 0) {

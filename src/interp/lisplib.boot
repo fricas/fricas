@@ -59,7 +59,7 @@ lisplibWrite(prop, val, lib_file) ==
 
 loadLibIfNotLoaded libName ==
   -- replaces old SpadCondLoad
-  -- loads is library is not already loaded
+  -- loads if library is not already loaded
   GET(libName, 'LOADED) => NIL
   loadLib libName
 

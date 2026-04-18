@@ -749,7 +749,7 @@ start_scrolling(void)
 {
 
     /*
-     * if I am here than I had a begin scroll. This means I should end the
+     * if I am here then I had a begin scroll. This means I should end the
      * header, and then start parsing the footer
      */
 

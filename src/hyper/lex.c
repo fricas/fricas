@@ -531,7 +531,7 @@ get_token(void)
 /*
  * Here are the structures and stuff needed for the begin and end routines.
  * The stack stores the begin types that have been seen and the end
- * pops them off and checks to insure that they are reversed properly.
+ * pops them off and checks to ensure that they are reversed properly.
  */
 
 typedef struct be_struct {
@@ -683,7 +683,7 @@ begin_type(void)
      * This routine parses a statement of the form \begin{word}. Once it has
      * read the word it tries to assign it a type. Once that is done it sends
      * the word id, and the type to push_be_stack and then returns the type.
-     * For the moment I am not even going to use a has_table, although in the
+     * For the moment I am not even going to use a hash_table, although in the
      * future this may be needed
      */
     ret_val = be_type("begin");
