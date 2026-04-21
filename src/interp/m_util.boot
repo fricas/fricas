@@ -60,7 +60,7 @@ get_io_index_table(stream, io?) ==
 
 kaf_open(name, io?) ==
     full_name :=
-        io? => make_full_namestring(name)
+        io? => name
         make_input_filename1(name)
     if io? then
         kind := file_kind(full_name)

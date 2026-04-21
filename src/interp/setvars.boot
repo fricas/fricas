@@ -668,7 +668,7 @@ try_open(fn, ft, append) ==
     if not((ptype := file_extention(fn)) = '"") then
         fn := drop_extention(fn)
         ft := ptype
-    filename := make_full_namestring(make_filename2(fn, ft))
+    filename := make_filename2(fn, ft)
     null filename => [NIL, NIL]
     (testStream := makeStream(append, filename)) => [testStream, filename]
     [NIL, NIL]

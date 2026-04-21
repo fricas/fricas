@@ -196,7 +196,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
       PROGN(if $compiler_output_stream then CLOSE($compiler_output_stream),
             kaf_close($libFile)))
   lisplibDoRename(name)
-  compile_lib(make_full_namestring(make_filename2(name, $spadLibFT)))
+  compile_lib(make_filename2(name, $spadLibFT))
   FRESH_-LINE(get_algebra_stream())
   sayMSG(filler_chars(72, '"-"))
   merge_info_from_objects([get_database(op, 'ABBREVIATION)], [], false)

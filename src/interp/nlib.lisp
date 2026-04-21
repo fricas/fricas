@@ -75,10 +75,6 @@
 
 ;; cms file operations
 
-(defun |make_full_namestring| (filearg)
-    (if (not (STRINGP filearg)) (BREAK))
-    (namestring (merge-pathnames filearg)))
-
 ;; ($ERASE filearg) -> 0 if succeeds else 1
 (defun |erase_lib|(filearg)
   (if (|fricas_probe_file| filearg)
@@ -105,19 +101,17 @@
       1))
 
 (defun |replace_lib|(filespec2 filespec1)
-    (|erase_lib| (setq filespec1 (|make_full_namestring| filespec1)))
+    (|erase_lib| filespec1)
     #-(or :clisp :openmcl :ecl)
-    (rename-file (|make_full_namestring| filespec2) filespec1)
+    (rename-file filespec2 filespec1)
     #+(or :clisp :openmcl :ecl)
-    (|run_program| "mv" (list (|make_full_namestring| filespec2) filespec1))
+    (|run_program| "mv" (list filespec2 filespec1))
  )
 
 
 (defun |copy_file|(filespec1 filespec2)
-    (let ((name1 (|make_full_namestring| filespec1))
-          (name2 (|make_full_namestring| filespec2)))
-        (copy-lib-directory name1 name2)
-))
+        (copy-lib-directory filespec1 filespec2)
+)
 
 (defun copy-lib-directory (name1 name2)
    (|run_program| "cp" (list "-r" name1 name2)))
