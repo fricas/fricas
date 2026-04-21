@@ -1,0 +1,44 @@
+name: FriCAS CI on Windows on CLISP
+
+on: [workflow_dispatch, workflow_call]
+permissions: {}
+
+jobs:
+  build:
+
+    runs-on: windows-2022
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW32
+        install: make mingw-w64-i686-gcc zip unzip
+
+    - uses: actions/checkout@v6
+    - name: configure and make
+      run: |
+        mkdir ../build && cd ../build
+        wget https://sourceforge.net/projects/clisp/files/clisp/2.49/clisp-2.49-win32-mingw-small.zip
+        unzip clisp-2.49-win32-mingw-small.zip
+        ../fricas/configure --with-lisp=`pwd`/clisp-2.49/clisp.exe || cat config.log
+        make -j4 --output-sync
+
+    - name: Create artifact archives
+      run: |
+        cp -rp ../build/target/i686-w64-mingw32 FriCAS-windows-win32
+        rm FriCAS-windows-win32/bin/{fricas,fricas-readline}
+        zip -r FriCAS-windows-CLISP-win32-${{ github.sha }}.zip FriCAS-windows-win32
+
+    - name: Upload Windows binary
+      uses: actions/upload-artifact@v7
+      with:
+        archive: false
+        name: FriCAS-windows-CLISP-win32-binary
+        path: FriCAS-windows-CLISP-win32-${{ github.sha }}.zip
+
+    - name: make check
+      run: cd ../build && make check -j4 --output-sync
