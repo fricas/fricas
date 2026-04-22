@@ -381,7 +381,7 @@
     (setf (symbol-function 'orig-multiply-bignums)
           (symbol-function 'ccl::multiply-bignums)))
 
-(if (not (fboundp 'orig-bignum-gcd))
+(if (not (fboundp 'orig-positive-bignum-gcd))
     (setf (symbol-function 'orig-positive-bignum-gcd)
           (symbol-function 'ccl::%positive-bignum-bignum-gcd)))
 

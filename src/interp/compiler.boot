@@ -1280,7 +1280,7 @@ constant_coerce([x, m, e], m') ==
         not(INTEGERP(x)) => nil
         -- Check if in range of FIXNUM on all supported implementations
         x > 8000000 or x < -8000000 => nil
-        m = $Integer or m = $PositiveInteger or $NonNegativeInteger =>
+        m = $Integer or m = $PositiveInteger or m = $NonNegativeInteger =>
             [x, m', e]
         nil
     m' = $DoubleFloat and m = $Float =>

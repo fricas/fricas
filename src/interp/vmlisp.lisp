@@ -76,7 +76,7 @@
 (defun DOWNCASE (l)
   (cond ((stringp l) (string-downcase l))
         ((identp l) (intern (string-downcase (symbol-name l))))
-        ((characterp l) (char-downcase L))
+        ((characterp l) (char-downcase l))
         ((atom l) l)
         (t (mapcar #'downcase l))))
 

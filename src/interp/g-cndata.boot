@@ -110,9 +110,6 @@ constructorAbbreviationErrorCheck(c,a,typ) ==
       throw_error_msg('precompilation, "S2IL0006", _
    '"Abbreviations must have 8 or fewer characters and should be uppercase.",
           [])
-  if s ~= UPCASE s then throw_msg("S2IL0006",
-    '"Abbreviations must have 8 or fewer characters and should be uppercase.",
-    [])
   abb := get_database(c, 'ABBREVIATION)
   name := get_database(a, 'CONSTRUCTOR)
   type := get_database(c, 'CONSTRUCTORKIND)
