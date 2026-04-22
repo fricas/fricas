@@ -99,7 +99,7 @@
 #-:sbcl
 (defun |eval_with_timeout| (f ti) (|error| "unimplemented for this Lisp"))
 
-(defun |is_dir_sepatator?| (c)
+(defun |is_dir_separator?| (c)
     (cond
         #+:win32
         ((equal c #\\) 'T)
@@ -111,7 +111,7 @@
         (cond
             ;;; #+:win32
             ((and (> l 1) (equal (aref n 1) #\:)) t)
-            (t (|is_dir_sepatator?| (aref n 0)))
+            (t (and (> l 0) (|is_dir_separator?| (aref n 0))))
         )
     )
 )

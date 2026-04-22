@@ -161,7 +161,7 @@ ext_position(n) ==
     k := #n - 1
     dot := '".".0
     while k >= 0 and not(n.k = dot) repeat
-        is_dir_sepatator?(n.k) => k := -1
+        is_dir_separator?(n.k) => k := -1
         k := k - 1
     k
 
@@ -186,7 +186,7 @@ has_extention?(s, e) ==
 
 last_dir_separator(n) ==
     k := #n - 1
-    while k >=0 and not(is_dir_sepatator?(n.k)) repeat
+    while k >=0 and not(is_dir_separator?(n.k)) repeat
         k := k - 1
     k
 
@@ -202,7 +202,7 @@ file_basename(n) ==
 
 file_directory(n) ==
     k := #n - 1
-    while k >=0 and not(is_dir_sepatator?(n.k)) repeat
+    while k >=0 and not(is_dir_separator?(n.k)) repeat
         k := k - 1
     k < 0 => '""
     k = 0 => "/"
@@ -246,9 +246,9 @@ make_fname(d, n, e) ==
         CONCAT(n, '".", e)
     d = '"" => n
     n :=
-        is_dir_sepatator?(n.0) => SUBSTRING(n, 1, #n - 1)
+        is_dir_separator?(n.0) => SUBSTRING(n, 1, #n - 1)
         n
-    is_dir_sepatator?(d.(#d - 1)) => CONCAT(d, n)
+    is_dir_separator?(d.(#d - 1)) => CONCAT(d, n)
     CONCAT(d, "/", n)
 
 new_fname(d, n, e) ==
