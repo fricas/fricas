@@ -26,12 +26,14 @@ jobs:
       with:
         msystem: ${{env.MSYSTEM}}
         install: make ${{env.INSTALL_PREFIX}}-gcc ${{env.INSTALL_PREFIX}}-gmp gmp-devel zip
+
     - name: download and install SBCL
       run: |
         wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-${ARCH}-windows-binary.msi
         msiexec -i sbcl-${SBCL_VER}-${ARCH}-windows-binary.msi -passive
 
     - uses: actions/checkout@v6
+
     - name: configure and make
       run: |
         export SBCL_HOME="/c/Program Files/Steel Bank Common Lisp/"
@@ -51,7 +53,6 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         archive: false
-        name: FriCAS-windows-${{env.ARCH}}-binary
         path: FriCAS-windows-${{env.ARCH}}-${{ github.sha }}.zip
 
     - name: make check

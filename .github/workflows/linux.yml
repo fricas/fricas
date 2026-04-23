@@ -17,6 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
+
     - name: install dependencies
       run: |
         sudo apt-get update
@@ -36,7 +37,6 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         archive: false
-        name: FriCAS-linux-${{ env.ARCH }}-binary
         path: FriCAS-linux-${{ env.ARCH }}-${{ github.sha }}.tar.bz2
 
     - name: make check
@@ -47,14 +47,14 @@ jobs:
       run: |
         sudo apt-get install xvfb texlive-font-utils texlive-latex-extra texlive-science
         make -j4 book
+        cp src/doc/book.pdf src/doc/fricas-reference-book-${ARCH}-${{ github.sha }}.pdf
 
     - name: Upload reference book
       if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
       uses: actions/upload-artifact@v7
       with:
         archive: false
-        name: fricas-reference-book-${{ env.ARCH }}
-        path: src/doc/book.pdf
+        path: src/doc/fricas-reference-book-${{ env.ARCH }}-${{ github.sha }}.pdf
 
     - name: Upload to nightly release
       if: ${{ github.event_name == 'push' && ( github.event.ref == 'refs/heads/master' || github.ref_type == 'tag' ) && github.repository == 'fricas/fricas' }}
