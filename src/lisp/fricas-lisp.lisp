@@ -913,7 +913,8 @@ with this hack and will try to convince the GCL crowd to fix this.
   (system:call-system-showing-output `("/usr/bin/env" ,command ,@arguments))
   #+:openmcl
   (cadr (multiple-value-list (ccl:external-process-status
-                              (ccl:run-program command arguments :output t))))
+                                 (ccl:run-program command arguments
+                                                  :output *standard-output*))))
   #+:poplog
   (pop11:sysobey "/usr/bin/env" (cons command arguments))
   #+:sbcl
