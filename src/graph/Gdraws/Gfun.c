@@ -793,83 +793,47 @@ PSGlobalInit(void)
 
   /* path specific file names */
 
-  if ((env_fricas = getenv("DEVE")) != NULL) {  /* get env var FRICAS */
-
+  if ((env_fricas = getenv("FRICAS")) != NULL) {  /* get env var FRICAS */
     psData[headerps].flag = yes;
-    fricas_sprintf_to_buf2(psData[headerps].filename, "%s%s", env_fricas, "/Gdraws/PS/header.ps");
-    fricas_sprintf_to_buf2(psData[drawps].filename, "%s%s", env_fricas, "/Gdraws/PS/draw.ps");
-    fricas_sprintf_to_buf2(psData[drawarcps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/drawarc.ps");
-    fricas_sprintf_to_buf2(psData[drawfilledps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/drwfilled.ps");
-    fricas_sprintf_to_buf2(psData[drawcolorps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/drawcolor.ps");
-    fricas_sprintf_to_buf2(psData[fillpolyps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/fillpoly.ps");
-    fricas_sprintf_to_buf2(psData[colorpolyps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/colorpoly.ps");
-    fricas_sprintf_to_buf2(psData[fillwolps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/fillwol.ps");
-    fricas_sprintf_to_buf2(psData[colorwolps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/colorwol.ps");
-    fricas_sprintf_to_buf2(psData[drawpointps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/drawpoint.ps");
-    fricas_sprintf_to_buf2(psData[drawlineps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/drawline.ps");
-    fricas_sprintf_to_buf2(psData[drawlinesps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/drawlines.ps");
-    fricas_sprintf_to_buf2(psData[drawrectps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/drawrect.ps");
-    fricas_sprintf_to_buf2(psData[drawstrps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/drawstr.ps");
-    fricas_sprintf_to_buf2(psData[drawIstrps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/drawIstr.ps");
-    fricas_sprintf_to_buf2(psData[fillarcps].filename, "%s%s", env_fricas,
-            "/Gdraws/PS/fillarc.ps");
-    fricas_sprintf_to_buf2(psData[setupps].filename, "%s%s", env_fricas, "/Gdraws/PS/setup.ps");
-    fricas_sprintf_to_buf2(psData[endps].filename, "%s%s", env_fricas, "/Gdraws/PS/end.ps");
-  }
-  else if ((env_fricas = getenv("FRICAS")) != NULL) {
-    psData[headerps].flag = yes;
-    fricas_sprintf_to_buf2(psData[headerps].filename, "%s%s", env_fricas,
-            "/lib/graph/header.ps");
-    fricas_sprintf_to_buf2(psData[drawps].filename, "%s%s", env_fricas,
-            "/lib/graph/draw.ps");
-    fricas_sprintf_to_buf2(psData[drawarcps].filename, "%s%s", env_fricas,
-            "/lib/graph/drawarc.ps");
-    fricas_sprintf_to_buf2(psData[drawfilledps].filename, "%s%s", env_fricas,
-            "/lib/graph/drwfilled.ps");
-    fricas_sprintf_to_buf2(psData[drawcolorps].filename, "%s%s", env_fricas,
-            "/lib/graph/drawcolor.ps");
-    fricas_sprintf_to_buf2(psData[fillpolyps].filename, "%s%s", env_fricas,
-            "/lib/graph/fillpoly.ps");
-    fricas_sprintf_to_buf2(psData[colorpolyps].filename, "%s%s", env_fricas,
-            "/lib/graph/colorpoly.ps");
-    fricas_sprintf_to_buf2(psData[fillwolps].filename, "%s%s", env_fricas,
-            "/lib/graph/fillwol.ps");
-    fricas_sprintf_to_buf2(psData[colorwolps].filename, "%s%s", env_fricas,
-            "/lib/graph/colorwol.ps");
-    fricas_sprintf_to_buf2(psData[drawpointps].filename, "%s%s", env_fricas,
-            "/lib/graph/drawpoint.ps");
-    fricas_sprintf_to_buf2(psData[drawlineps].filename, "%s%s", env_fricas,
-            "/lib/graph/drawline.ps");
-    fricas_sprintf_to_buf2(psData[drawlinesps].filename, "%s%s", env_fricas,
-            "/lib/graph/drawlines.ps");
-    fricas_sprintf_to_buf2(psData[drawrectps].filename, "%s%s", env_fricas,
-            "/lib/graph/drawrect.ps");
-    fricas_sprintf_to_buf2(psData[drawstrps].filename, "%s%s", env_fricas,
-            "/lib/graph/drawstr.ps");
-    fricas_sprintf_to_buf2(psData[drawIstrps].filename, "%s%s", env_fricas,
-            "/lib/graph/drawIstr.ps");
-    fricas_sprintf_to_buf2(psData[fillarcps].filename, "%s%s", env_fricas,
-            "/lib/graph/fillarc.ps");
-    fricas_sprintf_to_buf2(psData[setupps].filename, "%s%s", env_fricas,
-            "/lib/graph/setup.ps");
-    fricas_sprintf_to_buf2(psData[endps].filename, "%s%s", env_fricas,
-            "/lib/graph/end.ps");
+    fricas_sprintf_to_buf1(psData[headerps].filename,
+                           "%s/lib/graph/header.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[drawps].filename,
+                           "%s/lib/graph/draw.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[drawarcps].filename,
+                           "%s/lib/graph/drawarc.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[drawfilledps].filename,
+                           "%s/lib/graph/drwfilled.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[drawcolorps].filename,
+                           "%s/lib/graph/drawcolor.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[fillpolyps].filename,
+                           "%s/lib/graph/fillpoly.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[colorpolyps].filename,
+                           "%s/lib/graph/colorpoly.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[fillwolps].filename,
+                           "%s/lib/graph/fillwol.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[colorwolps].filename,
+                           "%s/lib/graph/colorwol.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[drawpointps].filename,
+                           "%s/lib/graph/drawpoint.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[drawlineps].filename,
+                           "%s/lib/graph/drawline.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[drawlinesps].filename,
+                           "%s/lib/graph/drawlines.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[drawrectps].filename,
+                           "%s/lib/graph/drawrect.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[drawstrps].filename,
+                           "%s/lib/graph/drawstr.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[drawIstrps].filename,
+                           "%s/lib/graph/drawIstr.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[fillarcps].filename,
+                           "%s/lib/graph/fillarc.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[setupps].filename,
+                           "%s/lib/graph/setup.ps", env_fricas);
+    fricas_sprintf_to_buf1(psData[endps].filename,
+                           "%s/lib/graph/end.ps", env_fricas);
   }
   else {
-    fprintf(stderr, " need environment variable FRICAS or DEVE; process aborted\n");
+    fprintf(stderr, " need environment variable FRICAS; process aborted\n");
     return (psError);
   }
 
