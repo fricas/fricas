@@ -601,6 +601,7 @@ replaceGoGetSlot env ==
 
 newHasCategory(domain,catform) ==
   catform = '(Type) => true
+  STRINGP(domain) => false
   slot4 := domain.4
   auxvec := first slot4
   catvec := CADR slot4
