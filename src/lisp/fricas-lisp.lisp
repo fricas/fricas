@@ -736,7 +736,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (defun |trim_directory_name| (name)
     #+(or :unix :win32)
-    (if (when (> (length name) 0) (char= (char name (1- (length name))) #\/))
+    (if (when (> (length name) 1) (char= (char name (1- (length name))) #\/))
         (subseq name 0 (1- (length name)))
         name)
     #-(or :unix :win32)
