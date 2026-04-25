@@ -256,16 +256,10 @@ with this hack and will try to convince the GCL crowd to fix this.
      (t nil))))
 
 #+:sbcl
-(eval-when (:execute :compile-toplevel :load-toplevel)
-    (require :sb-posix))
-#+:sbcl
 (defun CHDIR (dir)
- (let ((tdir (probe-file dir)))
-  (cond
-    (tdir
-       #-:win32 (sb-posix::chdir tdir)
-       (setq *default-pathname-defaults* tdir))
-     (t nil))))
+  (sb-posix:chdir dir)
+  (setq *default-pathname-defaults*
+        (pathname (|pad_directory_name| (|get_current_directory|)))))
 
 #+(and :clisp (or :unix :win32))
 (defun CHDIR (dir)
@@ -823,9 +817,13 @@ with this hack and will try to convince the GCL crowd to fix this.
   (multiple-value-bind (win dir) (unix::unix-current-directory)
                        (declare (ignore win))  dir))
 
-#+(or :ecl :GCL :sbcl :clisp :openmcl :abcl)
+#+(or :ecl :GCL :clisp :openmcl :abcl)
 (defun |get_current_directory| ()
     (|trim_directory_name| (namestring (truename ""))))
+
+#+:sbcl
+(defun |get_current_directory| ()
+  (sb-unix:posix-getcwd))
 
 #+:poplog
 (defun |get_current_directory| ()

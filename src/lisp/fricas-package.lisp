@@ -4,6 +4,7 @@
                     "LISP")))
 #+:sbcl
 (eval-when (:execute :compile-toplevel :load-toplevel)
+    (require :sb-posix)
     (ignore-errors (require "SB-SPROF")))
 
 #+:cmu
