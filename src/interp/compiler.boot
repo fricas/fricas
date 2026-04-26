@@ -1275,8 +1275,8 @@ compCoerce1(x,m',e) ==
 
 constant_coerce([x, m, e], m') ==
     m' = $SingleInteger =>
-        if x = ["0"] then x = 0
-        if x = ["1"] then x = 1
+        if x = ["0"] then x := 0
+        if x = ["1"] then x := 1
         not(INTEGERP(x)) => nil
         -- Check if in range of FIXNUM on all supported implementations
         x > 8000000 or x < -8000000 => nil
