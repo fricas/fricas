@@ -12,6 +12,7 @@
                      :direction :output
                      :if-does-not-exist :create
                      :if-exists :supersede)
+    #+:ecl (require :cmp)
     (format out "fricas_fasl_type=~a~&"
         (pathname-type (compile-file-pathname "foo.lisp")))
 
