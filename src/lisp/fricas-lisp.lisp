@@ -900,7 +900,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (if exit-code exit-code 0))
   #+:cmu
   (ext:process-exit-code (ext:run-program command arguments :output t))
-  #+:ecl
+  #+(and :ecl (not :cygwin))
   (cadr (multiple-value-list (ext:run-program command arguments :output t)))
   ;; #+:gcl ;; run-process is asynchronous
   ;; (si:run-process command arguments)
@@ -915,14 +915,16 @@ with this hack and will try to convince the GCL crowd to fix this.
   #+:sbcl
   (sb-ext:process-exit-code
     (sb-ext:run-program command arguments :search t :output *standard-output*))
-  #+:gcl
+  #+(or :gcl (and :ecl :cygwin))
+  ;; ecl on cygwin has forking issues, see
+  ;; https://gitlab.com/embeddable-common-lisp/ecl/-/merge_requests/216
   (si:system (format nil "~{~a~^ ~}" (cons command arguments)))
 )
 
 (defun |run_shell_command| (s)
-  #+:gcl
+  #+(or :gcl :ecl)
   (si:system s)
-  #-:gcl
+  #-(or :gcl :ecl)
   (|run_program| "sh" (list "-c" s)))
 
 (defmacro DEFCONST (name value)
