@@ -47,7 +47,7 @@ all-contrib: all-src
 all-ax: all-src
 	@echo finished system build on `date` | tee lastBuildDate
 
-all-src: stamp-rootdirs @fricas_all_prerequisites@
+all-src: stamp-rootdirs
 
 all-input: all-src
 
@@ -71,16 +71,13 @@ $(FRICAS_SRC_TARGETS): pre-gen
 
 stamp-rootdirs:
 	${MKDIR_P} $(fricas_build_bindir)
-	${MKDIR_P} $(fricas_build_libdir)
 	${MKDIR_P} $(fricas_target_bindir)
 	${MKDIR_P} $(fricas_target_libdir)
 	${MKDIR_P} $(fricas_target_datadir)/spadhelp
 	${MKDIR_P} $(fricas_target_datadir)/msgs
-	${MKDIR_P} $(fricas_target_texdir)
 	${MKDIR_P} $(fricas_targetdir)/algebra/
 	${MKDIR_P} $(fricas_targetdir)/input
 	${MKDIR_P} $(fricas_target_srcdir)/algebra
-	${MKDIR_P} ${TMP}
 	$(STAMP) stamp-rootdirs
 
 reltarget = target/$(target)
@@ -170,10 +167,8 @@ install-contrib: install-src
 	@echo 79 FriCAS contrib installation finished.
 
 
-mostlyclean-local: clean-distdir
+clean-local: clean-distdir
 	@-rm -f lastBuildDate
-
-clean-local: mostlyclean-local
 	-rm -f stamp-*
 	-cd contrib/emacs && ${MAKE} clean
 	-rm -rf $(fricas_targetdir)
@@ -183,15 +178,13 @@ distclean-local: clean-local
 	@-rm -rf build
 	-rm -rf target
 	-rm -rf FriCAS.app FriCAS.dmg
-	-cd contrib/emacs && ${MAKE} distclean
+	-rm contrib/emacs/Makefile
 	-rm -f config/fricas_c_macros.h
 	-rm -rf autom4te.cache
 	@-rm -f config.status config.log config_cl.out tmp.ap  tmp.as
 
 $(abs_top_builddir)/config.status: $(top_srcdir)/configure
 	$(SHELL) ./config.status --recheck
-
-$(RECURSIVE_TARGETS): stamp-rootdirs @fricas_all_prerequisites@
 
 ###################################################################
 # "make dist" creates a distribution tarball with precomputed machine

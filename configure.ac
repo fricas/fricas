@@ -67,9 +67,6 @@ if test $build != $target; then
    AC_MSG_WARN([Please notify fricas-devel@googlegroups.com if you succeed.])
 fi
 
-## Accumulate list of utils needed for the build platform
-fricas_all_prerequisites=
-
 case $build in
     *linux*)
         # GNU/Linux systems come equipped with GNU Make, called `make'
@@ -511,8 +508,6 @@ AC_ARG_ENABLE([algebra-optimization],
 
 AC_SUBST(fricas_algebra_optimization)
 
-AC_SUBST(fricas_all_prerequisites)
-
 fricas_has_directory_operations=no
 fricas_has_dirfd_fchdir=no
 
@@ -788,9 +783,7 @@ AC_SUBST(PACKAGE_YEAR)
 FRICAS_MAKEFILE([src/hyper/Makefile])
 FRICAS_MAKEFILE([src/doc/Makefile])
 
-BASE=""
-AC_SUBST(BASE)
-FRICAS=${BASE}${fricas_targetdir}
+FRICAS=${fricas_targetdir}
 AC_SUBST(FRICAS)
 
 CCF="-g -O2 -Wall -D_GNU_SOURCE"

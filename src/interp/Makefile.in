@@ -83,9 +83,6 @@ build-images: remove-stamp all-interpsys
 
 all-interpsys: $(SAVESYS)
 
-clean:
-	@echo 619 cleaning $(builddir)
-
 .PRECIOUS: %.clisp
 %.clisp: $(srcdir)/%.boot
 	$(BOOT_TO_LISP)
@@ -99,10 +96,8 @@ clean:
 %.$(LISPOBJEXT): $(srcdir)/%.lisp
 	$(COMPILE_LISP)
 
-mostlyclean-local:
+clean-local:
 	rm -f *.fn *.data *.lib *.$(LISPOBJEXT)
-
-clean-local: mostlyclean-local
 	rm -f *.clisp \
 	  makedep.lisp makedep2.lisp makedep2.lst makeint.lisp \
 	  exposed.lsp
@@ -142,9 +137,9 @@ makeint.lisp: ../boot/lobj_lst
 ${SAVESYS}:
 	echo '#+gcl(setq si::*optimize-maximum-pages* nil)' \
 	     '(load "makeint.lisp") #-:ecl(BOOT::reclaim)' \
-             '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
+             '#+:ecl(FRICAS-LISP::make-program "$@" nil)' \
              '#+:gcl(progn (setq si::*code-block-reserve* "")(si::gbc t)(setq si::*code-block-reserve* (make-array 10000000 :element-type (quote character) :static t) si::*optimize-maximum-pages* t))' \
-             '#-:ecl(BOOT::spad-save "$(BASE)$@" t t)' | \
+             '#-:ecl(BOOT::spad-save "$@" t t)' | \
            DAASE='$(fricas_src_datadir)' ${BOOTSYS}
 	ls $@
 	@ echo 6 ${SAVESYS} created
@@ -164,13 +159,13 @@ ${FRICASSYS}: ../etc/stamp-databases
 	   '#+:cmu (setq *compile-verbose* nil)' \
 	   '#+:cmu (setq *compile-print* nil)' \
 	   '#+:cmu (declaim (optimize (ext:inhibit-warnings 3)))' \
-	   '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
-	   '#-:ecl(BOOT::spad-save "$(BASE)$@" t $(FRICAS_SAVE_EXEC))' \
-             | DAASE="$(BASE)$(fricas_targetdir)" ${BOOTSYS}
+	   '#+:ecl(FRICAS-LISP::make-program "$@" nil)' \
+	   '#-:ecl(BOOT::spad-save "$@" t $(FRICAS_SAVE_EXEC))' \
+             | DAASE="$(fricas_targetdir)" ${BOOTSYS}
 	if test x"$(FRICAS_SAVE_EXEC)" = xnil ; then \
-	    echo '#! /bin/sh' > $(BASE)$@ ; \
-	    echo '$(FRICAS_LISP) $(fricas_image_flags) $${FRICAS}/bin/FRICASsys.core $(fricas_quiet_flags) "$$@"' >> $(BASE)$@ ; \
-	    chmod a+x $(BASE)$@ ; \
+	    echo '#! /bin/sh' > $@ ; \
+	    echo '$(FRICAS_LISP) $(fricas_image_flags) $${FRICAS}/bin/FRICASsys.core $(fricas_quiet_flags) "$$@"' >> $@ ; \
+	    chmod a+x $@ ; \
 	fi
 	@ echo 6a ${FRICASSYS} created
 
@@ -181,7 +176,7 @@ exposed.lsp: $(fricas_src_algdir)/exposed.lsp
 $(fricas_targetdir)/algebra/exposed.$(FASLEXT) : exposed.lsp
 	@ echo 616 making $@ from exposed.lsp
 	echo '(progn  (compile-file "exposed.lsp" :output-file' \
-	      ' "$(BASE)$(fricas_targetdir)/algebra/exposed.$(FASLEXT)") (${BYE}))' \
+	      ' "$(fricas_targetdir)/algebra/exposed.$(FASLEXT)") (${BYE}))' \
 		| ${LOADSYS}
 
 clammed.clisp: $(srcdir)/clammed.boot
