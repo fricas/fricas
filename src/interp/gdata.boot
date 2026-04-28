@@ -547,8 +547,7 @@ merge_info_from_objects(files, options, make_database?) ==
             noquiet := false
         FORMAT(true, '"   Ignoring unknown )library option: ~a~%", opt)
 
-    -- FIXME: make this _really_ portable
-    thisdir := true_name('"./")
+    thisdir := get_current_directory()
     if make_database? then
         expose := false
 
@@ -599,7 +598,7 @@ make_databases(dir_lst, br_data) ==
     $all_constructors := []
     $all_operations := []
     make_special_constructors()
-    merge_info_from_objects([], [['dir, true_name('"./")]], true)
+    merge_info_from_objects([], [['dir, get_current_directory()]], true)
     for dir in dir_lst repeat
         merge_info_from_objects([], [['dir, true_name(
                                       STRCONC('"./~a", dir))]], true)

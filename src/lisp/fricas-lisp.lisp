@@ -240,43 +240,6 @@ with this hack and will try to convince the GCL crowd to fix this.
   (ignore-errors (delete-file file))
 )
 
-;;; Chdir function
-
-#+:GCL
-(defun CHDIR (dir)
- (system::chdir dir))
-
-#+:cmu
-(defun CHDIR (dir)
- (let ((tdir (probe-file dir)))
-  (cond
-    (tdir
-       (unix::unix-chdir dir)
-       (setq *default-pathname-defaults* tdir))
-     (t nil))))
-
-#+:sbcl
-(defun CHDIR (dir)
-  (sb-posix:chdir dir)
-  (setq *default-pathname-defaults*
-        (pathname (|pad_directory_name| (|get_current_directory|)))))
-
-#+(and :clisp (or :unix :win32))
-(defun CHDIR (dir)
- (ext::cd dir))
-
-#+:openmcl
-(defun CHDIR (dir)
-  (ccl::%chdir dir))
-
-#+:ecl
-(defun CHDIR (dir)
-   (SI:CHDIR (|pad_directory_name| dir) t))
-
-#+:lispworks
-(defun CHDIR (dir)
-  (hcl:change-directory dir))
-
 ;;; Environment access
 
 (defun |getEnv| (var-name)
@@ -745,6 +708,64 @@ with this hack and will try to convince the GCL crowd to fix this.
        (error "Not Unix and not Windows, what system it is?")
     )
 
+;;; Get current directory
+
+(defun |get_current_directory| ()
+  ;; return a string that represents the current working directory,
+  ;; without the trailing slash.
+  #+:abcl
+  (|trim_directory_name| (namestring (truename "")))
+  #+:clisp
+  (|trim_directory_name| (namestring (ext:default-directory)))
+  #+:cmu
+  (nth-value 1 (unix:unix-current-directory))
+  #+:ecl
+  (|trim_directory_name| (namestring (ext:getcwd)))
+  #+:gcl
+  (si:getcwd)
+  #+lispworks
+  (|trim_directory_name| (namestring (hcl:get-working-directory)))
+  #+:openmcl
+  (ccl::current-directory-name)
+  #+:poplog
+  (let ((name (namestring (truename "."))))
+    (|trim_directory_name| (subseq name 0 (1- (length name)))))
+  #+:sbcl
+  (sb-unix:posix-getcwd)
+  #-(or :abcl :clisp :cmu :ecl :gcl :lispworks :openmcl :poplog :sbcl)
+  (error "|get_current_directory| not implemented"))
+
+;;; Chdir function
+
+(defun CHDIR (dir)
+  ;; if current working directory is changed to DIR successfully, reutrn t,
+  ;; otherwise return nil.
+  (ignore-errors ;; check return value
+    #+:clisp
+    (ext:cd dir)
+    #+:cmu
+    (progn
+      (if (not (unix:unix-chdir dir)) (error "CHDIR failed"))
+      (setq *default-pathname-defaults*
+            (pathname (|pad_directory_name| (|get_current_directory|)))))
+    #+:ecl
+    (si:chdir (|pad_directory_name| dir) t)
+    #+:gcl
+    (system::chdir dir)
+    #+:lispworks
+    (hcl:change-directory dir)
+    #+:openmcl
+    (if (not (zerop (ccl::%chdir dir))) (error "CHDIR failed"))
+    #+:sbcl
+    (progn
+      (sb-posix:chdir dir)
+      (setq *default-pathname-defaults*
+            (pathname (|pad_directory_name| (|get_current_directory|)))))
+
+    t)
+  #-(or :clisp :cmu :ecl :gcl :lispworks :openmcl :sbcl)
+  (error "CHDIR not implemented"))
+
 ;;; Make directory
 
 #+gcl
@@ -811,30 +832,6 @@ with this hack and will try to convince the GCL crowd to fix this.
            1
          (if (probe-file filename) 0 -1))
 )
-
-#+:cmu
-(defun |get_current_directory| ()
-  (multiple-value-bind (win dir) (unix::unix-current-directory)
-                       (declare (ignore win))  dir))
-
-#+(or :ecl :GCL :clisp :openmcl :abcl)
-(defun |get_current_directory| ()
-    (|trim_directory_name| (namestring (truename ""))))
-
-#+:sbcl
-(defun |get_current_directory| ()
-  (sb-unix:posix-getcwd))
-
-#+:poplog
-(defun |get_current_directory| ()
-   (let ((name (namestring (truename "."))))
-        (|trim_directory_name| (subseq name 0 (1- (length name))))))
-
-#+lispworks
-(defun |get_current_directory| ()
-  (let ((directory (namestring (system:current-directory))))
-    (|trim_directory_name| directory)))
-
 
 (defun |fricas_probe_file0| (file)
 #+(or :GCL :clisp)
