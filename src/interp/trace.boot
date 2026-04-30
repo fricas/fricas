@@ -86,7 +86,7 @@ DEFVAR($timer_list, [])
 
 MAKEPROP('coerce, "/TRANSFORM", ["&", "&", "*"])
 MAKEPROP('comp, "/TRANSFORM", ["&", "*", "*", "&"])
-MAKEPROP('compIf, "/TRANSFORM", '["&", "*", "*", "&"])
+MAKEPROP('compIf, "/TRANSFORM", ["&", "*", "*", "&"])
 MAKEPROP('compFormWithModemap, "/TRANSFORM", ["&", "*", "*", "&", "*"])
 
 SPADSYSNAMEP(s) ==
