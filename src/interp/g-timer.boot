@@ -50,6 +50,9 @@ makeLongStatStringByProperty _
   for [name,class,:ab] in listofnames repeat
     n := statsVec.(GET(name, 'index))
     classStats.class := classStats.class + n
+    -- GC time should be counted into total time,
+    -- but space recycled by GC should not be counted into total space
+    name = 'gc and property = 'SpaceTotal => 'iterate
     total := total + n
     name = 'other or flag ~= 'long => 'iterate
     if significantStat? n then
@@ -60,11 +63,16 @@ makeLongStatStringByProperty _
     str := makeStatString(str, otherStatTotal + insignificantStat, 'other, flag)
   else
     for [class,name,:ab] in listofclasses repeat
+      name = 'reclaim and property = 'SpaceTotal => 'iterate
       n := classStats.class
       str := makeStatString(str, n, ab, flag)
   total := STRCONC(normalizeStatAndStringify total,'" ", units)
-  str = '"" =>  total
-  STRCONC(str, '" = ", total)
+  if str ~= '"" then total := STRCONC(str, '" = ", total)
+  if property = 'SpaceTotal then
+        n := statsVec.(GET('gc, 'index))
+        if n ~= 0 then
+            total := STRCONC(total, FORMAT(nil, '" (~:d bytes recycled)", n))
+  total
 
 normalizeStatAndStringify t ==
   FLOATP t =>
@@ -158,16 +166,18 @@ initializeTimedStack() ==
   $timedNameStack := '(other)
   len := # $interpreterTimedNames
   $statsInfo := VECTOR(MAKEARR1(len, 0), MAKEARR1(len, 0), get_run_time(), _
-                       elapsedGcTime(), HEAPELAPSED())
+                       elapsedGcTime(), HEAPELAPSED(), current_heap_size())
   NIL
 
 updateTimedName name ==
   oldTime := $statsInfo.2
   oldGCTime := $statsInfo.3
   oldSpace := $statsInfo.4
+  oldHeap := $statsInfo.5
   newTime := $statsInfo.2 := get_run_time()
   newGCTime := $statsInfo.3 := elapsedGcTime()
   newSpace := $statsInfo.4 := HEAPELAPSED()
+  newHeap := $statsInfo.5 := current_heap_size()
 
   i := GET(name, 'index)
   timeVec := $statsInfo.0
@@ -177,6 +187,7 @@ updateTimedName name ==
   i2 := GET('gc, 'index)
   timeVec.i2 := timeVec.i2 + gcDelta * $inverseTimerTicksPerSecond
   spaceVec.i := spaceVec.i + newSpace - oldSpace
+  spaceVec.i2 := spaceVec.i2 + newSpace - newHeap - (oldSpace - oldHeap)
 
 makeLongTimeString(listofnames,listofclasses) ==
   makeLongStatStringByProperty(listofnames, listofclasses,  _

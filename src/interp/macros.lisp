@@ -387,6 +387,20 @@ This function respects intermediate #\Newline characters and drops
   #-(or :clisp :cmu :ecl :openmcl :sbcl :lispworks)
   0)
 
+(defun |current_heap_size| ()
+  #+:clisp
+  (nth-value 0 (sys::%room))
+  #+:cmu
+  (lisp::dynamic-usage)
+  #+:lispworks
+  (getf (system:room-values) :total-allocated)
+  #+:openmcl
+  (nth-value 0 (ccl::%usedbytes))
+  #+:sbcl
+  (sb-kernel:dynamic-usage)
+  #-(or :clisp :cmu :lispworks :openmcl :sbcl)
+  0)
+
 (defun |goGetTracerHelper| (dn f oname alias options modemap)
     (lambda(&rest l)
          (|goGetTracer| l dn f oname alias options modemap)))
