@@ -171,6 +171,11 @@ parseAndEvalStr1 string ==
   $QuietCommand : local := $QuietCommand_tmp
   processInteractive(sform, NIL)
 
+DEFCONSTANT($SpadError, 90)
+
+sendHTErrorSignal() ==
+    sockSendInt($MenuServer, $SpadError)
+
 protectedEVAL x ==
   error := true
   val := NIL

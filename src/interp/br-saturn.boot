@@ -38,35 +38,6 @@ $atLeastOneUnexposed := false
 page() == $curPage
 
 --=======================================================================
---            Functions that affect $saturnPage
---=======================================================================
-
---------------------> OLD DEFINITION (override in br-util.boot)
-htSay(x) ==
-    bcHt(x)
-
-htSayStandard(x) ==  --do AT MOST for $standard
-    bcHt(x)
-
-htSayStandardList(lx) ==
-    htSayList(lx)
-
-htSayList(lx) ==
-  for x in lx repeat bcHt(x)
-
---------------------> NEW DEFINITION (override in ht-util.boot)
-bcHt line ==
-  $newPage =>  --this path affects both saturn and old lines
-    text :=
-      PAIRP line => [['text, :line]]
-      STRINGP line => line
-      [['text, line]]
-    htpAddToPageDescription($curPage, text)
-  PAIRP line =>
-    $htLineList := NCONC(nreverse mapStringize COPY_-LIST line, $htLineList)
-  $htLineList := [basicStringize line, :$htLineList]
-
---=======================================================================
 --                        New issueHT
 --=======================================================================
 
@@ -89,10 +60,6 @@ htShowPageNoScroll() ==
 
 DEFCONSTANT($SendLine, 98)
 DEFCONSTANT($EndOfPage, 99)
-DEFCONSTANT($SpadError, 90)
-
-sendHTErrorSignal() ==
-    sockSendInt($MenuServer, $SpadError)
 
 issueHTStandard line == --called by htMakePageNoScroll and htMakeErrorPage
     sockSendInt($MenuServer, $SendLine)
@@ -162,17 +129,6 @@ htpSetLabelInputString(htPage, label, val) ==
   props := LASSOC(label, htpInputAreaAlist htPage)
   props => SETELT(props, 0, STRINGIMAGE val)
   nil
-
---------------------> NEW DEFINITION (override in ht-util.boot)
-htDoneButton(func, htPage, :optionalArgs) ==
-------> Handle argument values passed from page if present
-  if optionalArgs then
-    htpSetInputAreaAlist(htPage, first optionalArgs)
-  typeCheckInputAreas htPage =>
-    htMakeErrorPage htPage
-  NULL FBOUNDP func =>
-    systemError ['"unknown function", func]
-  FUNCALL(SYMBOL_-FUNCTION func, htPage)
 
 --------------------> NEW DEFINITION (override in ht-util.boot)
 htBcLinks(links) ==
