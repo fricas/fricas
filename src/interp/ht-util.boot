@@ -419,9 +419,6 @@ typeCheckInputAreas htPage ==
   errorCondition := false
   for entry in htpInputAreaAlist htPage
    | entry is [stringName, ., ., ., 'string, ., spadType, filter] repeat
-    condList :=
-      LASSOC(LASSOC(spadType,htpDomainPvarSubstList htPage),
-             htpDomainVariableAlist htPage)
     string := htpLabelFilteredInputString(htPage, stringName)
     null(ncParseFromString(string)) =>
         -- FIXME: this effectively ignores errors, but otherwise
@@ -430,11 +427,6 @@ typeCheckInputAreas htPage ==
         htpSetLabelErrorMsg(htPage, '"Syntax Error", '"Syntax Error")
     nil
   errorCondition
-
-condErrorMsg type ==
-  typeString := form2String type
-  if PAIRP typeString then typeString := concatenateStringList(typeString)
-  CONCAT('"Error: Could not make your input into a ", typeString)
 
 -- predefined filter strings
 

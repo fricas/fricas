@@ -108,12 +108,7 @@
     (|run_program| "mv" (list filespec2 filespec1))
  )
 
-
-(defun |copy_file|(filespec1 filespec2)
-        (copy-lib-directory filespec1 filespec2)
-)
-
-(defun copy-lib-directory (name1 name2)
+(defun |copy_file|(name1 name2)
    (|run_program| "cp" (list "-r" name1 name2)))
 
 (defun |can_open?| (f)
