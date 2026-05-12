@@ -160,7 +160,7 @@ trace1(l, options) ==
       SAY '" "
       centerAndHighlight('"Traced function execution counts",78,"-")
       pcounters ()
-    selectOptionLC(first opt,'(reset),'optionError)
+    selectOption(first opt, '(reset), 'optionError)
     resetTimers()
     resetCounters()
     throw_msg("S2IT0002", CONCAT(
@@ -492,12 +492,12 @@ getMapSig(mapName,subName) ==
     sig
 
 getTraceOption (x is [key,:l]) ==
-  key:= selectOptionLC(key,$traceOptionList,'traceOptionError)
+  key:= selectOption(key, $traceOptionList, 'traceOptionError)
   x := [key,:l]
   MEMQ(key,'(nonquietly timer nt)) => x
   key='break =>
     null l => ['break,'before]
-    opts := [selectOptionLC(y,'(before after),NIL) for y in l]
+    opts := [selectOption(y, '(before after), nil) for y in l]
     and/[IDENTP y for y in opts] => ['break,:opts]
     stack_trace_option_error("S2IT0008", CONCAT(
             '"%1 The %b )trace %d option %b )break %d can only have one",

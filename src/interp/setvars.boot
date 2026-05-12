@@ -102,7 +102,7 @@ set l ==
 set1(l,setTree) ==
   null l => displaySetVariableSettings(setTree,"")
   setOptionNames := [x.0 for x in setTree]
-  arg := selectOption(DOWNCASE first l, setOptionNames, 'optionError)
+  arg := selectOption(first(l), setOptionNames, 'optionError)
   setData := [arg,:LASSOC(arg,setTree)]
 
   -- check is the user is authorized for the set variable
@@ -330,7 +330,7 @@ setExpose arg ==
             '" or %x3 %b )set expose drop %d %ceoff for more information."),
             ['"exposed"])
 
-  arg is [fn,:fnargs] and (fn := selectOptionLC(fn,
+  arg is [fn,:fnargs] and (fn := selectOption(fn,
     '(add drop initialize),NIL)) =>
       fn = 'add  =>  setExposeAdd fnargs
       fn = 'drop =>  setExposeDrop fnargs
@@ -356,7 +356,7 @@ setExposeAdd arg ==
             '" )set expose add group %d %ceoff or %ceon %b",
             '" )set expose add constructor %d %ceoff for more information."),
             [])
-  arg is [fn,:fnargs] and (fn := selectOptionLC(fn,
+  arg is [fn,:fnargs] and (fn := selectOption(fn,
     '(group constructor),NIL)) =>
       fn = 'group  =>  setExposeAddGroup fnargs
       fn = 'constructor =>  setExposeAddConstr fnargs
@@ -451,7 +451,7 @@ setExposeDrop arg ==
             '" )set expose drop group %d %ceoff or %ceon %b",
             '" )set expose drop constructor %d %ceoff for more information."),
             [])
-  arg is [fn,:fnargs] and (fn := selectOptionLC(fn,
+  arg is [fn,:fnargs] and (fn := selectOption(fn,
     '(group constructor),NIL)) =>
       fn = 'group  =>  setExposeDropGroup fnargs
       fn = 'constructor =>  setExposeDropConstr fnargs
@@ -619,8 +619,7 @@ setHistory arg ==
     sayMessage ['" Issue",:bright '")help history",
       '"for more information."]
 
-  arg is [fn] and
-   (fn := DOWNCASE(fn)) in '(y n ye yes no on of off) =>
+  arg is [fn] and fn in '(y n ye yes no on of off) =>
     $options := [[fn]]
     historySpad2Cmd()
   setHistory NIL
@@ -669,7 +668,6 @@ try_open(fn, ft, append) ==
         fn := drop_extention(fn)
         ft := ptype
     filename := make_filename2(fn, ft)
-    null filename => [NIL, NIL]
     (testStream := makeStream(append, filename)) => [testStream, filename]
     [NIL, NIL]
 
@@ -699,7 +697,7 @@ DEFCONST($appendable_off, 5)
 set_output_gen(arg, out_rec, def_rec) ==
     arg = "%initialize%" =>
         out_rec.$stream_off := make_std_out_stream()
-        out_rec.$file_off := '"CONSOLE"
+        out_rec.$file_off := '"console"
         out_rec.$on_off := def_rec.$def_on_off
 
     arg = "%display%" =>
@@ -715,25 +713,25 @@ set_output_gen(arg, out_rec, def_rec) ==
     quiet := false
 
     if def_rec.$appendable_off then
-        while LISTP(arg) and UPCASE(first(arg)) in '(APPEND QUIET) repeat
-            if UPCASE first(arg) = 'APPEND then
+        while LISTP(arg) and first(arg) in '(append quiet) repeat
+            if first(arg) = 'append then
                 append := true
-            else if UPCASE first(arg) = 'QUIET then
+            else if first(arg) = 'quiet then
                 quiet := true
             arg := rest(arg)
 
-    if arg is [fn] and not(fn in '(Y N YE YES NO O ON OF OFF CONSOLE _
+    if arg is [fn] and not(fn in '(Y N YE YES NO O ON OF OFF _
                                    y n ye yes no o on of off console)) then
         arg := [fn, def_rec.$ext_off]
 
     arg is [fn] =>
-        UPCASE(fn) in '(Y N YE O OF) => say_printing_msg(def_rec.$pr_msg_off)
-        UPCASE(fn) in '(NO OFF)  => out_rec.$on_off := false
-        UPCASE(fn) in '(YES ON) => out_rec.$on_off := true
-        UPCASE(fn) = 'CONSOLE =>
+        fn in '(Y N y n ye o O of) => say_printing_msg(def_rec.$pr_msg_off)
+        fn in '(no off)  => out_rec.$on_off := false
+        fn in '(yes on) => out_rec.$on_off := true
+        fn = 'console =>
             stream_close(out_rec.$stream_off)
             out_rec.$stream_off := make_std_out_stream()
-            out_rec.$file_off := '"CONSOLE"
+            out_rec.$file_off := '"console"
 
     (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
         [testStream, filename] := try_open(fn, ft, append)
@@ -793,7 +791,7 @@ setOutputCharacters arg ==
       l := cons(s,l)
     sayAsManyPerLineAsPossible reverse l
 
-  arg is [fn] and (fn := DOWNCASE(fn)) =>
+  arg is [fn] =>
     fn = 'default => $specialCharacters := $RTspecialCharacters
     fn = 'plain   => $specialCharacters := $plainRTspecialCharacters
     setOutputCharacters NIL

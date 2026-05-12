@@ -1407,7 +1407,7 @@ compileSpad2Cmd args ==
 
     for opt in $options repeat
         [optname,:optargs] := opt
-        fullopt := selectOptionLC(optname,optList,nil)
+        fullopt := selectOption(optname, optList, nil)
 
         fullopt = 'new         => error '"Internal error: compileSpad2Cmd got )new"
         fullopt = 'old         => NIL     -- no opt

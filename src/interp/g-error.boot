@@ -122,7 +122,7 @@ handleLispBreakLoop($BreakMode) ==
         '%l,'"   Please enter your choice now:"]
       x := STRING2ID_N(queryUser(msgQ), 1)
       x :=
-        selectOptionLC(x,'(top break continue),NIL)
+        selectOption(x, '(top break continue), nil)
       null x =>
         sayBrightly bright '"  That was not one of your choices!"
         gotIt := NIL
