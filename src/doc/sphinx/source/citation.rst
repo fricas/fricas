@@ -214,6 +214,12 @@ In the following we list publications mentioning FriCAS.
   `Computer-assisted Construction of Ramanujan-Sato Series for 1 over π,
   <https://doi.org/10.1007/s11139-026-01352-2>`_
 
+* **Harry Desmond**
+  (2026):
+  `Exhaustive Symbolic Integration: Integration by Differentiation
+  and the Landscape of Symbolic Integrability
+  <https://arxiv.org/abs/2605.04978>`_
+
 * `Sage <http://www.sagemath.org>`_ provides an
   `interface to FriCAS
   <http://doc.sagemath.org/html/en/reference/interfaces/sage/interfaces/fricas.html>`_.
