@@ -1634,3 +1634,348 @@ BrowserInformation : Exports == Implementation where
         ou case Err_ind => ou@Err_ind
         [cu@Split_rec, ou@Op_lst]$Gen_rec
 
+)abbrev package HDUTIL HyperdocUtilities
+++ Author: Waldek Hebisch
+++ Description: This package provides functions converting constructors
+++ and predicates to strings for Hyperdoc use.  Constructors and
+++ and arguments to constructors may be passed in two forms, either
+++ as actual value or formal value which may be not evaluable.
+HyperdocUtilities() : Exports == Implementation where
+    Exports ==> with
+        constructor_to_string : SExpression -> String
+          ++ constructor_to_string(c) produces printable string
+          ++ representation of constructor with form c.
+        condition_to_string : SExpression -> String
+          ++ condition_to_string(p) produces printable string
+          ++ representation of predicate p.
+        con_to_strings : (SExpression, Boolean, List(String)) -> List(String)
+          ++ con_to_strings(c, do_link, acc) is equivalent to
+          ++ con_to_strings(c, ef, true, do_link, acc) with empty
+          ++ ef.
+        con_to_strings : (SExpression, SExpression, Boolean, Boolean,
+                           List(String)) -> List(String)
+          ++ con_to_strings(c, ef, do_args, do_link, acc) produces
+          ++ string representation in Hyperdoc format for constructor
+          ++ of form c, with evaluated form ef.  Result is prepended
+          ++ in reverse order to acc.  If do_args is false then constructor
+          ++ arguments are omited.  If do_link is true then constructor
+          ++ names produce Hyperdoc links.
+        con_to_strings : (String, SExpression, SExpression, Boolean,
+                           Boolean, List(String)) -> List(String)
+          ++ con_to_strings(n, c, ef, do_args, do_link, acc) is like
+          ++ con_to_strings(c, ef, do_args, do_link, acc), but uses
+          ++ n as name of the toplevel constructor.
+        con_to_strings : (Symbol, List(SExpression)) -> List(String)
+          ++ con_to_strings(n, c) produces string representation
+          ++ in Hyperdoc format of constructor of form c with name n,
+          ++ producing links to arguments.  Output is in normal
+          ++ order.
+        con_arg_to_strings : (Boolean, Symbol, List(SExpression), SExpression,
+                              SExpression, Integer, Boolean, List(String)
+                             ) -> List(String)
+          ++ con_arg_to_strings(k?, op, lef, f, ef, k, do_link, acc)
+          ++ produces string representation in Hyperdoc format of
+          ++ argument number k to constructor with name op, appending
+          ++ result in reverse order to acc.  If do_link is true then
+          ++ constructor names produce Hyperdoc links.  When k? is true
+          ++ then the argument is a type and f should be its
+          ++ constructor form, otherwise the argument is not
+          ++ a type.  For non-type arguments either f or ef
+          ++ should give argument value.  ef when not a Lisp NIL should
+          ++ be possibly quoted evaluated argument value and in such
+          ++ case lef should be list of all possibly quoted evaluated
+          ++ arguments to the constructor.
+        con_args_to_strings : (Symbol, List(SExpression), List(SExpression),
+                               Boolean, List(String)) -> List(String)
+          ++ con_args_to_strings(op, lf, lef, do_link, acc) produces
+          ++ string representation in Hyperdoc format of arguments to
+          ++ constructor with name op, appending result in reverse order
+          ++ to acc.  If do_link is true then constructor names produce
+          ++ Hyperdoc links.  lf and lef are argument lists, elements of
+          ++ lf (lef respectively) will be passed as f (ef respectively)
+          ++ to \spad{con_arg_to_strings}.
+        predicate_to_strings : (SExpression,  Boolean, List(String)
+                               ) -> List(String)
+          ++ predicate_to_strings(p, do_link, acc) produces string
+          ++ representation in Hyperdoc format of predicate p, appending
+          ++ result in reverse order to acc.  If do_link is true then
+          ++ constructor names produce Hyperdoc links.
+    Implementation ==> add
+
+        get_db_info(x, y) ==> get_database(x, y)$Lisp
+
+        BRI ==> BrowserInformation
+
+        SE ==> SExpression
+        SY ==> Symbol
+
+        is_symbol? : (SE, Symbol) -> Boolean
+
+        constructor_to_string(c : SE) : String ==
+            concat(reverse!(con_to_strings(c, false, [])))
+
+        arg_to_string(x : SE) : String ==
+            symbol?(x) => string(symbol(x))
+            PRETTYPRINT(x)$Lisp
+            error "arg_to_string: unexpected form of argument"
+
+        con_to_strings(con : SE, do_link : Boolean, acc : List(String)
+                      ) : List(String) ==
+            con_to_strings(con, convert([]), true, do_link, acc)
+
+        has_to_strings(cl : List(SE), do_link : Boolean,
+                       acc : List(String)) : List(String) ==
+            (dom, cat) := cl
+            acc := con_to_strings(dom, do_link, acc)
+            acc := cons(" has ", acc)
+            symbol?(cat) =>
+                con_to_strings(cat, do_link, acc)
+            is_symbol?(car(cat), 'SIGNATURE) =>
+                cat := cdr(cat)
+                op := car(cat)
+                ops : SY :=
+                    symbol?(op) => symbol(op)
+                    integer?(op) =>
+                        n := integer(op)
+                        n = 0 => "0"::SY
+                        n = 1 => "1"::SY
+                        error "unexpeted integer as operation"
+                    error "unexpected operation"
+                ns := string(ops)
+                cat := destruct(cat)(2)
+                mt : List(SE) := cons(convert('Mapping), destruct(cat))
+                acc := cons(ns, acc)
+                acc := cons(" : ", acc)
+                con_to_strings(convert(mt), do_link, acc)
+            con_to_strings(cat, do_link, acc)
+
+        predicate_list_to_strings(word : String, pl : List(SE),
+                                  do_link : Boolean, acc : List(String)
+                                 ) : List(String) ==
+            first := true
+            for p in pl repeat
+                if not(first) then
+                    acc := concat([" ", word, " "], acc)
+                first := false
+                acc := predicate_to_strings(p, do_link, acc)
+            acc
+
+        predicate_to_strings(p : SE, do_link : Boolean,
+                             acc : List(String)) : List(String) ==
+            op := symbol(car(p))
+            op = 'OR or op = 'or =>
+                predicate_list_to_strings("or", destruct(cdr(p)),
+                                          do_link, acc)
+            op = 'AND or op = 'and =>
+                predicate_list_to_strings("and", destruct(cdr(p)),
+                                          do_link, acc)
+            op = 'NOT or op = 'not =>
+                acc := cons(" not ", acc)
+                predicate_to_strings(destruct(p)(2), do_link, acc)
+            op = 'has =>
+                has_to_strings(destruct(cdr(p)), do_link, acc)
+            error "emit_predicate: unimplemented"
+
+        condition_to_string(p : SE) : String ==
+            ls := predicate_to_strings(p, false, [])
+            concat(reverse!(ls))
+
+        unquote(x : SE) : SE ==
+            null?(x) => x
+            list?(x) =>
+                xl := destruct(x)
+                op1 := first(xl)
+                is_symbol?(op1, "QUOTE"::Symbol) => xl(2)
+                convert([unquote(x1) for x1 in xl])
+            x
+
+        typed_val_to_string1(val : SE, t : SE) : String ==
+            o : OutputForm :=
+                algCoerceInteractive(val, t, ['OutputForm])$Lisp
+            concat(lines(formatExpression(o)$Format1D)$OutputBox)
+
+        typed_val_to_string(val : SE, t_op : Symbol, t_args : List(SE),
+                            k : Integer) : String ==
+            la := [unquote(t_arg) for t_arg in t_args]
+            t_sig := constructor_signature(t_op, la)$BRI
+            tal := destruct(cdr(t_sig))
+            typed_val_to_string1(val, tal(k))
+
+        cons_list_to(l : List(String), acc : List(String)) : List(String) ==
+            for s in l repeat
+                acc := cons(s, acc)
+            acc
+
+        is_symbol?(se : SE, sy : Symbol) : Boolean ==
+            symbol?(se) and symbol(se) = sy
+
+        con_arg_to_strings(k? : Boolean, op : SY, lef : List(SE),
+                           form : SE, ef : SE, k : Integer,
+                           do_link : Boolean, acc : List(String)
+                          ) : List(String) ==
+                k? and list?(form) =>
+                    acc := con_to_strings(form, ef, true, do_link, acc)
+                s : String :=
+                    string?(form) =>
+                        concat(["_"", string(form), "_""])
+                    not(k?) and not(null?(ef)) =>
+                        not(list?(ef)) =>
+                            typed_val_to_string(ef, op, lef, k)
+                        efl := destruct(ef)
+                        op1 := first(efl)
+                        is_symbol?(op1, "QUOTE"::Symbol) =>
+                            typed_val_to_string(car(cdr(ef)), op, lef, k)
+                        -- FIXME: do this in a proper way
+                        -- symbol?(op1) and symbol(op1) = "#"::Symbol and
+
+                        -- FIXME
+                        PRETTYPRINT(ef)$Lisp
+                        error "con_args_to_strings: unexpected argument value1"
+                    symbol?(form) => string(symbol(form))
+                    integer?(form) => string(integer(form))
+                    -- FIXME
+                    list?(form) =>
+                        fl := destruct(form)
+                        op1 := first(fl)
+                        is_symbol?(op1, "#"::Symbol) and #fl = 2 =>
+                            ls1 := fl(2)
+                            symbol?(ls1) =>
+                                concat("\# ", string(symbol(ls1)))
+                            list?(ls1) =>
+                                ls1l := destruct(ls1)
+                                not(every?(string?, ls1l)) =>
+                                    PRETTYPRINT(form)$Lisp
+                                    error "con_args_to_strings: "
+                                          "unexpected argument value4"
+                                lss : List(String) := ["["]
+                                first1 : Boolean := true
+                                for s1 in lss repeat
+                                    if not(first1) then
+                                        lss := cons(", ", lss)
+                                    first1 := false
+                                    lss := cons(s1, lss)
+                                lss := cons("]", lss)
+                                lss := reverse!(lss)
+                                concat(cons("\#", lss))
+                        is_symbol?(op1, "QUOTE"::Symbol) and #fl = 2 =>
+                            ls1 := fl(2)
+                            symbol?(ls1) => string(symbol(ls1))
+                            PRETTYPRINT(form)$Lisp
+                            error "con_args_to_strings: "
+                                  "unexpected argument value5"
+                        PRETTYPRINT(form)$Lisp
+                        error "con_args_to_strings: unexpected argument value2"
+                    PRETTYPRINT(form)$Lisp
+                    error "con_args_to_strings: unexpected argument value3"
+                acc := cons(s, acc)
+
+        con_args_to_strings(op : Symbol, lf : List(SE), lef : List(SE),
+                            do_link : Boolean, acc : List(String)
+                           ) : List(String) ==
+            co_sig : List(Boolean) :=
+                op = 'Mapping or op = 'Union => [true for form in lf]
+                rest(get_db_info(op, 'COSIG))
+            acc := cons("(", acc)
+            first := true
+            for k? in co_sig for form in lf for ef in lef for k in 1.. repeat
+                if not(first) then acc := cons(", ", acc)
+                first := false
+                acc := con_arg_to_strings(k?, op, lef, form, ef, k,
+                                          do_link, acc)
+            cons(")", acc)
+
+        convert_arg(arg : SE) : SE ==
+            list?(arg) => arg
+            string?(arg) => arg
+            arg = convert('%) => arg
+            convert([arg])
+
+        con_page_link(label : String, op : Symbol, acc : List(String)
+                     ) : List(String) ==
+            acc := cons_list_to(["\lispdownlink{", label, "}{"], acc)
+            cons_list_to(["(|conPage| '(|", string(op), "|))}"], acc)
+
+        record_args_to_strings(args : List(SE), do_link : Boolean,
+                               acc : List(String)) : List(String) ==
+            acc := cons("(", acc)
+            first := true
+            for arg in args repeat
+                if not(first) then acc := cons(", ", acc)
+                first := false
+                (col, lab, type) := destruct(arg)
+                acc := cons(string(symbol(lab)), acc)
+                acc := cons(" : ", acc)
+                acc := con_to_strings(type, do_link, acc)
+            cons(")", acc)
+
+        union_args_to_strings(args : List(SE), efa : List(SE),
+                              do_link : Boolean, acc : List(String)
+                             ) : List(String) ==
+            empty?(args) => cons("()", acc)
+            a1 := first(args)
+            list?(a1) and (l1 := destruct(a1); #l1 = 3 and
+                           first(l1) = convert(":"::SY)) =>
+                record_args_to_strings(args, do_link, acc)
+            args := [convert_arg(arg) for arg in args]
+            con_args_to_strings('Union, args, efa, do_link, acc)
+
+        con_to_strings(label : String, form : SE, ef : SE, do_args : Boolean,
+                       do_link : Boolean, acc : List(String)
+                      ) : List(String) ==
+            string?(form) =>
+                 s := concat(["_"", string(form), "_""])
+                 cons(s, acc)
+            symbol?(form) =>
+                 form = convert('%) => cons("\%", acc)
+                 con_to_strings(label, convert([form]), convert([]),
+                                do_link, false, acc)
+            op := symbol(car(form))
+            efa :=
+                null?(ef) => [ef for f1 in destruct(cdr(form))]
+                destruct(cdr(ef))
+            op = 'Mapping =>
+                form := cdr(form)
+                target := car(form)
+                args := [convert_arg(arg) for arg in destruct(cdr(form))]
+                acc := con_args_to_strings(op, args, rest(efa), do_link, acc)
+                acc := cons("->", acc)
+                con_to_strings(convert_arg(target), do_link, acc)
+            acc :=
+                do_link => con_page_link(label, op, acc)
+                cons(label, acc)
+            args := destruct(cdr(form))
+            op = 'Record =>
+                record_args_to_strings(args, do_link, acc)
+            op = 'Union =>
+                union_args_to_strings(args, efa, do_link, acc)
+            op = 'Enumeration =>
+                acc := cons("(", acc)
+                first := true
+                for arg in args repeat
+                    if not(first) then acc := cons(", ", acc)
+                    first := false
+                    acc := cons(string(symbol(arg)), acc)
+                acc := cons(")", acc)
+            not(empty?(args)) and do_args =>
+                con_args_to_strings(op, args, efa, do_link, acc)
+            acc
+
+        con_to_strings(form : SE, ef : SE, do_args : Boolean,
+                       do_link : Boolean, acc : List(String)
+                      ) : List(String) ==
+            string?(form) =>
+                 s := concat(["_"", string(form), "_""])
+                 cons(s, acc)
+            symbol?(form) =>
+                 form = convert('%) => cons("%", acc)
+                 con_to_strings(convert([form]), convert([]), false,
+                                do_link, acc)
+            op := symbol(car(form))
+            con_to_strings(string(op), form, ef, do_args, do_link, acc)
+
+        con_to_strings(name : SY, con : List(SE)) : List(String) ==
+            lc := rest(con)
+            elc := [convert([])$SE for c1 in lc]
+            res1 := con_args_to_strings(name, lc, elc, true, [string(name)])
+            reverse!(res1)
+
