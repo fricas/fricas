@@ -147,6 +147,13 @@ After this function is called the image is clean and can be saved.
 #+:GCL (setq compiler::*suppress-compiler-notes* t)
 #+:GCL (si::break-on-floating-point-exceptions :floating-point-overflow t
                                                :division-by-zero t)
+
+  ;; for SBCL, when stdout is pipe, do not handle SIGPIPE at Lisp level
+  #+(and :sbcl :unix)
+  (if (and (ignore-errors (sb-ext:assert-version->= 2 0 9) t)
+           (eq :fifo (sb-unix:fd-type 1)))
+      (sb-sys:enable-interrupt sb-unix:sigpipe :default))
+
   (in-package "BOOT")
   (|initroot|)
 #+:poplog (setf POPLOG:*READ-PROMPT* "") ;; Turn off Poplog read prompts
