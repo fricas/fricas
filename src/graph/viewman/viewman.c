@@ -172,6 +172,8 @@ main (void)
           fprintf(stderr,"viewman: closing viewport\n");
 #endif
           closeChildViewport(slot);
+          /* notify Spad process that view2D/view3D process has been closed */
+          send_int(spadSock, 100);
           break;
 
         };  /* switch */

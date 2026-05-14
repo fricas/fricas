@@ -347,13 +347,6 @@ get_spad_output(FILE *pfile,char *command,int com_type)
     unescape_string(command);
 }
 
-/*
- * THEMOS says: There is a problem here in that we issue the (|close|) and
- * then go on. If this is the last command, we will soon send a SIGTERM and
- * the whole thing will collapse maybe BEFORE the writing out has finished.
- * Fix: Call a Lisp function that checks (with \spadop{key} ps and grep) the
- * health of the viewport. We do this after the (|close|).
- */
 void
 get_graph_output(char *command,char *pagename,int com_type)
 {
@@ -369,10 +362,10 @@ get_graph_output(char *command,char *pagename,int com_type)
     sprintf(buf, "(|processInteractive| '(|write| |%s| \"%s%d\" \"image\") NIL)", "%",
             pagename, example_number);
     send_lisp_command(buf);
-    send_lisp_command("(|setViewportProcess|)");
-    send_lisp_command("(|processInteractive| '(|close| (|%%| -3)) NIL)");
-    send_lisp_command("(|waitForViewport|)");
+    send_lisp_command("(|processInteractive| '(|close| (|%%| -2)) NIL)");
+    send_lisp_command("(|sockSendInt| |$MenuServer| 1)");
     get_int(spad_socket);
+    send_lisp_command("(|setIOindex| (- |$IOindex| 2))");
 }
 static void
 send_command(char *command,int com_type)
