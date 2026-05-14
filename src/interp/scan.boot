@@ -489,12 +489,11 @@ scanString()==
             lfstring scanS ()
 
 scanS()==
-   if $n>=$sz
-   then
-     ncSoftError(cons($linepos, lnExtraBlanks($linepos + $n)),
+    if $n >= $sz then
+        ncSoftError(cons($linepos, lnExtraBlanks($linepos) + $n),
                  '"Quote added at end of line.", [])
-     '""
-   else
+        '""
+    else
            n:=$n
            strsym :=STRPOS ('"_"",$ln,$n,nil) or $sz
            escsym:=STRPOS ('"__"
