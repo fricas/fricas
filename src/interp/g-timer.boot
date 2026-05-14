@@ -187,7 +187,10 @@ updateTimedName name ==
   i2 := GET('gc, 'index)
   timeVec.i2 := timeVec.i2 + gcDelta * $inverseTimerTicksPerSecond
   spaceVec.i := spaceVec.i + newSpace - oldSpace
-  spaceVec.i2 := spaceVec.i2 + newSpace - newHeap - (oldSpace - oldHeap)
+  -- if current_heap_size is unimplemented (returns 0),
+  -- then don't compute GC recycled space.
+  recycledSpace := if newHeap = 0 then 0 else newSpace - newHeap - (oldSpace - oldHeap)
+  spaceVec.i2 := spaceVec.i2 + recycledSpace
 
 makeLongTimeString(listofnames,listofclasses) ==
   makeLongStatStringByProperty(listofnames, listofclasses,  _
