@@ -1714,11 +1714,6 @@ HyperdocUtilities() : Exports == Implementation where
         constructor_to_string(c : SE) : String ==
             concat(reverse!(con_to_strings(c, false, [])))
 
-        arg_to_string(x : SE) : String ==
-            symbol?(x) => string(symbol(x))
-            PRETTYPRINT(x)$Lisp
-            error "arg_to_string: unexpected form of argument"
-
         con_to_strings(con : SE, do_link : Boolean, acc : List(String)
                       ) : List(String) ==
             con_to_strings(con, convert([]), true, do_link, acc)
@@ -1774,7 +1769,7 @@ HyperdocUtilities() : Exports == Implementation where
                 predicate_to_strings(destruct(p)(2), do_link, acc)
             op = 'has =>
                 has_to_strings(destruct(cdr(p)), do_link, acc)
-            error "emit_predicate: unimplemented"
+            error "predicate_to_strings: unimplemented"
 
         condition_to_string(p : SE) : String ==
             ls := predicate_to_strings(p, false, [])
@@ -1809,6 +1804,26 @@ HyperdocUtilities() : Exports == Implementation where
         is_symbol?(se : SE, sy : Symbol) : Boolean ==
             symbol?(se) and symbol(se) = sy
 
+        has_op?(se : SE, sy : Symbol) : Boolean ==
+            not(list?(se)) => false
+            is_symbol?(car(se), sy)
+
+        list_to_string(ty : SE, l : List(SE)) : String ==
+            ty1 := elt(destruct(ty), 2)
+            has_op?(ty1, 'Symbol) and every?(symbol?, l) =>
+                lss : List(String) := ["["]
+                first1 : Boolean := true
+                for s1 in l repeat
+                    if not(first1) then
+                        lss := cons(", ", lss)
+                    first1 := false
+                    lss := cons(string(symbol(s1)), lss)
+                lss := cons("]", lss)
+                concat(reverse!(lss))
+            PRETTYPRINT(ty)$Lisp
+            PRETTYPRINT(l)$Lisp
+            error "list_to_string: unexpected form of list"
+
         con_arg_to_strings(k? : Boolean, op : SY, lef : List(SE),
                            form : SE, ef : SE, k : Integer,
                            do_link : Boolean, acc : List(String)
@@ -1833,6 +1848,10 @@ HyperdocUtilities() : Exports == Implementation where
                         error "con_args_to_strings: unexpected argument value1"
                     symbol?(form) => string(symbol(form))
                     integer?(form) => string(integer(form))
+                    sig := rest(destruct(constructor_signature(op)$BRI))
+                    k > #sig =>
+                        error "con_arg_to_strings: wrong argument number"
+                    a_type := elt(sig, k)
                     -- FIXME
                     list?(form) =>
                         fl := destruct(form)
@@ -1849,20 +1868,26 @@ HyperdocUtilities() : Exports == Implementation where
                                           "unexpected argument value4"
                                 lss : List(String) := ["["]
                                 first1 : Boolean := true
-                                for s1 in lss repeat
+                                for s1 in ls1l repeat
                                     if not(first1) then
                                         lss := cons(", ", lss)
                                     first1 := false
-                                    lss := cons(s1, lss)
+                                    lss := cons(string(s1), lss)
                                 lss := cons("]", lss)
                                 lss := reverse!(lss)
                                 concat(cons("\#", lss))
                         is_symbol?(op1, "QUOTE"::Symbol) and #fl = 2 =>
                             ls1 := fl(2)
-                            symbol?(ls1) => string(symbol(ls1))
+                            symbol?(ls1) and has_op?(a_type, 'Symbol) =>
+                                string(symbol(ls1))
+                            has_op?(a_type, 'List) and list?(ls1) =>
+                                list_to_string(a_type, destruct(ls1))
                             PRETTYPRINT(form)$Lisp
                             error "con_args_to_strings: "
                                   "unexpected argument value5"
+                        has_op?(a_type, 'List) =>
+                            list_to_string(a_type, fl)
+                        PRETTYPRINT(a_type)$Lisp
                         PRETTYPRINT(form)$Lisp
                         error "con_args_to_strings: unexpected argument value2"
                     PRETTYPRINT(form)$Lisp
@@ -1926,7 +1951,7 @@ HyperdocUtilities() : Exports == Implementation where
                  s := concat(["_"", string(form), "_""])
                  cons(s, acc)
             symbol?(form) =>
-                 form = convert('%) => cons("\%", acc)
+                 form = convert('%) => cons("%", acc)
                  con_to_strings(label, convert([form]), convert([]),
                                 do_link, false, acc)
             op := symbol(car(form))
