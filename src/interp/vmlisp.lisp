@@ -368,24 +368,21 @@
 
 ; 17.3 Searching
 
-(defun STRPOS (what in start dontcare)
-   (setq what (string what) in (string in))
-   (if dontcare (progn (setq dontcare (character dontcare))
-                       (search what in :start2 start
-                               :test #'(lambda (x y) (or (eql x dontcare)
+(defun STRPOS (ps s start dontcare)
+    (let ((str (string s))
+          (dc_char (character dontcare)))
+         (search ps str :start2 start
+                               :test #'(lambda (x y) (or (eql x dc_char)
                                                          (eql x y)))))
-                (if (= start 0)
-                   (search what in)
-                   (search what in :start2 start))
-   ))
+)
 
 ; In the following, table should be a string:
 
-(defun STRPOSL (table cvec sint item)
-  (setq cvec (string cvec))
-  (if (not item)
-      (position table cvec :test #'(lambda (x y) (position y x)) :start sint)
-      (position table cvec :test-not #'(lambda (x y) (position y x)) :start sint)))
+(defun STRPOSL (table cvec sint)
+    (setq cvec (string cvec))
+    (position table cvec
+              :test-not #'(lambda (x y) (position y x)) :start sint)
+)
 
 ; 19.0 Operations on Arbitrary Objects
 

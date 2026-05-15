@@ -620,10 +620,10 @@ isInternalFunctionName(op) ==
   (1 = SIZE(op':= PNAME op)) or (char("*") ~= op'.0) => NIL
   -- if there is a semicolon in the name then it is the name of
   -- a compiled spad function
-  null (e := STRPOS('"_;",op',1,NIL)) => NIL
+  null(e := search_str('"_;", op', 1)) => NIL
   (char(" ") = (y := op'.1)) or (char("*") = y) => NIL
   table := MAKETRTTABLE('"0123456789",NIL)
-  s := STRPOSL(table,op',1,true)
+  s := STRPOSL(table, op', 1)
   null(s) or s > e => NIL
   SUBSTRING(op',s,e-s)
 
@@ -737,7 +737,6 @@ object2Identifier x ==
 
 blankList x == "append"/[[BLANK,y] for y in x]
 
-
 string2Float s ==
   -- takes a string, calls the parser on it and returns a float object
   p := ncParseFromString s
@@ -747,34 +746,3 @@ string2Float s ==
     [$Integer, $Integer, $PositiveInteger])
   SPADCALL(x, y, z, flt)
 
-
-
-form2Fence form ==
-  -- body of dbMkEvalable
-  [op, :.] := form
-  kind := get_database(op, 'CONSTRUCTORKIND)
-  kind = 'category => form2Fence1 form
-  form2Fence1 mkEvalable form
-
-form2Fence1 x ==
-  x is [op,:argl] =>
-    op = 'QUOTE => ['"(QUOTE ",:form2FenceQuote first argl,'")"]
-    ['"(", FORMAT(NIL, '"|~a|", op),:"append"/[form2Fence1 y for y in argl],'")"]
-  x = "%" => ["%"]
-  IDENTP x => [FORMAT(NIL, '"|~a|", x)]
-  ['"  ", x]
-
-form2FenceQuote x ==
-  NUMBERP x => [STRINGIMAGE x]
-  SYMBOLP x => [FORMAT(NIL, '"|~a|", x)]
-  atom    x => ['"??"]
-  ['"(",:form2FenceQuote first x,:form2FenceQuoteTail rest x]
-
-form2FenceQuoteTail x ==
-  null x => ['")"]
-  atom x => ['" . ",:form2FenceQuote x,'")"]
-  ['" ",:form2FenceQuote first x,:form2FenceQuoteTail rest x]
-
-form2StringList u ==
-  atom (r := form2String u) => [r]
-  r

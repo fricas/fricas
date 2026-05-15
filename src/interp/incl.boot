@@ -133,11 +133,11 @@ incDrop(n, b) ==
 inclFname(s, info) == incFileName incCommandTail(s, info)
 
 incBiteOff x ==
-          n:=STRPOSL('" ",x,0,true)-- first nonspace
+          n := STRPOSL('" ", x, 0)-- first nonspace
           if null n
           then false -- all spaces
           else
-             n1:=STRPOSL ('" ",x,n,nil)
+             n1 := search_str('" ", x, n)
              if null n1 -- all nonspaces
              then [SUBSTRING(x,n,nil),'""]
              else [SUBSTRING(x,n,n1-n),SUBSTRING(x,n1,nil)]

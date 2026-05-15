@@ -972,7 +972,7 @@ filterModemapsFromPackages(mms, names, op) ==
     name := object2String type
     found := nil
     for n in names while not found repeat
-      STRPOS(n,name,0,NIL) => found := true
+        search_str(n, name, 0) => found := true
     if found
       then good := cons(mm, good)
       else bad := cons(mm,bad)
@@ -1344,14 +1344,17 @@ evalMmCat1(mmC is ['ofCategory,d,c],op, SL) ==
     dom := defaultTypeForCategory(c, SL)
     null dom =>
       op ~= 'coerce => 'failed -- evalMmCatLastChance(d,c,SL)
+      -- FIXME: for 'coerce' this returns nil
     null (p := ASSQ(d,$Subst)) =>
       dom =>
         NSL := [CONS(d,dom)]
-      op ~= 'coerce => 'failed -- evalMmCatLastChance(d,c,SL)
+      op ~= 'coerce => BREAK()
+      BREAK()
     if containsVars dom then dom := resolveTM(rest p, dom)
     $Coerce and canCoerce(rest p, dom) =>
       NSL := [CONS(d,dom)]
     op ~= 'coerce => 'failed -- evalMmCatLastChance(d,c,SL)
+    -- FIXME: for 'coerce' this returns nil
   NSL
 
 hasCate(dom,cat,SL) ==
@@ -1700,6 +1703,8 @@ defaultTypeForCategory(cat, SL) ==
   cat := subCopy(cat, SL)
   c := first cat
   d := get_database(c, 'DEFAULTDOMAIN)
+  -- FIXME: this assumes that arguments of default domain are
+  -- the same as arguments of the category
   d => [d, :rest cat]
   cat is [c] =>
     c = 'Field => $RationalNumber

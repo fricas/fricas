@@ -123,3 +123,6 @@
 (defun |get_lisp_std_in| () *standard-input*)
 
 (defun |char_to_digit|(x) (digit-char-p x))
+
+(defun |search_str| (pat str start)
+       (search pat str :start2 start))

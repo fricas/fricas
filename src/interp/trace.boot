@@ -1115,7 +1115,7 @@ breaklet(fn, bin_def, vars) ==
 stupidIsSpadFunction fn ==
   -- returns true if the function pname has a semi-colon in it
   -- eventually, this will use isSpadFunction from luke boot
-  STRPOS('"_;",PNAME fn,0,NIL)
+    search_str('"_;", PNAME(fn), 0)
 
 break msg ==
   condition := monitor_eval_tran($break_condition, nil)

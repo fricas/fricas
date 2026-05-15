@@ -233,9 +233,11 @@ asyDocumentation con ==
   [:u,['constructor,[nil,comments]]]
 
 asyExtractDescription str ==
-  k := STRPOS('"Description:",str,0,nil) => asyExtractDescription SUBSTRING(str,k + 12,nil)
-  k := STRPOS('"Author:",str,0,nil) => asyExtractDescription SUBSTRING(str,0,k)
-  str
+    k := search_str('"Description:", str, 0) =>
+        asyExtractDescription(SUBSTRING(str, k + 12, nil))
+    k := search_str('"Author:", str, 0) =>
+        asyExtractDescription(SUBSTRING(str, 0, k))
+    str
 
 trimComments str ==
   null str or str = '"" => '""
@@ -614,9 +616,9 @@ asyGetAbbrevFromComments con ==
   NIL
 
 asyExtractAbbreviation str ==
-        not (k:= STRPOS('"Abbrev: ",str,0,nil)) => NIL
+        not (k := search_str('"Abbrev: ", str, 0)) => NIL
         str := SUBSTRING(str, k+8, nil)
-        k := STRPOS($stringNewline, str,0,nil)
+        k := search_str($stringNewline, str, 0)
         k => SUBSTRING(str, 0, k)
         str
 

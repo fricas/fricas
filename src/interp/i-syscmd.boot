@@ -583,7 +583,7 @@ compileAsharpCmd1 args ==
     tempArgs :=
         path_ext = '"ao" =>
             -- want to strip out -Fao
-            (p := STRPOS('"-Fao", $asharpCmdlineFlags, 0, NIL)) =>
+            (p := search_str('"-Fao", $asharpCmdlineFlags, 0)) =>
                 p = 0 => SUBSTRING($asharpCmdlineFlags, 5, NIL)
                 STRCONC(SUBSTRING($asharpCmdlineFlags, 0, p), '" ",
                     SUBSTRING($asharpCmdlineFlags, p+5, NIL))
@@ -2608,7 +2608,7 @@ whatSpad2Cmd l ==
         '" %d system command to see information about an operation.  These",
         '" may be abbreviated to %b )sh %d and %b )d op %d , respectively."),
         [])
-  args := [DOWNCASE(p) for p in args]
+  args := [DOWNCASE(STRINGIMAGE(p)) for p in args]
   key = 'things =>
     for opt in $whatOptions repeat
       not MEMQ(opt,'(things)) => whatSpad2Cmd [opt,:args]
@@ -2754,7 +2754,7 @@ satisfiesRegularExpressions(name,patterns) ==
 
 --------------------> NEW DEFINITION (override in util.lisp)
 processSynonyms() ==
-  p := STRPOS('")",LINE,0,NIL)
+  p := search_str('")", LINE, 0)
   fill := '""
   if p then
       line := SUBSTRING(LINE,p,NIL)
@@ -2762,12 +2762,12 @@ processSynonyms() ==
   else
       p := 0
       line := LINE
-  to := STRPOS ('" ", line, 1, nil)
+  to := search_str('" ", line, 1)
   if to then to := to - 1
   synstr := SUBSTRING (line, 1, to)
   syn := STRING2ID_N (synstr, 1)
   null (fun := LASSOC (syn, $CommandSynonymAlist)) => NIL
-  to := STRPOS('")",fun,1,NIL)
+  to := search_str('")", fun, 1)
   if to and to ~= #fun - 1 then
     opt := STRCONC('" ",SUBSTRING(fun,to,NIL))
     fun := SUBSTRING(fun,0,to-1)
