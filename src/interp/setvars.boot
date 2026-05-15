@@ -725,9 +725,10 @@ set_output_gen(arg, out_rec, def_rec) ==
         arg := [fn, def_rec.$ext_off]
 
     arg is [fn] =>
-        fn in '(Y N y n ye o O of) => say_printing_msg(def_rec.$pr_msg_off)
-        fn in '(no off)  => out_rec.$on_off := false
-        fn in '(yes on) => out_rec.$on_off := true
+        fn in '(Y N y n YE ye o O of OF) =>
+            say_printing_msg(def_rec.$pr_msg_off)
+        fn in '(no off NO OFF)  => out_rec.$on_off := false
+        fn in '(yes on YES ON) => out_rec.$on_off := true
         fn = 'console =>
             stream_close(out_rec.$stream_off)
             out_rec.$stream_off := make_std_out_stream()
