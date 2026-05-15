@@ -1124,7 +1124,7 @@ newHelpSpad2Cmd args ==
   if sarg = '"?" then args := ['nullargs]
   else if sarg = '"%" then args := ['history]
        else if sarg = '"%%" then args := ['history]
-  arg := selectOption(first(args(, $SYSCOMMANDS, nil)
+  arg := selectOption(first(args), $SYSCOMMANDS, nil)
   if null arg then arg := first args
 
   -- see if new help file exists
