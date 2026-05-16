@@ -8,194 +8,114 @@
 ++ Keywords:
 ++ References:
 ++ Description: ThreeDimensionalViewport creates viewports to display graphs
-VIEW    ==> _$ViewportServer$Lisp
-sendI   ==> sockSendInt$Lisp
-sendSF  ==> sockSendFloat$Lisp
-sendSTR ==> sockSendString$Lisp
-getI    ==> sockGetInt$Lisp
-getSF   ==> sockGetFloat$Lisp
-
-typeVIEW3D   ==> 1$I
-typeVIEWTube ==> 4
-
-makeVIEW3D ==> (-1)$SingleInteger
 
 ThreeDimensionalViewport() : Exports == Implementation where
   I   ==> Integer
   PI  ==> PositiveInteger
   NNI ==> NonNegativeInteger
-  XY  ==> Record( X : I, Y : I )
-  XYP ==> Record( X : PI, Y : PI )
-  XYNN ==> Record( X : NNI, Y : NNI )
+  XYP ==> Record(X : PI, Y : PI)
+  XYNN ==> Record(X : NNI, Y : NNI)
   SF  ==> DoubleFloat
   F   ==> Float
   L   ==> List
-  Pt ==> ColoredThreeDimensionalPoint
-  SEG ==> Segment
   S   ==> String
-  E   ==> OutputForm
-  PLOT3D ==> Plot3D
-  TUBE   ==> TubePlot
-  V   ==> Record( theta : SF, phi : SF, scale : SF, scaleX : SF, scaleY : SF, scaleZ : SF, deltaX : SF, deltaY : SF )
-  H   ==> Record( hueOffset : I, hueNumber : I)
-  FLAG   ==> Record( showCP : I, style : I, axesOn : I, diagonalsOn : I, outlineRenderOn : I, showRegionField : I )
-  FR  ==> Record( fn : Fn2, fc : FnU, xmin : SF, xmax : SF, ymin : SF, ymax : SF, xnum : I, ynum : I )
-  FParamR ==> Record( theTube : TUBE )
-  LR  ==> Record( lightX : SF, lightY : SF, lightZ : SF, lightTheta : SF, lightPhi : SF , translucence : SF)
-  UFR ==> Union(FR,FParamR,"undefined")
-  PR  ==> Record( perspectiveField : I, eyeDistance : SF, hitherPlane : SF)
-  VR  ==> Record( clipXMin : SF, clipXMax : SF, clipYMin : SF, clipYMax : SF, clipZMin : SF, clipZMax : SF, clipRegionField : I, clipSurfaceField : I)
+  V   ==> Record(theta : SF, phi : SF, scale : SF, scaleX : SF, scaleY : SF,
+                 scaleZ : SF, deltaX : SF, deltaY : SF)
   C   ==> Color()
-  B   ==> Boolean
   POINT ==> Point(SF)
-  SUBSPACE ==> SubSpace(3, SF)
   SPACE3 ==> ThreeSpace(SF)
   DROP ==> DrawOption
-  COORDSYS ==> CoordinateSystems(SF)
-
-    -- the below macros correspond to the ones in include/actions.h
-  ROTATE       ==> 0$I  -- rotate      in actions.h
-  ZOOM         ==> 1$I  -- zoom        in actions.h
-  TRANSLATE    ==> 2    -- translate   in actions.h
-  rendered     ==> 3    -- render      in actions.h
-  hideControl  ==> 4
-  closeAll     ==> 5
-  axesOnOff    ==> 6
-  opaque       ==> 7    -- opaqueMesh  in action.h
-  contour      ==> 24
-  RESET        ==> 8
-  wireMesh     ==> 9    -- transparent in actions.h
-  region3D     ==> 12
-  smooth       ==> 22
-  diagOnOff    ==> 26
-  outlineOnOff ==> 13
-  zoomx        ==> 14
-  zoomy        ==> 15
-  zoomz        ==> 16
-  perspectiveOnOff ==> 27
-  clipRegionOnOff ==> 66
-  clipSurfaceOnOff ==> 67
-
-  SPADBUTTONPRESS ==> 100
-  COLORDEF        ==> 101
-  MOVE            ==> 102
-  RESIZE          ==> 103
-  TITLE           ==> 104
-  lightDef        ==> 108
-  translucenceDef ==> 109
-  writeView       ==> 110
-  eyeDistanceData ==> 111
-  modifyPOINT     ==> 114
---  printViewport   ==> 115
-  hitherPlaneData ==> 116
-  queryVIEWPOINT  ==> 117
-  changeVIEWPOINT ==> 118
-
-  noControl ==> 0$I
-
-  yes       ==> 1$I
-  no        ==> 0$I
-
-  EYED      ==> 500::SF  -- see draw.h, should be the same(?) as clipOffset
-  HITHER    ==> (-250)::SF   -- see process.h in view3D/ (not yet passed to viewman)
-
-  openTube  ==> 1$I
-  closedTube ==> 0$I
-
-  fun2Var3D  ==> "   Three Dimensional Viewport: Function of Two Variables"
-  para1Var3D ==> "   Three Dimensional Viewport: Parametric Curve of One Variable"
-  undef3D    ==> "   Three Dimensional Viewport: No function defined for this viewport yet"
 
   Exports ==> SetCategory with
-    viewThetaDefault      : ()                                       -> F
+    viewThetaDefault : () -> F
       ++ viewThetaDefault() returns the current default longitudinal
       ++ view angle in radians.
-    viewThetaDefault      : F                                        -> F
+    viewThetaDefault : F -> F
       ++ viewThetaDefault(t) sets the current default longitudinal
       ++ view angle in radians to the value t and returns t.
-    viewPhiDefault        : ()                                       -> F
+    viewPhiDefault : () -> F
       ++ viewPhiDefault() returns the current default latitudinal
       ++ view angle in radians.
-    viewPhiDefault        : F                                        -> F
+    viewPhiDefault : F -> F
       ++ viewPhiDefault(p) sets the current default latitudinal
       ++ view angle in radians to the value p and returns p.
-    viewZoomDefault       : ()                                       -> F
+    viewZoomDefault : () -> F
       ++ viewZoomDefault() returns the current default graph scaling
       ++ value.
-    viewZoomDefault       : F                                        -> F
+    viewZoomDefault : F -> F
       ++ viewZoomDefault(s) sets the current default graph scaling
       ++ value to s and returns s.
-    viewDeltaXDefault     : ()                                       -> F
+    viewDeltaXDefault : () -> F
       ++ viewDeltaXDefault() returns the current default horizontal
       ++ offset from the center of the viewport window.
-    viewDeltaXDefault     : F                                        -> F
+    viewDeltaXDefault : F -> F
       ++ viewDeltaXDefault(dx) sets the current default horizontal
       ++ offset from the center of the viewport window to be \spad{dx}
       ++ and returns \spad{dx}.
-    viewDeltaYDefault     : ()                                       -> F
+    viewDeltaYDefault : () -> F
       ++ viewDeltaYDefault() returns the current default vertical
       ++ offset from the center of the viewport window.
-    viewDeltaYDefault     : F                                        -> F
+    viewDeltaYDefault : F -> F
       ++ viewDeltaYDefault(dy) sets the current default vertical
       ++ offset from the center of the viewport window to be \spad{dy}
       ++ and returns \spad{dy}.
-    viewport3D            : ()                                       -> %
+    viewport3D : () -> %
       ++ viewport3D() returns an undefined three-dimensional viewport
       ++ of the domain \spadtype{ThreeDimensionalViewport} whose
       ++ contents are empty.
-    makeViewport3D        : %                                        -> %
+    makeViewport3D : % -> %
       ++ makeViewport3D(v) takes the given three-dimensional viewport,
       ++ v, of the domain \spadtype{ThreeDimensionalViewport} and
       ++ displays a viewport window on the screen which contains
       ++ the contents of v.
-    makeViewport3D        : (SPACE3, S)                               -> %
+    makeViewport3D : (SPACE3, S) -> %
       ++ makeViewport3D(sp, s) takes the given space, \spad{sp} which is
       ++ of the domain \spadtype{ThreeSpace} and displays a viewport
       ++ window on the screen which contains the contents of \spad{sp},
       ++ and whose title is given by s.
-    makeViewport3D        : (SPACE3, L DROP)                          -> %
+    makeViewport3D : (SPACE3, L DROP) -> %
       ++ makeViewport3D(sp, lopt) takes the given space, \spad{sp} which is
       ++ of the domain \spadtype{ThreeSpace} and displays a viewport
       ++ window on the screen which contains the contents of \spad{sp},
       ++ and whose draw options are indicated by the list \spad{lopt}, which
       ++ is a list of options from the domain \spad{DrawOption}.
-    subspace              : %                                        -> SPACE3
+    subspace : % -> SPACE3
       ++ subspace(v) returns the contents of the viewport v, which is
       ++ of the domain \spadtype{ThreeDimensionalViewport}, as a subspace
       ++ of the domain \spad{ThreeSpace}.
-    subspace              : (%, SPACE3)                               -> %
+    subspace : (%, SPACE3) -> %
       ++ subspace(v, sp) places the contents of the viewport v, which is
       ++ of the domain \spadtype{ThreeDimensionalViewport}, in the subspace
       ++ \spad{sp}, which is of the domain \spad{ThreeSpace}.
-    modifyPointData       : (%, NNI, POINT)                            -> Void
+    modifyPointData : (%, NNI, POINT) -> Void
       ++ modifyPointData(v, ind, pt) takes the viewport, v, which is of the
       ++ domain \spadtype{ThreeDimensionalViewport}, and places the data
       ++ point, \spad{pt} into the list of points database of v at the index
       ++ location given by \spad{ind}.
-    options               : %                                        -> L DROP
+    options : % -> L DROP
       ++ options(v) takes the viewport, v, which is of the domain
       ++ \spadtype{ThreeDimensionalViewport} and returns a list of all
       ++ the draw options from the domain \spad{DrawOption} which are
       ++ being used by v.
-    options               : (%, L DROP)                               -> %
+    options : (%, L DROP) -> %
       ++ options(v, lopt) takes the viewport, v, which is of the domain
       ++ \spadtype{ThreeDimensionalViewport} and sets the draw options
       ++ being used by v to those indicated in the list, \spad{lopt},
       ++ which is a list of options from the domain \spad{DrawOption}.
-    move                  : (%, NNI, NNI)                              -> Void
+    move : (%, NNI, NNI) -> Void
       ++ move(v, x, y) displays the three-dimensional viewport, v, which
       ++ is of domain \spadtype{ThreeDimensionalViewport}, with the upper
       ++ left-hand corner of the viewport window at the screen
       ++ coordinate position x, y.
-    resize                : (%, PI, PI)                                -> Void
+    resize : (%, PI, PI) -> Void
       ++ resize(v, w, h) displays the three-dimensional viewport, v, which
       ++ is of domain \spadtype{ThreeDimensionalViewport}, with a width
       ++ of w and a height of h, keeping the upper left-hand corner
       ++ position unchanged.
-    title                 : (%, S)                                    -> Void
+    title : (%, S) -> Void
       ++ title(v, s) changes the title which is shown in the three-dimensional
       ++ viewport window, v of domain \spadtype{ThreeDimensionalViewport}.
-    dimensions            : (%, NNI, NNI, PI, PI)                        -> Void
+    dimensions : (%, NNI, NNI, PI, PI) -> Void
       ++ dimensions(v, x, y, width, height) sets the position of the
       ++ upper left-hand corner of the three-dimensional viewport, v,
       ++ which is of domain \spadtype{ThreeDimensionalViewport}, to
@@ -203,7 +123,7 @@ ThreeDimensionalViewport() : Exports == Implementation where
       ++ window to that of \spad{width}, \spad{height}.  The new
       ++ dimensions are not displayed until the function
       ++ \spadfun{makeViewport3D} is executed again for v.
-    viewpoint             : (%, F, F, F, F, F)                            -> Void
+    viewpoint : (%, F, F, F, F, F) -> Void
       ++ viewpoint(v, th, phi, s, dx, dy) sets the longitudinal view angle
       ++ to \spad{th} radians, the latitudinal view angle to \spad{phi}
       ++ radians, the scale factor to \spad{s}, the horizontal viewport
@@ -212,18 +132,18 @@ ThreeDimensionalViewport() : Exports == Implementation where
       ++ \spadtype{ThreeDimensionalViewport}.  The new viewpoint position
       ++ is not displayed until the function \spadfun{makeViewport3D} is
       ++ executed again for v.
-    viewpoint             : (%)                                     -> V
+    viewpoint : (%) -> V
       ++ viewpoint(v) returns the current viewpoint setting of the given
       ++ viewport, v.  This function is useful in the situation where the
       ++ user has created a viewport, proceeded to interact with it via
       ++ the control panel and desires to save the values of the viewpoint
       ++ as the default settings for another viewport to be created using
       ++ the system.
-    viewpoint             : (%, V)                                    -> Void
+    viewpoint : (%, V) -> Void
       ++ viewpoint(v, viewpt) sets the viewpoint for the viewport.  The
       ++ viewport record consists of the latitudinal and longitudinal angles,
       ++ the zoom factor, the X, Y, and Z scales, and the X and Y displacements.
-    viewpoint             : (%, I, I, F, F, F)                            -> Void
+    viewpoint : (%, I, I, F, F, F) -> Void
       ++ viewpoint(v, th, phi, s, dx, dy) sets the longitudinal view angle
       ++ to \spad{th} degrees, the latitudinal view angle to \spad{phi}
       ++ degrees, the scale factor to \spad{s}, the horizontal viewport
@@ -232,147 +152,160 @@ ThreeDimensionalViewport() : Exports == Implementation where
       ++ \spadtype{ThreeDimensionalViewport}.  The new viewpoint position
       ++ is not displayed until the function \spadfun{makeViewport3D} is
       ++ executed again for v.
-    viewpoint             : (%, F, F)                                  -> Void
+    viewpoint : (%, F, F) -> Void
       ++ viewpoint(v, th, phi) sets the longitudinal view angle to \spad{th}
       ++ radians and the latitudinal view angle to \spad{phi} radians
       ++ for the viewport v, which is of the domain
       ++ \spadtype{ThreeDimensionalViewport}.  The new viewpoint position
       ++ is not displayed until the function \spadfun{makeViewport3D} is
       ++ executed again for v.
-    viewpoint             : (%, F, F, F)                                -> Void
+    viewpoint : (%, F, F, F) -> Void
       ++ viewpoint(v, rotx, roty, rotz) sets the rotation about the x-axis
       ++ to be \spad{rotx} radians, sets the rotation about the y-axis
       ++ to be \spad{roty} radians, and sets the rotation about the z-axis
       ++ to be \spad{rotz} radians, for the viewport v, which is of the
       ++ domain \spadtype{ThreeDimensionalViewport} and displays v with
       ++ the new view position.
-    controlPanel          : (%, S)                                    -> Void
+    controlPanel : (%, S) -> Void
       ++ controlPanel(v, s) displays the control panel of the given
       ++ three-dimensional viewport, v, which is of domain
       ++ \spadtype{ThreeDimensionalViewport}, if s is "on", or hides
       ++ the control panel if s is "off".
-    axes                  : (%, S)                                    -> Void
+    axes : (%, S) -> Void
       ++ axes(v, s) displays the axes of the given three-dimensional
       ++ viewport, v, which is of domain \spadtype{ThreeDimensionalViewport},
       ++ if s is "on", or does not display the axes if s is "off".
-    diagonals             : (%, S)                                    -> Void
+    diagonals : (%, S) -> Void
       ++ diagonals(v, s) displays the diagonals of the polygon outline
       ++ showing a triangularized surface instead of a quadrilateral
       ++ surface outline, for the given three-dimensional viewport v
       ++ which is of domain \spadtype{ThreeDimensionalViewport}, if s is
       ++ "on", or does not display the diagonals if s is "off".
-    outlineRender         : (%, S)                                    -> Void
+    outlineRender : (%, S) -> Void
       ++ outlineRender(v, s) displays the polygon outline showing either
       ++ triangularized surface or a quadrilateral surface outline depending
       ++ on whether the \spadfun{diagonals} function has been set, for
       ++ the given three-dimensional viewport v which is of domain
       ++ \spadtype{ThreeDimensionalViewport}, if s is "on", or does not
       ++ display the polygon outline if s is "off".
-    drawStyle             : (%, S)                                    -> Void
+    drawStyle : (%, S) -> Void
       ++ drawStyle(v, s) displays the surface for the given three-dimensional
       ++ viewport v which is of domain \spadtype{ThreeDimensionalViewport}
       ++ in the style of drawing indicated by s.  If s is not a valid
       ++ drawing style the style is wireframe by default.  Possible
       ++ styles are \spad{"shade"}, \spad{"solid"} or \spad{"opaque"},
       ++ \spad{"smooth"}, and \spad{"wireMesh"}.
-    rotate                : (%, F, F)                                  -> Void
+    rotate : (%, F, F) -> Void
       ++ rotate(v, th, phi) rotates the graph to the longitudinal view angle
       ++ \spad{th} radians and the latitudinal view angle \spad{phi} radians
       ++ for the viewport v, which is of the domain
       ++ \spadtype{ThreeDimensionalViewport}.
-    rotate                : (%, I, I)                                  -> Void
+    rotate : (%, I, I) -> Void
       ++ rotate(v, th, phi) rotates the graph to the longitudinal view angle
       ++ \spad{th} degrees and the latitudinal view angle \spad{phi} degrees
       ++ for the viewport v, which is of the domain
       ++ \spadtype{ThreeDimensionalViewport}.  The new rotation position
       ++ is not displayed until the function \spadfun{makeViewport3D} is
       ++ executed again for v.
-    zoom                  : (%, F)                                    -> Void
+    zoom : (%, F) -> Void
       ++ zoom(v, s) sets the graph scaling factor to s, for the viewport v,
       ++ which is of the domain \spadtype{ThreeDimensionalViewport}.
-    zoom                  : (%, F, F, F)                                -> Void
+    zoom : (%, F, F, F) -> Void
       ++ zoom(v, sx, sy, sz) sets the graph scaling factors for the x-coordinate
       ++ axis to \spad{sx}, the y-coordinate axis to \spad{sy} and the
       ++ z-coordinate axis to \spad{sz} for the viewport v, which is of
       ++ the domain \spadtype{ThreeDimensionalViewport}.
-    translate             : (%, F, F)                                  -> Void
+    translate : (%, F, F) -> Void
       ++ translate(v, dx, dy) sets the horizontal viewport offset to \spad{dx}
       ++ and the vertical viewport offset to \spad{dy}, for the viewport v,
       ++ which is of the domain \spadtype{ThreeDimensionalViewport}.
-    perspective           : (%, S)                                    -> Void
+    perspective : (%, S) -> Void
       ++ perspective(v,s) displays the graph in perspective if s is "on",
       ++ or does not display perspective if s is "off" for the given
       ++ three-dimensional viewport, v, which is of domain
       ++ \spadtype{ThreeDimensionalViewport}.
-    eyeDistance           : (%, F)                                    -> Void
+    eyeDistance : (%, F) -> Void
       ++ eyeDistance(v, d) sets the distance of the observer from the center
       ++ of the graph to d, for the viewport v, which is of the domain
       ++ \spadtype{ThreeDimensionalViewport}.
-    hitherPlane           : (%, F)                                    -> Void
+    hitherPlane : (%, F) -> Void
       ++ hitherPlane(v, h) sets the hither clipping plane of the graph to h,
       ++ for the viewport v, which is of the domain
       ++ \spadtype{ThreeDimensionalViewport}.
-    showRegion            : (%, S)                                    -> Void
+    showRegion : (%, S) -> Void
       ++ showRegion(v, s) displays the bounding box of the given
       ++ three-dimensional viewport, v, which is of domain
       ++ \spadtype{ThreeDimensionalViewport}, if s is "on", or does not
       ++ display the box if s is "off".
-    showClipRegion        : (%, S)                                    -> Void
+    showClipRegion : (%, S) -> Void
       ++ showClipRegion(v, s) displays the clipping region of the given
       ++ three-dimensional viewport, v, which is of domain
       ++ \spadtype{ThreeDimensionalViewport}, if s is "on", or does not
       ++ display the region if s is "off".
-    clipSurface           : (%, S)                                    -> Void
+    clipSurface : (%, S) -> Void
       ++ clipSurface(v, s) displays the graph with the specified
       ++ clipping region removed if s is "on", or displays the graph
       ++ without clipping implemented if s is "off", for the given
       ++ three-dimensional viewport, v, which is of domain
       ++ \spadtype{ThreeDimensionalViewport}.
-    lighting              : (%, F, F, F)                                -> Void
+    lighting : (%, F, F, F) -> Void
       ++ lighting(v, x, y, z) sets the position of the light source to
       ++ the coordinates x, y, and z and displays the graph for the given
       ++ three-dimensional viewport, v, which is of domain
       ++ \spadtype{ThreeDimensionalViewport}.
-    intensity             : (%, F)                                    -> Void
+    intensity : (%, F) -> Void
       ++ intensity(v, i) sets the intensity of the light source to i, for
       ++ the given three-dimensional viewport, v, which is of domain
       ++ \spadtype{ThreeDimensionalViewport}.
-    reset                 :  %                                       -> Void
+    reset :  % -> Void
       ++ reset(v) sets the current state of the graph characteristics
       ++ of the given three-dimensional viewport, v, which is of domain
       ++ \spadtype{ThreeDimensionalViewport}, back to their initial settings.
-    colorDef              : (%, C, C)                                  -> Void
+    colorDef : (%, C, C) -> Void
       ++ colorDef(v, c1, c2) sets the range of colors along the colormap so
       ++ that the lower end of the colormap is defined by \spad{c1} and the
       ++ top end of the colormap is defined by \spad{c2}, for the given
       ++ three-dimensional viewport, v, which is of domain
       ++ \spadtype{ThreeDimensionalViewport}.
-    write                 : (%, S)                                    -> S
+    write : (%, S) -> S
       ++ write(v, s) takes the given three-dimensional viewport, v, which
       ++ is of domain \spadtype{ThreeDimensionalViewport}, and creates
       ++ a directory indicated by s, which contains the graph data
       ++ file for v.
-    write                 : (%, S, S)                                  -> S
+    write : (%, S, S) -> S
       ++ write(v, s, f) takes the given three-dimensional viewport, v, which
       ++ is of domain \spadtype{ThreeDimensionalViewport}, and creates
       ++ a directory indicated by s, which contains the graph data
       ++ file for v and an optional file type f.
-    write                 : (%, S, L S)                                -> S
+    write : (%, S, L S) -> S
       ++ write(v, s, lf) takes the given three-dimensional viewport, v, which
       ++ is of domain \spadtype{ThreeDimensionalViewport}, and creates
       ++ a directory indicated by s, which contains the graph data
       ++ file for v and the optional file types indicated by the list lf.
-    close                 :  %                                       -> Void
+    close :  % -> Void
       ++ close(v) closes the viewport window of the given
       ++ three-dimensional viewport, v, which is of domain
       ++ \spadtype{ThreeDimensionalViewport}, and terminates the
       ++ corresponding process ID.
-    key                   :  %                                       -> I
+    key :  % -> I
       ++ key(v) returns the process ID number of the given three-dimensional
       ++ viewport, v, which is of domain \spadtype{ThreeDimensionalViewport}.
---    print                 :  %                                       -> Void
 
   Implementation ==> add
+
+    COORDSYS ==> CoordinateSystems(SF)
+    E   ==> OutputForm
+    FLAG  ==> Record(showCP : I, style : I, axesOn : I, diagonalsOn : I,
+                     outlineRenderOn : I, showRegionField : I)
+    LR  ==> Record(lightX : SF, lightY : SF, lightZ : SF, lightTheta : SF,
+                   lightPhi : SF, translucence : SF)
+    PR  ==> Record( perspectiveField : I, eyeDistance : SF, hitherPlane : SF)
+    VR  ==> Record(clipXMin : SF, clipXMax : SF, clipYMin : SF, clipYMax : SF,
+                   clipZMin : SF, clipZMax : SF, clipRegionField : I,
+                   clipSurfaceField : I)
+    B   ==> Boolean
+    H   ==> Record( hueOffset : I, hueNumber : I)
+
     import from Color()
     import from ViewDefaultsPackage()
     import from Plot3D()
@@ -385,6 +318,65 @@ ThreeDimensionalViewport() : Exports == Implementation where
     import from DrawOptionFunctions0
     import from COORDSYS
     import from Set(PositiveInteger)
+
+    VIEW    ==> _$ViewportServer$Lisp
+    sendI   ==> sockSendInt$Lisp
+    sendSF  ==> sockSendFloat$Lisp
+    sendSTR ==> sockSendString$Lisp
+    getI    ==> sockGetInt$Lisp
+    getSF   ==> sockGetFloat$Lisp
+
+    typeVIEW3D   ==> 1$I
+
+    makeVIEW3D ==> (-1)$SingleInteger
+
+    -- the below macros correspond to the ones in include/actions.h
+    ROTATE       ==> 0$I  -- rotate      in actions.h
+    ZOOM         ==> 1$I  -- zoom        in actions.h
+    TRANSLATE    ==> 2    -- translate   in actions.h
+    rendered     ==> 3    -- render      in actions.h
+    hideControl  ==> 4
+    closeAll     ==> 5
+    axesOnOff    ==> 6
+    opaque       ==> 7    -- opaqueMesh  in action.h
+    contour      ==> 24
+    RESET        ==> 8
+    wireMesh     ==> 9    -- transparent in actions.h
+    region3D     ==> 12
+    smooth       ==> 22
+    diagOnOff    ==> 26
+    outlineOnOff ==> 13
+    zoomx        ==> 14
+    zoomy        ==> 15
+    zoomz        ==> 16
+    perspectiveOnOff ==> 27
+    clipRegionOnOff ==> 66
+    clipSurfaceOnOff ==> 67
+
+    SPADBUTTONPRESS ==> 100
+    COLORDEF        ==> 101
+    MOVE            ==> 102
+    RESIZE          ==> 103
+    TITLE           ==> 104
+    lightDef        ==> 108
+    translucenceDef ==> 109
+    writeView       ==> 110
+    eyeDistanceData ==> 111
+    modifyPOINT     ==> 114
+    hitherPlaneData ==> 116
+    queryVIEWPOINT  ==> 117
+    changeVIEWPOINT ==> 118
+
+    noControl ==> 0$I
+
+    yes       ==> 1$I
+    no        ==> 0$I
+
+    -- see draw.h, should be the same as clipOffset
+    EYED      ==> 500::SF
+    -- ??? see process.h in view3D/ (not yet passed to viewman)
+    HITHER    ==> (-250)::SF
+
 
     Rep := Record (key : I, fun : I, _
                    title : S, moveTo : XYNN, size : XYP, viewpoint : V, colors : H, flags : FLAG, _
@@ -421,6 +413,45 @@ ThreeDimensionalViewport() : Exports == Implementation where
         viewport.key := 0$I
         error "This viewport has already been closed!"
       true
+
+    message_U(action) ==>
+        if key(vp) ~= 0$I then
+            sendI(VIEW, typeVIEW3D)
+            sendI(VIEW, cmd)
+            if checkViewport(vp) then
+                action
+                getI(VIEW) -- get acknowledgement
+
+    message_I(vp : %, cmd : I, i : I) : Void ==
+        message_U(sendI(VIEW, i))
+
+    flag_op(op, cmd, to_set) ==>
+
+        op(vp, onOff) ==
+            flag :=
+                onOff = "on" => yes
+                no
+            to_set := flag
+            message_I(vp, cmd, flag)
+
+    message_II(vp : %, cmd : I, i1 : I, i2 : I) : Void ==
+        message_U((sendI(VIEW, i1); sendI(VIEW, i2)))
+
+    message_F(vp : %, cmd : I, f : SF) : Void ==
+        message_U(sendSF(VIEW, f))
+
+    float_op(op, cmd, to_set) ==>
+
+        op(vp : %, f : F) ==
+            sf := convert(f)@SF
+            to_set := sf
+            message_F(vp, cmd, sf)
+
+    message_FF(vp : %, cmd : I, f1 : SF, f2: SF) : Void ==
+        message_U((sendSF(VIEW, f1); sendSF(VIEW, f2)))
+
+    message_FFF(vp : %, cmd : I, f1 : SF, f2: SF, f3 : SF) : Void ==
+        message_U((sendSF(VIEW, f1); sendSF(VIEW, f2); sendSF(VIEW, f3)))
 
     doOptions(v : Rep) : Void ==
       v.title := title(v.optionsField,"FriCAS3D")
@@ -586,57 +617,21 @@ ThreeDimensionalViewport() : Exports == Implementation where
 
 --Exported Functions: Available features for 3D viewports
     lighting(viewport, Xlight, Ylight, Zlight) ==
-      viewport.lighting.lightX := convert(Xlight)@SF
-      viewport.lighting.lightY := convert(Ylight)@SF
-      viewport.lighting.lightZ := convert(Zlight)@SF
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, lightDef)
-        checkViewport viewport =>
-          sendSF(VIEW, viewport.lighting.lightX)
-          sendSF(VIEW, viewport.lighting.lightY)
-          sendSF(VIEW, viewport.lighting.lightZ)
-          getI(VIEW)          -- acknowledge
+        f1 := convert(Xlight)@SF
+        f2 := convert(Ylight)@SF
+        f3 := convert(Zlight)@SF
+        viewport.lighting.lightX := f1
+        viewport.lighting.lightY := f2
+        viewport.lighting.lightZ := f3
+        message_FFF(viewport, lightDef, f1, f2, f3)
 
-    axes (viewport, onOff) ==
-      if onOff = "on" then viewport.flags.axesOn := yes
-      else viewport.flags.axesOn := no
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, axesOnOff)
-        checkViewport viewport =>
-          sendI(VIEW, viewport.flags.axesOn)
-          getI(VIEW)          -- acknowledge
+    flag_op(axes, axesOnOff, vp.flags.axesOn)
 
-    diagonals (viewport, onOff) ==
-      if onOff = "on" then viewport.flags.diagonalsOn := yes
-      else viewport.flags.diagonalsOn := no
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, diagOnOff)
-        checkViewport viewport =>
-          sendI(VIEW, viewport.flags.diagonalsOn)
-          getI(VIEW)          -- acknowledge
+    flag_op(diagonals, diagOnOff, vp.flags.diagonalsOn)
 
-    outlineRender (viewport, onOff) ==
-      if onOff = "on" then viewport.flags.outlineRenderOn := yes
-      else viewport.flags.outlineRenderOn := no
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, outlineOnOff)
-        checkViewport viewport =>
-          sendI(VIEW, viewport.flags.outlineRenderOn)
-          getI(VIEW)          -- acknowledge
+    flag_op(outlineRender, outlineOnOff, vp.flags.outlineRenderOn)
 
-    controlPanel (viewport, onOff) ==
-      if onOff = "on" then viewport.flags.showCP := yes
-      else viewport.flags.showCP := no
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, hideControl)
-        checkViewport viewport =>
-          sendI(VIEW, viewport.flags.showCP)
-          getI(VIEW)          -- acknowledge
+    flag_op(controlPanel, hideControl, vp.flags.showCP)
 
     drawStyle (viewport, how) ==
       if (how = "shade") then                    -- render
@@ -655,13 +650,7 @@ ThreeDimensionalViewport() : Exports == Implementation where
           getI(VIEW)          -- acknowledge
 
     reset viewport ==
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, SPADBUTTONPRESS)
-        checkViewport viewport =>
-          sendI(VIEW, RESET)
-          getI(VIEW)          -- acknowledge
-      void()
+        message_I(viewport, SPADBUTTONPRESS, RESET)
 
     close viewport ==
       (key(viewport) ~= 0$I) =>
@@ -750,38 +739,20 @@ ThreeDimensionalViewport() : Exports == Implementation where
           getI(VIEW)          -- acknowledge
 
     colorDef (viewport, HueOffset, HueNumber) ==
-      viewport.colors := [h := (hue HueOffset), (hue HueNumber) - h]
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, COLORDEF)
-        checkViewport viewport =>
-          sendI(VIEW, hue HueOffset)
-          sendI(VIEW, hue HueNumber)
-          getI(VIEW)          -- acknowledge
+        viewport.colors := [h := hue(HueOffset), hue(HueNumber) - h]
+        message_II(viewport, COLORDEF, h, hue(HueNumber))
 
     dimensions (viewport, ViewX, ViewY, ViewWidth, ViewHeight) ==
       viewport.moveTo := [ViewX, ViewY]
       viewport.size   := [ViewWidth, ViewHeight]
 
     move(viewport, xLoc, yLoc) ==
-      viewport.moveTo := [xLoc, yLoc]
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, MOVE)
-        checkViewport viewport =>
-          sendI(VIEW, xLoc)
-          sendI(VIEW, yLoc)
-          getI(VIEW)          -- acknowledge
+        viewport.moveTo := [xLoc, yLoc]
+        message_II(viewport, MOVE, xLoc, yLoc)
 
     resize(viewport, xSize, ySize) ==
-      viewport.size := [xSize, ySize]
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, RESIZE)
-        checkViewport viewport =>
-          sendI(VIEW, xSize)
-          sendI(VIEW, ySize)
-          getI(VIEW)          -- acknowledge
+        viewport.size := [xSize, ySize]
+        message_II(viewport, RESIZE, xSize, ySize)
 
     coerce viewport ==
       (key(viewport) = 0$I) =>
@@ -796,59 +767,36 @@ ThreeDimensionalViewport() : Exports == Implementation where
       rotate(viewport, Theta::F * degrees, Phi::F * degrees)
 
     rotate(viewport : %, Theta : F, Phi : F) ==
-      viewport.viewpoint.theta := convert(Theta)@SF
-      viewport.viewpoint.phi   := convert(Phi)@SF
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, ROTATE)
-        checkViewport viewport =>
-          sendSF(VIEW, viewport.viewpoint.theta)
-          sendSF(VIEW, viewport.viewpoint.phi)
-          getI(VIEW)          -- acknowledge
+        f1 := convert(Theta)@SF
+        f2 := convert(Phi)@SF
+        viewport.viewpoint.theta := f1
+        viewport.viewpoint.phi   := f2
+        message_FF(viewport, ROTATE, f1, f2)
 
-    zoom(viewport : %, Scale : F) ==
-      viewport.viewpoint.scale := convert(Scale)@SF
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, ZOOM)
-        checkViewport viewport =>
-          sendSF(VIEW, viewport.viewpoint.scale)
-          getI(VIEW)          -- acknowledge
+    float_op(zoom, ZOOM, vp.viewpoint.scale)
 
     zoom(viewport : %, ScaleX : F, ScaleY : F, ScaleZ : F) ==
-      viewport.viewpoint.scaleX := convert(ScaleX)@SF
-      viewport.viewpoint.scaleY := convert(ScaleY)@SF
-      viewport.viewpoint.scaleZ := convert(ScaleZ)@SF
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, zoomx)
-        checkViewport viewport =>
-          sendSF(VIEW, viewport.viewpoint.scaleX)
-          sendSF(VIEW, viewport.viewpoint.scaleY)
-          sendSF(VIEW, viewport.viewpoint.scaleZ)
-          getI(VIEW)          -- acknowledge
+        f1 := convert(ScaleX)@SF
+        f2 := convert(ScaleY)@SF
+        f3 := convert(ScaleZ)@SF
+        viewport.viewpoint.scaleX := f1
+        viewport.viewpoint.scaleY := f2
+        viewport.viewpoint.scaleZ := f3
+        message_FFF(viewport, zoomx, f1, f2, f3)
 
     translate(viewport, DeltaX, DeltaY) ==
-      viewport.viewpoint.deltaX := convert(DeltaX)@SF
-      viewport.viewpoint.deltaY := convert(DeltaY)@SF
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, TRANSLATE)
-        checkViewport viewport =>
-          sendSF(VIEW, viewport.viewpoint.deltaX)
-          sendSF(VIEW, viewport.viewpoint.deltaY)
-          getI(VIEW)          -- acknowledge
+        f1 := convert(DeltaX)@SF
+        f2 := convert(DeltaY)@SF
+        viewport.viewpoint.deltaX := f1
+        viewport.viewpoint.deltaY := f2
+        message_FF(viewport, TRANSLATE, f1, f2)
 
     intensity(viewport, Amount) ==
-      if (Amount < 0$F) or (Amount > 1$F) then
-        error "The intensity must be a value between 0 and 1, inclusively."
-      viewport.lighting.translucence := convert(Amount)@SF
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, translucenceDef)
-        checkViewport viewport =>
-          sendSF(VIEW, viewport.lighting.translucence)
-          getI(VIEW)          -- acknowledge
+        if (Amount < 0$F) or (Amount > 1$F) then
+            error "The intensity must be a value between 0 and 1, inclusively."
+        f := convert(Amount)@SF
+        viewport.lighting.translucence := f
+        message_F(viewport, translucenceDef, f)
 
     write(viewport : %, Filename : S, aThingToWrite : S) ==
       write(viewport, Filename, [aThingToWrite])
@@ -876,63 +824,17 @@ ThreeDimensionalViewport() : Exports == Implementation where
         error "write: problem with viewport"
       error "write: problem contacting viewman"
 
-    perspective (viewport, onOff) ==
-      if onOff = "on" then viewport.perspective.perspectiveField := yes
-      else viewport.perspective.perspectiveField := no
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, perspectiveOnOff)
-        checkViewport viewport =>
-          sendI(VIEW, viewport.perspective.perspectiveField)
-          getI(VIEW)          -- acknowledge
+    flag_op(perspective, perspectiveOnOff, vp.perspective.perspectiveField)
 
-    showRegion (viewport, onOff) ==
-      if onOff = "on" then viewport.flags.showRegionField := yes
-      else viewport.flags.showRegionField := no
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, region3D)
-        checkViewport viewport =>
-          sendI(VIEW, viewport.flags.showRegionField)
-          getI(VIEW)          -- acknowledge
+    flag_op(showRegion, region3D, vp.flags.showRegionField)
 
-    showClipRegion (viewport, onOff) ==
-      if onOff = "on" then viewport.volume.clipRegionField := yes
-      else viewport.volume.clipRegionField := no
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, clipRegionOnOff)
-        checkViewport viewport =>
-          sendI(VIEW, viewport.volume.clipRegionField)
-          getI(VIEW)          -- acknowledge
+    flag_op(showClipRegion, clipRegionOnOff, vp.volume.clipRegionField)
 
-    clipSurface (viewport, onOff) ==
-      if onOff = "on" then viewport.volume.clipSurfaceField := yes
-      else viewport.volume.clipSurfaceField := no
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, clipSurfaceOnOff)
-        checkViewport viewport =>
-          sendI(VIEW, viewport.volume.clipSurfaceField)
-          getI(VIEW)          -- acknowledge
+    flag_op(clipSurface, clipSurfaceOnOff, vp.volume.clipSurfaceField)
 
-    eyeDistance(viewport : %, EyeDistance : F) ==
-      viewport.perspective.eyeDistance := convert(EyeDistance)@SF
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, eyeDistanceData)
-        checkViewport viewport =>
-          sendSF(VIEW, viewport.perspective.eyeDistance)
-          getI(VIEW)          -- acknowledge
+    float_op(eyeDistance, eyeDistanceData, vp.perspective.eyeDistance)
 
-    hitherPlane(viewport : %, HitherPlane : F) ==
-      viewport.perspective.hitherPlane := convert(HitherPlane)@SF
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW3D)
-        sendI(VIEW, hitherPlaneData)
-        checkViewport viewport =>
-          sendSF(VIEW, viewport.perspective.hitherPlane)
-          getI(VIEW)          -- acknowledge
+    float_op(hitherPlane, hitherPlaneData, vp.perspective.hitherPlane)
 
     modifyPointData(viewport, anIndex, aPoint) ==
       (n := dimension aPoint) < 3 => error "The point should have dimension of at least 3"
@@ -948,13 +850,6 @@ ThreeDimensionalViewport() : Exports == Implementation where
           if (n = 3) then sendSF(VIEW, convert(0.5)@SF)
           else sendSF(VIEW, color aPoint)
           getI(VIEW)          -- acknowledge
-
---    print viewport ==
---      (key(viewport) ~= 0$I) =>
---        sendI(VIEW, typeVIEW3D)
---        sendI(VIEW, printViewport)
---        checkViewport viewport =>
---          getI(VIEW)          -- acknowledge
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.

@@ -11,54 +11,40 @@
 ++ (to be displayed on TwoDimensionalViewports).
 GraphImage () : Exports == Implementation where
 
-  VIEW    ==> _$ViewportServer$Lisp
-  sendI   ==> sockSendInt$Lisp
-  sendSF  ==> sockSendFloat$Lisp
-  sendSTR ==> sockSendString$Lisp
-  getI    ==> sockGetInt$Lisp
-  getSF   ==> sockGetFloat$Lisp
-
-  typeGRAPH  ==> 2
-  typeVIEW2D ==> 3
-
-  makeGRAPH  ==> (-1)$SingleInteger
-  makeVIEW2D ==> (-1)$SingleInteger
-
   I   ==> Integer
   PI  ==> PositiveInteger
   NNI ==> NonNegativeInteger
   SF  ==> DoubleFloat
   F   ==> Float
-  L   ==> List
   P   ==> Point(SF)
+  L   ==> List
+  LLP ==> L(L(P))
+  LPAL ==> L(PAL)
+  LPI ==> L(PI)
   V   ==> Vector
   SEG ==> Segment
-  RANGESF   ==> L SEG SF
-  RANGEF    ==> L SEG F
-  UNITSF   ==> L SF
-  UNITF    ==> L F
+  RANGEF    ==> L(SEG(F))
+  UNITF    ==> L(F)
   PAL ==> Palette
   E   ==> OutputForm
-  DROP ==> DrawOption
-  PP ==> PointPackage(SF)
-  COORDSYS ==> CoordinateSystems(SF)
+  LDO ==> List(DrawOption)
 
   Exports ==> SetCategory with
-    graphImage      :  ()                                        -> %
+    graphImage : () -> %
       ++ graphImage() returns an empty graph with 0 point lists
       ++ of the domain \spadtype{GraphImage}.  A graph image contains
       ++ the graph data component of a two dimensional viewport.
-    sendGraphImage  :  %  -> Void
+    sendGraphImage : % -> Void
       ++ sendGraphImage(gi) takes the given graph, \spad{gi} of the
       ++ domain \spadtype{GraphImage}, and sends it's data to the
       ++ viewport manager where it waits to be included in a two-dimensional
       ++ viewport window.  \spad{gi} cannot be an empty graph.
-    makeGraphImage  :  (L L P)                                   -> %
+    makeGraphImage : LLP -> %
       ++ makeGraphImage(llp) returns a graph of the domain
       ++ \spadtype{GraphImage} which is composed of the points and
       ++ lines from the list of lists of points, \spad{llp}, with
       ++ default point size and default point and line colours.
-    makeGraphImage  :  (L L P, L PAL, L PAL, L PI)                  -> %
+    makeGraphImage : (LLP, LPAL, LPAL, LPI) -> %
       ++ makeGraphImage(llp, lpal1, lpal2, lp) returns a graph of the
       ++ domain \spadtype{GraphImage} which is composed of the points
       ++ and lines from the list of lists of points, \spad{llp}, whose
@@ -66,7 +52,7 @@ GraphImage () : Exports == Implementation where
       ++ \spad{lpal1}, and whose lines are colored according to the list
       ++ of palette colors, \spad{lpal2}.  The parameter lp is a list of
       ++ integers which denote the size of the data points.
-    makeGraphImage  :  (L L P, L PAL, L PAL, L PI, L DROP)           -> %
+    makeGraphImage : (LLP, LPAL, LPAL, LPI, LDO) -> %
       ++ makeGraphImage(llp, lpal1, lpal2, lp, lopt) returns a graph of
       ++ the domain \spadtype{GraphImage} which is composed of the
       ++ points and lines from the list of lists of points, \spad{llp},
@@ -75,30 +61,30 @@ GraphImage () : Exports == Implementation where
       ++ of palette colors, \spad{lpal2}.  The parameter lp is a list of
       ++ integers which denote the size of the data points, and \spad{lopt}
       ++ is the list of draw command options.
-    pointLists      :  %                                         -> L L P
+    pointLists : % -> LLP
       ++ pointLists(gi) returns the list of lists of points which compose
       ++ the given graph, \spad{gi}, of the domain \spadtype{GraphImage}.
-    key             :  %                                         -> I
+    key : % -> I
       ++ key(gi) returns the process ID of the given graph, \spad{gi},
       ++ of the domain \spadtype{GraphImage}.
-    ranges          :  %                                         -> RANGEF
+    ranges : % -> RANGEF
       ++ ranges(gi) returns the list of ranges of the point components from
       ++ the indicated graph, \spad{gi}, of the domain \spadtype{GraphImage}.
-    ranges          :  (%, RANGEF)                                -> RANGEF
+    ranges : (%, RANGEF) -> RANGEF
       ++ ranges(gi, lr) modifies the list of ranges for the given graph,
       ++ \spad{gi} of the domain \spadtype{GraphImage}, to be that of the
       ++ list of range segments, \spad{lr}, and returns the new range list
       ++ for \spad{gi}.
-    units           :  %                                         -> UNITF
+    units : % -> UNITF
       ++ units(gi) returns the list of unit increments for the x and y
       ++ axes of the indicated graph, \spad{gi}, of the domain
       ++ \spadtype{GraphImage}.
-    units           :  (%, UNITF)                                 -> UNITF
+    units : (%, UNITF) -> UNITF
       ++ units(gi, lu) modifies the list of unit increments for the x and y
       ++ axes of the given graph, \spad{gi} of the domain
       ++ \spadtype{GraphImage}, to be that of the list of unit increments,
       ++ \spad{lu}, and returns the new list of units for \spad{gi}.
-    component       :  (%, L P, PAL, PAL, PI)                        -> Void
+    component : (%, L(P), PAL, PAL, PI) -> Void
       ++ component(gi, lp, pal1, pal2, p) sets the components of the
       ++ graph, \spad{gi} of the domain \spadtype{GraphImage}, to the
       ++ values given.  The point list for \spad{gi} is set to the list
@@ -107,29 +93,29 @@ GraphImage () : Exports == Implementation where
       ++ connect the points \spad{lp} is set to the palette color
       ++ \spad{pal2}, and the size of the points in \spad{lp} is given
       ++ by the integer p.
-    component       :  (%, P)                                     -> Void
+    component : (%, P) -> Void
       ++ component(gi, pt) modifies the graph \spad{gi} of the domain
       ++ \spadtype{GraphImage} to contain one point component, \spad{pt}
       ++ whose point color, line color and point size are determined by
       ++ the default functions \spadfun{pointColorDefault},
       ++ \spadfun{lineColorDefault}, and \spadfun{pointSizeDefault}.
-    component       :  (%, P, PAL, PAL, PI)                          -> Void
+    component : (%, P, PAL, PAL, PI) -> Void
       ++ component(gi, pt, pal1, pal2, ps) modifies the graph \spad{gi} of
       ++ the domain \spadtype{GraphImage} to contain one point component,
       ++ \spad{pt} whose point color is set to the palette color \spad{pal1},
       ++ line color is set to the palette color \spad{pal2}, and point
       ++ size is set to the positive integer \spad{ps}.
-    appendPoint     :  (%, P)                                     -> Void
+    appendPoint : (%, P) -> Void
       ++ appendPoint(gi, pt) appends the point \spad{pt} to the end
       ++ of the list of points component for the graph, \spad{gi}, which is
       ++ of the domain \spadtype{GraphImage}.
-    point           :  (%, P, PAL)                                 -> Void
+    point : (%, P, PAL) -> Void
       ++ point(gi, pt, pal) modifies the graph \spad{gi} of the domain
       ++ \spadtype{GraphImage} to contain one point component, \spad{pt}
       ++ whose point color is set to be the palette color \spad{pal}, and
       ++ whose line color and point size are determined by the default
       ++ functions \spadfun{lineColorDefault} and \spadfun{pointSizeDefault}.
-    coerce          :  L L P                                     -> %
+    coerce : LLP -> %
       ++ coerce(llp) creates and returns a graph of the domain
       ++ \spadtype{GraphImage} which is composed of the list of list
       ++ of points given by \spad{llp}, and whose point colors, line colors
@@ -138,15 +124,21 @@ GraphImage () : Exports == Implementation where
       ++ \spadfun{pointSizeDefault}.  The graph data is then sent to the
       ++ viewport manager where it waits to be included in a two-dimensional
       ++ viewport window.
-    coerce          :  %                                         -> E
+    coerce : % -> E
       ++ coerce(gi) returns the indicated graph, \spad{gi}, of domain
       ++ \spadtype{GraphImage} as output of the domain \spadtype{OutputForm}.
-    putColorInfo    : (L L P, L PAL)                              -> L L P
+    putColorInfo : (LLP, LPAL) -> LLP
       ++ putColorInfo(llp, lpal) takes a list of list of points, \spad{llp},
       ++ and returns the points with their hue and shade components
       ++ set according to the list of palette colors, \spad{lpal}.
 
   Implementation ==> add
+
+    COORDSYS ==> CoordinateSystems(SF)
+    PP ==> PointPackage(SF)
+    RANGESF ==> L(SEG(SF))
+    UNITSF ==> L(SF)
+
     import from Color()
     import from Palette()
     import from ViewDefaultsPackage()
@@ -156,21 +148,27 @@ GraphImage () : Exports == Implementation where
     import from PP
     import from COORDSYS
 
-    Rep := Record(key : I, rangesField : RANGESF, unitsField : UNITSF, _
-       llPoints : L L P, pointColors : L PAL, lineColors : L PAL, pointSizes : L PI, _
-       optionsField : L DROP)
+    VIEW    ==> _$ViewportServer$Lisp
+    sendI   ==> sockSendInt$Lisp
+    sendSF  ==> sockSendFloat$Lisp
+    sendSTR ==> sockSendString$Lisp
+    getI    ==> sockGetInt$Lisp
+    getSF   ==> sockGetFloat$Lisp
 
---%Internal Functions
+    typeGRAPH  ==> 2
+    typeVIEW2D ==> 3
 
-    graph       : RANGEF                          -> %
-    scaleStep   : SEG SF -> SF
+    makeGRAPH  ==> (-1)$SingleInteger
+    makeVIEW2D ==> (-1)$SingleInteger
 
+    Rep := Record(key : I, rangesField : RANGESF, unitsField : UNITSF,
+                  llPoints : LLP, pointColors : LPAL, lineColors : LPAL,
+                  pointSizes : LPI, optionsField : LDO)
 
-    numberCheck(nums : Point SF) : Void ==
-      for i in minIndex(nums)..maxIndex(nums) repeat
-        COMPLEXP(nums.(i::PositiveInteger))$Lisp =>
-          error "An unexpected complex number was encountered in the calculations."
+    -- Internal Functions
 
+    graph : RANGEF -> %
+    scaleStep : SEG(SF) -> SF
 
     doOptions(g : Rep) : Void ==
       lr : RANGEF := ranges(g.optionsField, ranges g)
@@ -189,11 +187,11 @@ GraphImage () : Exports == Implementation where
     -- etc - graphimage specific stuff...
 
     putColorInfo(llp, listOfPalettes) ==
-      llp2 : L L P := []
+      llp2 : LLP := []
       for lp in llp for pal in listOfPalettes repeat
-        lp2 : L P := []
-        daHue   := (hue(hue pal))::SF
-        daShade := (shade pal)::SF
+        lp2 : L(P) := []
+        daHue   := hue(hue(pal))::SF
+        daShade := shade(pal)::SF
         for p in lp repeat
           if (d := dimension p) < 3 then
             p := extend(p, [daHue, daShade])
@@ -205,14 +203,14 @@ GraphImage () : Exports == Implementation where
         llp2 := cons(reverse! lp2, llp2)
       reverse! llp2
 
-    graph demRanges ==
+    graph(demRanges) ==
       empty?(demRanges) =>  [ 0, [], [], [], [], [], [], [] ]
       demRangesSF : RANGESF := _
         [segment(convert(low(demRanges.1))@SF,
                  convert(high(demRanges.1))@SF)$(Segment(SF)),
          segment(convert(low(demRanges.1))@SF,
                  convert(high(demRanges.1))@SF)$(Segment(SF))]
-      [ 0, demRangesSF, [], [], [], [], [], [] ]
+      [0, demRangesSF, [], [], [], [], [], []]
 
     scaleStep(range_seg) ==                        -- MGR
       range := high(range_seg) - low(range_seg)
@@ -233,7 +231,7 @@ GraphImage () : Exports == Implementation where
     figureUnits(ranges : RANGESF) : UNITSF ==
         [scaleStep(first(ranges)), scaleStep(second(ranges))]
 
-    roundRange(range : SEG SF) : SEG SF ==
+    roundRange(range : SEG(SF)) : SEG(SF) ==
         single_eps := (2.0::SF)^(-19)
         low := low(range)
         low :=
@@ -250,7 +248,8 @@ GraphImage () : Exports == Implementation where
     roundRanges(ranges : RANGESF) : RANGESF ==
         [roundRange(first(ranges)), roundRange(second(ranges))]
 
-    plotLists(graf : Rep, listOfListsOfPoints : L L P, listOfPointColors : L PAL, listOfLineColors : L PAL, listOfPointSizes : L PI) : % ==
+    plotLists(graf : Rep, listOfListsOfPoints : LLP, listOfPointColors : LPAL,
+              listOfLineColors : LPAL, listOfPointSizes : LPI) : % ==
       givenLen := #listOfListsOfPoints
         -- take out point lists that are actually empty
       listOfListsOfPoints := [l for l in listOfListsOfPoints | not empty?(l)]
@@ -283,7 +282,8 @@ GraphImage () : Exports == Implementation where
         error "You are trying to make a graph with no points"
       key graf ~= 0 =>
         error "You are trying to draw over an existing graph"
-      transform := coord(graf.optionsField, cartesian$COORDSYS)$DrawOptionFunctions0
+      transform := coord(graf.optionsField, cartesian$COORDSYS
+                        )$DrawOptionFunctions0
       graf.llPoints := putColorInfo(graf.llPoints, graf.pointColors)
       if empty?(ranges graf) then  -- figure out best ranges for points
         graf.rangesField := calcRanges(graf.llPoints)  --::V SEG SF
@@ -303,7 +303,8 @@ GraphImage () : Exports == Implementation where
       sendSF(VIEW, first (graf.unitsField))
       sendSF(VIEW, second (graf.unitsField))
       sendI(VIEW, s)    -- how many lists of points are being sent
-      for aList in graf.llPoints for pColor in graf.pointColors for lColor in graf.lineColors for s in graf.pointSizes repeat
+      for aList in graf.llPoints for pColor in graf.pointColors
+            for lColor in graf.lineColors for s in graf.pointSizes repeat
         sendI(VIEW, #aList)   -- how many points in this list
         for p in aList repeat
           aPoint := transform p
@@ -319,7 +320,7 @@ GraphImage () : Exports == Implementation where
       graf.key := getI(VIEW)
 
 
---%Exported Functions
+    -- Exported Functions
     key graf                  == graf.key
     pointLists graf           == graf.llPoints
     ranges graf                ==
@@ -356,40 +357,44 @@ GraphImage () : Exports == Implementation where
       graf := graph(ranges(opts, []))
       graf.optionsField := opts
       graf := plotLists(graf, llp, lpc, llc, lps)
-      transform := coord(graf.optionsField, cartesian$COORDSYS)$DrawOptionFunctions0
+      transform := coord(graf.optionsField, cartesian$COORDSYS
+                        )$DrawOptionFunctions0
       for aList in graf.llPoints repeat
         for p in aList repeat
           aPoint := transform p
-          numberCheck aPoint
       graf
 
-    component (graf : %, ListOfPoints : L P, PointColor : PAL, LineColor : PAL, PointSize : PI) ==
+    component (graf : %, ListOfPoints : L(P), PointColor : PAL,
+               LineColor : PAL, PointSize : PI) ==
       graf.llPoints    := append(graf.llPoints, [ListOfPoints])
       graf.pointColors := append(graf.pointColors, [PointColor])
       graf.lineColors  := append(graf.lineColors, [LineColor])
       graf.pointSizes  := append(graf.pointSizes, [PointSize])
 
-    component (graf, aPoint) ==
-      component(graf, aPoint, pointColorDefault(), lineColorDefault(), pointSizeDefault())
+    component(graf, aPoint) ==
+        component(graf, aPoint, pointColorDefault(), lineColorDefault(),
+                  pointSizeDefault())
 
-    component (graf : %, aPoint : P, PointColor : PAL, LineColor : PAL, PointSize : PI) ==
-      component (graf, [aPoint], PointColor, LineColor, PointSize)
+    component(graf : %, aPoint : P, PointColor : PAL, LineColor : PAL,
+              PointSize : PI) ==
+        component(graf, [aPoint], PointColor, LineColor, PointSize)
 
-    appendPoint (graf, aPoint) ==
+    appendPoint(graf, aPoint) ==
       num : I  := #(graf.llPoints)
       num <= 0 => error "No point lists to append to!"
       (graf.llPoints.num) := append((graf.llPoints.num), [aPoint])
 
-    point (graf, aPoint, PointColor) ==
-      component(graf, aPoint, PointColor, lineColorDefault(), pointSizeDefault())
+    point(graf, aPoint, PointColor) ==
+        component(graf, aPoint, PointColor, lineColorDefault(),
+                  pointSizeDefault())
 
-    coerce (llp : L L P) : % ==
+    coerce(llp : LLP) : % ==
       makeGraphImage(llp,
           [pointColorDefault() for i in 1..(l := #llp)],
                 [lineColorDefault() for i in 1..l],
                      [pointSizeDefault() for i in 1..l])
 
-    coerce (graf : %) : E ==
+    coerce(graf : %) : E ==
         hconcat([message("Graph with "), (p := # pointLists graf)::E,
             message(p = 1 => " point list"; " point lists")])
 
@@ -406,114 +411,63 @@ GraphImage () : Exports == Implementation where
 ++ Description: TwoDimensionalViewport creates viewports to display graphs.
 TwoDimensionalViewport () : Exports == Implementation where
 
-  VIEW    ==> _$ViewportServer$Lisp
-  sendI   ==> sockSendInt$Lisp
-  sendSF  ==> sockSendFloat$Lisp
-  sendSTR ==> sockSendString$Lisp
-  getI    ==> sockGetInt$Lisp
-  getSF   ==> sockGetFloat$Lisp
-
-  typeGRAPH  ==> 2
-  typeVIEW2D ==> 3
-
-  makeGRAPH  ==> (-1)$SingleInteger
-  makeVIEW2D ==> (-1)$SingleInteger
-
   I    ==> Integer
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
-  XY   ==> Record( X : I, Y : I )
-  XYP  ==> Record( X : PI, Y : PI )
-  XYNN ==> Record( X : NNI, Y : NNI )
   F    ==> Float
   SF   ==> DoubleFloat
   STR  ==> String
-  L    ==> List
   V    ==> Vector
   E    ==> OutputForm
-  FLAG ==> Record( showCP : I )
   PAL  ==> Palette()
-  B    ==> Boolean
   G    ==> GraphImage
   GS   ==> Record( scaleX : SF, scaleY : SF, deltaX : SF, deltaY : SF, _
                   points : I, connect : I, spline : I, _
                   axes : I, axesColor : PAL, units : I, unitsColor : PAL, _
                   showing : I)
   GU   ==> Union(G,"undefined")
-  DROP ==> DrawOption
+  LDO  ==> List(DrawOption)
+
   POINT ==> Point(SF)
 
-  TRANSLATE2D     ==> 0$I
-  SCALE2D         ==> 1$I
-  pointsOnOff     ==> 2
-  connectOnOff    ==> 3
-  spline2D        ==> 4   -- used for controlling regions, now
-  reset2D         ==> 5
-  hideControl2D   ==> 6
-  closeAll2D      ==> 7
-  axesOnOff2D     ==> 8
-  unitsOnOff2D    ==> 9
-
-  SPADBUTTONPRESS ==> 100
-  MOVE            ==> 102
-  RESIZE          ==> 103
-  TITLE           ==> 104
-  showing2D       ==> 105  -- as defined in include/actions.h
-  putGraph2D      ==> 106
-  writeView       ==> 110
-  axesColor2D     ==> 112
-  unitsColor2D    ==> 113
-  getPickedPTS    ==> 119
-
-  graphStart      ==> 13   -- as defined in include/actions.h
-
-  noControl ==> 0$I
-
-  yes       ==> 1$I
-  no        ==> 0$I
-
-  maxGRAPHS ==> 9::I   -- should be the same as maxGraphs in include/view2D.h
-
-  fileTypeDefs ==> ["PIXMAP"]    -- see include/write.h for things to include
-
   Exports ==> SetCategory with
-    getPickedPoints : % -> L POINT
+    getPickedPoints : % -> List(POINT)
       ++ getPickedPoints(x)
       ++ returns a list of small floats for the points the
       ++ user interactively picked on the viewport
       ++ for full integration into the system, some design
       ++ issues need to be addressed: e.g. how to go through
       ++ the GraphImage interface, how to default to graphs, etc.
-    viewport2D     : ()                                     -> %
+    viewport2D : () -> %
       ++ viewport2D() returns an undefined two-dimensional viewport
       ++ of the domain \spadtype{TwoDimensionalViewport} whose
       ++ contents are empty.
-    makeViewport2D : %                                      -> %
+    makeViewport2D : % -> %
       ++ makeViewport2D(v) takes the given two-dimensional viewport,
       ++ v, of the domain \spadtype{TwoDimensionalViewport} and
       ++ displays a viewport window on the screen which contains
       ++ the contents of v.
-    options        : %                                      -> L DROP
+    options : % -> LDO
       ++ options(v) takes the given two-dimensional viewport, v, of the
       ++ domain \spadtype{TwoDimensionalViewport} and returns a list
       ++ containing the draw options from the domain \spadtype{DrawOption}
       ++ for v.
-    options        : (%, L DROP)                             -> %
+    options : (%, LDO) -> %
       ++ options(v, lopt) takes the given two-dimensional viewport, v,
       ++ of the domain \spadtype{TwoDimensionalViewport} and returns
       ++ v with it's draw options modified to be those which are indicated
       ++ in the given list, \spad{lopt} of domain \spadtype{DrawOption}.
-    makeViewport2D : (G, L DROP)                             -> %
+    makeViewport2D : (G, LDO) -> %
       ++ makeViewport2D(gi, lopt) creates and displays a viewport window
       ++ of the domain \spadtype{TwoDimensionalViewport} whose graph
       ++ field is assigned to be the given graph, \spad{gi}, of domain
       ++ \spadtype{GraphImage}, and whose options field is set to be
       ++ the list of options, \spad{lopt} of domain \spadtype{DrawOption}.
-    graphState     : (%, PI, SF, SF, SF, SF, I, I, I, I, PAL, I, PAL, I) -> Void
-      ++ graphState(v, num, sX, sY, dX, dY, pts, lns, box, axes, axesC, un, unC, cP)
-      ++ sets the state of the characteristics for the graph indicated
-      ++ by \spad{num} in the given two-dimensional viewport v, of domain
-      ++ \spadtype{TwoDimensionalViewport}, to the values given as
+    graphState : (%, PI, SF, SF, SF, SF, I, I, I, I, PAL, I, PAL, I) -> Void
+      ++ graphState(v, num, sX, sY, dX, dY, pts, lns, box, axes, axesC,
+      ++ un, unC, cP) sets the state of the characteristics for the graph
+      ++ indicated ++ by \spad{num} in the given two-dimensional viewport v,
+      ++ of domain \spadtype{TwoDimensionalViewport}, to the values given as
       ++ parameters.  The scaling of the graph in the x and y component
       ++ directions is set to be \spad{sX} and \spad{sY}; the window
       ++ translation in the x and y component directions is set to be
@@ -526,79 +480,79 @@ TwoDimensionalViewport () : Exports == Implementation where
       ++ \spad{unC} respectively.  To display the control panel when
       ++ the viewport window is displayed, set \spad{cP} to \spad{1},
       ++ otherwise set it to \spad{0}.
-    graphStates    : %                                      -> V GS
+    graphStates : % -> V(GS)
       ++ graphStates(v) returns and shows a listing of a record containing
       ++ the current state of the characteristics of each of the ten graph
       ++ records in the given two-dimensional viewport, v, which is of
       ++ domain \spadtype{TwoDimensionalViewport}.
-    graphs         : %                                      -> V GU
+    graphs : % -> V(GU)
       ++ graphs(v) returns a vector, or list, which is a union of all
       ++ the graphs, of the domain \spadtype{GraphImage}, which are
       ++ allocated for the two-dimensional viewport, v, of domain
       ++ \spadtype{TwoDimensionalViewport}.  Those graphs which have
       ++ no data are labeled "undefined", otherwise their contents
       ++ are shown.
-    title          : (%, STR)                                -> Void
+    title : (%, STR) -> Void
       ++ title(v, s) changes the title which is shown in the two-dimensional
       ++ viewport window, v of domain \spadtype{TwoDimensionalViewport}.
-    putGraph       : (%, G, PI)                               -> Void
+    putGraph : (%, G, PI) -> Void
       ++ putGraph(v, gi, n) sets the graph field indicated by n, of the
       ++ indicated two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, to be the graph, \spad{gi}
       ++ of domain \spadtype{GraphImage}.  The contents of viewport, v,
       ++ will contain \spad{gi} when the function \spadfun{makeViewport2D}
       ++ is called to create an updated viewport v.
-    getGraph       : (%, PI)                                 -> G
+    getGraph : (%, PI) -> G
       ++ getGraph(v, n) returns the graph which is of the domain
       ++ \spadtype{GraphImage} which is located in graph field n
       ++ of the given two-dimensional viewport, v, which is of the
       ++ domain \spadtype{TwoDimensionalViewport}.
-    axes           : (%, PI, STR)                             -> Void
+    axes : (%, PI, STR) -> Void
       ++ axes(v, n, s) displays the axes of the graph in field n of
       ++ the given two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, if s is "on", or does
       ++ not display the axes if s is "off".
-    axes           : (%, PI, PAL)                             -> Void
+    axes : (%, PI, PAL) -> Void
       ++ axes(v, n, c) displays the axes of the graph in field n of
       ++ the given two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, with the axes color set to
       ++ the given palette color c.
-    units          : (%, PI, STR)                             -> Void
+    units : (%, PI, STR) -> Void
       ++ units(v, n, s) displays the units of the graph in field n of
       ++ the given two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, if s is "on", or does
       ++ not display the units if s is "off".
-    units          : (%, PI, PAL)                             -> Void
+    units : (%, PI, PAL) -> Void
       ++ units(v, n, c) displays the units of the graph in field n of
       ++ the given two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, with the units color set to
       ++ the given palette color c.
-    points         : (%, PI, STR)                             -> Void
+    points : (%, PI, STR) -> Void
       ++ points(v, n, s) displays the points of the graph in field n of
       ++ the given two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, if s is "on", or does
       ++ not display the points if s is "off".
-    region         : (%, PI, STR)                             -> Void
+    region : (%, PI, STR) -> Void
       ++ region(v, n, s) displays the bounding box of the graph in
       ++ field n of the given two-dimensional viewport, v, which is
       ++ of domain \spadtype{TwoDimensionalViewport}, if s is "on",
       ++ or does not display the bounding box if s is "off".
-    connect        : (%, PI, STR)                             -> Void
+    connect : (%, PI, STR) -> Void
       ++ connect(v, n, s) displays the lines connecting the graph
       ++ points in field n of the given two-dimensional viewport, v,
       ++ which is of domain \spadtype{TwoDimensionalViewport}, if s
       ++ is "on", or does not display the lines if s is "off".
-    controlPanel   : (%, STR)                                -> Void
+    controlPanel : (%, STR) -> Void
       ++ controlPanel(v, s) displays the control panel of the given
       ++ two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, if s is "on", or hides
       ++ the control panel if s is "off".
-    close          : %                                      -> Void
+    close : % -> Void
       ++ close(v) closes the viewport window of the given
       ++ two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, and terminates the
       ++ corresponding process ID.
-    dimensions     : (%, NNI, NNI, PI, PI)                      -> Void
+    dimensions : (%, NNI, NNI, PI, PI) -> Void
       ++ dimensions(v, x, y, width, height) sets the position of the
       ++ upper left-hand corner of the two-dimensional viewport, v,
       ++ which is of domain \spadtype{TwoDimensionalViewport}, to
@@ -606,13 +560,13 @@ TwoDimensionalViewport () : Exports == Implementation where
       ++ window to that of \spad{width}, \spad{height}.  The new
       ++ dimensions are not displayed until the function
       ++ \spadfun{makeViewport2D} is executed again for v.
-    scale          : (%, PI, F, F)                             -> Void
+    scale : (%, PI, F, F) -> Void
       ++ scale(v, n, sx, sy) displays the graph in field n of the given
       ++ two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, scaled by the factor \spad{sx}
       ++ in the x-coordinate direction and by the factor \spad{sy} in
       ++ the y-coordinate direction.
-    translate      : (%, PI, F, F)                             -> Void
+    translate : (%, PI, F, F) -> Void
       ++ translate(v, n, dx, dy) displays the graph in field n of the given
       ++ two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, translated by \spad{dx} in
@@ -620,48 +574,48 @@ TwoDimensionalViewport () : Exports == Implementation where
       ++ by \spad{dy} in the y-coordinate direction from the center.
       ++ Setting \spad{dx} and \spad{dy} to \spad{0} places the center
       ++ of the graph at the center of the viewport.
-    show           : (%, PI, STR)                             -> Void
+    show : (%, PI, STR) -> Void
       ++ show(v, n, s) displays the graph in field n of the given
       ++ two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, if s is "on", or does not
       ++ display the graph if s is "off".
-    move           : (%, NNI, NNI)                            -> Void
+    move : (%, NNI, NNI) -> Void
       ++ move(v, x, y) displays the two-dimensional viewport, v, which
       ++ is of domain \spadtype{TwoDimensionalViewport}, with the upper
       ++ left-hand corner of the viewport window at the screen
       ++ coordinate position x, y.
-    update         : (%, G, PI)                               -> Void
+    update : (%, G, PI) -> Void
       ++ update(v, gr, n) drops the graph \spad{gr} in slot \spad{n}
       ++ of viewport \spad{v}. The graph gr must have been
       ++ transmitted already and acquired an integer key.
-    resize         : (%, PI, PI)                              -> Void
+    resize : (%, PI, PI) -> Void
       ++ resize(v, w, h) displays the two-dimensional viewport, v, which
       ++ is of domain \spadtype{TwoDimensionalViewport}, with a width
       ++ of w and a height of h, keeping the upper left-hand corner
       ++ position unchanged.
-    write          : (%, STR)                                -> STR
+    write : (%, STR) -> STR
       ++ write(v, s) takes the given two-dimensional viewport, v, which
       ++ is of domain \spadtype{TwoDimensionalViewport}, and creates
       ++ a directory indicated by s, which contains the graph data
       ++ files for v.
-    write          : (%, STR, STR)                            -> STR
+    write : (%, STR, STR) -> STR
       ++ write(v, s, f) takes the given two-dimensional viewport, v, which
       ++ is of domain \spadtype{TwoDimensionalViewport}, and creates
       ++ a directory indicated by s, which contains the graph data
       ++ files for v and an optional file type f.
-    write          : (%, STR, L STR)                          -> STR
+    write : (%, STR, List(STR)) -> STR
       ++ write(v, s, lf) takes the given two-dimensional viewport, v, which
       ++ is of domain \spadtype{TwoDimensionalViewport}, and creates
       ++ a directory indicated by s, which contains the graph data
       ++ files for v and the optional file types indicated by the list lf.
-    reset          :  %                                     -> Void
+    reset :  % -> Void
       ++ reset(v) sets the current state of the graph characteristics
       ++ of the given two-dimensional viewport, v, which is of domain
       ++ \spadtype{TwoDimensionalViewport}, back to their initial settings.
-    key            :  %                                     -> I
+    key :  % -> I
       ++ key(v) returns the process ID number of the given two-dimensional
       ++ viewport, v, which is of domain \spadtype{TwoDimensionalViewport}.
-    coerce         :  %                                     -> E
+    coerce :  % -> E
       ++ coerce(v) returns the given two-dimensional viewport, v, which
       ++ is of domain \spadtype{TwoDimensionalViewport} as output of
       ++ the domain \spadtype{OutputForm}.
@@ -675,8 +629,59 @@ TwoDimensionalViewport () : Exports == Implementation where
     import from DrawOptionFunctions0
     import from POINT
 
-    Rep := Record (key : I, graphsField : V GU, graphStatesField : V GS, _
-                   title : STR, moveTo : XYNN, size : XYP, flags : FLAG, optionsField : L DROP)
+    XYP  ==> Record(X : PI, Y : PI)
+    XYNN ==> Record(X : NNI, Y : NNI)
+    FLAG ==> Record(showCP : I)
+    B    ==> Boolean
+
+    VIEW    ==> _$ViewportServer$Lisp
+    sendI   ==> sockSendInt$Lisp
+    sendSF  ==> sockSendFloat$Lisp
+    sendSTR ==> sockSendString$Lisp
+    getI    ==> sockGetInt$Lisp
+    getSF   ==> sockGetFloat$Lisp
+
+    typeGRAPH  ==> 2
+    typeVIEW2D ==> 3
+
+    makeGRAPH  ==> (-1)$SingleInteger
+    makeVIEW2D ==> (-1)$SingleInteger
+
+    TRANSLATE2D     ==> 0$I
+    SCALE2D         ==> 1$I
+    pointsOnOff     ==> 2
+    connectOnOff    ==> 3
+    spline2D        ==> 4   -- used for controlling regions, now
+    reset2D         ==> 5
+    hideControl2D   ==> 6
+    closeAll2D      ==> 7
+    axesOnOff2D     ==> 8
+    unitsOnOff2D    ==> 9
+
+    SPADBUTTONPRESS ==> 100
+    MOVE            ==> 102
+    RESIZE          ==> 103
+    TITLE           ==> 104
+    showing2D       ==> 105  -- as defined in include/actions.h
+    putGraph2D      ==> 106
+    writeView       ==> 110
+    axesColor2D     ==> 112
+    unitsColor2D    ==> 113
+    getPickedPTS    ==> 119
+
+    graphStart      ==> 13   -- as defined in include/actions.h
+
+    noControl ==> 0$I
+
+    yes       ==> 1$I
+    no        ==> 0$I
+
+    maxGRAPHS ==> 9::I   -- should be the same as maxGraphs in include/view2D.h
+
+
+    Rep := Record(key : I, graphsField : V(GU), graphStatesField : V(GS),
+                  title : STR, moveTo : XYNN, size : XYP, flags : FLAG,
+                  optionsField : LDO)
 
     import from FLAG
 
@@ -699,6 +704,34 @@ TwoDimensionalViewport () : Exports == Implementation where
         viewport.key := 0$I
         error "This viewport has already been closed!"
       true
+
+    message_U(action) ==>
+        if key(vp) ~= 0$I then
+            sendI(VIEW, typeVIEW2D)
+            sendI(VIEW, cmd)
+            if checkViewport(vp) then
+                action
+                getI(VIEW) -- get acknowledgement
+
+    message_I(vp : %, cmd : I, i : I) : Void ==
+        message_U(sendI(VIEW, i))
+
+    message_II(vp : %, cmd : I, i1 : I, i2 : I) : Void ==
+        message_U((sendI(VIEW, i1); sendI(VIEW, i2)))
+
+    flag_op(op, cmd, to_set) ==>
+
+        op(vp : %, graphIndex : PI, onOff : STR) : Void ==
+            if (graphIndex > maxGRAPHS) then
+                error "Referring to a graph with too big an index"
+            flag :=
+                onOff = "on" => yes
+                no
+            to_set := flag
+            message_II(vp, cmd, graphIndex, flag)
+
+    message_IFF(vp : %, cmd : I, i : I, f1 : SF, f2 : SF) : Void ==
+        message_U((sendI(VIEW, i); sendSF(VIEW, f1); sendSF(VIEW, f2)))
 
     doOptions(v : Rep) : Void ==
       v.title := title(v.optionsField,"FriCAS2D")
@@ -735,34 +768,15 @@ TwoDimensionalViewport () : Exports == Implementation where
       viewport.size   := [ViewWidth, ViewHeight]
 
     move(viewport, xLoc, yLoc) ==
-      viewport.moveTo := [xLoc, yLoc]
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, MOVE)
-        checkViewport viewport =>
-          sendI(VIEW, xLoc)
-          sendI(VIEW, yLoc)
-          getI(VIEW)          -- acknowledge
+        viewport.moveTo := [xLoc, yLoc]
+        message_II(viewport, MOVE, xLoc, yLoc)
 
     update(viewport, graph, slot) ==
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, putGraph2D)
-        checkViewport viewport =>
-          sendI(VIEW, key graph)
-          sendI(VIEW, slot)
-          getI(VIEW) -- acknowledge
-      void()
+        message_II(viewport, putGraph2D, key(graph), slot)
 
     resize(viewport, xSize, ySize) ==
-      viewport.size := [xSize, ySize]
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, RESIZE)
-        checkViewport viewport =>
-          sendI(VIEW, xSize)
-          sendI(VIEW, ySize)
-          getI(VIEW)          -- acknowledge
+        viewport.size := [xSize, ySize]
+        message_II(viewport, RESIZE, xSize, ySize)
 
     translate(viewport, graphIndex, xTranslateF, yTranslateF) ==
       xTranslate := convert(xTranslateF)@SF
@@ -771,14 +785,7 @@ TwoDimensionalViewport () : Exports == Implementation where
         error "Referring to a graph with too big an index"
       viewport.graphStatesField.graphIndex.deltaX := xTranslate
       viewport.graphStatesField.graphIndex.deltaY := yTranslate
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, TRANSLATE2D)
-        checkViewport viewport =>
-          sendI(VIEW, graphIndex)
-          sendSF(VIEW, xTranslate)
-          sendSF(VIEW, yTranslate)
-          getI(VIEW)          -- acknowledge
+      message_IFF(viewport, TRANSLATE2D, graphIndex, xTranslate, yTranslate)
 
     scale(viewport, graphIndex, xScaleF, yScaleF) ==
       xScale := convert(xScaleF)@SF
@@ -787,14 +794,7 @@ TwoDimensionalViewport () : Exports == Implementation where
         error "Referring to a graph with too big an index"
       viewport.graphStatesField.graphIndex.scaleX := xScale  -- check union (undefined?)
       viewport.graphStatesField.graphIndex.scaleY := yScale  -- check union (undefined?)
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, SCALE2D)
-        checkViewport viewport =>
-          sendI(VIEW, graphIndex)
-          sendSF(VIEW, xScale)
-          sendSF(VIEW, yScale)
-          getI(VIEW)          -- acknowledge
+      message_IFF(viewport, SCALE2D, graphIndex, xScale, yScale)
 
     viewport2D ==
       [0,new(maxGRAPHS,"undefined"), _
@@ -804,7 +804,7 @@ TwoDimensionalViewport () : Exports == Implementation where
 
     makeViewport2D0 : % -> %
 
-    makeViewport2D(g : G, opts : L DROP) ==
+    makeViewport2D(g : G, opts : LDO) ==
       viewport               := viewport2D()
       viewport.graphsField.1 := g
       viewport.optionsField := opts
@@ -814,7 +814,7 @@ TwoDimensionalViewport () : Exports == Implementation where
 
     makeViewport2D viewport == makeViewport2D0 copy(viewport::Rep)
 
-    send_graphs(vg : V GU) : Void ==
+    send_graphs(vg : V(GU)) : Void ==
         for i in 1..#vg repeat
             (gu := vg(i)) case "undefined" => iterate
             g := gu@G
@@ -873,145 +873,40 @@ TwoDimensionalViewport () : Exports == Implementation where
           getI(VIEW)          -- acknowledge
 
     reset viewport ==
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, SPADBUTTONPRESS)
-        checkViewport viewport =>
-          sendI(VIEW, reset2D)
-          getI(VIEW)          -- acknowledge
-      void()
+        message_I(viewport, SPADBUTTONPRESS, reset2D)
 
-    axes (viewport : %, graphIndex : PI, onOff : STR) : Void ==
-      if (graphIndex > maxGRAPHS) then
-        error "Referring to a graph with too big an index"
-      if onOff = "on" then
-        status := yes
-      else
-        status := no
-      viewport.graphStatesField.graphIndex.axes := status  -- check union (undefined?)
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, axesOnOff2D)
-        checkViewport viewport =>
-          sendI(VIEW, graphIndex)
-          sendI(VIEW, status)
-          getI(VIEW)          -- acknowledge
+    flag_op(axes, axesOnOff2D, vp.graphStatesField.graphIndex.axes)
 
-    axes (viewport : %, graphIndex : PI, color : PAL) : Void ==
-      if (graphIndex > maxGRAPHS) then
-        error "Referring to a graph with too big an index"
-      viewport.graphStatesField.graphIndex.axesColor := color
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, axesColor2D)
-        checkViewport viewport =>
-          sendI(VIEW, graphIndex)
-          hueShade := hue hue color + shade color * numberOfHues()
-          sendI(VIEW, hueShade)
-          getI(VIEW)          -- acknowledge
+    axes(viewport : %, graphIndex : PI, color : PAL) : Void ==
+        if (graphIndex > maxGRAPHS) then
+            error "Referring to a graph with too big an index"
+        viewport.graphStatesField.graphIndex.axesColor := color
+        hueShade := hue(hue(color)) + shade(color)*numberOfHues()
+        message_II(viewport, axesColor2D, graphIndex, hueShade)
 
-    units (viewport : %, graphIndex : PI, onOff : STR) : Void ==
-      if (graphIndex > maxGRAPHS) then
-        error "Referring to a graph with too big an index"
-      if onOff = "on" then
-        status := yes
-      else
-        status := no
-      viewport.graphStatesField.graphIndex.units := status  -- check union (undefined?)
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, unitsOnOff2D)
-        checkViewport viewport =>
-          sendI(VIEW, graphIndex)
-          sendI(VIEW, status)
-          getI(VIEW)          -- acknowledge
+    flag_op(units, unitsOnOff2D, vp.graphStatesField.graphIndex.units)
 
     units (viewport : %, graphIndex : PI, color : PAL) : Void ==
-      if (graphIndex > maxGRAPHS) then
-        error "Referring to a graph with too big an index"
-      viewport.graphStatesField.graphIndex.unitsColor := color
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, unitsColor2D)
-        checkViewport viewport =>
-          sendI(VIEW, graphIndex)
-          hueShade := hue hue color + shade color * numberOfHues()
-          sendI(VIEW, hueShade)
-          getI(VIEW)          -- acknowledge
+        if (graphIndex > maxGRAPHS) then
+            error "Referring to a graph with too big an index"
+        viewport.graphStatesField.graphIndex.unitsColor := color
+        hueShade := hue(hue(color)) + shade(color)*numberOfHues()
+        message_II(viewport, unitsColor2D, graphIndex, hueShade)
 
-    connect (viewport : %, graphIndex : PI, onOff : STR) : Void ==
-      if (graphIndex > maxGRAPHS) then
-        error "Referring to a graph with too big an index"
-      if onOff = "on" then
-        status := 1$I
-      else
-        status := 0$I
-      viewport.graphStatesField.graphIndex.connect := status  -- check union (undefined?)
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, connectOnOff)
-        checkViewport viewport =>
-          sendI(VIEW, graphIndex)
-          sendI(VIEW, status)
-          getI(VIEW)          -- acknowledge
+    flag_op(connect, connectOnOff, vp.graphStatesField.graphIndex.connect)
 
-    points (viewport : %, graphIndex : PI, onOff : STR) : Void ==
-      if (graphIndex > maxGRAPHS) then
-        error "Referring to a graph with too big an index"
-      if onOff = "on" then
-        status := 1$I
-      else
-        status := 0$I
-      viewport.graphStatesField.graphIndex.points := status  -- check union (undefined?)
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, pointsOnOff)
-        checkViewport viewport =>
-          sendI(VIEW, graphIndex)
-          sendI(VIEW, status)
-          getI(VIEW)          -- acknowledge
+    flag_op(points, pointsOnOff, vp.graphStatesField.graphIndex.points)
 
-    region (viewport : %, graphIndex : PI, onOff : STR) : Void ==
-      if (graphIndex > maxGRAPHS) then
-        error "Referring to a graph with too big an index"
-      if onOff = "on" then
-        status := 1$I
-      else
-        status := 0$I
-      viewport.graphStatesField.graphIndex.spline := status  -- check union (undefined?)
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, spline2D)
-        checkViewport viewport =>
-          sendI(VIEW, graphIndex)
-          sendI(VIEW, status)
-          getI(VIEW)          -- acknowledge
+    flag_op(region, spline2D, vp.graphStatesField.graphIndex.spline)
 
-    show (viewport, graphIndex, onOff) ==
-      if (graphIndex > maxGRAPHS) then
-        error "Referring to a graph with too big an index"
-      if onOff = "on" then
-        status := 1$I
-      else
-        status := 0$I
-      viewport.graphStatesField.graphIndex.showing := status  -- check union (undefined?)
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, showing2D)
-        checkViewport viewport =>
-          sendI(VIEW, graphIndex)
-          sendI(VIEW, status)
-          getI(VIEW)          -- acknowledge
+    flag_op(show, showing2D, vp.graphStatesField.graphIndex.showing)
 
     controlPanel (viewport, onOff) ==
-      if onOff = "on" then viewport.flags.showCP := yes
-      else viewport.flags.showCP := no
-      (key(viewport) ~= 0$I) =>
-        sendI(VIEW, typeVIEW2D)
-        sendI(VIEW, hideControl2D)
-        checkViewport viewport =>
-          sendI(VIEW, viewport.flags.showCP)
-          getI(VIEW)          -- acknowledge
+        status :=
+            onOff = "on" => yes
+            no
+        viewport.flags.showCP := status
+        message_I(viewport, hideControl2D, status)
 
     close viewport ==
       (key(viewport) ~= 0$I) =>
@@ -1036,7 +931,7 @@ TwoDimensionalViewport () : Exports == Implementation where
     write(viewport, Filename) ==
       write(viewport, Filename, viewWriteDefault())
 
-    write(viewport : %, Filename : STR, thingsToWrite : L STR) ==
+    write(viewport : %, Filename : STR, thingsToWrite : List(STR)) ==
       (key(viewport) ~= 0$I) =>
         sendI(VIEW, typeVIEW2D)
         sendI(VIEW, writeView)
