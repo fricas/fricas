@@ -249,6 +249,11 @@ funView3D(int viewCommand)
       i1 = get_int(spadSock);
       code = write(viewport->viewOut,&i1,intSize);
       break;
+
+    case closeAll:
+      viewport->closing = 1;
+      break;
+
     }  /* switch */
     /*** get acknowledge from viewport */
 
@@ -339,6 +344,7 @@ forkView3D(int typeOfViewport)
     }
     viewport->viewType = typeOfViewport;
     viewport->PID = childPID;
+    viewport->closing = 0;
 
          /* set up pipes to child process */
     close(pipe0[0]);

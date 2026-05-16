@@ -64,8 +64,7 @@ Display *dsply;
 Window  root;
 XEvent  viewmanEvent;
 viewManager *viewports,
-  *slot,
-  *stepSlot;
+  *slot;
 Sock        *spadSock;
 int         viewType,
   viewCommand,
@@ -171,16 +170,18 @@ main (void)
 #ifdef DEBUG
           fprintf(stderr,"viewman: closing viewport\n");
 #endif
+          int close_by_spad = slot->closing;
           closeChildViewport(slot);
           /* notify Spad process that view2D/view3D process has been closed */
-          send_int(spadSock, 100);
+          if (close_by_spad)
+              send_int(spadSock, 100);
           break;
 
         };  /* switch */
-
-      };  /* if reading slot->viewIn */
-      stepSlot = slot;
-      slot = slot->nextViewport;
+        /* if reading slot->viewIn ends */
+      } else {
+        slot = slot->nextViewport;
+      }
     };  /* while */
 
     if (keepLooking) {   /* if  1 => slots not read, read from spad */

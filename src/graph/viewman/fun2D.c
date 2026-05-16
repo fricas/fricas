@@ -160,6 +160,10 @@ funView2D(int viewCommand)
       code = write(viewport->viewOut,&i1,intSize);
       break;
 
+    case closeAll2D:
+      viewport->closing = 1;
+      break;
+
     }  /* switch */
          /*** get acknowledge from viewport */
     code = readViewport(viewport,&acknow,intSize);
@@ -250,6 +254,7 @@ forkView2D(void)
     }
     viewport->viewType = view2DType;
     viewport->PID = childPID;
+    viewport->closing = 0;
 
          /* set up pipes to child process */
     close(pipe0[0]);

@@ -31,7 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-extern viewManager *viewports,*slot,*stepSlot;
+extern viewManager *viewports,*slot;
 extern Sock        *spadSock;
 extern int         viewType, viewCommand;
 extern fd_set         filedes;

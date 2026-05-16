@@ -43,6 +43,7 @@ typedef struct _viewManager {
   char propertyName[14]; /* string pointing to the property name */
   Window viewWindow;
   struct _viewManager *nextViewport;
+  int closing;
 } viewManager;
 
 typedef struct _viewsWithThisGraph {
