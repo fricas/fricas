@@ -41,11 +41,15 @@ page() == $curPage
 --                        New issueHT
 --=======================================================================
 
+ht_add_string(page, str) == bcHt(str)
+
 --------------------> NEW DEFINITION (see ht-util.boot)
 htShowPage() ==
 -- show the page which has been computed
   htSayStandard '"\endscroll"
   htShowPageNoScroll()
+
+htShowPage1(page) == htShowPage()
 
 htShowPageNoScroll() ==
 -- show the page which has been computed
@@ -84,6 +88,8 @@ htMakePage itemList ==
   if $newPage then
      htpAddToPageDescription($curPage, itemList)
   htMakePage1 itemList
+
+ht_add_to_page(page, items) == htMakePage(items)
 
 --------------------> NEW DEFINITION (override in ht-util.boot)
 htMakePage1 itemList ==

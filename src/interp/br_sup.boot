@@ -15,3 +15,8 @@ get_op_implementation(op, sig, pred, predicates, dom, domname) ==
         null VECP r => systemError devaluateList r
         substitute('_%, domname, devaluate(r))
     'nowhere
+
+ht_add_strings(page, strings) ==
+    for str in strings repeat
+        ht_add_string(page, str)
+

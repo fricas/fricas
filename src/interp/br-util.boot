@@ -602,10 +602,6 @@ bcGen command ==
   htMakeDoitButton('"Do It", command)
   htShowPage()
 
-bcOptional s ==
-  s = '"" => '"2"
-  s
-
 bcString2WordList s == fn(s,0,MAXINDEX s) where
   fn(s,i,n) ==
     i > n => nil
