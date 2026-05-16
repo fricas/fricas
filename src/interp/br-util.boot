@@ -111,7 +111,7 @@ escapeString com ==   --this makes changes on single comment lines
   look := 0
   while look repeat
     look >= SIZE com => look := []
-    look := STRPOSL ('"${}#%", com, look, [])
+    look := search_str('"${}#%", com, look)
     if look then
       com := CONCAT(SUBSTRING(com, 0, look), '"\", SUBSTRING(com, look, nil))
       look := look + 2

@@ -43,6 +43,29 @@ $curPage := nil
 -- List of currently active window named
 $activePageList := nil
 
+htSay(x) ==
+    bcHt(x)
+
+htSayStandard(x) ==  --do AT MOST for $standard
+    bcHt(x)
+
+htSayStandardList(lx) ==
+    htSayList(lx)
+
+htSayList(lx) ==
+  for x in lx repeat bcHt(x)
+
+bcHt line ==
+  $newPage =>  --this path affects both saturn and old lines
+    text :=
+      PAIRP line => [['text, :line]]
+      STRINGP line => line
+      [['text, line]]
+    htpAddToPageDescription($curPage, text)
+  PAIRP line =>
+    $htLineList := NCONC(nreverse mapStringize COPY_-LIST line, $htLineList)
+  $htLineList := [basicStringize line, :$htLineList]
+
 htpDestroyPage(pageName) ==
   pageName in $activePageList =>
     SET(pageName, nil)
