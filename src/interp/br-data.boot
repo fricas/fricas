@@ -322,17 +322,17 @@ getGlossLines instream ==
 -- function getUsersOfConstructor. See functions whoUses and kcuPage in browser.
 --============================================================================
 mkUsersHashTable() ==  --called by make-databases (daase.lisp)
-  $usersTb := MAKE_HASHTABLE('EQUAL)
+  usersTb := MAKE_HASHTABLE('EQUAL)
   for x in allConstructors() repeat
     for conform in getImports x repeat
       name := opOf conform
       if not MEMQ(name,'(QUOTE)) then
-        HPUT($usersTb,name,insert(x,HGET($usersTb,name)))
-  for k in HKEYS $usersTb repeat
-    HPUT($usersTb,k,listSort(function GLESSEQP,HGET($usersTb,k)))
+                HPUT(usersTb, name, insert(x, HGET(usersTb, name)))
+  for k in HKEYS(usersTb) repeat
+        HPUT(usersTb, k, listSort(function GLESSEQP, HGET(usersTb, k)))
   for x in allConstructors() | isDefaultPackageName x repeat
-    HPUT($usersTb,x,getDefaultPackageClients x)
-  $usersTb
+        HPUT(usersTb, x, getDefaultPackageClients(x))
+  usersTb
 
 getDefaultPackageClients con ==  --called by mkUsersHashTable
   catname := INTERN SUBSTRING(s := PNAME con,0,MAXINDEX s)
@@ -350,13 +350,13 @@ getDefaultPackageClients con ==  --called by mkUsersHashTable
 -- dependents of a constructor.
 --============================================================================
 mkDependentsHashTable() == --called by make-databases (database.boot)
-  $depTb := MAKE_HASHTABLE('EQUAL)
-  for nam in allConstructors() repeat
-    for con in getArgumentConstructors nam repeat
-      HPUT($depTb,con,[nam,:HGET($depTb,con)])
-  for k in HKEYS $depTb repeat
-    HPUT($depTb,k,listSort(function GLESSEQP,HGET($depTb,k)))
-  $depTb
+    depTb := MAKE_HASHTABLE('EQUAL)
+    for nam in allConstructors() repeat
+        for con in getArgumentConstructors nam repeat
+            HPUT(depTb, con, [nam, :HGET(depTb, con)])
+    for k in HKEYS(depTb) repeat
+        HPUT(depTb, k, listSort(function GLESSEQP, HGET(depTb, k)))
+    depTb
 
 getArgumentConstructors con == --called by mkDependentsHashTable
   argtypes := IFCDR IFCAR getConstructorModemap con or return nil
