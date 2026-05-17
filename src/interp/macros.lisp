@@ -68,6 +68,17 @@
 
 ; End of moved fragment
 
+(setq |$Newline| #\Newline)
+
+;; Common lisp control variables
+(setq *print-array* nil)
+(setq *print-pretty* t)
+(setq *print-circle* nil)
+(setq *print-escape* nil) ;; so stringimage doesn't escape idents
+;;; FIXME: do we need this?
+#+(and :GCL :IEEE-FLOATING-POINT)
+  (setq system:*print-nans* T)
+
 ; 5 PROGRAM STRUCTURE
 
 ; 5.3.2 Declaring Global Variables and Named Constants
