@@ -620,3 +620,10 @@ SUBLISLIS(newl, oldl, form) ==
 BLANKS(n, str) ==
     for i in 1..n repeat
         PRINC('" ", str)
+
+mySort(u) == listSort(function GLESSEQP, u)
+
+string2Integer(s) ==
+    and/[char_to_digit(s.i) for i in 0..MAXINDEX(s)] => PARSE_-INTEGER(s)
+    nil
+

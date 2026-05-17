@@ -45,7 +45,6 @@
 
 ----------------------> Global Variables <-----------------------
 $includeUnexposed? := true   --default setting
-$tick := char '_`            --field separator for database files
 $charUnderscore := ('__)     --needed because of parser bug
 $wild1 := '"[^`]*"           --phrase used to convert keys to grep strings
 $browseCountThreshold := 10  --the maximum number of names that will display
@@ -77,8 +76,6 @@ $OpViewTable := '(
   (origins         "Origin"    "Origins"         dbShowOpOrigins)
   (implementation  nil         "Implementation Domains" dbShowOpImplementations)
   (conditions      "Condition" "Conditions"      dbShowOpConditions))
-
-bcBlankLine() == bcHt '"\vspace{1}\newline "
 
 pluralize k ==
   k = '"child" => '"children"
@@ -238,14 +235,6 @@ dbConstructorKind x ==
   target is ['CATEGORY,'package,:.] => 'package
   HGET($defaultPackageNamesHT,x) => 'default_ package
   'domain
-
-getConstructorForm name ==
-  name = 'Union   => '(Union  (_: a A) (_: b B))
-  name = 'UntaggedUnion => '(Union A B)
-  name = 'Record  => '(Record (_: a A) (_: b B))
-  name = 'Mapping => '(Mapping T S)
-  name = 'Enumeration => '(Enumeration a b)
-  get_database(name, 'CONSTRUCTORFORM)
 
 getConstructorArgs conname == rest getConstructorForm conname
 
@@ -434,15 +423,6 @@ bcPred(pred,:options) ==
   if not IFCAR IFCDR options then htSay '" {\em if} "
   htPred2English(pred,italicList)
 
-extractHasArgs pred ==
-  x := find pred or return nil where find x ==
-    x is [op,:argl] =>
-      op = 'hasArgs => x
-      MEMQ(op,'(AND OR NOT)) => or/[find y for y in argl]
-      nil
-    nil
-  [rest x, :simpBool substitute('T, x, pred)]
-
 splitConTable cons ==
   uncond := cond := nil
   for (pair := [con,:pred]) in cons repeat
@@ -465,12 +445,6 @@ dbSayItems(countOrPrefix,singular,plural,:options) ==
   if count ~= 0 then bcHt '":"
 
 htCopyProplist htPage == [[x,:y] for [x,:y] in htpPropertyList htPage]
-
-dbInfovec name ==
-  'category = get_database(name, 'CONSTRUCTORKIND) => nil
-  get_database(name, 'ASHARP?) => nil
-  loadLibIfNotLoaded(name)
-  u := GET(name, 'infovec) => u
 
 emptySearchPage(kind, filter, skipNamePart) ==
   heading := ['"No ",capitalize kind,'" Found"]
@@ -505,14 +479,6 @@ bcErrorPage u ==
     for x in rest r repeat htSay x
     htShowPage()
   systemError '"Unexpected error message"
-
-errorPage(htPage,[heading,kind,:info]) ==
-  kind = 'invalidType => kInvalidTypePage first info
-  if heading = 'error then htInitPage('"Error",nil) else
-                           htInitPage(heading,nil)
-  bcBlankLine()
-  for x in info repeat htSay x
-  htShowPage()
 
 htErrorStar() ==
   errorPage(nil,['"{\em *} not a valid search string",nil,'"\vspace{3}\centerline{{\em *} is not a valid search string for a general search}\centerline{\em {it would match everything!}}"])
@@ -576,57 +542,4 @@ dbNewConname(line) == --dbName line unless kind is 'a or 'o => name in 5th pos.
 dbTickIndex(line,n,k) == --returns index of nth tick in line starting at k
   n = 1 => charPosition($tick,line,k)
   dbTickIndex(line,n - 1,1 + charPosition($tick,line,k))
-
-mySort u == listSort(function GLESSEQP,u)
-
--- from bc-util
-
-bcFinish(name,arg,:args) == bcGen bcMkFunction(name,arg,args)
-
-bcMkFunction(name,arg,args) ==
-  args := [x for x in args | x]
-  STRCONC(name,'"(",arg,"STRCONC"/[STRCONC('",", x) for x in args],'")")
-
-bcFindString(s,i,n,char) ==  or/[j for j in i..n | s.j = char]
-
-bcGen command ==
-  htInitPage('"Basic Command",nil)
-  string :=
-    #command < 50 => STRCONC('"{\centerline{\tt ",command,'" }}")
-    STRCONC('"{\tt ",command,'" }")
-  htMakePage [
-     '(text
-        "{Here is the FriCAS command you could have issued to compute this result:}"
-            "\vspace{2}\newline "),
-      ['text,:string]]
-  htMakeDoitButton('"Do It", command)
-  htShowPage()
-
-bcString2WordList s == fn(s,0,MAXINDEX s) where
-  fn(s,i,n) ==
-    i > n => nil
-    k := or/[j for j in i..n | s.j ~= char '_  ]
-    null INTEGERP k => nil
-    l := bcFindString(s,k + 1,n,char '_  )
-    null INTEGERP l => [SUBSTRING(s,k,nil)]
-    [SUBSTRING(s,k,l-k),:fn(s,l + 1,n)]
-
-
-bcwords2liststring u ==
-  null u => nil
-  STRCONC('"[",first u,fn rest u) where
-    fn(u) ==
-      null u => '"]"
-      STRCONC('", ",first u,fn rest u)
-
-bcVectorGen vec == bcwords2liststring vec
-
-bcError string ==
-  sayBrightlyNT '"NOTE: "
-  sayBrightly string
-
-htStringPad(n,w) ==
-  s := STRINGIMAGE n
-  ws := #s
-  STRCONC('"\space{",STRINGIMAGE (w - ws + 1),'"}",s)
 

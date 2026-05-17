@@ -31,6 +31,22 @@
 
 )package "BOOT"
 
+$tick := char '_`            --field separator for database files
+
+getConstructorForm(name) ==
+    name = 'Union   => '(Union  (_: a A) (_: b B))
+    name = 'UntaggedUnion => '(Union A B)
+    name = 'Record  => '(Record (_: a A) (_: b B))
+    name = 'Mapping => '(Mapping T S)
+    name = 'Enumeration => '(Enumeration a b)
+    get_database(name, 'CONSTRUCTORFORM)
+
+dbInfovec(name) ==
+    'category = get_database(name, 'CONSTRUCTORKIND) => nil
+    get_database(name, 'ASHARP?) => nil
+    loadLibIfNotLoaded(name)
+    u := GET(name, 'infovec) => u
+
 --============================================================================
 --              Build Library Database (libdb.text,...)
 --============================================================================

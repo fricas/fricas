@@ -31,6 +31,15 @@
 
 )package "BOOT"
 
+extractHasArgs pred ==
+    x := find(pred) or return nil where find(x) ==
+        x is [op, :argl] =>
+            op = 'hasArgs => x
+            MEMQ(op, '(AND OR NOT)) => or/[find(y) for y in argl]
+            nil
+        nil
+    [rest(x), :simpBool(substitute('T, x, pred))]
+
 --=======================================================================
 --              Pages Initiated from HyperDoc Pages
 --=======================================================================

@@ -481,3 +481,64 @@ unescapeStringsInForm form ==
     unescapeStringsInForm rest form
     form
   form
+
+bcBlankLine(page) ==
+    ht_add_string(page, '"\vspace{1}\newline ")
+
+errorPage(htPage,[heading,kind,:info]) ==
+  kind = 'invalidType => kInvalidTypePage first info
+  if heading = 'error then htInitPage('"Error",nil) else
+                           htInitPage(heading,nil)
+  bcBlankLine()
+  for x in info repeat htSay x
+  htShowPage()
+
+ -- from bc-util
+
+bcFinish(name,arg,:args) == bcGen bcMkFunction(name,arg,args)
+
+bcMkFunction(name,arg,args) ==
+  args := [x for x in args | x]
+  STRCONC(name,'"(",arg,"STRCONC"/[STRCONC('",", x) for x in args],'")")
+
+bcFindString(s,i,n,char) ==  or/[j for j in i..n | s.j = char]
+
+bcGen command ==
+  page := htInitPage('"Basic Command",nil)
+  string :=
+    #command < 50 => STRCONC('"{\centerline{\tt ",command,'" }}")
+    STRCONC('"{\tt ",command,'" }")
+  ht_add_to_page(page, [
+     '(text
+        "{Here is the FriCAS command you could have issued to compute this result:}"
+            "\vspace{2}\newline "),
+      ['text,:string]])
+  htMakeDoitButton('"Do It", command)
+  htShowPage1(page)
+
+bcString2WordList s == fn(s,0,MAXINDEX s) where
+  fn(s,i,n) ==
+    i > n => nil
+    k := or/[j for j in i..n | s.j ~= char '_  ]
+    null INTEGERP k => nil
+    l := bcFindString(s,k + 1,n,char '_  )
+    null INTEGERP l => [SUBSTRING(s,k,nil)]
+    [SUBSTRING(s,k,l-k),:fn(s,l + 1,n)]
+
+bcwords2liststring u ==
+  null u => nil
+  STRCONC('"[",first u,fn rest u) where
+    fn(u) ==
+      null u => '"]"
+      STRCONC('", ",first u,fn rest u)
+
+bcVectorGen vec == bcwords2liststring vec
+
+bcError string ==
+  sayBrightlyNT '"NOTE: "
+  sayBrightly string
+
+htStringPad(n,w) ==
+  s := STRINGIMAGE n
+  ws := #s
+  STRCONC('"\space{",STRINGIMAGE (w - ws + 1),'"}",s)
