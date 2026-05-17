@@ -772,7 +772,7 @@ copyright() == print_text_file STRCONC($spadroot, '"/lib/copyright")
 --% )credits -- display credit list
 
 credits() ==
- for i in CREDITS repeat
+ for i in $CREDITS repeat
   PRINC(i)
   TERPRI()
 
