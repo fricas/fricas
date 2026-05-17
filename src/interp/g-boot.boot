@@ -446,7 +446,7 @@ expandREPEAT(l) ==
         op = "EXIT" =>
             result_expr => BREAK()
             result_expr := first(U)
-        FAIL()
+        BREAK()
     expandDO(NREVERSE(vl), MKPF(NREVERSE(tests), "OR"), result_expr,
              seq_opt(["SEQ", ["EXIT", body]]))
 
@@ -486,7 +486,7 @@ expandCOLLECTV(l) ==
         counter_var := GENSYM()
         iters := [["ISTEP", counter_var, 0, 1], :iters]
     lv :=
-        NULL(conds) => FAIL()
+        NULL(conds) => BREAK()
         NULL(rest(conds)) => first(conds)
         ["MIN", :conds]
     res := GENSYM()

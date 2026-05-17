@@ -170,7 +170,7 @@ gatherGlossLines(results,defstream) ==
     pointer := SUBSTRING(line,0,k)
     def := SUBSTRING(line,k + 1,nil)
     xtralines := nil
-    while not EOFP defstream and (x := read_line defstream) and
+    while (x := read_line defstream) and
       (j := charPosition($tick,x,1)) and (nextPointer := SUBSTRING(x,0,j))
         and (nextPointer = pointer) repeat
           xtralines := [SUBSTRING(x,j + 1,nil),:xtralines]
@@ -234,7 +234,7 @@ htShowSetTreeValue(setData) ==
   st = 'LITERALS =>
     object2String translateTrueFalse2YesNo eval setData.setVar
   st = 'TREE     => '"..."
-  systemError nil
+  systemError([])
 
 mkSetTitle() == STRCONC('"Command {\em )set ",listOfStrings2String $path,'"}")
 
@@ -458,7 +458,7 @@ chkPosInteger s ==
   '"Please enter a positive integer"
 
 chkOutputFileName s ==
-  bcString2WordList s in '(CONSOLE console) => 'console
+  bcString2WordList s in '(console) => 'console
   chkDirectory s
 
 chkDirectory s == s
@@ -542,7 +542,7 @@ htSetOutputPage3(page) ==
     FUNCALL(setData.setVar, [val])
     htKill(page, val)
 
-htSetCache(htPage,:options) ==
+htSetCache(htPage) ==
   $path := '(functions cache)
   htPage := htInitPage(mkSetTitle(),nil)
   $valueList := nil

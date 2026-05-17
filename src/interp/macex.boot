@@ -75,7 +75,8 @@ macLambdaParameterHandling( replist , pform )  ==
     pfLambda? pform =>      -- remove ( identifier . replacement ) from assoclist
         parlist := [ pfTypedId p for p in pf0LambdaArgs pform ] -- extract parameters
         for par in [ pfIdSymbol par for par in parlist ] repeat
-                replist := AlistRemoveQ(par,replist)
+            if pp := ASSOC(par, replist) then
+                replist := REMOVE(pp, replist)
         replist
     pfMLambda? pform =>     -- construct assoclist ( identifier . replacement )
         parlist := pf0MLambdaArgs pform  -- extract parameter list
@@ -83,7 +84,7 @@ macLambdaParameterHandling( replist , pform )  ==
     for p in pfParts pform repeat macLambdaParameterHandling( replist , p )
 
 macSubstituteId( replist , pform ) ==
-    ex := AlistAssocQ( pfIdSymbol pform , replist )
+    ex := ASSOC(pfIdSymbol(pform), replist)
     ex =>
         RPLACA(pform, first(rest(ex)))
         RPLACD(pform, CDR(rest(ex)))

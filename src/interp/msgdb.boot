@@ -934,7 +934,7 @@ sayMSG2File(msg) ==
     file := make_filename2('"spadmsg", '"listing")
     str := MAKE_OUTSTREAM(file)
     sayBrightly1(msg, str)
-    SHUT(str)
+    CLOSE(str)
 
 --=======================================================================
 --                Utility Functions

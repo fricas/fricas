@@ -792,7 +792,7 @@ getTempPath kind == mkGrepFile kind
 dbWriteLines(s, pathname) ==
   $outStream : local := MAKE_OUTSTREAM(pathname)
   for x in s repeat writedb x
-  SHUT $outStream
+  CLOSE($outStream)
   pathname
 
 dbReadLines target == --AIX only--called by grepFile

@@ -81,14 +81,12 @@ $primitiveHtCommands := '(
 buildHtMacroTable() ==
   $htMacroTable := MAKE_HASHTABLE('EQUAL)
   fn := CONCAT($spadroot, '"/share/hypertex/pages/util.ht")
-  if PROBE_-FILE(fn) then
-    instream := MAKE_INSTREAM(fn)
-    while not EOFP instream repeat
-      line := read_line instream
+  if instream := open_stream(fn, 'input, false) then
+    while (line := read_line(instream)) repeat
       getHtMacroItem line is [string,:numOfArgs] =>
         HPUT($htMacroTable,string,numOfArgs)
     for [s,:n] in $primitiveHtCommands repeat HPUT($htMacroTable,s,n)
-    SHUT instream
+    CLOSE(instream)
   else
     sayBrightly '"Warning: HyperTeX macro table not found"
   $htMacroTable

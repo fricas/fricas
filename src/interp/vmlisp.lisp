@@ -222,9 +222,6 @@
 
 ; 17.0 Operations on Character and Bit Vectors
 
-(defun CHARP (a) (or (characterp a)
-                     (and (identp a) (= (length (symbol-name a)) 1))))
-
 (defun NUM2CHAR (n) (code-char n))
 
 (defun CHAR2NUM (c) (char-code (character c)))
@@ -397,8 +394,6 @@
 
 ; 24.0 Printing
 
-(define-function 'PRIN2CVEC #'princ-to-string)
-
 (define-function 'STRINGIMAGE #'princ-to-string)
 
 (define-function 'PRINTEXP #'princ)
@@ -421,11 +416,6 @@
 
 ; 27.0 Stream I/O
 
-
-; 27.1 Creation
-
-(defun SHUT (st) (if (streamp st) (close st) -1))
-
 (defun EOFP (stream) (null (peek-char nil stream nil nil)))
 
 ; 48.0 Miscellaneous CMS Interactions
@@ -433,10 +423,6 @@
 (defun CURRENTTIME ()
   (multiple-value-bind (sec min hour) (get-decoded-time)
     (format nil "~2,'0D:~2,'0D:~2,'0D" hour min sec)))
-
-; 99.0 Ancient Stuff We Decided To Keep
-
-(defun |read_line| (st) (read-line st nil nil))
 
 ;;; GCMSG when called with argument equal to NIL is supposed to
 ;;; suppress messages from garbage collector.  Empty body is
@@ -538,21 +524,7 @@
     (decode-float u)
     (cons (* s f) e)))
 
-;;; Contributed by Juergen Weiss from Arthur Norman's CCL.
-(defun COT (a)
-  (if (or (> a 1000.0) (< a -1000.0))
-    (/ (cos a) (sin a))
-    (/ 1.0 (tan a))))
-
 ;;; moved from unlisp.lisp
-(defun |AlistAssocQ| (key l)
-  (assoc key l :test #'eq) )
-
-(defun |AlistRemoveQ| (key l)
-   (let ((pr (assoc key l :test #'eq)))
-       (if pr
-           (remove pr l :test #'eq)
-           l) ))
 
 (defun LOG10 (u) (log u 10.0d0))
 

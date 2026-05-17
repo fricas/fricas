@@ -289,3 +289,17 @@ make_compiler_output_stream(lib, name) ==
 compile_lib(dir_name) ==
     name := file_basename(dir_name)
     compile_lib_file(make_compiler_output_name(dir_name, name))
+
+known_Lisp_equalty?(d) ==
+    f := compiledLookup("=", [['Boolean], "%", "%"], d)
+    null(f) => nil
+    GET(BPINAME(CAR(f)), 'SPADreplace)
+
+hashable(d) ==
+    (p := known_Lisp_equalty?(d)) = 'EQ or p = 'EQL or p = 'EQUAL
+
+read_line(st) == READ_-LINE(st, nil, nil)
+
+COT(x) == COS(x)/SIN(x)
+
+is_char?(c) == CHARACTERP(c)

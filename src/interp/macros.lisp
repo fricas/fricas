@@ -245,8 +245,6 @@
 
 (defun MOAN (&rest x) (|sayBrightly| `(|%l| "===> " ,@X |%l|)))
 
-(DEFUN FAIL () (|systemError| '"Antique error (FAIL ENTERED)"))
-
 ; 25 MISCELLANEOUS FEATURES
 
 (defun DROPTRAILINGBLANKS  (LINE)
@@ -451,15 +449,6 @@ This function respects intermediate #\Newline characters and drops
     (make-array (length initialvalue)
       :element-type (list 'mod (1+ n))
       :initial-contents initialvalue)))
-
-(defun |knownEqualPred| (dom)
-  (let ((fun (|compiledLookup| '= '((|Boolean|) % %) dom)))
-    (if fun (get (bpiname (car fun)) '|SPADreplace|)
-      nil)))
-
-(defun |hashable| (dom)
-  (memq (|knownEqualPred| dom)
-        '(EQ EQL EQUAL)))
 
 (defun MAKEPROP (sym ind val) (setf (get sym ind) val))
 

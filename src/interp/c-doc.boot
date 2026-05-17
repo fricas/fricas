@@ -651,12 +651,12 @@ checkDecorate u ==
       x = '"\spad" => ['"\spad",:acc]
       STRINGP(x) and char_to_digit(x.0) => [x, :acc]
       null spadflag and
-        (CHARP x and ALPHA_-CHAR_-P x and not MEMQ(x,$charExclusions) or
+        (is_char?(x) and ALPHA_-CHAR_-P(x) and not MEMQ(x,$charExclusions) or
           member(x,$argl)) => [$charRbrace,x,$charLbrace,'"\spad",:acc]
       not(spadflag) and ((STRINGP(x) and not(x.0 = $charBack) and
             char_to_digit(x.(MAXINDEX x))) or member(x, '("true" "false"))) =>
         [$charRbrace,x,$charLbrace,'"\spad",:acc]  --wrap x1, alpha3, etc
-      CHARP x => [checkAddBackSlashes x,:acc]
+      is_char?(x) => [checkAddBackSlashes x,:acc]
       xcount := #x
       xcount = 3 and x.1 = char 't and x.2 = char 'h =>
         ['"th",$charRbrace,x.0,$charLbrace,'"\spad",:acc]
@@ -681,7 +681,7 @@ isVowel c ==
 
 
 checkAddBackSlashes s ==
-  (CHARP s and (c := s)) or (#s = 1 and (c := s.0)) =>
+  (is_char?(s) and (c := s)) or (#s = 1 and (c := s.0)) =>
     MEMQ(c, $charEscapeList) => STRCONC($charBack, c)
     s
   k := 0
@@ -737,7 +737,7 @@ checkIeEg u ==
   NREVERSE acc
 
 checkIeEgfun x ==
-  CHARP x => nil
+  is_char?(x) => nil
   x = '"" => nil
   m := MAXINDEX x
   for k in 0..(m - 3) repeat
@@ -767,7 +767,7 @@ checkSplit2Words u ==
   NREVERSE acc
 
 checkSplitBrace x ==
-  CHARP x => [x]
+  is_char?(x) => [x]
   #x = 1 => [x.0]
   (u := checkSplitBackslash x)
      and rest u  => "append"/[checkSplitBrace y for y in u]
@@ -795,7 +795,7 @@ checkSplitBackslash x ==
   [x]
 
 checkSplitPunctuation x ==
-  CHARP x => [x]
+  is_char?(x) => [x]
   m := MAXINDEX x
   m < 1 => [x]
   lastchar := x.m
@@ -821,7 +821,7 @@ checkSplitPunctuation x ==
   [x]
 
 checkSplitOn(x) ==
-  CHARP x => [x]
+  is_char?(x) => [x]
   l := $charSplitList
   m := MAXINDEX x
   while l repeat

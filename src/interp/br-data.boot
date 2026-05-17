@@ -90,7 +90,7 @@ buildLibdb(domainList) ==  --called by make-databases (daase.lisp)
     writedb buildLibdbConEntry con
     [., :oplist] := getConstructorExports($conform, false)
     buildLibOps oplist
-  SHUT $outStream
+  CLOSE($outStream)
   domainList => 'done         --leave new database in temp.text
   -- FIXME: This is confusing: result is in olibdb.text,
   -- but this is expected by save_browser_data
@@ -217,7 +217,7 @@ dbReadComments(n) ==
   line := read_line instream
   k := dbTickIndex(line,1,1)
   line := SUBSTRING(line,k + 1,nil)
-  SHUT instream
+  CLOSE(instream)
   line
 
 dbSplitLibdb() ==
@@ -228,8 +228,7 @@ dbSplitLibdb() ==
   PRINTEXP($tick,comstream)
   PRINTEXP('"",  comstream)
   TERPRI(comstream)
-  while not EOFP instream repeat
-        line := read_line(instream)
+  while (line := read_line(instream)) repeat
         outP := FILE_-POSITION(outstream)
         comP := FILE_-POSITION(comstream)
         [prefix, comments] := dbSplit(line, 6, 1)
@@ -244,9 +243,9 @@ dbSplitLibdb() ==
         PRINTEXP($tick, comstream)
         PRINTEXP(comments, comstream)
         TERPRI(comstream)
-  SHUT instream
-  SHUT outstream
-  SHUT comstream
+  CLOSE(instream)
+  CLOSE(outstream)
+  CLOSE(comstream)
   delete_file('"olibdb.text")
 
 dbSplit(line,n,k) ==
@@ -296,10 +295,10 @@ buildGloss() ==  --called by buildDatabase (database.boot)
   PRINTEXP('"\endmenu\endscroll",htstream)
   PRINTEXP('"\lispdownlink{Search}{(|htGloss| _"\stringvalue{pattern}_")} for glossary entry matching \inputstring{pattern}{24}{*}",htstream)
   PRINTEXP('"\end{page}",htstream)
-  SHUT instream
-  SHUT outstream
-  SHUT defstream
-  SHUT htstream
+  CLOSE(instream)
+  CLOSE(outstream)
+  CLOSE(defstream)
+  CLOSE(htstream)
 
 getGlossLines instream ==
 --instream has text of the form:
@@ -312,8 +311,7 @@ getGlossLines instream ==
   keys := nil
   text := nil
   lastLineHadTick := false
-  while not EOFP instream repeat
-    line := read_line instream
+  while (line := read_line(instream)) repeat
     #line = 0 => 'skip
     n := charPosition($tick,line,0)
     last := IFCAR text
