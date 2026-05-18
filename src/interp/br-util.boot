@@ -458,10 +458,6 @@ emptySearchPage(kind, filter, skipNamePart) ==
   htSay '"}}"
   htShowPage()
 
-string2Integer s ==
-  and/[DIGIT_-CHAR_-P (s.i) for i in 0..MAXINDEX s] => PARSE_-INTEGER s
-  nil
-
 dbGetInputString htPage ==
   s := htpLabelInputString(htPage,'filter)
   null s or s = '"" => '"*"
@@ -474,8 +470,8 @@ dbGetInputString htPage ==
 --=======================================================================
 bcErrorPage u ==
   u is ['error,:r] =>
-    htInitPage(first r,nil)
-    bcBlankLine()
+    page := htInitPage(first r,nil)
+    bcBlankLine(page)
     for x in rest r repeat htSay x
     htShowPage()
   systemError '"Unexpected error message"
@@ -497,8 +493,8 @@ htQuery(question, fn, upLink?) ==
   htSay('"}")
 
 kInvalidTypePage form ==
-  htInitPage('"Error",nil)
-  bcBlankLine()
+  page := htInitPage('"Error",nil)
+  bcBlankLine(page)
   htSay('"\centerline{You gave an invalid type:}\newline\centerline{{\sf ")
   htSayList([form2HtString form, '"}}"])
   htShowPage()
