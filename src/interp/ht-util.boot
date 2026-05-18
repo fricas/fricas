@@ -487,9 +487,9 @@ bcBlankLine(page) ==
 
 errorPage(htPage,[heading,kind,:info]) ==
   kind = 'invalidType => kInvalidTypePage first info
-  if heading = 'error then htInitPage('"Error",nil) else
-                           htInitPage(heading,nil)
-  bcBlankLine()
+  if heading = 'error then page := htInitPage('"Error",nil) else
+                           page := htInitPage(heading,nil)
+  bcBlankLine(page)
   for x in info repeat htSay x
   htShowPage()
 
