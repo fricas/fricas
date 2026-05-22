@@ -102,18 +102,6 @@
   (if length (subseq cvec start (+ start length))
     (subseq cvec start)))
 
-(defun HKEYS (table)
-  (let (keys)
-    (maphash #'(lambda (key val)
-                 (declare (ignore val))
-                 (push key keys)) table)
-    keys))
-
-
-(defun HPUT (table key value)
-  (setf (gethash key table) value))
-
-
 (defun stringimage (x)
   (write-to-string x))
 

@@ -499,12 +499,6 @@
 
 ;17.2 Accessing
 
-(defun HKEYS (table)
-   (let (keys)
-      (maphash
-        #'(lambda (key val) (declare (ignore val)) (push key keys)) table)
-        keys))
-
 (define-function 'HASHTABLE_CLASS #'hash-table-test)
 
 (define-function 'HCOUNT #'hash-table-count)

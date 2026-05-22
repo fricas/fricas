@@ -597,6 +597,12 @@
          (t (error "bad arg to MAKE_HASHTABLE")))
 )
 
+(defun HKEYS (table)
+   (let (keys)
+      (maphash
+        #'(lambda (key val) (declare (ignore val)) (push key keys)) table)
+        keys))
+
 ; Misc operations
 
 (defmacro |qset_first|(l x) `(SETF (CAR (the cons ,l)) ,x))

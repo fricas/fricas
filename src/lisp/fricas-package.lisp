@@ -86,7 +86,7 @@
 (in-package "BOOTTRAN")
 
 (import '(BOOT::MAKE_HASHTABLE BOOT::QSETVELT BOOT::SETELT_BVEC
-          BOOT::STR_ELT))
+          BOOT::STR_ELT BOOT::HPUT BOOT::HKEYS))
 
 ;;; Package containing support routines for code generated
 ;;; by Aldor compiler.
