@@ -73,13 +73,6 @@ extern short PTY;   /* A flag which lets me know whether or not I am
 #define MAXBUFF             64   /** maximum lines saved in the buffer
                                        queue                            ***/
 
-/***  Here are the constants for my three different modes. ******/
-#define CLEFRAW                      0
-#define CLEFCANONICAL                1
-#define CLEFCBREAK                   2
-
-extern int mode;   /** One of the above # defines *****/
-
 /**   Here is the structure for storing bound  pf-keys             ***/
 typedef struct Fkey
 {

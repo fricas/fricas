@@ -244,7 +244,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (defun |getEnv| (var-name)
   #+:GCL (system::getenv var-name)
-  #+:cmu (cdr (ext::assq (intern var-name "KEYWORD" )  ext:*environment-list*))
+  #+:cmu (cdr (assoc (intern var-name "KEYWORD") ext:*environment-list*))
   #+:sbcl (sb-ext::posix-getenv var-name)
   #+:clisp (ext::getenv var-name)
   #+:openmcl (ccl::getenv var-name)
@@ -901,15 +901,15 @@ with this hack and will try to convince the GCL crowd to fix this.
   #+:cmu
   (ext:process-exit-code (ext:run-program command arguments :output t))
   #+(and :ecl (not :cygwin))
-  (cadr (multiple-value-list (ext:run-program command arguments :output t)))
+  (nth-value 1 (ext:run-program command arguments :output t))
   ;; #+:gcl ;; run-process is asynchronous
   ;; (si:run-process command arguments)
   #+:lispworks ;; call-system requires absolute path for "command"
   (system:call-system-showing-output `("/usr/bin/env" ,command ,@arguments))
   #+:openmcl
-  (cadr (multiple-value-list (ccl:external-process-status
-                                 (ccl:run-program command arguments
-                                                  :output *standard-output*))))
+  (nth-value 1 (ccl:external-process-status
+                   (ccl:run-program command arguments
+                                    :output *standard-output*)))
   #+:poplog
   (pop11:sysobey "/usr/bin/env" (cons command arguments))
   #+:sbcl

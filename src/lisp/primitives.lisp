@@ -228,9 +228,9 @@
 (defun |exquo_INT| (x y)
     (declare (type integer x y))
     (cond
-        ((= y 0) (cons 1 "failed"))
+        ((= y 0) |$spad_failure|)
         (t (multiple-value-bind (q r) (truncate x y)
-           (if (= r 0) (cons 0 q) (cons 1 "failed"))))
+           (if (= r 0) (cons 0 q) |$spad_failure|)))
     )
 )
 
@@ -295,7 +295,7 @@
               (go l1))))
 
 (defmacro QMODDOT32 (v1 v2 ind1 ind2 kk s0 p)
-     `(QMODDOT0 ELT32 ,v1 ,v2 ,ind1 ,ind2 ,kk ,s0 ,p))
+     `(QMODDOT0 ELT_U32 ,v1 ,v2 ,ind1 ,ind2 ,kk ,s0 ,p))
 
 ;;; Support for HashState domain.
 ;;; Here the FNV-1a algorithm is employed.

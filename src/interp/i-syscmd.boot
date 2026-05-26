@@ -85,7 +85,7 @@ $systemCommands := [
    ['fin,           :'development], ['frame,         :'interpreter], _
    ['help,          :'interpreter], ['history,       :'interpreter], _
    ['lisp,          :'development], ['library,       :'interpreter], _
-   ['load,          :'interpreter], ['ltrace,        :'interpreter], _
+   ['ltrace,        :'interpreter], _
    ['nopiles,       :'interpreter], ['piles,         :'interpreter], _
    ['pquit,         :'interpreter], ['quit,          :'interpreter], _
    ['read,          :'interpreter], ['set,           :'interpreter], _
@@ -98,11 +98,11 @@ $systemCommands := [
 $SYSCOMMANDS := [first x for x in $systemCommands]
 
 $noParseCommands := ['boot, 'copyright, 'credits, 'fin, 'lisp, 'piles,
-    'pquit, 'quit, 'suspend, 'synonym, 'system, 'version]
+    'pquit, 'quit, 'synonym, 'system, 'version]
 
 $tokenCommands := ['abbreviations, 'cd, 'clear, 'close, 'compile,
-    'depends, 'display, 'edit, 'frame, 'frame, 'help, 'history, 'input, _
-    'library, 'load, 'ltrace, 'nopiles, 'read, 'set, 'spool, 'undo, _
+    'depends, 'display, 'edit, 'frame, 'help, 'history, 'input, _
+    'library, 'ltrace, 'nopiles, 'read, 'set, 'spool, 'undo, _
     'what, 'with]
 
 --% Top level system command

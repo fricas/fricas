@@ -88,7 +88,12 @@ short INS_MODE ;    /* Flag for insert mode */
 short ECHOIT = 1;   /* Flag for echoing */
 short PTY;          /* Flag which tells me whether I should echo newlines */
 
-int MODE;    /* am I in cbreak, raw, or canonical */
+/***  Here are the constants for my three different modes. ******/
+#define CLEFRAW                      0
+#define CLEFCANONICAL                1
+#define CLEFCBREAK                   2
+
+static int MODE;    /* am I in one of the above cbreak, raw, or canonical */
 
 char in_buff[1024];   /* buffer for storing characters read until they are processed */
 

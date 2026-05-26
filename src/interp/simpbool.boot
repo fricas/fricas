@@ -86,7 +86,7 @@ orDnf(a,b) ==                   -- or:  (dnf, dnf) -> dnf
   b = 'false => a
   a = 'true or b = 'true => 'true
   null a => b     --null list means false
-  a is [c] = coafOrDnf(c,b)
+  a is [c] => coafOrDnf(c,b)
   coafOrDnf(first a,orDnf(rest a,b))
 
 andDnf(a,b) ==                  -- and: (dnf, dnf) -> dnf

@@ -494,7 +494,7 @@ write_browsedb() ==
 
 store_category_data(stream) ==
     genCategoryTable()
-    $store_category_data_mater := []
+    master := []
     for key_val in nreverse(H_KEY_VALS($has_category_hash)) repeat
         key := first(key_val)
         val := rest(key_val)

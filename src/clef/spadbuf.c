@@ -70,7 +70,6 @@ struct termios childbuf;
 short INS_MODE;            /* Flag for insert mode */
 short ECHOIT;              /* Flag for echoing */
 short PTY;
-int MODE;                  /* Am I in cbreak, raw, or canonical */
 
 char in_buff[1024];        /* buffer for storing characters read
                               until they are processed */
