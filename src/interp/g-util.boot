@@ -627,3 +627,20 @@ string2Integer(s) ==
     and/[char_to_digit(s.i) for i in 0..MAXINDEX(s)] => PARSE_-INTEGER(s)
     nil
 
+substring?(part, whole, startpos) ==
+--This function should be replaced by STRING<
+  np := SIZE part
+  nw := SIZE whole
+  np > nw - startpos => false
+  and/[CHAR_-EQUAL(ELT(part, ip), ELT(whole, iw))
+      for ip in 0..np-1 for iw in startpos.. ]
+
+charPosition(c,t,startpos) ==
+  n := SIZE t
+  startpos < 0 or startpos > n => n
+  k:= startpos
+  for i in startpos .. n-1 repeat
+    c = ELT(t,i) => return nil
+    k := k+1
+  k
+
