@@ -5,6 +5,7 @@
 
 COMMAND_DIR=$(DESTDIR)$(libdir)/fricas/target/$(target)/bin
 COMMAND=$(COMMAND_DIR)/fricas
+JLCOMMAND=$(COMMAND_DIR)/jlfricas
 
 subdir =
 
@@ -66,6 +67,10 @@ check: all-src
 viewports:
 	cd src/doc; ${MAKE} MAYBE_VIEWPORTS=viewports
 
+htmldoc: all-src
+	cd src/doc; ${MAKE} stamp-html; \
+	cp -rf tmp/sphinx/build/html/* $(fricas_target_datadir)/doc/html/
+
 $(FRICAS_SRC_TARGETS): pre-gen
 	cd $(build_srcdir) && $(MAKE) BUILD_DATE="${BUILD_DATE}" $@
 
@@ -74,6 +79,7 @@ stamp-rootdirs:
 	${MKDIR_P} $(fricas_target_bindir)
 	${MKDIR_P} $(fricas_target_libdir)
 	${MKDIR_P} $(fricas_target_datadir)/spadhelp
+	${MKDIR_P} $(fricas_target_datadir)/doc/html
 	${MKDIR_P} $(fricas_target_datadir)/msgs
 	${MKDIR_P} $(fricas_targetdir)/algebra/
 	${MKDIR_P} $(fricas_targetdir)/input
@@ -87,7 +93,7 @@ fricas_lib = $(subst $(exec_prefix)/,,$(libdir))
 install: install-src install-contrib
 
 install-src:
-	@echo Installing FriCAS in $(prefix)
+	@echo Installing jlFriCAS in $(prefix)
 	rm -rf '$(DESTDIR)$(libdir)/fricas'
 	$(mkinstalldirs) '$(DESTDIR)$(libdir)/fricas'
 	$(mkinstalldirs) '$(DESTDIR)$(libdir)/fricas/$(reltarget)/lib'
@@ -122,6 +128,11 @@ install-src:
 	       '$(DESTDIR)$(libdir)'/fricas/$(reltarget)/lib/gmp_wrap.so \
 	     || exit 1 ; \
 	fi
+	if [ -f $(reltarget)/lib/julia_wrap.so ] ; then \
+	   $(INSTALL_PROGRAM) $(reltarget)/lib/julia_wrap.so \
+	       '$(DESTDIR)$(libdir)'/fricas/$(reltarget)/lib/julia_wrap.so \
+	     || exit 1 ; \
+	fi
 	for A in SPADEDIT htsearch presea ; do \
 	   if [ -f $(reltarget)/lib/$$A ] ; then \
 	      $(INSTALL_SCRIPT) $(reltarget)/lib/$$A \
@@ -129,7 +140,7 @@ install-src:
 	       || exit 1 ; \
 	   fi ; \
 	done
-	for A in command.list copyright summary credits ; do \
+	for A in command.list copyright summary ; do \
 	   $(INSTALL_DATA) $(reltarget)/lib/$$A \
 	      '$(DESTDIR)$(libdir)'/fricas/$(reltarget)/lib/$$A \
 	     || exit 1 ; \
@@ -150,15 +161,34 @@ install-src:
 	echo FRICAS_LISP_VERSION='"${FRICAS_LISP_VERSION}"' >> '${COMMAND}'.tmp
 	cat $(fricas_src_srcdir)/etc/fricas >> '${COMMAND}'.tmp
 	$(INSTALL_SCRIPT) '${COMMAND}'.tmp '${COMMAND}'
+	echo '#!/bin/sh -' > '${JLCOMMAND}'.tmp
+	echo exec_prefix='"$${FRICAS_PREFIX:-$(exec_prefix)}"' \
+               >> '${JLCOMMAND}'.tmp
+	if test "$(fricas_lib)" != "$(libdir)" ;  then echo \
+            FRICAS='"$${exec_prefix}/$(fricas_lib)/fricas/target/$(target)"' \
+              >> '${JLCOMMAND}'.tmp ; \
+	else \
+	   echo FRICAS='"$(libdir)/fricas/target/$(target)"' \
+               >> '${JLCOMMAND}'.tmp ; \
+	fi
+	echo export FRICAS >> '${JLCOMMAND}'.tmp
+	echo FRICAS_VERSION='"${PACKAGE_VERSION}"' >> '${JLCOMMAND}'.tmp
+	echo FRICAS_LISP_FLAVOR='"${FRICAS_LISP_FLAVOR}"' >> '${JLCOMMAND}'.tmp
+	echo FRICAS_LISP_VERSION='"${FRICAS_LISP_VERSION}"' >> '${JLCOMMAND}'.tmp
+	cat $(fricas_src_srcdir)/etc/jlfricas >> '${JLCOMMAND}'.tmp
+	$(INSTALL_SCRIPT) '${JLCOMMAND}'.tmp '${JLCOMMAND}'
 	-rm '${COMMAND}'.tmp
+	-rm '${JLCOMMAND}'.tmp
 	rm -f '$(DESTDIR)$(bindir)'/fricas
+	rm -f '$(DESTDIR)$(bindir)'/jlfricas
 	$(mkinstalldirs) '$(DESTDIR)$(bindir)'
 	$(INSTALL_SCRIPT) '$(COMMAND)' '$(DESTDIR)$(bindir)/fricas'
+	$(INSTALL_SCRIPT) '$(JLCOMMAND)' '$(DESTDIR)$(bindir)/jlfricas'
 	$(INSTALL_SCRIPT) '$(fricas_src_srcdir)/etc/fricas-readline' '$(DESTDIR)$(libdir)/fricas/$(reltarget)/bin/fricas-readline'
 	if test x"@BUILD_ALDOR_INTERFACE@" = xyes ; then \
 	    cd src/aldor && $(MAKE) install; \
 	fi
-	@echo 79 FriCAS installation finished.
+	@echo 79 jlFriCAS installation finished.
 
 install-contrib: install-src
 	$(mkinstalldirs) '$(DESTDIR)$(bindir)'
@@ -177,6 +207,9 @@ clean-local: clean-distdir
 distclean-local: clean-local
 	@-rm -rf build
 	-rm -rf target
+	-rm -rf debian/jlfricas
+	-rm -rf debian/.debhelper
+	-rm -f debian/files debian/jlfricas.debhelper.log debian/jlfricas.substvars
 	-rm -rf FriCAS.app FriCAS.dmg
 	-rm contrib/emacs/Makefile
 	-rm -f config/fricas_c_macros.h

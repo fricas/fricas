@@ -1,0 +1,2003 @@
+-- Flint : polynomials and matrices over Z, Q, Z/nZ, Qp, Fq
+-- Arb : polynomials, matrices and special functions over balls over R and C
+-- Antic : algebraic number field element arithmetic
+-- Calcium : exact real and complex numbers, including algebraic numbers
+)abbrev category NTYPE NMType
+++ Category for Nemo type domains
+++ Author: G.Vanuxem
+++ Date Created: Apr, 2024
+++ Description:
+++  Parent category of Nemo domains.
+NMType() : Category == JLObjectType
+
+)abbrev category NRING NMRing
+++ Category for Nemo ring domains
+++ Author: G.Vanuxem
+++ Date Created: Mar, 2024
+++ Description:
+++  Parent category of Nemo ring domains.
+NMRing() : Category == Join(NMType, JLObjectRing) with
+      exact? : % -> Boolean 
+      ++ exact?(x) checks whether or not x is exact.
+      unit? : % -> Boolean 
+      ++ unit?(x) checks whether or not x is a unit, i.e. invertible.
+      equal? : (% , %) -> Boolean
+      ++ equal?(x,y) checks whether or not x and y are equal.
+      exactDivide : (%, %) -> %
+      ++ exactDivide(x,y) returns the exact division
+      ++ of x by y. Throws a Julia error if it is not
+      ++ an exact division.
+      jlNMRing : () -> String
+      ++ jlNMRing(x) returns the FriCAS Nemo ring type
+      ++  of x used in Julia.
+      ++ For example:
+      ++ \example{jlNMRing()$NMPadicInteger(17)}
+    add
+      import from JLUtilityFunctions
+      import from String
+      getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+      junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+      jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+      junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+      jbinbfunc(op,a,b) ==> jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+      exact?(x) == junbfunc("is_exact_type",x)
+      unit?(x) == junbfunc("is_unit",x)      
+      equal?(x,y) == jbinbfunc("==",x,y)
+      exactDivide(x,y) == jbinfunc("divexact",x,y)
+
+)abbrev category NCRING NMCommutativeRing
+++ Category for Nemo commutative ring domains.
+++ Author: G.Vanuxem
+++ Date Created: Dec, 2024
+++ Description:
+++  Parent category of Nemo commutative ring domains.
+NMCommutativeRing() : Category == Join(NMRing, CommutativeRing)
+
+)abbrev category NFIELD NMField
+++ Category for Nemo commutative field domains.
+++ Author: G.Vanuxem
+++ Date Created: Dec, 2025
+++ Description:
+++  Parent category of Nemo commutative field domains.
+NMField() : Category == Join(NMCommutativeRing, Field)
+
+)abbrev domain NINT NMInteger
+++ Domain for Nemo Integers (ZZ)
+++ Author: G. Vanuxem
+++ Date Created: Jan, 2023
+++ Last Modified: Jun, 2025
+++ Description:
+++  This domain allows the manipulation of Nemo integers
+++  using the Nemo Julia package (FLINT based).
+++ References: https://flintlib.org/; https://nemocas.github.io/Nemo.jl/stable/
+NMInteger() : Exports == Implementation where
+  Z         ==> Integer
+  JI64      ==> JLInt64
+  parsei    ==> PARSE_-INTEGER$Lisp
+  Exports ==> Join(NMCommutativeRing, IntegerNumberSystem,
+      PolynomialFactorizationExplicit, Canonical, canonicalsClosed) with
+    "*" : (%, Integer) -> %
+    ++ x*n is the product of x by the integer n.
+    abs2 : % -> %
+    ++ abs2(x) returns the squared absolute value of x.
+    probablePrime? : % -> Boolean
+    ++ probablePrime?(n) checks whether or not n is a probable prime
+    ++ using a Baillie-PSW probable prime test with parameters chosen
+    ++ by Selfridge’s method. See https://flintlib.org/.
+    random : Segment(Integer) -> %
+    ++ random(seg) returns a random Nemo integer in the range seg.
+    convert : % -> JLObjBigInt
+    ++ convert(i) converts i.
+    coerce : JI64 -> %
+    ++ coerce(i) coerces i to a NMInteger.
+    coerce : % -> JI64
+    ++ coerce(ni) to a JLInt64 if possible.
+    coerce : % -> Expression Integer
+    ++ coerce(x) coerces x.
+    inverse : % -> NMFraction(NMInteger)
+    ++ inverse(x) returns the inverse of x.
+    jninteger : Integer -> %
+    ++ jninteger(i) returns i as an NMInteger.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from String
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    jlNMRing() == "ZZ"
+    jlObject() == jlEvalString(concat(["string(", "ZZ",")"]))@String
+
+    0 == jlref("zero(ZZ)")
+    1 == jlref("one(ZZ)")
+    inc(x) == x + 1
+    dec(x) == x - 1
+    rightPower(x,n) == jlref(concat [getind(x), "^", string(n)])
+    leftPower(x,n) == jlref(concat [getind(x), "^", string(n)])
+    base() == jlref("ZZ(2)")
+    characteristic() == 0
+
+    random(n : %) ==
+      jlref(concat ["rand(ZZ,0:", getind(n),"-1)"])
+    random(seg : Segment(Integer)) ==
+      jlref(concat ["rand(ZZ,",string(low(seg)), ":", string(high(seg)),")"])
+    x < y  == jbinbfunc("<",x,y)
+    x > y  == jbinbfunc(">",x,y)
+    x >= y == jbinbfunc(">=",x,y)
+    x <= y == jbinbfunc("<=",x,y)
+    odd? x == junbfunc("isodd",x)
+    even? x == junbfunc("iseven",x)
+    prime? x == junbfunc("is_prime",x)
+    probablePrime? x ==
+      jlEvalString(concat ["is_probable_prime(",getind(x),")"])
+    x  * y : Integer == jlref(concat([getind(x), "*", string(y)]))
+    abs(x) == junfunc("abs", x)
+    abs2(x) == junfunc("abs2", x)
+
+    length(x) == coerce(jlEvalString(concat(["nbits(", getind(x),")"]))@Integer)
+    shift(a, sh) ==
+      zero? sh => a
+      sh > 0 => jlref(concat(["<<(", getind(a), ",", string(sh), ")"])) 
+      jlref(concat([">>(", getind(a), ",", string(abs sh), ")"]))
+
+    addmod(a, b, p) ==
+      (c := a + b) >= p => c - p
+      c
+    submod(a, b, p) ==
+      (c := a - b) < 0 => c + p
+      c
+    mulmod(a, b, p) ==
+      jlref(concat(["mulmod(", getind(a), ",", getind(b), ",", getind(p), ")"]))
+    powmod(a, b, p) ==
+      jlref(concat(["powermod(", getind(a), ",", string(b), ",", getind(p), ")"]))
+    invmod(a, p) == jbinfunc("invmod", a, p)
+
+    factor(a : %) : Factored(%) ==
+      factor(a)$NMFactored(%)
+    -- TODO: Temporary
+    squareFree(a) ==
+      sfree := squareFree(convert(a)@Z)$IntegerFactorizationPackage(Z)
+      map_preserving(coerce, sfree)$FactoredFunctions2(Z,%)
+
+    factorial(a)      == junfunc("factorial", a)
+    binomial(a, b)    == jbinfunc("binomial", a, b)
+    permutation(n, m) == permutation(n, m)$IntegerCombinatoricFunctions(%)
+
+    -- x quo y == jbinfunc("div", x, y)
+    x quo y == jbinfunc("÷", x, y)
+    x rem y == jbinfunc("%", x, y)    
+    gcd(a,b) == jbinfunc("gcd",a,b)
+    lcm(a,b) == jbinfunc("lcm",a,b)
+    (p1:% exquo p2:%): Union(%,"failed") ==
+      ret : JLObjTuple := jbinfunc("divides", p1, p2)
+      not jlEvalString(concat(["first(", getind(ret), ")"]))@Boolean
+        => "failed"
+      junfunc("last", ret)@%
+    inverse(x) == junfunc("inv",x)
+    divide(a,b) : Record(quotient : %, remainder : %) ==
+      ret : JLObjTuple := jbinfunc("divrem",a,b)
+      [ret.1 pretend %, ret.2 pretend %]
+
+    convert(i) : JLObjBigInt == jlref(concat ["BigInt(", getind(i), ")"])
+    coerce(jsi : %) : JI64 ==
+      ret : Integer := parsei string jsi 
+      (ret <= convert(max())@Integer) and (ret >= convert(min())@Integer) =>
+        ret pretend JI64
+      error "Integer too large to represent in a machine word"    
+    coerce(i : JI64) : % == jlref(concat(["ZZ(", convert(i), ")"]))
+    coerce(i : Integer) == jlref(concat(["ZZ(", string(i), ")"]))
+    convert(x : %) : Integer  == parsei(string x)
+    coerce(x : %) : Expression(Integer) ==
+      coerce(parsei(string x))$Expression(Integer)
+    coerce(i : %) : OutputForm == message(string(i))
+    jninteger(i : Integer) : % == coerce(i)
+
+)abbrev domain NAN NMAlgebraicNumber
+++ Domain for Nemo algebraic numbers
+++ Author: G. Vanuxem
+++ Date Created: March, 2023
+++ Last Modified: Jun, 2025
+++ Description:
+++  This domain allows the manipulation of Nemo algebraic numbers,
+++  i.e. algebraic closure of rational field,
+++  represented by minimal polynomials using the Nemo Julia package
+++  (Calcium library based).
+++  https://fredrikj.net/calcium/
+++ References: https://flintlib.org/; https://nemocas.github.io/Nemo.jl/stable/
+NMAlgebraicNumber() : Exports == Implementation where
+  NNI       ==> NonNegativeInteger
+  JI64      ==> JLInt64
+  NUP       ==> NMUnivariatePolynomial
+  NINT      ==> NMInteger
+  Z         ==> Integer
+  parsei    ==> PARSE_-INTEGER$Lisp
+  Exports ==> Join(NMField, AlgebraicallyClosedField,
+      RetractableTo NMInteger, RetractableTo NMFraction(NMInteger),
+      RetractableTo Integer, RetractableTo Fraction(Integer),
+      --LinearlyExplicitOver *r, -- TODO reducedSystem
+      PolynomialFactorizationExplicit,
+      ConvertibleTo NMComplexField, CharacteristicZero,
+      DifferentialRing) with
+    "^" : (%, %) -> %
+    ++ a^b returns the value of a raised to power b.
+    "*" : (%, NMInteger) -> %
+    ++ x*i is the multiplication by an integer.
+    "*" : (%, Integer) -> %
+    ++ x*n is the product of x by the integer n.
+    "*" : (%, NMFraction NMInteger) -> %
+    ++ x*i is the multiplication by an rational number.
+    integer? : % -> Boolean
+    ++ integer?(x) tests whether or not x is an integer.
+    rational? : % -> Boolean
+    ++ rational?(x) tests whether or not x is a rational number.
+    rootOfUnity? : % -> Boolean
+    ++ rootOfUnity?(x) tests whether or not x is a root of unity.
+    algebraicInteger? : % -> Boolean
+    ++ algebraicInteger?(a) tests whether or not a
+    ++ is an algebraic integer.
+    real : % -> %
+    ++ real(x) returns real part of x.
+    imag : % -> %
+    ++ imag(x) returns imaginary part of x.
+    real? : % -> Boolean
+    ++ real?(x) tests whether or not x is a real number.
+    random : (NNI, NNI) -> %
+    ++ random(deg, bits) returns a random algebraic number (real) of
+    ++ degree up to deg and coefficients size up to bits.
+    crandom : (NNI, NNI) -> %
+    ++ crandom(deg, bits) returns a random algebraic number (complex) of
+    ++ degree up to deg and coefficients size up to bits.
+    ++ Requires at least degree 2.
+    expPiI : % -> %
+    ++ expPiI(a) returns exp(%pi*%i*a).
+    logPiI : % -> %
+    ++ logPiI(a) returns log(a)/(%pi*%i).
+    rootOfUnity : (NNI) -> %
+    ++ rootOfUnity(n) returns the root of unity exp(2*%pi*%i/n).
+    rootOfUnity : (NNI, Integer) -> %
+    ++ rootOfUnity(n,k) returns the root of unity exp(2*%pi*%i*k/n).
+    sinpi : % -> %
+    ++ sinpi(x) returns sin(%pi*x).
+    cospi : % -> %
+    ++ cospi(x) returns cos(%pi*x).
+    tanpi : % -> %
+    ++ tanpi(x) returns tan(%pi*x).
+    asinpi : % -> %
+    ++ asinpi(x) returns asin(x)/%pi
+    acospi : % -> %
+    ++ acospi(x) returns acos(x)/%pi
+    atanpi : % -> %
+    ++ atanpi(x) returns atan(x)/%pi
+    conjugates : % -> JLVector(%)
+    ++ conjugates(a) returns all the roots of a.
+    degree : % -> JLInt64
+    ++ degree(a) returns the degree of the minimal polynomial of a.
+    numerator : % -> %
+    ++ numerator(anum) returns anum multiplied by its denominator
+    ++ i.e. an algebraic integer.
+    denominator : % -> NMInteger
+    ++ denominator(anum) returns the denominator of anum, i.e. the leading coefficient
+    ++ of the minimal polynomial of a.
+    minimalPolynomial : % -> SparseUnivariatePolynomial(%)
+    ++ minimalPolynomial(an) returns the minimal polynomial of an
+    ++ over algebraic numbers.
+    minimalPolynomial : % -> SparseUnivariatePolynomial(Z)
+    ++ minimalPolynomial(an) returns the minimal polynomial of an.
+    height : % -> NNI
+    ++ height(a) returns the height of a.
+    heightBits : % -> NNI
+    ++ heightBits(a) returns the height of a as a number of bits.
+    abs : % -> %
+    ++ abs(a) returns the absolute value of a.
+    abs2 : % -> %
+    ++ abs2(a) returns the squared absolute value of a.
+    conjugate : % -> %
+    ++ conjugate(a) returns the complex conjugate of a.
+    floor : % -> %
+    ++ floor(a) returns the largest integer below or equal to a.
+    ceiling : % -> %
+    ++ ceiling(a) returns the smallest integer above or equal to a.
+    sign : % -> %
+    ++ sign(a) returns the complex sign of a.
+    signReal : % -> %
+    ++ signReal(a) returns the sign of the real part.
+    signImag : % -> %
+    ++ signImag(a) returns the sign of the imaginary part.
+    csign : % -> %
+    ++ csign(a) returns an extension of the real sign function
+    ++ equivalent to a/sqrt(a^2).
+    norm : % -> %
+    ++ norm(a) returns the norm of a.
+    coerce : % -> AlgebraicNumber
+    ++ coerce(nan) coerces nan to AlgebraicNumber using
+    ++ the root of the minimal polynomial.
+    jnanumber : Integer -> %
+    ++ jnanumber(x) returns x as a NMAlgebraicNumber.
+    jnanumber : Fraction(Integer) -> %
+    ++ jnanumber(q) returns q as a NMAlgebraicNumber.
+    jnanumber : NMInteger -> %
+    ++ jnanumber(x) returns x as a NMAlgebraicNumber.
+    jnanumber : NMFraction(NMInteger) -> %
+    ++ jnanumber(q) returns q as a NMAlgebraicNumber.
+    jnanumber : String -> %
+    ++ jnanumber(str) evaluates str in Julia that returns a NMAlgebraicNumber.
+    QQbar : Integer -> %
+    ++ jnanumber(x) returns x as a NMAlgebraicNumber.
+    QQbar : Fraction(Integer) -> %
+    ++ jnanumber(q) returns q as a NMAlgebraicNumber.
+    QQbar : NMInteger -> %
+    ++ jnanumber(x) returns x as a NMAlgebraicNumber.
+    QQbar : NMFraction(NMInteger) -> %
+    ++ jnanumber(q) returns q as a NMAlgebraicNumber.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLStringUtilities
+    import from NMComplexField
+    import from KernelFunctions2(%,%)
+
+    jlInitialize(true)
+    Rep := SExpression
+    --ALGOP := '%alg
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    jlNMRing() == "QQBar"
+    jlObject() == jlEvalString(concat(["string(", "QQBar",")"]))@String
+
+    0 == jlref("zero(QQBar)")
+    1 == jlref("one(QQBar)")
+
+    rightPower(x,n) == jbinfunc("^",x,n)
+    leftPower(x,n) == jbinfunc("^",x,n)
+
+    characteristic() == 0
+    rootOfUnity(n) == jlref(concat(["root_of_unity(QQBar,", string(n),")"]))
+    rootOfUnity(n,k) ==
+      jlref(concat(["root_of_unity(QQBar,", string(n), ",", string(k), ")"]))
+    real(x) == junfunc("real",x)
+    imag(x) == junfunc("imag",x)
+    minimalPolynomial(an) : SparseUnivariatePolynomial(%) ==
+      AN  := NMAlgebraicNumber
+      sym : Symbol := coerce jlRandomString(8)
+      UP := UnivariatePolynomial(sym, AN)
+      p := minimalPolynomial(an pretend AN)@NUP(NINT, sym)
+      inp := parse(string p)$InputForm
+      interpret(inp)$InputFormFunctions1(UP)
+        pretend SparseUnivariatePolynomial(%)
+  
+    minimalPolynomial(an) : SparseUnivariatePolynomial(Z) ==
+      AN  := NMAlgebraicNumber
+      sym : Symbol := coerce jlRandomString(8)
+      UP := UnivariatePolynomial(sym, Integer)
+      p := minimalPolynomial(an pretend AN)@NUP(NINT, sym)
+      inp := parse(string p)$InputForm
+      interpret(inp)$InputFormFunctions1(UP)
+        pretend SparseUnivariatePolynomial(Z)
+
+    random(deg, bits) ==
+      jlref(concat(["rand(QQBar,degree=", string(deg),
+        ",bits=", string(bits), ",randtype=:real)"]))
+    crandom(deg, bits) ==
+      jlref(concat(["rand(QQBar,degree=", string(deg),
+        ",bits=", string(bits), ",randtype=:nonreal)"]))
+
+    integer? x == junbfunc("isinteger",x)
+    rational? x == junbfunc("is_rational",x)
+    real? x == junbfunc("isreal",x)
+    rootOfUnity? x == junbfunc("is_root_of_unity",x)
+    algebraicInteger? x == junbfunc("is_algebraic_integer",x)
+
+    inv(x) == junfunc("inv", x)
+    x :% / y : % == jbinfunc("/", x, y)
+    x : % ^ y : % == jbinfunc("^", x, y)
+    x : % * y : Integer == jlref(concat [getind(x),"*", string(y)])
+    x : % * y : NMInteger == jbinfunc("*", x, y)
+    x : % * y : NMFraction(NMInteger) == jbinfunc("*", x, y)
+    x * y : Fraction Integer ==
+      jlref(concat [getind(x), "*(", string(numer(y)),
+        "//", string(denom(y)),")"])
+    x ^ y : Integer == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : Fraction(Integer) ==
+      jlref(concat [ getind(x), "^(", string(numer(y)),"//", string(denom(y)),")"])
+    recip(x) ==
+      zero?(x) => "failed"
+      junfunc("inv",x) pretend %
+
+    -- x quo y == jbinfunc("div", x, y)
+    x quo y == jbinfunc("÷", x, y)
+    x rem y == 0
+    conjugate(a) == junfunc("conj", a)
+
+    gcd(a,b) == jbinfunc("gcd",a,b)
+    lcm(a,b) == jbinfunc("lcm",a,b)
+    sqrt(a : %)  == junfunc("sqrt", a)
+    nthRoot(x, i) == jlref(concat(["root(", getind(x),",",string(i),")"]))
+    differentiate(x : %) : % == 0
+    -- Different complexity here (minimal polynomial based)
+    height(an) ==
+      ret := jlref(concat ["height(", getind(an),")"])$NMInteger
+      convert(ret)@Integer pretend NNI
+    heightBits(an) ==
+      ret := jlref(concat ["height(", getind(an),")"])$NMInteger
+      convert(ret)@Integer pretend NNI
+    abs(an) == junfunc("abs", an)
+    abs2(an) == junfunc("abs2", an)
+    floor(an) == junfunc("floor", an)
+    ceiling(an) == junfunc("ceil", an)
+    sign(an) == junfunc("sign", an)
+    csign(an) == junfunc("csgn", an)
+    signReal(an) == junfunc("sign_real", an)
+    signImag(an) == junfunc("sign_imag", an)
+
+    expPiI(a) == junfunc("exp_pi_i",a)
+    logPiI(a) == junfunc("log_pi_i",a)
+    sinpi(a) == junfunc("sinpi",a)
+    cospi(a) == junfunc("cospi",a)
+    tanpi(a) == junfunc("tanpi",a)
+    asinpi(a) == junfunc("asinpi",a)
+    acospi(a) == junfunc("acospi",a)
+    atanpi(a) == junfunc("atanpi",a)
+    norm(a : %) : % ==
+      jlref(concat ["let (Rq, x) = QQ[_"x_"]; p = minimal_polynomial(Rq, ",
+        getind(a), "); QQBar((iseven(degree(p)) ? 1 : -1) * coeff(p, 0)) end"])
+
+    conjugates(a) ==
+      jlref(concat(["conjugates(", getind(a),")"]))$JLVector(%)
+
+    --pToCaString(p : SparseUnivariatePolynomial %) : String ==
+    --  ts := listOfTerms p
+    --  empty? ts => "zero(PolynomialRing(QQBar, _"x_")[1])"
+    --  res : String := ""
+    --  for t in ts repeat
+    --    termStr : String := concat(["(", getind(t.c), ")*x^", string(t.k)])
+    --    if res = "" then 
+    --      res := termStr
+    --    else 
+    --      res := concat([res, "+", termStr])
+    --  res
+
+    rootsOf(p : SparseUnivariatePolynomial %) : List % ==
+      degree(p) = 0 => []
+      -- Construct string with rational literals for Julia
+      resStr : String := ""
+      for t in listOfTerms p repeat
+        c_u := retractIfCan(t.c)@Union(Fraction Integer, "failed")
+        c_u case "failed" => error "rootsOf: non-rational coefficients not yet supported"
+        c_val := c_u::Fraction Integer
+        c_str := string(numer c_val)
+        if denom(c_val) ~= 1 then
+          c_str := concat([c_str, "//", string(denom c_val)])
+        termStr := concat(["(", c_str, ")*x^", string(t.k)])
+        if resStr = "" then resStr := termStr
+        else resStr := concat([resStr, "+", termStr])
+      members(jlref(concat [
+        "let (Rq, x) = QQ[_"x_"]; f = Rq(", resStr, "); roots(QQBar, f) end"
+      ])$JLVector(%))
+
+    rootsOf(p : SparseUnivariatePolynomial %, s : Symbol) : List % == rootsOf(p)
+
+    rootOf(p : SparseUnivariatePolynomial %) : % ==
+      res := rootsOf(p)
+      empty? res => error "rootOf: no roots"
+      first res
+
+    rootOf(p : SparseUnivariatePolynomial %, s : Symbol) : % == rootOf(p)
+
+    zeroOf(p : SparseUnivariatePolynomial %) : % == rootOf(p)
+    zeroOf(p : SparseUnivariatePolynomial %, s : Symbol) : % == rootOf(p)
+    zerosOf(p : SparseUnivariatePolynomial %) : List % == rootsOf(p)
+    zerosOf(p : SparseUnivariatePolynomial %, s : Symbol) : List % == rootsOf(p)
+
+    rootOf(p : Polynomial %) : % == rootOf(univariate(p))
+    rootsOf(p : Polynomial %) : List % == rootsOf(univariate(p))
+    zeroOf(p : Polynomial %) : % == rootOf(univariate(p))
+    zerosOf(p : Polynomial %) : List % == rootsOf(univariate(p))
+    numerator(a) == junfunc("numerator", a)
+    denominator(a) == jlref(concat(["denominator(", getind(a),")"]))$NMInteger
+    degree(a : %) == jlEvalString(concat(["degree(", getind(a), ")"]))@JLInt64
+
+    retractIfCan(x : %) : Union(Integer, "failed") ==
+      not integer? x => "failed"
+      convert(retract(x)@NMInteger)
+    retractIfCan(x : %) : Union(NMInteger, "failed") ==
+      not integer? x => "failed"
+      junfunc("ZZRingElem",x) pretend NMInteger
+    retractIfCan(x : %) : Union(Fraction Integer, "failed") ==
+      not rational? x => "failed"
+      retract(junfunc("QQFieldElem",x) pretend NMFraction(NMInteger))
+    retractIfCan(x : %) : Union(NMFraction(NMInteger), "failed") ==
+      not rational? x => "failed"
+      junfunc("QQFieldElem", x) pretend NMFraction(NMInteger)
+
+    retract(x : %) : Integer ==
+      convert(retract(x)@NMInteger)
+    retract(x : %) : NMInteger ==
+      junfunc("ZZRingElem", x)
+    retract(x : %) : Fraction Integer ==
+      retract(junfunc("QQFieldElem",x) pretend NMFraction(NMInteger)) 
+    retract(x : %) : NMFraction(NMInteger) ==
+      junfunc("QQFieldElem", x) pretend NMFraction(NMInteger)
+
+    convert(a) : NMComplexField ==
+      jlref(concat([jlNMRing()$NMComplexField, "(",
+        getind(a), ")"]))$NMComplexField
+
+    coerce(i : Integer) == jlref(concat(["QQBar(",string(i),")"]))
+    coerce(i : NMInteger) : % == junfunc("QQBar", i)
+    coerce(fi : NMFraction(NMInteger)) : % == junfunc("QQBar", fi)
+    coerce(x : Fraction(Integer)) == coerce(coerce(x)@NMFraction(NMInteger))
+    coerce(x : %) : AlgebraicNumber ==
+      mapped := map(coerce,
+        minimalPolynomial(x)@SparseUnivariatePolynomial(Z)
+          )$SparseUnivariatePolynomialFunctions2(Z,AlgebraicNumber)
+      rootOf(mapped)$AlgebraicNumber
+
+    jnanumber(i : Integer) == jlref(concat(["QQBar(",string(i),")"]))
+    jnanumber(fi : Fraction(Integer)) == coerce(fi)
+    jnanumber(i : NMInteger) == coerce(i)
+    jnanumber(fi : NMFraction(NMInteger)) == coerce(fi)
+    jnanumber(s: String) == jlref(concat(["QQBar(", s,")"]))
+
+    QQbar(i : Integer) == jlref(concat(["QQBar(",string(i),")"]))
+    QQbar(fi : Fraction(Integer)) == coerce(fi)
+    QQbar(i : NMInteger) == coerce(i)
+    QQbar(fi : NMFraction(NMInteger)) == coerce(fi)
+    coerce(i : %) : OutputForm == message(string(i))
+
+)abbrev domain NZMOD NMIntegerMod
+++ Domain for Nemo integer mod n
+++ Author: G. Vanuxem
+++ Date Created: Feb, 2024
+++ Last Modified: Jun, 2025
+++ Description:
+++  This domain allows the manipulation of Nemo integer mod n
+++  elements using the Nemo Julia package (FLINT based).
+++ References: https://flintlib.org/; https://nemocas.github.io/Nemo.jl/stable/
+NMIntegerMod(p : PositiveInteger) : Exports == Implementation where
+  PI      ==> PositiveInteger
+  NNI     ==> NonNegativeInteger
+  parsei  ==> PARSE_-INTEGER$Lisp
+  Exports ==> Join(NMCommutativeRing, Finite,
+        ConvertibleTo(Integer), StepThrough) with
+    "*" : (%, Integer) -> %
+    ++ x*i is the multiplication by an integer.
+    "*" : (%, NMInteger) -> %
+    ++ x*i is the multiplication by a Nemo integer.
+    coerce : Integer -> %
+    ++ coerce(i) coerces i.
+    coerce : NMInteger -> %
+    ++ coerce(i) coerces i.
+    jnzmod : Integer -> %
+    ++ jnzmod(i) returns i as a NMIntegerMod.
+    jnzmod : NMInteger -> %
+    ++ jnzmod(i) returns i as a NMIntegerMod
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from String
+    import from NMInteger
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    -- initialize
+    NZMOD := concat ["NZMOD",string(p)]
+    jlEvalString(concat([NZMOD,",=residue_ring(ZZ,", string(p),")"]))@Void
+    NZMODP := concat(NZMOD,"(")
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+
+    jlNMRing() == NZMOD
+    jlObject() == jlEvalString(concat(["string(", NZMOD,")"]))@String
+    0 == jlref(concat(["zero(", NZMOD, ")"]))
+    1 == jlref(concat(["one(", NZMOD,")"]))
+    init == 0
+    nextItem(n) ==
+        m := n+1
+        m = 0 => "failed"
+        m
+
+    x : % * y : NMInteger == jbinfunc("*", x, y)
+    x : % * y : Integer == jlref(concat [getind(x), "*", string(y)])
+    recip(x) ==
+      -- TODO: compute an euclidean dvision to check
+      zero?(x) => "failed"
+      junfunc("inv",x)@%
+
+    size()           == p
+    characteristic() == p
+    lookup x == (zero? x => p; (convert(x)@Integer) :: PositiveInteger)
+    random() == coerce(random(p)$Integer)
+    index(n) == coerce(positiveRemainder(n,p) pretend Integer)
+    convert(x) : Integer == parsei string(x)
+    coerce(x : NMInteger) : % == junfunc(NZMOD, x)
+    coerce(i : Integer) == jlref(concat([NZMODP, string(i), ")"]))
+    jnzmod(i : Integer) == coerce(i)
+    jnzmod(ji : NMInteger) == coerce(ji)
+    coerce(i : %) : OutputForm == message(string(i))
+
+)abbrev domain NPF NMPrimeField
+++ Domain for Nemo prime fields (Galois fields)
+++ Author: G. Vanuxem
+++ Date Created: Feb, 2024
+++ Last Modified: Jul, 2025
+++ Description:
+++  This domain allows the manipulation of Nemo prime field
+++  elements using the Nemo Julia package (FLINT based).
+++ References: https://flintlib.org/; https://nemocas.github.io/Nemo.jl/stable/
+-- TODO: trace, absoluteTrace, etc. See PF specific exports.
+NMPrimeField(p : PositiveInteger) : Exports == Implementation where
+  PI        ==> PositiveInteger
+  NNI       ==> NonNegativeInteger
+  INT       ==> Integer
+  SUP       ==> SparseUnivariatePolynomial
+  parsei    ==> PARSE_-INTEGER$Lisp
+  Exports ==> Join(NMField, FiniteFieldCategory,
+                   FiniteAlgebraicExtensionField(%),
+                   ConvertibleTo(Integer)) with
+    generator? : % -> Boolean
+    ++ generator?(x) checks whether or not x is a generator of the NMPrimeField.
+    order : () -> NNI
+    ++ order() returns the order of the NMPrimeField.
+    "*" : (%, NMInteger) -> %
+    ++ x*i is the multiplication by an integer (NMInteger).
+    "*" : (%, Integer) -> %
+    ++ * x*i is the multiplication by an integer.
+    sqrt : % -> %
+    ++ sqrt(x) returns square root of x.
+    ++ Throws a Julia error if there is no square root and returns 0.
+    quadraticNonResidue: () ->  %
+    ++ quadraticNonResidue() computes the smallest non negative integer,
+    ++ which represents a quadratic non residue.
+    coerce : Integer -> %
+    ++ coerce(i) coerces i as a NMPrimeField element. 
+    coerce : NMInteger -> %
+    ++ coerce(i) coerces i as a NMPrimeField element.
+    jnpf : Integer -> %
+    ++ jnpf(i) returns i as a NMPrimeField element.
+    jnpf : NMInteger -> %
+    ++ jnpf(i) returns i as a NMPrimeField element.
+    GF : Integer -> %
+    ++ GF(i) returns i as a NMPrimeField element.
+    ++ Convenience function.
+    GF : NMInteger -> %
+    ++ GF(i) returns i as a NMPrimeField element.
+    ++ Convenience function.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from String
+    import from IntegerNumberTheoryFunctions
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    -- initialize
+    not prime?(p) => error "Argument to NMPrimeField(p) must be a prime"
+    NPF := concat(["NPF", string(p)])
+    jlEvalString(concat([NPF,"=GF(", string(p),")"]))@Void
+    NPFP := concat(NPF,"(")
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+
+    jlNMRing() == NPF
+    jlObject() == jlEvalString(concat(["string(", NPF,")"]))@String
+
+    0 == jlref(concat(["zero(", NPF,")"]))
+    1 == jlref(concat(["one(", NPF,")"]))
+
+    generator? x == junbfunc("is_gen",x)
+    index(n : PI) == coerce(n)
+    random() == coerce(random(p)$Integer)
+
+
+    x : % * y : NMInteger == jbinfunc("*", x, y)
+    x : % * y : Integer == jlref(concat [getind(x), "*", string(y)])
+    x : % / y : % == jbinfunc("/", x, y)
+    x * y : Fraction Integer ==
+      jlref(concat [getind(x), "*(", string(numer(y)),
+        "//", string(denom(y)),")"])
+    x ^ y : Integer == jlref(concat [getind(x), "^", string(y)])
+    recip(x) ==
+      -- TODO: compute an euclidean dvision to check
+      zero?(x) => "failed"
+      junfunc("inv",x)@%
+    inv(x) == junfunc("inv",x)
+    x quo y == jbinfunc("÷", x, y)
+    -- x quo y == jbinfunc("div", x, y)
+    x rem y ==
+      zero? y => error "rem$NPF: Division by 0"
+      0
+
+    factorsOfCyclicGroupSize() ==
+      factorsOfCyclicGroupSize()$PrimeField(p)
+
+    tableForDiscreteLogarithm(fac) ==
+      tableForDiscreteLogarithm(fac)$PrimeField(p)
+
+    createPrimitiveElement() ==
+      coerce(primitiveElement()$PrimeField(p) pretend INT)
+    primitiveElement() ==
+      coerce(primitiveElement()$PrimeField(p) pretend INT)
+
+    nextItem(n) ==
+      m := n+1
+      m = 0 => "failed"
+      m
+    lookup x == (zero? x => p; (convert(x)@Integer) :: PositiveInteger)
+    generator() == 0
+    normalElement() == 1
+    createNormalElement() == 1
+    characteristic() == p
+    size() == p
+    order() == p
+    representationType() == "prime"
+    extensionDegree() : PI == 1
+    charthRoot(x : %) : % == x
+    inGroundField?(x)  == true
+    coordinates(x : %) : Vector(%) == new(1, x)$(Vector %)
+    represents(v)  == v(1)
+
+    retract(x) == x
+    retractIfCan(x) == x
+
+    basis() == new(1, 1::%)$(Vector %)
+    basis(n : PI) ==
+      n = 1 => basis()
+      error("basis: argument must divide extension degree")
+
+    definingPolynomial() ==
+      monomial(1, 1)$(SUP %) - monomial(1, 0)$(SUP %)
+
+    minimalPolynomial(x) ==
+      monomial(1, 1)$(SUP %) - monomial(x, 0)$(SUP %)
+
+    sqrt(x) == junfunc("sqrt", x)
+
+    quadraticNonResidue(): % ==
+      found? : Boolean := false
+      q : Integer := 1
+      while not found? repeat
+        q := q+1
+        found? := jacobi(q, p)$IntegerNumberTheoryFunctions = -1
+      coerce(q)
+
+
+
+    convert(x : %) : Integer == parsei string(x)
+    coerce(x : NMInteger) : % == junfunc(NPF, x)
+    coerce(i : Integer) == jlref(concat([NPFP, string(i), ")"]))
+    jnpf(i : Integer) == coerce(i)
+    jnpf(ji : NMInteger) == coerce(ji)
+    GF(i : Integer) == coerce(i)
+    GF(ji : NMInteger) == coerce(ji)
+    coerce(i : %) : OutputForm == message(string(i))
+
+)abbrev domain NFF NMFiniteField
+++ Experimental domain for Nemo Galois Fields
+++ Author: G. Vanuxem
+++ Date Created: Feb, 2024
+++ Reference: https://flintlib.org/
+++ Last Modified: Jul. 2025
+++ Description:
+++  This domain allows the manipulation of Nemo Galois field
+++  of p^n elements using the Nemo Julia package (FLINT based).
+++ References: https://flintlib.org/; https://nemocas.github.io/Nemo.jl/stable/
+NMFiniteField(p : PositiveInteger, n: PositiveInteger) : Exports == Implementation where
+  PI        ==> PositiveInteger
+  NNI       ==> NonNegativeInteger
+  SUP       ==> SparseUnivariatePolynomial
+  parsei    ==> PARSE_-INTEGER$Lisp
+  Exports ==> Join(NMField, FiniteFieldCategory,
+                   FiniteAlgebraicExtensionField(NMPrimeField(p)),
+                   ConvertibleTo(Integer)) with
+    generator? : % -> Boolean
+    ++ generator?(x) checks whether or not x is a generator
+    ++ of the finite field.
+    absolute? : () -> Boolean
+    ++ absolute?(x) checks whether or not x is the base field
+    ++ is a prime field.
+    trace : % -> NMPrimeField(p)
+    ++ trace(x) returns the trace of x.
+    absoluteTrace : % -> NMPrimeField(p)
+    ++ absoluteTrace(x) returns the absolute trace of x.
+    norm : % -> NMPrimeField(p)
+    ++ norm(x) returns the norm of x.
+    absoluteNorm : % -> NMPrimeField(p)
+    ++ absoluteNorm(x) returns the absolute norm of x.
+    order : () -> NNI
+    ++ order() returns the order of the finite field.
+    rank : () -> PositiveInteger
+    ++ rank() returns the degree of the extension.
+    "*" : (%, NMInteger) -> %
+    ++ x*i is the integer multiplication (NMInteger).
+    "*" : (%, Integer) -> %
+    ++ x*i is the integer multiplication.
+    sqrt : % -> %
+    ++ sqrt(x) returns a square root of x.
+    ++ Throws a Julia error if there is no square root and returns 0.
+    coerce : Integer -> %
+    ++ coerce(i) coerces i.
+    coerce : NMInteger -> %
+    ++ coerce(i) coerces i.
+    jnff : Integer -> %
+    ++ jnff(i) returns i as a NMFiniteField element.
+    jnff : NMInteger -> %
+    ++ jnff(i) returns i, a NMInteger, as a NMFiniteField element.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from String
+    import from Boolean
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    -- initialize
+    not prime?(p) => error "NMFiniteField(p, n): argument p must be a prime"
+    NFF := concat(["NFF",string(p^n)])
+    jlEvalString(concat([NFF, "=GF(", string(p),",", string(n),")"]))@Void
+    NFFP := concat(NFF,"(")
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+
+    jlNMRing() == NFF
+    jlObject() == jlEvalString(concat(["string(", NFF,")"]))@String
+
+    0 == jlref(concat(["zero(", NFF,")"]))
+    1 == jlref(concat(["one(", NFF,")"]))    
+
+    generator? x == junbfunc("is_gen",x)
+    absolute? ==
+      jlEvalString(concat(["is_absolute(", NFF,")"]))@Boolean   
+
+    x : % * y : NMInteger == jbinfunc("*", x, y)
+    x : % * y : Integer == jlref(concat [getind(x), "*", string(y)])
+    x : % / y : % == jbinfunc("/", x, y)
+
+    x quo y == jbinfunc("÷", x, y)
+    -- x quo y == jbinfunc("div", x, y)
+    x rem y ==
+      zero? y => error "rem$NFF: Division by 0"
+      0
+    recip(x) ==
+      zero? x => "failed"
+      junfunc("inv", x) pretend %
+    inv(x) == junfunc("inv", x)
+
+    generator() == jlref(concat(["gen(", NFF,")"]))
+    trace(a) == jlref(concat(["tr(", getind(a),")"]))$NMPrimeField(p)
+    absoluteTrace(a) == jlref(concat(["absolute_tr(", getind(a),")"]))$NMPrimeField(p)
+    norm(a) == jlref(concat(["norm(", getind(a),")"]))$NMPrimeField(p)
+    absoluteNorm(a) == jlref(concat(["absolute_norm(", getind(a),")"]))$NMPrimeField(p)
+    --normalElement() == 1
+    --createNormalElement() == 1
+    characteristic() == p pretend NNI
+    size() == p^n pretend NNI
+    order() == p^n pretend NNI
+    representationType() == "polynomial"
+    extensionDegree() : PI == n
+    rank() == n
+    charthRoot(x : %) : % == x
+    inGroundField?(x) == false
+    coordinates(x : %) : Vector(NMPrimeField(p)) ==
+      new(1, x pretend NMPrimeField(p))
+    represents(v)  == v(1) pretend %
+    
+    retract(x) == x pretend NMPrimeField(p)
+    retractIfCan(x) == x pretend NMPrimeField(p)
+
+    basis() == new(1, 1)$(Vector %)
+    basis(x : PI) ==
+      x = 1 => basis()
+      error("basis: argument must divide extension degree")
+
+    --definingPolynomial() ==
+    --  monomial(1, 1)$(SUP %) - monomial(1, 0)$(SUP %)
+
+    --minimalPolynomial(x) ==
+    --  monomial(1, 1)$(SUP %) - monomial(x, 0)$(SUP %)
+
+    sqrt(x) == junfunc("sqrt", x)
+
+    convert(x : %) : Integer == parsei(string(x))
+    coerce(x : NMInteger) : % == junfunc(NFF, x)
+    coerce(i : Integer) == jlref(concat([NFFP, string(i), ")"]))
+    jnff(i : Integer) == coerce(i)
+    jnff(ji : NMInteger) == coerce(ji)
+    coerce(i : %) : OutputForm == message(string(i))
+
+)abbrev domain INECF InnerNMExactCalciumField
+++ Domain for Nemo exact real/complex field based on the Calcium
+++ library.
+++ Author: G. Vanuxem
+++ Date Created: April, 2024
+++ Last Modified: Jul. 2025
+++ Keywords: float, floating point, number, complex
+++ Description:
+++  \spadtype{InnerNMExactCalciumField} implements exact real/complex field
+++  arithmetic using the Nemo Julia package. Inner domain using options,
+++  see https://fredrikj.net/calcium/ca.html#context-options for hints.
+++ References: https://flintlib.org/; https://nemocas.github.io/Nemo.jl/stable/
+++  See https://flintlib.org/doc/introduction_calcium.html for the C library.
+--InnerNMExactCalciumField(jdict("Dict{Symbol,Int64}(:verbose=>0,:print_flags=>3)"))
+--InnerNMExactCalciumField(jdict("Dict{Symbol,Int64}(:verbose=>0,:print_flags=>643)"))
+InnerNMExactCalciumField(Options : JLObjDict) : Exports ==
+      Implementation where
+  JI64      ==> JLInt64
+  PI        ==> PositiveInteger
+  NNI       ==> NonNegativeInteger
+  JF64      ==> JLFloat64
+  Exports ==> Join(NMField, OrderedSet, RadicalCategory,
+            ComplexCategory(%), TranscendentalFunctionCategory) with
+    real? : % -> Boolean
+    ++ real?(z) checks whether or not z is a real number. 
+    integer? : % -> Boolean
+    ++ integer?(z) checks whether or not z is an integer.
+    algebraic? : % -> Boolean
+    ++ algebraic?(x) checks whether or not x is algebraic.
+    imaginary? : % -> Boolean
+    ++ imaginary?(x) checks whether or not x is imaginary.
+    rational? : % -> Boolean
+    ++ rational?(x) checks whether or not x is a rational number.
+    number? : % -> Boolean
+    ++ number?(x) checks whether or not x is a number, i.e.
+    ++ not an infinity or an undefined value.
+    unknown? : % -> Boolean
+    ++ unknown?(x) checks whether or not x is unknown.
+    undefined? : % -> Boolean
+    ++ undefined?(x) checks whether or not x is undefined.
+    infinity? : % -> Boolean
+    ++ infinity?(x) checks whether or not x is an infinity.
+    signedInfinity? : % -> Boolean
+    ++ signedInfinity?(x) checks whether or not x is a signed infinity.
+    unsignedInfinity? : % -> Boolean
+    ++ unsignedInfinity?(x) checks whether or not x is an unsigned infinity.
+    exp : () -> %
+    ++ exp() returns ℯ (exp(1)).
+    exp1 : () -> %
+    ++ exp1() returns ℯ (exp(1)).
+    eulerGamma : () -> %
+    ++ eulerGamma() returns the Euler's constant gamma (γ).
+    pi : () -> %
+    ++ pi() returns π.
+    infinity : () -> %
+    ++ infinity() returns unsigned infinity.
+    positiveInfinity : () -> %
+    ++ positiveInfinity() returns positive infinity.
+    negativeInfinity : () -> %
+    ++ negativeInfinity() returns negative infinity.
+    infinity : % -> %
+    ++ infinity(x) returns signed infinity depending on x sign. 
+    unknown : () -> %
+    ++ unknown() returns the unknown special value.
+    undefined : () -> %
+    ++ undefined() returns the undefined special value.
+    conjugate : (%, JLSymbol) -> %
+    ++ conjugate(x, repr) returns conjugate(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it),
+    ++ :deep (recursively),
+    ++ :shallow (a new extension, ā, is used if there is no express simplification).
+    abs : % -> %
+    ++ abs(x) returns the absolute value of x.
+    abs2 : % -> %
+    ++ abs2(x) returns the square of the absolute value of x.
+    sign : % -> %
+    ++ sign(x) returns sign of x.
+    csign : % -> %
+    ++ csign(x) is an extension of the real sign function, x/sqrt(x^2) unless x is 0
+    ++ (0 in this case).
+    floor : % -> %
+    ++ floor(z) returns the largest integer below or equal to z.
+    ceiling : % -> %
+    ++ ceiling(z) returns the smallest integer above or equal to z.
+    pow : (%, Integer, JLSymbol) -> %
+    ++ pow(x, i, repr) x raised to power i using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :arithmetic
+    ++ See the Nemo documentation for more information, 
+    ++ and InnerNMExactCalciumField for more options.
+    sin : (%, JLSymbol) -> %
+    ++ sin(x, repr) returns sin(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :exponential
+    ++ :tangent
+    ++ :direct
+    ++ Example: sin(x,"exponential") -- automatically coerced.
+    cos : (%, JLSymbol) -> %
+    ++ cos(x, repr) returns cos(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :exponential
+    ++ :tangent
+    ++ :direct or :sine_cosine
+    tan : (%, JLSymbol) -> %
+    ++ tan(x, repr) returns tan(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :exponential
+    ++ :direct or :tangent
+    ++ :sine_cosine
+    atan : (%, JLSymbol) -> %
+    ++ atan(x, repr) returns atan(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :logarithm
+    ++ :direct or :arctangent
+    asin : (%, JLSymbol) -> %
+    ++ asin(x, repr) returns asin(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :logarithm
+    ++ :direct
+    acos : (%, JLSymbol) -> %
+    ++ acos(x,repr) returns acos(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :logarithm
+    ++ :direct
+    Gamma : % -> %
+    ++ Gamma(x) is the Euler Gamma function evaluated at x. 
+    erf : % -> %
+    ++ erf(x) is the error function evaluated at x.
+    erfi : % -> %
+    ++ erfi(x) is the imaginary error function evaluated at x.
+    erfc : % -> %
+    ++ erfc(x) is the complementary error function evaluated at x.
+    complexNormalForm : % -> %
+    ++ complexNormalForm(x) returns x rewritten using standard transformations.
+    ++ See the Nemo.jl documentation for more information.
+    random : (Integer, Integer) -> %
+    ++ random(depth, bits) returns a random number with size of
+    ++ coefficients up to bits. If depth is nonzero, apply a random arithmetic
+    ++ operation/function to operands produced using recursive calls
+    ++ with depth - 1.
+    random : (Integer, Integer, JLSymbol) -> %
+    ++ random(depth, bits, type) returns a random number with size of
+    ++ coefficients up to bits. If depth is nonzero, apply a random arithmetic
+    ++ operation/function to operands produced using recursive calls
+    ++ with depth - 1. depth is not used for rationals. type can be one of:
+    ++ :rational (returns a rational)
+    ++ :null (returns value with default settings)
+    ++ :special (returns a special value of a number - can
+    ++ throw an error if it isn't a number).
+    "*"  : (%, Integer) -> %
+    ++ x*n is the product of x by the integer n.
+    "/" : (Integer, %) -> %
+    ++ i/x is the division of an integer by x.
+    "/" : (%, Integer) -> %
+    ++ x/i is the division by an integer.
+    jlOptions : % -> JLObjDict
+    ++ jlOptions(x) returns the options set at instantiation time
+    ++ that affect different aspects of computations. See Nemo
+    ++ documentation.
+    retractIfCan : % -> Union(NMInteger, "failed")
+    ++ retractIfCan(z) retracts if possible z to a Integer.
+    retractIfCan : % -> Union(NMFraction(NMInteger), "failed")
+    ++ retractIfCan(z) retracts if possible z to a NMFraction(NMInteger).
+    --retractIfCan  : % -> Union(NMAlgebraicNumber, "failed")
+    --++ retractIfCan(z) retracts if possible z to a NMAlgebraicNumber.
+    retractIfCan : % -> Union(NMRealBall,"failed")
+    ++ retractIfCan(x) retracts x if possible or returns "failed".
+    retract : % -> NMComplexBall
+    ++ retract(x) retracts x. Error if x is not retractable.
+    coerce : Fraction(Integer) -> %
+    ++ coerce(q) coerces q. Convenience function.
+    coerce : NMFraction(NMInteger) -> %
+    ++ coerce(q) coerces q. Convenience function.
+    coerce : NMAlgebraicNumber -> %
+    ++ coerce(qbar) coerces qbar. Convenience function.
+    coerce : PositiveInteger -> %
+    ++ coerce(pi) coerces pi. Convenience function.
+    coerce : Complex(Integer) -> % -- for %i operations
+    ++ coerce(z) coerces z. Convenience function.
+    jinecf : NMAlgebraicNumber -> %
+    ++ jinecf(qbar) coerces qbar to a Nemo exact real or complex number.
+    jinecf : Fraction(Integer) -> %
+    ++ jinecf(fi) coerces fi to a Nemo real exact number.
+    jinecf : (Fraction(Integer), Fraction(Integer)) -> %
+    ++ jinecf(real,cplx) coerces real and cplx to a Nemo exact complex number
+    ++ where real is the real part and cplx the complex part.
+    jinecf : NMFraction(NMInteger) -> %
+    ++ jinecf(nr) coerces nr to a Nemo exact real number.
+    jinecf : (NMFraction(NMInteger), NMFraction(NMInteger)) -> %
+    ++ jinecf(real, cplx) coerces real and cplx to a Nemo exact complex number
+    ++ where real is the real part and cplx the complex part.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from String
+    import from NMFraction(NMInteger)
+    import from NMAlgebraicNumber
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)),")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    -- initialize (see Calcium constructor options)
+    INECF := concat(["INECF",
+      jlEvalString(concat ["string(hash(", getind(Options),"))"])@String])
+    jlEvalString(concat([INECF,
+      "=CalciumField(extended=true,options=",getind(Options),")"]))@Void
+    INECFP := concat([INECF,"("])
+
+    jlOptions(x) == jlref(concat ["options(",INECF,")"])$JLObjDict
+
+    jlNMRing() == INECF
+    jlObject() == jlEvalString(concat(["string(", INECF,")"]))@String
+
+    0    == jlref(concat ["zero(", INECF,")"])
+    1    == jlref(concat ["one(", INECF,")"])
+    -- Why this redundancy here? Cf. jnemo.input checks
+    -- TODO (and check other inner domains - jnball)
+    x = y ==
+      jlEvalString(concat [getind(x),"==",getind(y)])@Boolean
+    x ~= y ==
+      jlEvalString(concat [getind(x),"!=",getind(y)])@Boolean
+    imaginary() == jlref(concat ["onei(", INECF,")"]) 
+    real(x) == junfunc("real", x)
+    imag(x) == junfunc("imag", x)
+    pi() == jlref(concat ["const_pi(",INECF,")"])
+    exp1() == jlref(concat ["exp(",INECF,"(1))"])
+    exp() == jlref(concat ["exp(",INECF,"(1))"])
+    eulerGamma() == jlref(concat ["const_euler(",INECF,")"])
+    infinity() == jlref(concat ["unsigned_infinity(", INECF,")"])
+    infinity(x) == junfunc("infinity", x)
+    positiveInfinity() == jlref(concat ["infinity(", INECF,")"])
+    negativeInfinity() == - jlref(concat ["infinity(", INECF,")"])
+    undefined() == jlref(concat ["undefined(", INECF,")"])
+    unknown() == jlref(concat ["unknown(", INECF,")"])
+
+    integer? x == junbfunc("isinteger",x)
+    rational? x == junbfunc("is_rational",x)
+    algebraic? x == junbfunc("is_algebraic",x)
+    real? x == junbfunc("isreal",x)
+    imaginary? x == junbfunc("is_imaginary",x)
+    number? x == junbfunc("is_number",x)
+    undefined? x == junbfunc("is_undefined",x)
+    unknown? x == junbfunc("is_unknown",x)
+    infinity? x == junbfunc("isinf",x)
+    unsignedInfinity? x == junbfunc("is_uinf",x)
+    signedInfinity? x == junbfunc("is_signed_inf",x)
+
+    x < y  == jbinbfunc("<",x,y)
+    x > y  == jbinbfunc(">",x,y)
+    x >= y == jbinbfunc(">=",x,y)
+    x <= y == jbinbfunc("<=",x,y)
+    smaller?(x, y)  == jbinbfunc("<",x,y)
+    sign x == junfunc("sign",x)
+    csign x == junfunc("csgn",x) 
+    abs x == junfunc("abs",x)
+    abs2 x == junfunc("abs2",x)
+    argument x == junfunc("angle",x)
+    conjugate(x) == junfunc("conj",x)
+    conjugate(x,repr) ==
+      jlref(concat ["conj(",getind(x), ",form=", string(repr),")"])
+    floor x == junfunc("floor",x)
+    ceiling x == junfunc("ceil",x) 
+
+    zero?(x) == junbfunc("iszero", x)
+    one?(x) == junbfunc("isone", x)
+    x + y == jbinfunc("+", x, y)
+    x - y == jbinfunc("-", x, y)
+    - x   == junfunc("-", x)
+    x : % * y : % == jbinfunc("*", x, y)
+    x : NMInteger * y : % == jbinfunc("*", x, y)
+    x : Integer * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x : PositiveInteger * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x : NonNegativeInteger * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x ^ y : PositiveInteger == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : NonNegativeInteger == jlref(concat [getind(x), "^", string(y)])
+    x : % / y : % == jbinfunc("//", x, y)
+    x : % ^ y : % == jbinfunc("^", x, y)
+    x : % * y : Integer == jlref(concat([getind(x), "*", string(y)]))
+    x : % * y : Fraction(Integer) ==
+      jlref(concat [getind(x), "*(",
+        string(numer(y)),"//", string(denom(y)), ")"])
+    x : Integer / y : % == jlref(concat([string(x), "//", getind(y)]))
+    x : % / y : Integer == jlref(concat([getind(x), "//", string(y)]))
+
+    x ^ y : Integer ==
+      jlref(concat [getind(x),"^" string(y)])
+    x ^ y : Fraction(Integer) ==
+      jlref(concat [getind(x), "^(",
+        string(numer(y)),"//", string(denom(y)), ")"])
+    pow(x, i, repr) ==
+      jlref(concat ["pow(", getind(x),",", string(i),
+        ",form=", string(repr),")"])
+
+    -- x quo y == jbinfunc("div", x, y)
+    x quo y == jbinfunc("÷", x, y)
+    x rem y ==
+      zero? y => error "rem$INECF: Division by 0"
+      0
+    recip(x) ==
+      zero? x => "failed"
+      junfunc("inv", x) pretend %
+
+    sqrt(x)  == junfunc("√",x)
+    exp(x)   == junfunc("exp",x)
+    log(x)   == junfunc("log",x)
+    recip(x) ==
+      zero? x => "failed"
+      junfunc("inv",x) pretend %
+
+    sin(x)  == junfunc("sin",x)
+    sin(x,repr)  == jlref(concat ["sin(",getind(x), ",form=", string(repr),")"])
+    cos(x)  == junfunc("cos",x)
+    cos(x,repr)  == jlref(concat ["cos(",getind(x), ",form=", string(repr),")"])
+    tan(x)  == junfunc("tan",x)
+    tan(x,repr)  == jlref(concat ["tan(",getind(x), ",form=", string(repr),")"])
+
+    cot x == cos x * csc x
+    csc x ==
+      (a := recip(sin x)) case "failed" => error "csc: no reciprocal"
+      a@%
+    sec x ==
+      (a := recip(cos x)) case "failed" => error "sec: no reciprocal"
+      a@%
+
+    asin(x)  == junfunc("asin",x)
+    asin(x,repr)  == jlref(concat ["asin(",getind(x), ",form=", string(repr),")"])
+    acos(x)  == junfunc("acos",x)
+    acos(x,repr)  == jlref(concat ["acos(",getind(x), ",form=", string(repr),")"])
+    atan(x)  == junfunc("atan",x)
+    atan(x,repr)  == jlref(concat ["atan(",getind(x), ",form=", string(repr),")"])
+
+    sinh x : % ==
+      e := exp x
+      (e - recip(e)::%) * recip(2::%)::%
+    cosh x ==
+      e := exp x
+      (e + recip(e)::%) * recip(2::%)::%
+    tanh x == sinh x * sech x
+    csch x ==
+      (a := recip(sinh x)) case "failed" => error "csch: no reciprocal"
+      a@%
+    sech x ==
+      (a := recip(cosh x)) case "failed" => error "sech: no reciprocal"
+      a@%
+    coth x == cosh x * csch x
+
+    asinh x == log(x + sqrt(x^2 + 1))
+    acosh x == 2*log(sqrt((x+1)/2) + sqrt((x-1)/2))
+    atanh x == (log(1+x)-log(1-x))/2
+    acsch x ==
+      (a := recip x) case "failed" => error "acsch: no reciprocal"
+      asinh(a@%)
+    asech x ==
+      (a := recip x) case "failed" => error "asech: no reciprocal"
+      acosh(a@%)
+    acoth x ==
+      (a := recip x) case "failed" => error "acoth: no reciprocal"
+      atanh(a@%)
+
+    -- TODO: improve
+    Gamma(x) == jlref(concat(["Nemo.gamma(", getind(x),")"]))
+    erf(x)   == jlref(concat(["Nemo.erf(", getind(x),")"]))
+    erfi(x)  == jlref(concat(["Nemo.erfi(", getind(x),")"]))
+    erfc(x)  == jlref(concat(["Nemo.erfc(", getind(x),")"]))
+
+    complexNormalForm(x) == junfunc("complex_normal_form", x)
+
+    random(depth, bits) ==
+      jlref(concat ["rand(",INECF,",depth=", string(depth), ",bits=", string(bits),")"])
+    random(depth, bits, type) ==
+      jlref(concat ["rand(",INECF,",depth=", string(depth), ",bits=",
+        string(bits),",randtype=", string(type), ")"])
+  
+    retractIfCan(x : %) : Union(NMInteger, "failed") ==
+      integer?(x) =>   
+        jlref(concat ["ZZ(", getind(x),")"])$NMInteger
+      "failed"
+    retractIfCan(x : %) : Union(NMFraction(NMInteger), "failed") ==
+      rational?(x) =>   
+        jlref(concat ["QQ(", getind(x),")"])$NMFraction(NMInteger)
+      "failed"
+    --retractIfCan(x : %) : Union(NMAlgebraicNumber, "failed") ==
+    --  algebraic?(x) =>   
+    --    jlref(concat ["QQBar(", getind(x),")"])$NMAlgebraicNumber
+    --  "failed"
+    retractIfCan(x) : Union(NMRealBall, "failed") ==
+      real?(x) =>
+        junfunc(jlNMRing()$NMRealBall(), x) pretend NMRealBall
+      "failed"
+    retract(x) : NMComplexBall ==
+      junfunc(jlNMRing()$NMComplexBall(), x) 
+    complex(r, i) ==
+      jlref(concat([INECFP, getind(r),"+onei(",INECF,")*", getind(i), ")"]))
+    coerce(i : Integer) == jlref(concat([INECFP, string(i),")"]))
+    coerce(z : Complex(Integer)) ==
+      jlref(concat([INECFP, string(real(z)),"+im*", string(imag(z)), ")"]))
+    coerce(i : PositiveInteger) == jlref(concat([INECFP, string(i),")"]))
+    coerce(fi : Fraction(Integer)) ==
+      jlref(concat([INECF,"(QQ(", string(numer(fi)), "//", string(denom(fi)), "))"]))
+    coerce(nfi : NMFraction(NMInteger)) == junfunc(INECF, nfi)
+    coerce(an : NMAlgebraicNumber) == junfunc(INECF, an)
+    jinecf(an : NMAlgebraicNumber) == junfunc(INECF, an)
+    jinecf(fi : Fraction(Integer)) ==
+      jlref(concat([INECF,"(QQ(", string(numer(fi)), "//", string(denom(fi)), "))"]))
+    jinecf(r : Fraction Integer, i : Fraction Integer) ==
+      jlref(concat([INECF,"(QQ(", string(numer(r)), "//", string(denom(r)), ")",
+        "+onei(",INECF,")*", "QQ(", string(numer(i)), "//", string(denom(i)), "))"]))
+    jinecf(nfi : NMFraction(NMInteger)) == junfunc(INECF, nfi)
+    jinecf(r : NMFraction(NMInteger), i : NMFraction(NMInteger)) ==
+      jlref(concat([INECFP, getind(r),"+onei(", INECF,")*", getind(i), ")"]))
+    coerce(i : %) : OutputForm == message(string(i))
+
+)abbrev domain NECF NMExactCalciumField
+++ Domain for Nemo exact real/complex field based on the Calcium
+++ library.
+++ Author: G. Vanuxem
+++ Date Created: April, 2024
+++ Keywords: float, floating point, number, complex
+++ Description:
+++  \spadtype{NMExactCalciumField} implements exact real/complex field
+++  arithmetic using the Nemo Julia package.
+++ References: https://flintlib.org/; https://nemocas.github.io/Nemo.jl/stable/
+++ See also: https://flintlib.org/doc/introduction_calcium.html for the C library.
+NMExactCalciumField() : Exports == Implementation where
+  JI64      ==> JLInt64
+  PI        ==> PositiveInteger
+  NNI       ==> NonNegativeInteger
+  JF64      ==> JLFloat64
+  Exports ==> Join(NMField, OrderedSet, RadicalCategory,
+            ComplexCategory(%), TranscendentalFunctionCategory) with
+    real? : % -> Boolean
+    ++ real?(z) checks whether or not z is a real number. 
+    integer? : % -> Boolean
+    ++ integer?(z) checks whether or not z is an integer.
+    algebraic? : % -> Boolean
+    ++ algebraic?(x) checks whether or not x is algebraic.
+    imaginary? : % -> Boolean
+    ++ imaginary?(x) checks whether or not x is imaginary.
+    rational? : % -> Boolean
+    ++ rational?(x) checks whether or not x is a rational number.
+    number? : % -> Boolean
+    ++ number?(x) checks whether or not x is a number, i.e.
+    ++ not an infinity or an undefined value.
+    unknown? : % -> Boolean
+    ++ unknown?(x) checks whether or not x is unknown.
+    undefined? : % -> Boolean
+    ++ undefined?(x) checks whether or not x is undefined.
+    infinity? : % -> Boolean
+    ++ infinity?(x) checks whether or not x is an infinity.
+    signedInfinity? : % -> Boolean
+    ++ signedInfinity?(x) checks whether or not x is a signed infinity.
+    unsignedInfinity? : % -> Boolean
+    ++ unsignedInfinity?(x) checks whether or not x is an unsigned infinity.
+    exp : () -> %
+    ++ exp() returns ℯ (exp(1)).
+    exp1 : () -> %
+    ++ exp1() returns ℯ (exp(1)).
+    eulerGamma : () -> %
+    ++ eulerGamma() returns the Euler's constant gamma (γ).
+    pi : () -> %
+    ++ pi() returns π.
+    infinity : () -> %
+    ++ infinity() returns unsigned infinity.
+    positiveInfinity : () -> %
+    ++ positiveInfinity() returns positive infinity.
+    negativeInfinity : () -> %
+    ++ negativeInfinity() returns negative infinity.
+    infinity : % -> %
+    ++ infinity(x) returns signed infinity depending on x sign. 
+    unknown : () -> %
+    ++ unknown() returns the unknown special value.
+    undefined : () -> %
+    ++ undefined() returns the undefined special value.
+    conjugate : (%, JLSymbol) -> %
+    ++ conjugate(x, repr) returns conjugate(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it),
+    ++ :deep (recursively),
+    ++ :shallow (a new extension, ā, is used if there is no express simplification).
+    abs : % -> %
+    ++ abs(x) returns the absolute value of x.
+    abs2 : % -> %
+    ++ abs2(x) returns the square of the absolute value of x.
+    sign : % -> %
+    ++ sign(x) returns sign of x.
+    csign : % -> %
+    ++ csign(x) is an extension of the real sign function, x/sqrt(x^2) unless x is 0
+    ++ (0 in this case).
+    floor : % -> %
+    ++ floor(z) returns the largest integer below or equal to z.
+    ceiling : % -> %
+    ++ ceiling(z) returns the smallest integer above or equal to z.
+    pow : (%, Integer, JLSymbol) -> %
+    ++ pow(x, i, repr) x raised to power i using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :arithmetic
+    ++ See the Nemo documentation for more information.
+    sin : (%, JLSymbol) -> %
+    ++ sin(x, repr) returns sin(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :exponential
+    ++ :tangent
+    ++ :direct
+    cos : (%, JLSymbol) -> %
+    ++ cos(x, repr) returns cos(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :exponential
+    ++ :tangent
+    ++ :direct or :sine_cosine
+    tan : (%, JLSymbol) -> %
+    ++ tan(x, repr) returns tan(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :exponential
+    ++ :direct or :tangent
+    ++ :sine_cosine
+    atan : (%, JLSymbol) -> %
+    ++ atan(x, repr) returns atan(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :logarithm
+    ++ :direct or :arctangent
+    asin : (%, JLSymbol) -> %
+    ++ asin(x, repr) returns asin(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :logarithm
+    ++ :direct
+    acos : (%, JLSymbol) -> %
+    ++ acos(x,repr) returns acos(x) using one of the repr representations:
+    ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
+    ++ :logarithm
+    ++ :direct
+
+    Gamma : % -> %
+    ++ Gamma(x) is the Euler Gamma function evaluated at x. 
+    erf : % -> %
+    ++ erf(x) is the error function evaluated at x.
+    erfi : % -> %
+    ++ erfi(x) is the imaginary error function evaluated at x.
+    erfc : % -> %
+    ++ erfc(x) is the complementary error function evaluated at x.
+    complexNormalForm : % -> %
+    ++ complexNormalForm(x) returns x rewritten using standard transformations.
+    ++ See the Nemo.jl documentation for more information.
+    random : (Integer, Integer) -> %
+    ++ random(depth, bits) returns a random number with size of
+    ++ coefficients up to bits. If depth is nonzero, apply a random arithmetic
+    ++ operation/function to operands produced using recursive calls
+    ++ with depth - 1.
+    random : (Integer, Integer, JLSymbol) -> %
+    ++ random(depth, bits, type) returns a random number with size of
+    ++ coefficients up to bits. If depth is nonzero, apply a random arithmetic
+    ++ operation/function to operands produced using recursive calls
+    ++ with depth - 1. depth is not used for rationals. type can be one of:
+    ++ :rational (returns a rational)
+    ++ :null (returns value with default settings)
+    ++ :special (returns a special value of a number - can
+    ++ throw an error if it isn't a number).
+
+    "*" : (%, Integer) -> %
+    ++ x*n is the product of x by the integer n.
+    "/" : (Integer, %) -> %
+    ++ i/x is the division of an integer by x.
+    "/" : (%, Integer) -> %
+    ++ x/i is the division by an integer.
+    jlOptions : % -> JLObjDict
+    ++ jlOptions(x) returns the options used during computations.
+    retractIfCan : % -> Union(NMInteger, "failed")
+    ++ retractIfCan(z) retracts if possible z to a Integer.
+    retractIfCan : % -> Union(NMFraction(NMInteger), "failed")
+    ++ retractIfCan(z) retracts if possible z to a NMFraction(NMInteger).
+    retractIfCan : % -> Union(NMAlgebraicNumber, "failed")
+    ++ retractIfCan(z) retracts if possible z to a NMAlgebraicNumber.
+    retractIfCan : % -> Union(NMRealBall,"failed")
+    ++ retractIfCan(x) retracts x.
+    retract : % -> NMComplexBall
+    ++ retract(x) retracts x.
+    coerce : Fraction(Integer) -> %
+    ++ coerce(q) coerces q. Convenience function.
+    coerce : NMFraction(NMInteger) -> %
+    ++ coerce(q) coerces q. Convenience function.
+    coerce : NMAlgebraicNumber -> %
+    ++ coerce(qbar) coerces qbar. Convenience function.
+    coerce : PositiveInteger -> %
+    ++ coerce(pi) coerces pi. Convenience function.
+    coerce : Complex(Integer) -> % -- for %i operations
+    ++ coerce(z) coerces z. Convenience function.
+    jnecf : NMAlgebraicNumber -> %
+    ++ jnecf(qbar) coerces qbar to a Nemo exact real or complex number.
+    jnecf : Fraction(Integer) -> %
+    ++ jnecf(fi) coerces fi to a Nemo real exact number.
+    jnecf : (Fraction(Integer), Fraction(Integer)) -> %
+    ++ jnecf(real,cplx) coerces real and cplx to a Nemo exact complex number
+    ++ where real is the real part and cplx the complex part.
+    jnecf : NMFraction(NMInteger) -> %
+    ++ jnecf(nr) coerces nr to a Nemo exact real number.
+    jnecf : (NMFraction(NMInteger), NMFraction(NMInteger)) -> %
+    ++ jnecf(real,cplx) coerces real and cplx to a Nemo exact
+    ++ where real is the real part and cplx the complex part.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from String
+    import from NMFraction(NMInteger)
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    NECF := "NECF"
+    jlEvalString("NECF=CalciumField(extended=true)")
+    NECFP := "NECF("
+
+    jlOptions(x) == jlref(concat ["options(",NECF,")"])$JLObjDict
+
+    jlNMRing() == NECF
+    jlObject() == jlEvalString(concat(["string(", NECF,")"]))@String
+
+    0    == jlref(concat ["zero(", NECF,")"])
+    1    == jlref(concat ["one(", NECF,")"])
+    -- Why this redundancy here? Cf. jnemo.input checks
+    -- TODO (and check other inner domains - jnball)
+    x = y ==
+      jlEvalString(concat [getind(x),"==",getind(y)])@Boolean
+    x ~= y ==
+      jlEvalString(concat [getind(x),"!=",getind(y)])@Boolean
+    imaginary() == jlref(concat ["onei(", NECF,")"]) 
+    real(x) == junfunc("real", x)
+    imag(x) == junfunc("imag", x)
+    pi() == jlref(concat ["const_pi(",NECF,")"])
+    exp1() == jlref(concat ["exp(",NECF,"(1))"])
+    exp() == jlref(concat ["exp(",NECF,"(1))"])
+    eulerGamma() == jlref(concat ["const_euler(",NECF,")"])
+    infinity() == jlref(concat ["unsigned_infinity(", NECF,")"])
+    infinity(x) == junfunc("infinity", x)
+    positiveInfinity() == jlref(concat ["infinity(", NECF,")"])
+    negativeInfinity() == - jlref(concat ["infinity(", NECF,")"])
+    undefined() == jlref(concat ["undefined(", NECF,")"])
+    unknown() == jlref(concat ["unknown(", NECF,")"])
+
+    integer? x == junbfunc("isinteger",x)
+    rational? x == junbfunc("is_rational",x)
+    algebraic? x == junbfunc("is_algebraic",x)
+    real? x == junbfunc("isreal",x)
+    imaginary? x == junbfunc("is_imaginary",x)
+    number? x == junbfunc("is_number",x)
+    undefined? x == junbfunc("is_undefined",x)
+    unknown? x == junbfunc("is_unknown",x)
+    infinity? x == junbfunc("isinf",x)
+    unsignedInfinity? x == junbfunc("is_uinf",x)
+    signedInfinity? x == junbfunc("is_signed_inf",x)
+
+    x < y  == jbinbfunc("<",x,y)
+    x > y  == jbinbfunc(">",x,y)
+    x >= y == jbinbfunc(">=",x,y)
+    x <= y == jbinbfunc("<=",x,y)
+    smaller?(x, y)  == jbinbfunc("<",x,y)
+    sign x == junfunc("sign",x)
+    csign x == junfunc("csgn",x) 
+    abs x == junfunc("abs",x)
+    abs2 x == junfunc("abs2",x)
+    argument x == junfunc("angle",x)
+    conjugate(x) == junfunc("conj",x)
+    conjugate(x,repr) ==
+      jlref(concat ["conj(",getind(x), ",form=", string(repr),")"])
+    floor x == junfunc("floor",x)
+    ceiling x == junfunc("ceil",x) 
+
+    zero?(x) == junbfunc("iszero", x)
+    one?(x) == junbfunc("isone", x)
+    x + y == jbinfunc("+", x, y)
+    x - y == jbinfunc("-", x, y)
+    - x   == junfunc("-", x)
+    x : % * y : % == jbinfunc("*", x, y)
+    x : NMInteger * y : % == jbinfunc("*", x, y)
+    x : Integer * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x : PositiveInteger * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x : NonNegativeInteger * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x ^ y : PositiveInteger == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : NonNegativeInteger == jlref(concat [getind(x), "^", string(y)])
+    x : % / y : % == jbinfunc("//", x, y)
+    x : % ^ y : % == jbinfunc("^", x, y)
+    x : % * y : Integer == jlref(concat([getind(x), "*", string(y)]))
+    x : % * y : Fraction(Integer) ==
+      jlref(concat [getind(x), "*(",
+        string(numer(y)),"//", string(denom(y)), ")"])
+    x : Integer / y : % == jlref(concat([string(x), "//", getind(y)]))
+    x : % / y : Integer == jlref(concat([getind(x), "//", string(y)]))
+
+    x ^ y : Integer ==
+      jlref(concat [getind(x),"^" string(y)])
+    x ^ y : Fraction(Integer) ==
+      jlref(concat [getind(x), "^(",
+        string(numer(y)),"//", string(denom(y)), ")"])
+    pow(x, i, repr) ==
+      jlref(concat ["pow(", getind(x),",", string(i),
+        ",form=", string(repr),")"])
+
+    -- x quo y == jbinfunc("div", x, y)
+    x quo y == jbinfunc("÷", x, y)
+    x rem y ==
+      zero? y => error "rem$NECF: Division by 0"
+      0
+
+    sqrt(x)  == junfunc("√",x)
+    exp(x)   == junfunc("exp",x)
+    log(x)   == junfunc("log",x)
+    recip(x) ==
+      zero? x => "failed"
+      junfunc("inv",x) pretend %
+
+    sin(x)  == junfunc("sin",x)
+    sin(x,repr)  == jlref(concat ["sin(",getind(x), ",form=", string(repr),")"])
+    cos(x)  == junfunc("cos",x)
+    cos(x,repr)  == jlref(concat ["cos(",getind(x), ",form=", string(repr),")"])
+    tan(x)  == junfunc("tan",x)
+    tan(x,repr)  == jlref(concat ["tan(",getind(x), ",form=", string(repr),")"])
+
+    cot x == cos x * csc x
+    csc x ==
+      (a := recip(sin x)) case "failed" => error "csc: no reciprocal"
+      a@%
+    sec x ==
+      (a := recip(cos x)) case "failed" => error "sec: no reciprocal"
+      a@%
+
+    asin(x)  == junfunc("asin",x)
+    asin(x,repr)  == jlref(concat ["asin(",getind(x), ",form=", string(repr),")"])
+    acos(x)  == junfunc("acos",x)
+    acos(x,repr)  == jlref(concat ["acos(",getind(x), ",form=", string(repr),")"])
+    atan(x)  == junfunc("atan",x)
+    atan(x,repr)  == jlref(concat ["atan(",getind(x), ",form=", string(repr),")"])
+
+    sinh x : % ==
+      e := exp x
+      (e - recip(e)::%) * recip(2::%)::%
+    cosh x ==
+      e := exp x
+      (e + recip(e)::%) * recip(2::%)::%
+    tanh x == sinh x * sech x
+    csch x ==
+      (a := recip(sinh x)) case "failed" => error "csch: no reciprocal"
+      a@%
+    sech x ==
+      (a := recip(cosh x)) case "failed" => error "sech: no reciprocal"
+      a@%
+    coth x == cosh x * csch x
+
+  
+    asinh x == log(x + sqrt(x^2 + 1))
+    acosh x == 2*log(sqrt((x+1)/2) + sqrt((x-1)/2))
+    atanh x == (log(1+x)-log(1-x))/2
+    acsch x ==
+      (a := recip x) case "failed" => error "acsch: no reciprocal"
+      asinh(a@%)
+    asech x ==
+      (a := recip x) case "failed" => error "asech: no reciprocal"
+      acosh(a@%)
+    acoth x ==
+      (a := recip x) case "failed" => error "acoth: no reciprocal"
+      atanh(a@%)
+
+    -- TODO: improve
+    Gamma(x) == jlref(concat(["Nemo.gamma(", getind(x),")"]))
+    erf(x)   == jlref(concat(["Nemo.erf(", getind(x),")"]))
+    erfi(x)  == jlref(concat(["Nemo.erfi(", getind(x),")"]))
+    erfc(x)  == jlref(concat(["Nemo.erfc(", getind(x),")"]))
+
+    complexNormalForm(x) == junfunc("complex_normal_form", x)
+
+    random(depth, bits) ==
+      jlref(concat ["rand(",NECF,",depth=", string(depth), ",bits=", string(bits),")"])
+    random(depth, bits, type) ==
+      jlref(concat ["rand(",NECF,",depth=", string(depth), ",bits=",
+        string(bits),",randtype=", string(type), ")"])
+  
+    retractIfCan(x : %) : Union(NMInteger, "failed") ==
+      integer?(x) =>   
+        jlref(concat ["ZZ(", getind(x),")"])$NMInteger
+      "failed"
+    retractIfCan(x : %) : Union(NMFraction(NMInteger), "failed") ==
+      rational?(x) =>   
+        jlref(concat ["QQ(", getind(x),")"])$NMFraction(NMInteger)
+      "failed"
+    retractIfCan(x : %) : Union(NMAlgebraicNumber, "failed") ==
+      algebraic?(x) =>   
+        jlref(concat ["QQBar(", getind(x),")"])$NMAlgebraicNumber
+      "failed"
+    retractIfCan(x) : Union(NMRealBall, "failed") ==
+      real?(x) =>
+        junfunc(jlNMRing()$NMRealBall(), x) pretend NMRealBall
+      "failed"
+    retract(x) : NMComplexBall ==
+      junfunc(jlNMRing()$NMComplexBall(), x) 
+    complex(r, i) ==
+      jlref(concat([NECFP, getind(r),"+onei(",NECF,")*", getind(i), ")"]))
+    coerce(i : Integer) == jlref(concat([NECFP, string(i),")"]))
+    coerce(z : Complex(Integer)) ==
+      jlref(concat([NECFP, string(real(z)),"+im*", string(imag(z)), ")"]))
+    coerce(i : PositiveInteger) == jlref(concat([NECFP, string(i),")"]))
+    coerce(fi : Fraction(Integer)) ==
+      jlref(concat([NECF,"(QQ(", string(numer(fi)), "//", string(denom(fi)), "))"]))
+    coerce(nfi : NMFraction(NMInteger)) == junfunc(NECF, nfi)
+    coerce(an : NMAlgebraicNumber) == junfunc(NECF, an)
+    jnecf(an : NMAlgebraicNumber) == junfunc(NECF, an)
+    jnecf(fi : Fraction(Integer)) ==
+      jlref(concat([NECF,"(QQ(", string(numer(fi)), "//", string(denom(fi)), "))"]))
+    jnecf(r : Fraction Integer, i : Fraction Integer) ==
+      jlref(concat([NECF,"(QQ(", string(numer(r)), "//", string(denom(r)), ")",
+        "+onei(",NECF,")*", "QQ(", string(numer(i)), "//", string(denom(i)), "))"]))
+    jnecf(nfi : NMFraction(NMInteger)) == junfunc(NECF, nfi)
+    jnecf(r : NMFraction(NMInteger), i : NMFraction(NMInteger)) ==
+      jlref(concat([NECFP, getind(r),"+onei(", NECF,")*", getind(i), ")"]))
+    coerce(i : %) : OutputForm == message(string(i))
+
+)abbrev domain NFRAC NMFraction
+++ Domain for Julia AbstractAlgebra fractions over a Nemo integral domain
+++ Author: G. Vanuxem
+++ Date Created:
+++ Description:
+++  Nemo Fractions over an integral domain.
+++ References: https://flintlib.org/; https://nemocas.github.io/Nemo.jl/stable/
+-- TODO: random everywhere.
+NMFraction(R : Join(NMCommutativeRing, IntegralDomain)) :
+    Exports == Implementation where
+  Exports ==> Join(NMField, QuotientFieldCategory(R)) with
+    -- if R has ... then PolynomialFactorizationExplicit, TODO
+    -- factor : % -> NMFactoredFraction(R) TODO
+    --  if S has Canonical and S has GcdDomain and S has canonicalUnitNormal
+    --       then Canonical
+    if R has UniqueFactorizationDomain then
+        factorFraction : %  ->   Fraction Factored(R)
+        ++ factorFraction(r) factors the numerator and the denominator of
+        ++ the fraction r.
+    -- if R has Hashable then Hashable
+    "/" : (R, %) -> %
+    ++ / is the division operator.
+    "*" : (%, NMInteger) -> %
+    ++ x*i is the integer multiplication (NMInteger). 
+    "*" : (NMInteger, %) -> %
+    ++ i*x is the integer multiplication (NMInteger).
+    if R has IntegerNumberSystem then
+      RetractableTo(Fraction(Integer))
+      abs2 : % -> %
+      ++ abs2(x) returns the square of the absolute value of x.
+      random : PositiveInteger -> %
+      ++ random(p) returns a random rational with numerator and
+      ++ denominator having p bits before canonicalisation.
+      differentiate : (%, (NMInteger -> NMInteger)) -> %
+      ++ differentiate(x, f) differentiates x extending the derivation f on
+      ++ NMFraction(R).
+    random : Segment(Integer) -> %
+    ++ random(seg) returns a random fraction depending on the base
+    ++ ring.
+    random : (Segment(Integer), Segment(Integer)) -> %
+    ++ random(seg1, seg2) returns a random fraction depending
+    ++ on the base ring. 
+    ++ For example:
+    ++ \example{FRPRing:=NFRAC(NUP(NINT,'x))}
+    ++ \example{random(1..5,-10..10)$FRPRing}
+  Implementation ==>  add
+    import from JLUtilityFunctions
+    import from JLStringUtilities
+    import from NMFactored(R)
+
+    NNI ==> NonNegativeInteger
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    NFR := concat("NFR", jlNMRing()$R)
+    NFRP := concat(NFR,"(")
+
+    tuple : Boolean := jbinbfunc("isa",jobject(jlNMRing()$R)$JLObject,
+      jobject("Tuple")$JLObject)
+    if tuple then -- polynomials and series
+      jlEvalString(concat([NFR, "=fraction_field(", jlNMRing()$R, "[1])"]))
+    else
+      jlEvalString(concat([NFR, "=fraction_field(", jlNMRing()$R, ")"]))
+    jlNMRing() == NFR
+    jlObject() == jlEvalString(concat(["string(", NFR,")"]))@String
+    0 == jlref(concat(["zero(",NFR,")"]))
+    1 == jlref(concat(["one(",NFR,")"]))
+    numer(p) == junfunc("numerator", p)
+    denom(p) == junfunc("denominator", p)
+    numerator(p) == jlref(concat [NFRP, getind(junfunc("numerator", p)),")"])
+    denominator(p) == jlref(concat [NFRP, getind(junfunc("denominator", p)),")"])
+
+    if R has OrderedSet then
+      x < y  == jbinbfunc("<",x,y)
+      x > y  == jbinbfunc(">",x,y)
+      x >= y == jbinbfunc(">=",x,y)
+      x <= y == jbinbfunc("<=",x,y)
+
+    a : R * b : % == jbinfunc("*",a,b)
+    a :% * b : R == jbinfunc("*",a,b)
+    a : % * b : % == jbinfunc("*",a,b)
+    x : % * y : NMInteger == jbinfunc("*", x, y)
+    x : NMInteger * y : % == jbinfunc("*", x, y)
+    a : % * b : Integer == jlref(concat [getind(a), "*" , string(b)])
+    a : Integer * b : % == jlref(concat [string(a), "*" , getind(b)])
+    a : R / b : R == jbinfunc("//",a,b)
+    a : R / b : % == jbinfunc("//",a,b)
+    a : % / b : % == jbinfunc("//",a,b)
+    x ^ y : NNI == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : Integer == jlref(concat [getind(x), "^", string(y)])
+    inv(q) == junfunc("inv",q)
+    recip(x) ==
+      zero?(x) => "failed"
+      junfunc("inv",x) pretend %
+        
+    if R has IntegerNumberSystem then
+      retract(x : %) : Fraction(Integer) ==
+           retract(numer x)@Integer / retract(denom x)@Integer
+      retractIfCan(x : %) : Union(Fraction(Integer), "failed") ==
+           (n := retractIfCan(numer x)@Union(Integer, "failed")) case "failed" => "failed"
+           (d := retractIfCan(denom x)@Union(Integer, "failed")) case "failed" => "failed"
+           (n::Integer) / (d::Integer)
+
+    if R is NMInteger then
+      random(p : PositiveInteger) ==
+        jlref(concat ["rand_bits(QQ,",string(p), ")"])
+      wholePart x ==
+        (denom(x) = 1) => numer(x)
+        numer(x) quo denom(x)
+      x quo y == jbinfunc("÷", x, y)
+      -- x quo y == jbinfunc("div", x, y)
+      x rem y == jbinfunc("%", x, y)
+      (p1:% exquo p2:%): Union(%,"failed") ==
+        ret : JLObjTuple := jbinfunc("divides", p1, p2)
+        not jlEvalString(concat(["first(", getind(ret), ")"]))@Boolean
+          => "failed"
+        junfunc("last", ret)@%
+      D(x) == 0
+      D(x, nni) == 0
+      -- Temporary hack
+      differentiate(x : %, deriv : NMInteger -> NMInteger) ==
+        ret := differentiate((numer(x)/denom(x))@Fraction(NMInteger), deriv)
+        jlref(concat([getind(numer(ret)),"//", getind(denom(ret))]))
+      init() == jlref(concat(["QQ(", getind(init()$NMInteger),")"]))
+      abs(x)  == junfunc("abs", x)
+      abs2(x) == junfunc("abs2", x)
+      floor x == junfunc("floor",x)
+      ceiling x == junfunc("ceil",x)
+      retract(x) : Fraction(Integer) ==
+        num : Integer := convert(junfunc("numerator", x) pretend NMInteger)
+        den : Integer := convert(junfunc("denominator", x) pretend NMInteger)
+        num/den
+    gcd(x,y)  == jbinfunc("gcd",x,y)
+    random(seg : Segment(Integer)) ==
+      jlref(concat(["rand(", NFR,",", string(low(seg)),":",
+        string(high(seg)),")"]))
+    random(seg1 : Segment(Integer), seg2 : Segment(Integer)) ==
+      jlref(concat(["rand(",NFR,",", string(low(seg1)),":",string(high(seg1)),
+        ",", string(low(seg2)) ":",string(high(seg2)),")"]))
+    factorFraction(p) == factor(numer(p)) / factor(denom(p))
+    coerce(x : Fraction(Integer)) ==
+      jlref(concat([getind(coerce(numer(x))@R),
+        "//", getind(coerce(denom x)@R)]))
+    coerce(x : R) : % == jlref(concat [NFRP, getind(x),")"])
+    retractIfCan(a : %) : Union(R,"failed") ==
+      one?(denom(a)) => numer(a)
+      "failed"
+    retract(a : %) : R ==
+      one?(denom(a)) => numer(a)
+      error "retract$NMFraction: denominator is not 1"
+    coerce(r : R) == jlref(concat([NFRP, getind(r),")"]))
+    coerce(p) : OutputForm ==
+      ret : Fraction(R) := numer(p)/denom(p) 
+      coerce(ret)
+
+)abbrev domain NFR NMFactored
+++ Domain for factored Nemo elements
+++ Author: G.Vanuxem
+++ Date Created: May, 2024
+++ Description:
+++  Nemo factored objects.
+++ References: https://flintlib.org/; https://nemocas.github.io/Nemo.jl/stable/
+NMFactored(R : Join(NMRing, IntegralDomain)) : 
+      Exports == Implementation where
+  INT ==> Integer
+  NNI ==> NonNegativeInteger
+  fUnion ==> Union("nil", "sqfr", "irred", "prime")
+  FF     ==> Record(flag : fUnion, factor : R, exponent : NonNegativeInteger)
+  FFE ==> Record(flag : Union("nil", "sqfr", "irred", "prime"),
+                    factor : R, exponent : NonNegativeInteger)
+  Exports ==> JLObjectType with
+    factor : R -> %
+    ++ factor(intd) returns the factorization of intd.
+    factor : R -> Factored(R)
+    ++ factor(intd) returns the factorization of intd.
+    ++ Currently its printed OutputForm can be difficult to "interpret".
+    ++ Use factorList(factor(intd)@Factored(%)) to have a more
+    ++ understandable representation.
+    factorSquareFree : R -> %
+    ++ factorSquareFree(intd) returns the factorization of intd.
+    factorSquareFree : R -> Factored(R)
+    ++ factorSquareFree(intd) returns the factorization of intd.
+    unit : % -> R
+    ++ unit(fr) returns the unit part of the factorization.
+  Implementation ==> JLObject add
+    import from JLUtilityFunctions
+    import from String
+    import from JLStringUtilities
+
+    jlInitialize(true)
+
+    Rep := SExpression
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+
+    unit(fac) == junfunc("unit", fac)
+    factor(intd : R) : % == junfunc("factor", intd)
+    factorSquareFree(intd : R) : % == junfunc("factor_squarefree", intd)
+    unit(fr) == junfunc("unit",fr) pretend R
+
+    -- TODO: not as an integer factorization (OutputForm)
+    mkFF : (R, List FFE) -> Record(unt : R, fct : List FFE)
+    mkFF(r, x) == [r, x]
+    factor(intd : R) : Factored(R) ==
+      sz : NNI
+      zero?(intd) => 0
+      ret := empty()$List(FFE)
+      fr : % := junfunc("factor", intd)
+      if R has OrderedSet then
+        sz :=
+          jlEvalString(concat(["tmp=sort(collect(", getind(fr),"));length(tmp)"]))@NNI
+      else
+        sz :=
+          jlEvalString(concat(["tmp=collect(", getind(fr),");length(tmp)"]))@NNI
+      sz = 0 => mkFF(jlref(concat(["unit(", getind(fr), ")"]))$R,
+        ret) pretend Factored(R)
+      c := jlref("tmp[1][1]")$R
+      e := jlEvalString("tmp[1][2]")@NNI
+      ret := concat(ret, ["prime", c, e]$FFE)
+      for i in 2..sz repeat
+        c := jlref(concat(["tmp[", string(i), "][1]"]))$R
+        e := jlEvalString(concat(["tmp[", string(i), "][2]"]))@NNI
+        ret := concat(ret, ["prime", c, e]$FFE)
+      jlEvalString("tmp=nothing")@Void
+      mkFF(jlref(concat(["unit(", getind(fr), ")"]))$R, ret) pretend Factored(R)
+
+    factorSquareFree(intd : R) : Factored(R) ==
+      sz : NNI
+      zero?(intd) => 0
+      ret := empty()$List(FFE)
+      fr : % := junfunc("factor_squarefree", intd)
+      if R has OrderedSet then
+        sz :=
+          jlEvalString(concat(["tmp=sort(collect(", getind(fr),"));length(tmp)"]))@NNI
+      else
+        sz :=
+          jlEvalString(concat(["tmp=collect(", getind(fr),");length(tmp)"]))@NNI
+      sz = 0 => mkFF(jlref(concat(["unit(", getind(fr), ")"]))$R,
+        ret) pretend Factored(R)
+      c := jlref("tmp[1][1]")$R
+      e := jlEvalString("tmp[1][2]")@NNI
+      ret := concat(ret, ["sqfr", c, e]$FFE)
+      for i in 2..sz repeat
+        c := jlref(concat(["tmp[", string(i), "][1]"]))$R
+        e := jlEvalString(concat(["tmp[", string(i), "][2]"]))@NNI
+        ret := concat(ret, ["sqfr", c, e]$FFE)
+      jlEvalString("tmp=nothing")@Void
+      mkFF(jlref(concat(["unit(", getind(fr), ")"]))$R, ret) pretend Factored(R)
+    coerce(ob : %) : OutputForm ==
+      message(jlRegexReplace(string(ob), jlString("//"), jlString("/")))

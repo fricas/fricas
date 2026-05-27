@@ -1,8 +1,8 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2025.12.23git],
-        [fricas-devel@googlegroups.com],
-        [fricas],
-        [https://fricas.github.io])
+AC_INIT([jlFriCAS], [1.3.14-julia-dev],
+        [https://github.com/gvanuxem/jlfricas/issues],
+        [jlfricas],
+        [https://gvanuxem.github.io/jlfricas])
 
 # Copyright year for web documentation
 PACKAGE_YEAR=2026
@@ -64,7 +64,7 @@ fricas_targetdir=$fricas_pwd/target/$target
 AC_SUBST(fricas_targetdir)
 if test $build != $target; then
    AC_MSG_WARN([Cross build is not supported.])
-   AC_MSG_WARN([Please notify fricas-devel@googlegroups.com if you succeed.])
+   AC_MSG_WARN([Please notify g.vanuxem@gmail.com if you succeed.])
 fi
 
 case $build in
@@ -77,7 +77,7 @@ case $build in
         FRICAS_CHECK_PROGS([MAKE], [gmake make],
                        [Make utility missing.])
         if ! $MAKE --version | grep 'GNU' 2>/dev/null; then
-            AC_MSG_ERROR([FriCAS build system needs GNU Make.])
+            AC_MSG_ERROR([jlFriCAS build system needs GNU Make.])
         fi
         ;;
 esac
@@ -98,15 +98,15 @@ AC_CHECK_PROGS([MKTEMP], [mktemp])
 
 case $build in
      *-solaris9)
-        FRICAS_CHECK_PROG([AWK], [gawk], [FriCAS needs gawk])
+        FRICAS_CHECK_PROG([AWK], [gawk], [jlFriCAS needs gawk])
 
-        FRICAS_CHECK_PROG([TAR], [gtar], [FriCAS needs gtar])
+        FRICAS_CHECK_PROG([TAR], [gtar], [jlFriCAS needs gtar])
         ;;
 
       *)
         AC_PROG_AWK
 
-        FRICAS_CHECK_PROGS([TAR], [gtar tar], [FriCAS needs a tar program])
+        FRICAS_CHECK_PROGS([TAR], [gtar tar], [jlFriCAS needs a tar program])
 
         ;;
 esac
@@ -183,9 +183,9 @@ AC_ARG_WITH([lisp],
 if test -z "$fricas_lisp" ; then
     AC_PATH_PROG([FRICAS_LISP], [sbcl])
     if test -z $FRICAS_LISP ; then
-        AC_MSG_ERROR([sbcl not found and no Lisp specified.
+        AC_MSG_ERROR([SBCL not found and no Lisp specified.
                       Install supported Lisp implementation and
-                      use --with-lisp option to tell FriCAS
+                      use --with-lisp option to tell jlFriCAS
                       how to invoke your Lisp])
     fi
     fricas_lisp=$FRICAS_LISP
@@ -238,7 +238,7 @@ AC_MSG_RESULT([$fricas_fasl_type])
 
 fricas_fasl_type2=$fricas_fasl_type
 case $fricas_lisp_flavor in
-    ecl)
+    ECL)
        fricas_fasl_type="o"
      ;;
     *)
@@ -251,71 +251,71 @@ if test -z "$fricas_lisp_version" ; then
     AC_MSG_WARN([Unable to determine Lisp version.])
 else
    case $fricas_lisp_flavor in
-     clisp)
+     CLISP)
         if echo $fricas_lisp_version | grep '^[[0-1]]\.' > /dev/null || \
            echo $fricas_lisp_version | grep '^2\.[[0-3]]' > /dev/null ; then
              AC_MSG_ERROR([clisp $fricas_lisp_version is too old])
         fi
         ;;
-     ecl)
+     ECL)
         case $fricas_lisp_version in
            0.*)
               case $fricas_lisp_version in
                  0.9j)
-                    AC_MSG_WARN([You use old ecl, please consider upgrade])
+                    AC_MSG_WARN([You use old ECL, please consider upgrade])
                    ;;
                  0.9l)
                    ;;
                  *)
-                    AC_MSG_ERROR([ecl $fricas_lisp_version is too old])
+                    AC_MSG_ERROR([ECL $fricas_lisp_version is too old])
                    ;;
                esac
              ;;
          esac
         ;;
-     gcl)
+     'GNU Common Lisp (GCL)')
         case $fricas_lisp_version in
            2.6.1[[4-9]]|2.7.[[1-9]])
              ;;
            2.7.0)
-             AC_MSG_WARN([FriCAS needs porting to gcl $fricas_lisp_version
+             AC_MSG_WARN([jlFriCAS needs porting to GNU Common Lisp $fricas_lisp_version
                           please proceed with caution])
              ;;
            *)
-             AC_MSG_ERROR([gcl $fricas_lisp_version is too old])
+             AC_MSG_ERROR([GNU Common Lisp $fricas_lisp_version is too old])
              ;;
         esac
         ;;
-     openmcl)
+     'Clozure Common Lisp')
         if echo $fricas_lisp_version | grep '^1\.1[[0-9]]' > /dev/null ; then
             true
         elif echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
            echo $fricas_lisp_version | grep '^1\.[[01]]' > /dev/null ; then
-             AC_MSG_ERROR([openmcl $fricas_lisp_version is too old])
+             AC_MSG_ERROR([Clozure CL $fricas_lisp_version is too old])
         fi
         ;;
-     sbcl)
+     SBCL)
         if echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
            echo $fricas_lisp_version | grep '^1\.0\.[[0-6]]$' > /dev/null ; then
-             AC_MSG_ERROR([sbcl $fricas_lisp_version is too old])
+             AC_MSG_ERROR([SBCL $fricas_lisp_version is too old])
         fi
         case $(uname -m) in
            i*86)
              case $fricas_lisp_version in
                 1.5.9|2.0.*|2.1.[[0-3]]|2.1.[[0-3]].*)
-                  AC_MSG_ERROR([sbcl $fricas_lisp_version on $(uname -m) has a serious runtime issue. Please use different sbcl version])
+                  AC_MSG_ERROR([SBCL $fricas_lisp_version on $(uname -m) has a serious runtime issue. Please use different SBCL version])
                     ;;
                 2.2.[[2-7]]*)
-                  AC_MSG_ERROR([sbcl $fricas_lisp_version on $(uname -m) has a bug which does not allow building FriCAS.
-Please use different sbcl version])
+                  AC_MSG_ERROR([SBCL $fricas_lisp_version on $(uname -m) has a bug which does not allow building jlFriCAS.
+Please use different SBCL version])
                     ;;
              esac
                ;;
         esac
         case $fricas_lisp_version in
            1.0.29|1.3.1|1.3.1.*|1.3.2|1.3.3|1.3.4)
-             AC_MSG_ERROR([sbcl $fricas_lisp_version has a bug which does not allow building FriCAS.
-Please use different sbcl version])
+             AC_MSG_ERROR([SBCL $fricas_lisp_version has a bug which does not allow building jlFriCAS.
+Please use different SBCL version])
                   ;;
         esac
         ;;
@@ -327,7 +327,7 @@ AC_SUBST(fricas_lisp_version)
 
 ## Check if we need shared libspad library.
 case $fricas_lisp_flavor in
-    sbcl|cmucl|clisp|openmcl|lispworks)
+    SBCL|'CMU Common Lisp'|CLISP|'Clozure Common Lisp'|lispworks)
        LIBSPAD_SO_TARGET="libspad_so"
         ;;
     *)
@@ -388,9 +388,9 @@ AC_ARG_ENABLE([gmp],
              esac])
 ## Check if GMP is really compatible with the Lisp flavour
 if test -n "$GMP_WRAP_SO_TARGET" ; then
-   if test $fricas_lisp_flavor = sbcl ; then
+   if test "$fricas_lisp_flavor" = SBCL ; then
       true
-   elif test $fricas_lisp_flavor = openmcl ; then
+   elif test "$fricas_lisp_flavor" = 'Clozure Common Lisp' ; then
       case $(uname -m) in
         arm*|i386|i486|i586|i686|x86_64)
          GMP_WRAP_SO_TARGET=gmp_wrap_so
@@ -400,7 +400,7 @@ if test -n "$GMP_WRAP_SO_TARGET" ; then
                        or ARM processors])
       esac
    else
-      AC_MSG_ERROR([GMP is valid only when using sbcl or Clozure CL])
+      AC_MSG_ERROR([GMP is valid only when using SBCL or Clozure CL])
    fi
 fi
 AC_SUBST(GMP_WRAP_SO_TARGET)
@@ -437,7 +437,7 @@ AC_SUBST(GMP_EXT)
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
 ## go away as soon as GCL upstream is fixed.
 case $fricas_lisp_flavor,$target in
-    gcl,*mingw*)
+    'GNU Common Lisp (GCL)',*mingw*)
         fricas_gcl_rsym_hack='d=`echo "(format nil \"~a\" si::*system-directory*)" | $(FRICAS_LISP) | grep "/gcl.*/" | sed -e "s,\",,g"`; cp $$d/rsym$(EXEEXT) .'
         ;;
     *)
@@ -449,32 +449,32 @@ AC_SUBST(fricas_gcl_rsym_hack)
 ## How are we supposed to tell the Lisp system to eval an expression
 ## in batch mode?
 case $fricas_lisp_flavor in
-    gcl)
+    'GNU Common Lisp (GCL)')
        fricas_quiet_flags='-batch'
        fricas_eval_flags='-eval'
        ;;
-    ecl)
+    ECL)
        fricas_quiet_flags='-norc'
        fricas_eval_flags='-eval'
        ;;
-    sbcl)
+    SBCL)
        fricas_quiet_flags='--noinform --noprint --no-sysinit --no-userinit'
        fricas_eval_flags='--eval'
        sbcl_memory_size=`echo "(princ (sb-ext:dynamic-space-size))" | $fricas_lisp $fricas_quiet_flags`
        test $sbcl_memory_size -gt 4294967296 || fricas_quiet_flags="--dynamic-space-size 4096 $fricas_quiet_flags"
        fricas_image_flags='--core'
        ;;
-    cmucl)
+    'CMU Common Lisp')
        fricas_quiet_flags='-batch -nositeinit -noinit'
        fricas_eval_flags='-eval'
        fricas_image_flags='-core'
        ;;
-    clisp)
+    CLISP)
        fricas_quiet_flags='--quiet -norc'
        fricas_eval_flags='-x'
        fricas_image_flags='-M'
        ;;
-    openmcl)
+    'Clozure Common Lisp')
        fricas_quiet_flags='--no-init'
        fricas_eval_flags='--eval'
        fricas_image_flags='-I'
@@ -483,7 +483,7 @@ case $fricas_lisp_flavor in
        fricas_quiet_flags=
        fricas_eval_flags='-init - -siteinit - -eval'
        ;;
-    *) AC_MSG_ERROR([We do not know how to build FriCAS with this Lisp: $fricas_lisp]) ;;
+    *) AC_MSG_ERROR([We do not know how to build jlFriCAS with this Lisp: $fricas_lisp]) ;;
 esac
 AC_SUBST(fricas_quiet_flags)
 AC_SUBST(fricas_image_flags)
@@ -549,14 +549,14 @@ AC_SUBST(fricas_c_runtime)
 
 AC_CHECK_HEADERS([signal.h],
                  [],
-                 [AC_MSG_ERROR([FriCAS needs signal support.])])
+                 [AC_MSG_ERROR([jlFriCAS needs signal support.])])
 AC_CHECK_DECLS([sigaction], [], [],
                [#include <signal.h>])
 AC_CHECK_HEADERS([sys/stat.h],
                  [],
-                 [AC_MSG_ERROR([FriCAS needs <sys/stat.h>.])])
+                 [AC_MSG_ERROR([jlFriCAS needs <sys/stat.h>.])])
 AC_CHECK_HEADERS([unistd.h], [],
-                 [AC_MSG_ERROR([FriCAS needs <unistd.h>])])
+                 [AC_MSG_ERROR([jlFriCAS needs <unistd.h>])])
 AC_CHECK_DECLS([getuid, geteuid, getgid, getegid], [], [],
                [#include <unistd.h>])
 
@@ -616,7 +616,7 @@ int code = mkdir ("./foo", (S_IRWXU | S_IRWXO | S_IRWXG));
    [AC_DEFINE([HAVE_TWO_ARG_MKDIR], [1], [Host has two arg mkdir])], [])
 
 if test x$fricas_host_has_socket != xyes; then \
-    AC_MSG_ERROR([FriCAS needs support for sockets.])
+    AC_MSG_ERROR([jlFriCAS needs support for sockets.])
 fi
 
 ## solaris-based systems tend to hide the socket library.
@@ -804,6 +804,268 @@ esac
 AC_SUBST(CCF)
 AC_SUBST(LDF)
 
+###################################################################
+## The following section deals with the inclusion of the hunchentoot
+## webserver which can be used for the jupyter interface for FriCAS.
+## It is currently only supported on Linux for SBCL.
+
+## This piece of configure code is courtesy of
+## Ralf Hemmecke and Kurt Pagani.
+
+## There are, in fact, two switches.
+## --with-quicklisp="/absolute/path-to-quicklisp"
+## and
+## --enable-hunchentoot.
+## Whereas --enable-hunchentoot deals with the actual inclusion of
+## hunchentoot into FriCASsys, --with-quicklisp specifies that
+## hunchentoot should be loaded via quicklisp.
+
+## Since hunchentoot is not always available or not compatible
+## we give another way to install it using quicklisp:
+##   curl -O https://beta.quicklisp.org/quicklisp.lisp
+##   sbcl --load quicklisp.lisp
+##   (quicklisp-quickstart:install)
+##   (ql:quickload "hunchentoot")
+##   (quit)
+AC_ARG_WITH([quicklisp],
+    [AS_HELP_STRING([--with-quicklisp=PATH],
+        [use quicklisp installation path (default "~/quicklisp")])],
+    [USE_QUICKLISP=yes
+     AS_IF([test -d $withval],
+       [QUICKLISPPATH=$withval],
+       [AS_IF([test -d ~/quicklisp],
+          [QUICKLISPPATH=~/quicklisp],
+          [AC_MSG_ERROR([quicklisp path not available])])])],
+    [USE_QUICKLISP=no])
+
+AC_ARG_WITH([system-asdf],
+    [AS_HELP_STRING([--with-system-asdf=PATH],
+        [use system or Debian ASDF installation path (default "/usr/share/common-lisp/source/cl-asdf/asdf.lisp")])],
+    [USE_SYSTEM_ASDF=yes
+     AS_IF([test -d $withval],
+       [ASDFPATH=$withval],
+       [AS_IF([test -d /usr/share/common-lisp/source/cl-asdf],
+          [ASDFPATH="/usr/share/common-lisp/source/cl-asdf/asdf.lisp"],
+          [AC_MSG_ERROR([System or Debian ASDF path not available, install the (cl-)asdf package])])])],
+    [USE_SYSTEM_ASDF=no])
+
+###################################################################
+## Default is --enable-hunchentoot=no which means hunchentoot will
+## not be included into FRICASsys and thus jfricas will not work.
+## With --enable-hunchentoot, configure checks whether hunchentoot is
+## available for inclusion into FRICASsys.
+
+## If hunchentoot is included into FRICASsys in the binary
+## distribution, then the target system does not need to have
+## hunchentoot installed, but must provide jupyter so that the jfricas
+## interface can work.
+INCLUDE_WEBSPAD=no
+AC_ARG_ENABLE(hunchentoot,
+  [AS_HELP_STRING([--enable-hunchentoot],
+    [include the hunchentoot webserver into jlFriCASsys, (yes/no)])],
+  [AS_CASE([$enableval],
+    [yes], [AS_IF([test "$fricas_lisp_flavor" = SBCL \ 
+     			|| test "$fricas_lisp_flavor" = 'Clozure Common Lisp' \
+				|| test "$fricas_lisp_flavor" = ECL],
+       [INCLUDE_WEBSPAD=yes],
+       [INCLUDE_WEBSPAD=no
+        AC_MSG_ERROR([hunchentoot is only available for SBCL, Clozure CL or ECL])])],
+    [no], [INCLUDE_WEBSPAD=no],
+    [AC_MSG_ERROR([only yes/no allowed as value for --enable-hunchentoot])]
+  )]
+)
+
+# Now Check that Hunchentoot is available.
+WEBSPAD_REQUIREMENTS=
+AS_IF([test x"$USE_QUICKLISP" = xyes],
+    AS_IF([test x"$USE_SYSTEM_ASDF" = xyes],
+        [WEBSPAD_REQUIREMENTS="(load \"$QUICKLISPPATH/setup.lisp\")(load \"$ASDFPATH\")(require (quote hunchentoot))"],
+        [WEBSPAD_REQUIREMENTS="(load \"$QUICKLISPPATH/setup.lisp\")(require (quote hunchentoot))"]),
+    AS_IF([test x"$USE_SYSTEM_ASDF" = xyes],
+        [WEBSPAD_REQUIREMENTS="(load \"$ASDFPATH\")(require (quote hunchentoot))"],    
+        [WEBSPAD_REQUIREMENTS="(require :asdf)(require (quote hunchentoot))"]))
+
+AS_IF([test x"$INCLUDE_WEBSPAD" = xyes],
+  [AC_MSG_CHECKING([for asdf and hunchentoot])
+  AS_IF([$fricas_lisp --eval "(progn $WEBSPAD_REQUIREMENTS)"],
+    [AC_MSG_RESULT([yes])],
+    [AC_MSG_RESULT([no])
+     AC_MSG_ERROR([asdf and hunchentoot are required for --enable-hunchentoot])
+     INCLUDE_WEBSPAD=no])]
+)
+
+AS_IF([test x"$INCLUDE_WEBSPAD" = xyes],
+  [AC_MSG_NOTICE([Webserver hunchentoot will be included into FRICASsys.])],
+  [AC_MSG_WARN([No webserver will be included into FRICASsys.])
+   WEBSPAD_REQUIREMENTS=""]
+)
+
+JULIA_CPPFLAGS=""
+JULIA_LDFLAGS=""
+JULIA_LIB=""
+JULIA_LIBDIR=""
+JULIA_LISP_REQUIREMENTS=""
+JULIA_USE_MLINK=no
+JULIA_WRAP_SO_TARGET=""
+
+AC_ARG_WITH([julia],
+    [AS_HELP_STRING([--with-julia=PATH],
+               [specify prefix directory for the installed Julia package.
+                Equivalent to --with-julia-include=PATH/include
+                plus --with-julia-lib=PATH/lib])],
+            [JULIA_WRAP_SO_TARGET=julia_wrap_so
+             if test x$withval = x; then
+                JULIA_CPPFLAGS=""
+                JULIA_LDFLAGS=""
+                JULIA_LIBDIR=""
+             else
+                JULIA_CPPFLAGS=-I$withval/include
+                JULIA_LDFLAGS=-L$withval/lib
+                JULIA_LIBDIR=$withval/lib/
+             fi])
+
+AC_ARG_WITH([julia-include],
+            [AS_HELP_STRING([--with-julia-include=PATH],
+                    [specify directory for installed Julia include files])],
+            [JULIA_WRAP_SO_TARGET=julia_wrap_so
+             JULIA_CPPFLAGS="-I$withval"])
+
+AC_ARG_WITH([julia-lib],
+            [AS_HELP_STRING([--with-julia-lib=PATH],
+                    [specify directory for the installed Julia library])],
+            [JULIA_WRAP_SO_TARGET=julia_wrap_so
+             JULIA_LDFLAGS="-L$withval"
+             JULIA_LIBDIR="$withval/"])
+
+AC_ARG_ENABLE([julia],
+            [AS_HELP_STRING([--enable-julia],
+               [use Julia with Clozure CL, SBCL or GCL])],
+            [case $enableval in
+               yes) JULIA_WRAP_SO_TARGET=julia_wrap_so ;;
+               no) JULIA_WRAP_SO_TARGET="" ;;
+               *) AC_MSG_ERROR([--enable-julia only allows yes or no as an argument]) ;;
+             esac]
+    ac_julia_config=$(julia -e 'print(joinpath(Sys.BINDIR, "../share/julia/julia-config.jl"))')
+    JULIA_LIBDIR=$(julia -e 'print(joinpath(Sys.BINDIR, "../lib/"))')
+    JULIA_CPPFLAGS=$(julia $ac_julia_config --cflags)
+    JULIA_LDFLAGS=$(julia $ac_julia_config --ldflags)
+    JULIA_LIB=$(julia $ac_julia_config --ldlibs)       
+)
+
+AC_ARG_ENABLE([mathlink],
+  [AS_HELP_STRING([--enable-mathlink],
+                  [use MathLink.jl with Julia if enabled (yes/no)])],
+  [AS_CASE([$enableval],
+    [yes|no], [JULIA_USE_MLINK=$enableval],
+    [AC_MSG_ERROR([only yes/no allowed as value for --enable-mathlink])]
+  )]
+)
+
+## Check if Julia is really compatible with the Lisp flavour
+## and add the Lisp requirements, if any
+
+if test -n "$JULIA_WRAP_SO_TARGET" ; then
+    FRICAS_CHECK_PROG([JULIA], [julia], ['julia' not found in $PATH])
+    if test "$fricas_lisp_flavor" = 'GNU Common Lisp (GCL)' ; then
+        JULIA_LISP_REQUIREMENTS=""
+        true
+    elif test "$fricas_lisp_flavor" = SBCL ; then
+        JULIA_LISP_REQUIREMENTS="(require :asdf)(require :sb-concurrency)"
+        true
+    elif test "$fricas_lisp_flavor" = 'Clozure Common Lisp' ; then
+        case $(uname -m) in
+            arm*|i386|i486|i586|i686|x86_64)
+            AS_IF([test x"$USE_QUICKLISP" = xyes],
+              [JULIA_LISP_REQUIREMENTS="(load \"$QUICKLISPPATH/setup.lisp\")(require :queues)"],
+              [JULIA_LISP_REQUIREMENTS="(require :asdf)(require :queues)"])
+            ;;
+        *)
+            AC_MSG_ERROR([Julia support is only valid with Clozure CL on AMD/Intel
+                       or ARM processors])
+        esac
+    else
+        AC_MSG_ERROR([Julia support is only valid with SBCL or Clozure CL])
+    fi
+fi
+
+AC_ARG_WITH([julia-config],
+            [AS_HELP_STRING([--with-julia-config=PATH],
+                    [use julia-config.jl script path given instead of the default one
+                      to determine build parameters])],
+            [JULIA_WRAP_SO_TARGET=julia_wrap_so
+             JULIA_CPPFLAGS=$(julia $withval --cflags)
+             JULIA_LDFLAGS=$(julia $withval --ldflags)
+             JULIA_LIB=$(julia $withval --ldlibs)
+             JULIA_LIBDIR=$(julia -e 'print(joinpath(Sys.BINDIR, "../lib/"))')
+             ])
+
+# Now Check that Common Lisp requirements are available.
+
+AS_IF([test x"$JULIA_LISP_REQUIREMENTS" = xyes],
+  [AC_MSG_CHECKING([Common Lisp requirements])
+  AS_IF([$fricas_lisp --eval "(progn $JULIA_LISP_REQUIREMENTS)"],
+    [AC_MSG_RESULT([yes])],
+    [AC_MSG_RESULT([no])
+     AC_MSG_ERROR([Common Lisp requirements are not satified for --enable-julia])
+     ])]
+)
+
+AC_SUBST(JULIA_WRAP_SO_TARGET)
+AC_SUBST(JULIA_CPPFLAGS)
+AC_SUBST(JULIA_LDFLAGS)
+AC_SUBST(JULIA_LIB)
+AC_SUBST(JULIA_LIBDIR)
+AC_SUBST(JULIA_LISP_REQUIREMENTS)
+AC_SUBST(JULIA_USE_MLINK)
+
+# The reason why we need SBCL_HOME is that FRICASsys is generated by
+# using the bootsys image and not by the SBCL itself. The bootsys
+# image, however, lost the strategy to find sbcl.core if SBCL_HOME is
+# not set. (See below.)
+AC_ARG_WITH([sbcl-home],
+    [AS_HELP_STRING([--with-sbcl-home=PATH],
+                    [Value for SBCL_HOME if necessary.])],
+    # Action if --with-sbcl-home is given.
+    [AS_IF([test -d "$withval"],
+           [SBCL_HOME=$withval],
+           [AC_MSG_ERROR([--with-sbcl-home directory does not exist.])])],
+    # Action if --with-sbcl-home is not given.
+    # If the path of sbcl is P, then SBCL_HOME will be P/../lib/sbcl.
+    # This is in line with https://github.com/sbcl/sbcl/blob/master/INSTALL.
+    #
+    ## The SBCL runtime needs to be able to find the ancillary files
+    ## associated with it: the "sbcl.core" file, and the contrib modules.
+    ## Finding sbcl.core can happen in the following ways:
+    ##
+    ##   * By default, in a location configured when the system was built.
+    ##     For binary distributions this is in "/usr/local/lib/sbcl".
+    ##
+    ##   * In the directory ../lib/sbcl relative to the executable.
+    ##
+    ##   * In the current directory.
+    ##
+    ##   * By environment variable, in the directory named by the
+    ##     environment variable "SBCL_HOME". Example:
+    ##
+    ##        $ export SBCL_HOME=/foo/foo/lib/sbcl
+    ##        $ sbcl
+    ##
+    ##     If your "INSTALL_ROOT" was FOO, then your "SBCL_HOME" is
+    ##     "FOO/lib/sbcl".
+    ##
+    ##   * By command line option:
+    ##
+    ##         $ sbcl --core /foo/foo/sbcl.core
+
+    [lisp_prog=`echo $fricas_lisp | sed 's/ .*//'` # remove parameters
+     lisp_path=`which $lisp_prog` # cannot be empty
+     SBCL_HOME="${lisp_path%sbcl}../lib/sbcl"]
+)
+
+#AC_MSG_NOTICE([SBCL_HOME=$SBCL_HOME])
+AC_SUBST(SBCL_HOME)
+AC_SUBST(WEBSPAD_REQUIREMENTS)
+
 FRICAS_MAKEFILE([Makefile])
 FRICAS_MAKEFILE([src/Makefile])
 FRICAS_MAKEFILE([src/lib/Makefile])
@@ -814,7 +1076,23 @@ FRICAS_MAKEFILE([src/algebra/Makefile])
 FRICAS_MAKEFILE([src/input/Makefile])
 FRICAS_MAKEFILE([src/etc/Makefile])
 
-
+## This handles the cases if one of the following options is given on the
+## command line. If none is given, then we will skip MCP interface.
+## --enable-mcp, --enable-mcp=yes:
+##   User requires to build the MCP interface.
+## --enable-mcp=no, --disable-mcp:
+##   User asks to skip the build of the MCP interface.
+BUILD_MCP_INTERFACE=no
+MCP_LISP_REQUIREMENT=""
+AC_ARG_ENABLE(mcp,
+  [AS_HELP_STRING([--enable-mcp],
+                  [build the SBCL or Clozure CL MCP interface on Linux (require the yason CL library), (yes/no)])],
+  [AS_IF([test x"$enableval" = xyes], [BUILD_MCP_INTERFACE=yes] [MCP_LISP_REQUIREMENT="(require :asdf)"],
+    [AS_IF([test x"$enableval" = xno], [BUILD_MCP_INTERFACE=no] [MCP_LISP_REQUIREMENT=""],
+    [AC_MSG_ERROR([only yes/no allowed as value for --enable-mcp])])])]
+)
+AC_SUBST(BUILD_MCP_INTERFACE)
+AC_SUBST(MCP_LISP_REQUIREMENT)
 ###################################################################
 ## The following section deals with the generation of the
 ## aldor interface.
@@ -943,4 +1221,4 @@ if test -f $srcdir/src/algebra/use_lisp ; then
     fi
 fi
 
-echo "Type '${MAKE}' (without quotes) to build FriCAS"
+echo "Type '${MAKE}' (without quotes) to build jlFriCAS"

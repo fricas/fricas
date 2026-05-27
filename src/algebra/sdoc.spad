@@ -1,0 +1,188 @@
+)abbrev package SDOC SpadDoc
+++ Author: G. Vanuxem
+++ Date Created: march, 2026
+++ Description: This package provides simple
+++ Spad documentation for use in the interpreter and
+++ the MCP server.
+SpadDoc : Exports == Implementation where
+  Exports ==> with
+    operationDocumentation  : Symbol -> Void
+    ++ operationDocumentation(op) displays the documentation of the
+    ++ operation op.
+    constructorDocumentation  : Symbol -> Void
+    ++ constructorDocumentation(term) displays the documentation of the
+    ++ constructor term.
+    listConstructors : Symbol -> Record(categories: List(Symbol), _
+      domains: List(Symbol), packages: List(Symbol))
+    ++ listConstructors(const) returns a list of the categories, domains,
+    ++ and packages that the constructor const belongs to.
+    ++ For example:
+    ++ \example{listConstructors('AbelianMonoidRing)}
+    ++ \example{listConstructors("Int*")}
+    listCategories : Symbol -> List(Symbol)
+    ++ listCategories(cat) returns a list of the categories matching
+    ++ the categories cat.
+    listDomains : Symbol -> List(Symbol)
+    ++ listDomains(dom) returns a list of the domains matching
+    ++ the domains dom.
+    listPackages : Symbol -> List(Symbol)
+    ++ listPackages(pack) returns a list of the packages matching
+    ++ the packages pack.
+  Implementation ==> add
+    import from String
+    import from BrowserInformation
+
+    extract_brace(s : String, pos : Integer) : _
+        Record(text: String, next_pos: Integer) ==
+      n := #s
+      start := pos + 1
+      count : Integer := 1
+      i := start
+      while i <= n and count > 0 repeat
+        if s.i = char "\" then
+          i := i + 2
+        else if s.i = char "{" then
+          count := count + 1
+          i := i + 1
+        else if s.i = char "}" then
+          count := count - 1
+          i := i + 1
+        else
+          i := i + 1
+      if count > 0 then [s(start..n), n + 1]
+      else [s(start..(i-2)), i]
+
+    -- Recursive TeX cleaner
+    clean_tex(s : String) : String ==
+      n := #s
+      res : String := ""
+      i : Integer := 1
+      while i <= n repeat
+        c := s.i
+        if c = char "\" then
+          i := i + 1
+          if i > n then
+            res := concat(res, char(92)::String)
+            i := n + 1
+          else
+            -- Try to find macro name
+            start := i
+            while i <= n and (alphabetic?(s.i) or s.i = char "&") repeat
+              i := i + 1
+            mac := s(start..(i-1))
+            -- Handle macros
+            if mac = "spad" or mac = "spadop" or _
+               mac = "spadfun" or mac = "spadtype" or _
+               mac = "url" or mac = "em" or _
+               mac = "it" or mac = "bold" or _
+               mac = "spadvar" or mac = "spadgloss" or _
+               mac = "pspadfun" or mac = "spadsys" then
+              -- Extract argument in { }
+              if i <= n and s.i = char "{" then
+                arg_res := extract_brace(s, i)
+                res := concat(res, clean_tex(elt(arg_res, text)))
+                i := elt(arg_res, next_pos)
+              else
+                res := concat(res, "") -- ??? TODO
+            else if mac = "example" then
+              if i <= n and s.i = char "{" then
+                arg_res := extract_brace(s, i)
+                res := concat(res, concat [newline()::String, _
+                  "Example: ", clean_tex(elt(arg_res, text)), newline()::String])
+                i := elt(arg_res, next_pos)
+            else if mac = "spadfunFrom" or _
+                    mac = "spadopFrom" then
+              if i <= n and s.i = char "{" then
+                arg1 := extract_brace(s, i)
+                i := elt(arg1, next_pos)
+                if i <= n and s.i = char "{" then
+                  arg2 := extract_brace(s, i)
+                  res := concat(res, concat [clean_tex(elt(arg1, text)), _
+                    " from ", clean_tex(elt(arg2, text))])
+                  i := elt(arg2, next_pos)
+                else
+                  res := concat(res, clean_tex(elt(arg1, text)))
+            else if mac = "indented" then
+              if i <= n and s.i = char "{" then
+                arg1 := extract_brace(s, i)
+                i := elt(arg1, next_pos)
+                if i <= n and s.i = char "{" then
+                  arg2 := extract_brace(s, i)
+                  res := concat(res, clean_tex(elt(arg2, text)))
+                  i := elt(arg2, next_pos)
+            else if mac = "newline" or _
+                    mac = "blankline" then
+              res := concat(res, newline())
+            else if mac = "tab" then
+              res := concat(res, "    ")
+            else if mac = "space" then
+              res := concat(res, " ")
+            else if mac = "undocumented" then
+              res := concat(res, "is undocumented")
+            else if mac = "LaTeX" then
+              res := concat(res, "LaTeX")
+            else if mac = "TeX" then
+              res := concat(res, "TeX")
+            else if #mac = 0 then
+              -- Escaped character like \{ \} \% \\
+              if i <= n then
+                res := concat(res, s.i::String)
+                i := i + 1
+            else
+              res := concat(res, "")
+        else if c = char "{" or c = char "}" then
+          i := i + 1
+        else
+          res := concat(res, c::String)
+          i := i + 1
+      res
+
+    constructorDocumentation(term) ==
+      doc := constructor_documentation(term)
+      doc = "" => empty()
+      output("")$OutputPackage
+      output(clean_tex(doc))$OutputPackage
+
+    listOperationDocumentation(op : Symbol) : List(OutputForm) ==
+      ops := search_operations(string op)
+      docs := coerce(ops)@List(Record(name: Symbol,
+        sdl: List(Record(signature: SExpression,
+          condition: SExpression, origin: SExpression,
+            documentation: String))))
+      res_list : List OutputForm := []
+      for ops_rec in docs repeat
+        for item in elt(ops_rec, sdl) repeat
+          res_list := concat(res_list, message(clean_tex(elt(item, documentation))))
+          sl := cons(convert('Mapping)$SExpression,
+            destruct(elt(item, signature)))
+          res_list := concat(res_list, message(concat ["Signature: ",
+            form2LispString(sl)$Lisp]))
+          res_list := concat(res_list, message(concat ["From: ",
+            form2LispString(elt(item, origin))$Lisp]))
+          res_list := concat(res_list, coerce newline())
+      res_list
+
+    operationDocumentation(op) ==
+      output(pile(concat([newline()::OutputForm],
+        listOperationDocumentation(op))))$OutputPackage
+     
+    listConstructors(const) ==
+      consts := search_constructors(string(const), 'k)
+      coerce(consts)@Record(categories: List(Symbol), _
+        domains: List(Symbol), packages: List(Symbol))
+    listCategories(cat : Symbol) ==
+      cats := search_constructors(string(cat), 'c)
+      res_rec := coerce(cats)@Record(categories: List(Symbol), _
+        domains: List(Symbol), packages: List(Symbol))
+      res_rec.categories
+    listDomains(dom : Symbol) ==
+      doms := search_constructors(string(dom), 'd)
+      res_rec := coerce(doms)@Record(categories: List(Symbol), _
+        domains: List(Symbol), packages: List(Symbol))
+      res_rec.domains
+    listPackages(pack : Symbol) ==
+      packs := search_constructors(string(pack), 'p)
+      res_rec := coerce(packs)@Record(categories: List(Symbol), _
+        domains: List(Symbol), packages: List(Symbol))
+      res_rec.packages
+

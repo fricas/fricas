@@ -1,0 +1,138 @@
+--Copyright G. Vanuxem 2025.
+
+--% Nemo Series Test (extended)
+-- Testing Nemo power series, Laurent series, and Puiseux series
+-- Author: G. Vanuxem
+-- Date Created: 2025-12-03
+-- Date Last Updated: 2025-12-03
+-- Keywords: Nemo series, power series, Laurent series, Puiseux series
+
+)set break resume
+)set mess type off
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "Nemo Series Extended Tests"
+
+testcase "NMUnivariatePowerSeries - trigonometric"
+R := NUPS(NFRAC(NINT),'x,30,"capped_relative")
+x := x::R
+s1 := sin(x)
+c1 := cos(x)
+-- Test sin^2 + cos^2 = 1
+testEquals("1$R", "s1^2 + c1^2")
+
+testcase "NMUnivariatePowerSeries - exp/log roundtrip"
+R := NUPS(NFRAC(NINT),'x,30,"capped_relative")
+x := x::R
+p1 := x^2 + 3*x^5
+e1 := exp(p1)
+l1 := log(e1)
+testEquals("0$R", "p1 - l1")
+
+testcase "NMUnivariatePowerSeries - differentiation"
+R := NUPS(NFRAC(NINT),'x,30,"capped_relative")
+x := x::R
+-- d/dx(x^2) = 2x
+d1 := differentiate(x^2)
+testEquals("0$R", "d1 - 2*x")
+
+testcase "NMUnivariatePowerSeries - integration"
+R := NUPS(NFRAC(NINT),'x,30,"capped_relative")
+x := x::R
+-- integral(x) = x^2/2
+i1 := integrate(x)
+testEquals("0$R", "i1 - x^2/2")
+
+testcase "NMUnivariateLaurentSeries - negative powers"
+R := NULS(NFRAC(NINT),'y,30)
+y := y::R
+-- Test y^(-1) * y = 1
+l1 := y^(-1)
+testEquals("1$R", "l1 * y")
+
+testcase "NMUnivariateLaurentSeries - exp/log"
+R := NULS(NFRAC(NINT),'y,30)
+y := y::R
+p1 := y + y^2
+e1 := exp(p1)
+l1 := log(e1)
+testEquals("0$R", "p1 - l1")
+
+testcase "NMUnivariateLaurentSeries - differentiation with negative powers"
+R := NULS(NFRAC(NINT),'y,30)
+y := y::R
+-- d/dy(y^(-1)) = -y^(-2)
+d1 := differentiate(y^(-1))
+testEquals("0$R", "d1 + y^(-2)")
+
+testcase "NMUnivariatePuiseuxSeries - fractional powers"
+R := NUPXS(NFRAC(NINT),'z,30)
+z := z::R
+-- Test sqrt(z) = z^(1/2)
+s1 := sqrt(z)
+p1 := z^(1/2)
+testEquals("0$R", "s1 - p1")
+
+testcase "NMUnivariatePuiseuxSeries - exp/log roundtrip"
+R := NUPXS(NFRAC(NINT),'z,30)
+z := z::R
+p1 := 23*z + 3*19*z^7 + z^(1/3)
+e1 := exp(p1)
+l1 := log(e1)
+testEquals("0$R", "p1 - l1")
+
+testcase "NMUnivariatePuiseuxSeries - differentiation with fractional powers"
+R := NUPXS(NFRAC(NINT),'z,30)
+z := z::R
+-- d/dz(z^(3/2)) works without error
+d1 := differentiate(z^(3/2))
+testTrue("(d1; true)")
+
+testcase "NMUnivariatePuiseuxSeries - integration with fractional powers"
+R := NUPXS(NFRAC(NINT),'z,30)
+z := z::R
+-- integral(z^(1/2)) works without error
+i1 := integrate(z^(1/2))
+testTrue("(i1; true)")
+
+testcase "NMUnivariatePowerSeries - valuation"
+R := NUPS(NFRAC(NINT),'x,30,"capped_relative")
+x := x::R
+testEquals("1", "valuation(x)")
+testEquals("2", "valuation(x^2)")
+testEquals("0", "valuation(1+x)")
+testEquals("3", "valuation(x^3 + x^4)")
+
+testcase "NMUnivariatePowerSeries - scalar arithmetic"
+R := NUPS(NFRAC(NINT),'x,30,"capped_relative")
+x := x::R
+testEquals("2*x", "x*2")
+testEquals("3*x", "x + 2*x")
+testEquals("x", "(2*x)/2")
+testEquals("x + 1/2", "x + 1/2")
+
+testcase "NMUnivariatePowerSeries - inverse"
+R := NUPS(NFRAC(NINT),'x,30,"capped_relative")
+x := x::R
+p := 1 + x
+inv_p := inverse(p)
+testEquals("1$R", "p * inv_p")
+
+testcase "NMUnivariatePowerSeries - extended trig/hyperbolic"
+R := NUPS(NFRAC(NINT),'x,30,"capped_relative")
+x := x::R
+-- tan/atan
+testEquals("x", "tan(atan(x))")
+-- tanh/atanh
+testEquals("x", "tanh(atanh(x))")
+-- sec/asec and csc/acsc require Puiseux series or different ring, skipping for NUPS
+
+
+testcase "NMUnivariateLaurentSeries - valuation"
+R := NULS(NFRAC(NINT),'y,30)
+y := y::R
+testEquals("-1", "valuation(y^(-1))")
+testEquals("-2", "valuation(y^(-2) + y)")
+testEquals("-1", "valuation(1 + y^(-1))")
+
+statistics()

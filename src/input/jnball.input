@@ -1,0 +1,50 @@
+)set break resume
+)set mess type off
+)expose UnittestCount UnittestAux Unittest
+)expose testcase "NMComplexBall"
+)expose testcase "NMComplexField"
+
+testsuite "JNBall"
+
+testcase "NMRealBall"
+rb1 := 1.0::NMRealBall
+rb2 := 2.0::NMRealBall
+rb3 := rb1 + rb2
+testTrue("contains?(rb3, 3.0::NMRealBall)")
+testTrue("overlaps?(rb1, rb1)")
+testTrue("exact?(rb1)") -- 1.0 should be exact if created from float? Maybe not.
+-- Actually 1.0 might not be exact, but integer 1 should be.
+rb_int := 1::NMRealBall
+testTrue("exact?(rb_int)")
+testTrue("contains?(exp(0::NMRealBall), 1::NMRealBall)")
+testTrue("contains?(log(exp(1::NMRealBall)), 1::NMRealBall)")
+
+testcase "NMComplexBall"
+cb1 := complex(1.0::NMRealBall, 2.0::NMRealBall)
+cb2 := complex(3.0::NMRealBall, 4.0::NMRealBall)
+cb3 := cb1 + cb2
+testTrue("contains?(real(cb3), 4.0::NMRealBall)")
+testTrue("contains?(imag(cb3), 6.0::NMRealBall)")
+cb_int := complex(1::NMRealBall, 0::NMRealBall)
+testTrue("exact?(cb_int)")
+
+testcase "NMRealField"
+rf1 := 1.0::NMRealField
+rf2 := 2.0::NMRealField
+rf3 := rf1 + rf2
+testTrue("contains?(rf3, 3.0::NMRealField)")
+testTrue("overlaps?(rf1, rf1)")
+rf_int := 1::NMRealField
+testTrue("exact?(rf_int)")
+testTrue("contains?(exp(0::NMRealField), 1::NMRealField)")
+
+testcase "NMComplexField"
+cf1 := complex(1.0::NMRealField, 2.0::NMRealField)
+cf2 := complex(3.0::NMRealField, 4.0::NMRealField)
+cf3 := cf1 + cf2
+testTrue("contains?(real(cf3), 4.0::NMRealField)")
+testTrue("contains?(imag(cf3), 6.0::NMRealField)")
+cf_int := complex(1::NMRealField, 0::NMRealField)
+testTrue("exact?(cf_int)")
+
+statistics()

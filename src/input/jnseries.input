@@ -1,0 +1,35 @@
+)set break resume
+)set mess type off
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "Julia Nemo Series"
+testcase "NMUnivariatePuiseuxSeries"
+R := NUPXS(NFRAC(NINT),'x,30)
+x := x::R
+p1 := 23*x+3*19*x^7+x^(1/7)
+p2 := exp(p1)
+p3 := log(p2)
+
+-- Check if log(exp(p)) = p up to precision
+testEquals("0$R","p1 - p3")
+
+testcase "NMUnivariatePowerSeries"
+R2 := NUPS(NFRAC(NINT),'x,30,"capped_relative")
+x2 := x::R2
+s1 := 23*x2+3*19*x2^7+x2^2
+s2 := exp(s1)
+s3 := log(s2)
+testEquals("0$R2", "s1 - s3")
+
+testcase "NMUnivariateLaurentSeries"
+R3 := NULS(NFRAC(NINT),'x,30)
+x3 := x::R3
+l1 := 23*x3+3*19*x3^7
+l2 := exp(l1)
+l3 := log(l2)
+testEquals("0$R3", "l1 - l3")
+
+l4 := x3^(-1)
+testEquals("1$R3", "l4 * x3")
+
+statistics()

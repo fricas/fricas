@@ -1,0 +1,46 @@
+name: FriCAS CI on x64 Linux (with Julia support - Clozure CL based)
+
+on: workflow_dispatch
+permissions: {}
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: julia-actions/setup-julia@latest
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install libgmp-dev libxpm-dev python3 python3-sphinx cl-quicklisp cl-asdf cl-hunchentoot
+        wget https://github.com/Clozure/ccl/releases/download/v1.13/ccl-1.13-linuxx86.tar.gz
+        tar xvf ccl-1.13-linuxx86.tar.gz
+        `pwd`/ccl/lx86cl64 -l "/usr/share/common-lisp/source/quicklisp/quicklisp.lisp" -e "(progn (quicklisp-quickstart:install) (quit))"
+        `pwd`/ccl/lx86cl64 -l ~/quicklisp/setup.lisp -e "(progn (ql:quickload \"queues\") (quit))"
+    - name: install Julia libraries
+      run: |
+        julia -e "import Pkg;Pkg.add([\"Nemo\", \"Suppressor\", \"SpecialFunctions\", \"DataFrames\", \"Latexify\", \"LaTeXStrings\", \"Statistics\"]);Pkg.precompile()"
+    - name: configure
+      run: |       
+        ./configure --with-lisp=`pwd`/ccl/lx86cl64 --with-quicklisp --enable-gmp --enable-julia --enable-hunchentoot --enable-mathlink || cat config.log
+    - name: make
+      run: make
+    - name: make check
+      run: make check -j4 --output-sync
+    - name: make html doc
+      run: make -j4 --output-sync htmldoc
+    - name: Create artifact archives
+      run: |
+        rm -r target/*/src
+        mkdir jlfricas && mv target jlfricas/
+        tar -cjf jlFriCAS-linux-x86_64-${{ github.sha }}.tar.bz2 jlfricas/
+    - name: Upload Linux binary
+      uses: actions/upload-artifact@v6
+      with:
+        name: jlFriCAS-linux-x86_64-binary
+        path: jlFriCAS-linux-x86_64-${{ github.sha }}.tar.bz2
+
+

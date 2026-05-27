@@ -1,0 +1,20 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# For a silent build.
+export DH_QUIET=1
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- --prefix=/usr/ --enable-gmp --enable-julia --enable-hunchentoot --enable-mathlink
+
+build:
+	./configure --prefix=/usr/ --enable-gmp --enable-julia --enable-hunchentoot --enable-mathlink
+	$(MAKE) -j4 all htmldoc
+	$(MAKE) -j4 check
+
+override_dh_shlibdeps:
+	dh_shlibdeps -l $(LINUX_BUILD_DIR) -Ljulia -l/usr/lib/julia --dpkg-shlibdeps-params=--ignore-missing-info
+

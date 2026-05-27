@@ -1,0 +1,722 @@
+)abbrev category WSAGG WSAggregate
+++ Generic category for Julia WS aggregates 
+++ Author: G. Vanuxem
+++ Date Created: June, 2024
+++ Description:
+++  Julia Wolfram Symbolic aggregate (WS list) using the MathLink
+++ Julia package.
+++ Trademark(s): Wolfram is a registered trademark of Wolfram Research, Inc.
+WSAggregate(E : WSObject) : Category == WSObject with
+    sorted? : % -> Boolean
+    ++ sorted?(agg) checks whether agg is sorted or not.
+    "#" : % -> WSInteger
+    ++ #(agg) returns the length of agg. 0 if it is a scalar, an index for
+    ++ example.
+    length : % -> WSInteger
+    ++ length(agg) returns the length of agg. 0 if it is a scalar, an index for
+    ++ example.
+    dimensions : % -> WSList(WSInteger)
+    ++ dimensions(agg) returns dimensions of agg.
+    part : (%, WSInteger) -> E
+    ++ part(agg,i) returns the i-th element.
+    take : (%, Integer) -> %
+    ++ take(l,i) returns the first i elements.
+    take : (%, WSList(WSInteger)) -> %
+    ++ take(l,i) returns the first i elements.
+    extract : (%, WSExpression) -> %
+    ++ extract(agg, parts) extracts parts of agg.
+    first : % -> E
+    ++ first(agg) returns the first element of agg.
+    last : % -> E
+    ++ last(agg) returns the last element of agg.
+    rest : % -> %
+    ++ rest(agg) returns agg without the first element.
+    append : (%, E) -> %
+    ++ append(l, elt) appends elt to the list l. 
+    -- {1, 2, 4} is not a variable with a value, so its value cannot be changed
+    -- rvalue
+    --append! : (%, E) -> %
+    --++ append!(l, elt) appends elt to the list l in place. 
+    prepend : (%, E) -> %
+    ++ prepend(l, elt) prepends elt to the list l. 
+    --prepend! : (%, E) -> %
+    --++ prepend!(l, elt) prepends elt to the list l in place. 
+    -- TODO: inds
+    insert : (% , E, WSInteger) -> %
+    ++ insert(l, elt, ind) inserts elt to the list l at index ind.
+    delete : (%, WSList(WSInteger)) -> %
+    ++ delete(l, inds) deletes element(s) of the list l at index(es) inds.
+    join   : (%, %) -> %
+    ++ join(agg1, agg2) joins the two aggregates agg1 and agg2.
+    union : (%, %) -> %
+    ++ union(agg1, agg2) is the union set operator. Elements are sorted on output.
+    intersection : (%, %) -> %
+    ++ intersection(agg1, agg2) is the intersection operator.
+    setIntersection : (%, %) -> %
+    ++ setIntersection(agg1, agg2) is the intersection set operator.
+    riffle : (%, %) -> %
+    ++ riffle(agg, elts) riffles (interleaves) element(s) elts i.e. inserts them.
+    riffle : (%, %, %) -> %
+    ++ riffle(agg, elts, inds) riffles (interleaves) element(s) elts i.e. inserts them.
+    ++ If inds is {min, max, n} inserts at position min, min+n, min+2n..max. 
+    removeDuplicates : % -> %
+    ++ removeDuplicates(agg) removes duplicate elements.
+    reverse : % -> %
+    ++ reverse(agg) reverses the elements of agg.
+    reverse : (%, WSInteger) -> %
+    ++ reverse(agg, lev) reverses the elements of agg at level lev.
+    sort : % -> %
+    ++ sort(agg) returns agg in sorted order. For complex numbers, sorts them
+    ++ by their real part first.
+    if E has WSNumber then
+      total : % -> E
+      ++ total(agg) returns the sum of the elements in agg.
+      differences : % -> %
+      ++ differences(agg) returns the differences between adjacent
+      ++ elements in agg.
+      accumulate : % -> %
+      ++ accumulate(agg) returns the partial sums of elements in agg.
+      --ratios : % -> E
+    reverse : (%, WSList(WSInteger)) -> %
+    ++ reverse(agg, levels) reverses the elements of agg using levels.
+    elt : (%, Integer) -> E
+    ++ elt(agg,i) returns the i-th element.
+    qelt : (%, Integer) -> E
+    ++ qelt(agg,i) returns the i-th element.
+    ++ No checks are done at the FriCAS level.
+    setelt : (%, Integer, E) -> %
+    ++ setelt(l,i,elem) returns a copy of l with i-th element replaced by
+    ++ the element elem.
+    qsetelt : (%, Integer, E) -> %
+    ++ qsetelt(l,i,elem) returns a copy of l with i-th element replaced by
+    ++ the element elem. No checks are done at the FriCAS level.
+    setelt! : (%, Integer, E) -> %
+    ++ setelt!(l,i,elem) returns l with i-th element replaced by elem.
+    qsetelt! : (%, Integer, E) -> %
+    ++ qsetelt!(l,i,elem) returns l with i-th element replaced by elem.
+    ++ No checks are done at the FriCAS level.
+    replacePart : (%, %) -> %
+    ++ replacePart(expr, part) replaces expr using rule(s) expressing position(s).
+    coerce  : List(E) -> %
+    ++ coerce(list) tries to coerce list to a WSAggregate.
+    jWSAggregate : List(E) -> %
+    ++ jWSAggregate(list) constructs agg to a WSAggregate.
+  add
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    import from JLUtilityFunctions
+    import from WSExpression
+    import from WSInteger
+
+    jbinop(op,a,b) ==> jlref(concat(["weval(", getind(a), op, getind(b),")"]))
+    junfunc(func,a) ==> jlref(concat(["weval(",func, getind(a),"))"]))
+    jbinfunc(func,a,b) ==>
+      jlref(concat(["weval(", func, getind(a), ",", getind(b),"))"]))
+    jterfunc(func,a,b,c) ==>
+      jlref(concat(["weval(", func, getind(a), ",", getind(b), ",", getind(c)"))"]))
+    jquatfunc(func,a,b,c,d) ==>
+      jlref(concat(["weval(", func, getind(a), ",", getind(b), ",",
+        getind(c), ",", getind(d)"))"]))
+    jbinbop(op,a,b) ==>
+      jlEvalString(concat([getind(a), op, getind(b)]))@Boolean
+
+    jlInitialize(true)
+    if not jlUsing("MathLink") then
+      error "The Julia MathLink package is not installed."
+    Rep := SExpression
+    WT : WSSymbol := WTrue()
+
+    sorted?(agg) == junfunc("W_"OrderedQ_"(",agg) = WT
+
+    x = y  == jbinbop("==", x, y)
+    x ~= y == jbinbop("!=", x, y)
+    part(agg, i) == jbinfunc("W_"Part_"(", agg, i)
+    take(agg : %, i : Integer) == jbinfunc("W_"Take_"(", agg, jWSExpr(i))
+    take(agg : %, elems : WSList(WSInteger)) ==
+      jbinfunc("W_"Take_"(", agg, elems)
+    extract(agg : %, elems) == jbinfunc("W_"Extract_"(", agg, elems)
+    first(agg) == junfunc("W_"First_"(",agg)
+    last(agg) == junfunc("W_"Last_"(",agg)
+    rest(agg) == junfunc("W_"Rest_"(",agg)
+    #(agg) == junfunc("W_"Length_"(", agg)
+    length(agg) == junfunc("W_"Length_"(", agg)
+    dimensions(agg) == junfunc("W_"Dimensions_"(", agg)
+
+    join(agg, agg1)        == jbinfunc("W_"Join_"(", agg, agg1)
+    union(agg, agg1)       == jbinfunc("W_"Union_"(", agg, agg1)
+    setIntersection(agg, agg1)== jbinfunc("W_"Intersection_"(", agg, agg1)
+    intersection(agg, agg1)== jbinfunc("W_"Intersection_"(", agg, agg1)
+    riffle(agg, elts)      == jbinfunc("W_"Riffle_"(", agg, elts)
+    riffle(agg, elts, inds)== jterfunc("W_"Riffle_"(", agg, elts, inds)
+    removeDuplicates(agg)  == junfunc("W_"DeleteDuplicates_"(", agg)
+    reverse(agg)           ==  junfunc("W_"Reverse_"(", agg)
+    reverse(agg, level : WSInteger) ==
+      jbinfunc("W_"Reverse_"(", agg, level)
+    reverse(agg, levels : WSList(WSInteger)) ==
+      jbinfunc("W_"Reverse_"(", agg, levels)
+
+    append(agg, elt)       == jbinfunc("W_"Append_"(", agg, elt)
+    --append!(l, elt)      == jbinfunc("W_"AppendTo_"(", l, elt)
+    prepend(agg, elt)      == jbinfunc("W_"Prepend_"(", agg, elt)
+    --prepend!(l, elt)     == jbinfunc("W_"PrependTo_"(", l, elt)
+    insert(agg, elt, ind) == jterfunc("W_"Insert_"(", agg, elt, ind)
+    delete(agg, inds)      == jbinfunc("W_"Delete_"(", agg, inds)
+
+    total(agg) == junfunc("W_"Total_"(", agg)
+    differences(agg) == junfunc("W_"Differences_"(", agg)
+    accumulate(agg) == junfunc("W_"Accumulate_"(", agg)
+
+    elt(agg, i) ==
+      i > integer length(agg) => error "elt: index too large"
+      jbinfunc("W_"Part_"(", agg, jWSInt(i))
+    qelt(agg, i) == jbinfunc("W_"Part_"(", agg, jWSInt(i))
+    setelt(agg, i, elem) ==
+      i > integer length(agg) => error "setelt: index too large"
+      jbinfunc("W_"ReplacePart_"(", agg, jWSRule(jWSExpr(i),
+        elem pretend WSExpression))
+    qsetelt(agg, i, elem) ==
+      jbinfunc("W_"ReplacePart_"(", agg, jWSRule(jWSExpr(i),
+        elem pretend WSExpression))
+
+    -- TODO
+    -- Works on copy and assign it to the Julia IdDict index (refs)
+    setelt!(agg,i,elem) ==
+      i > integer length(agg) => error "setelt!: index too large"
+      cmd := concat(["weval(W_"ReplacePart_"(", getind(agg), ",",
+        getind(jWSRule(jWSExpr(i), elem pretend WSExpression)),"))"])
+      ret : Integer := jl_setindex_wrap_eval_string(jlId(agg), cmd)$Lisp
+      if ret = 0 then error "setelt!: bad element in input"
+      agg
+    qsetelt!(agg,i,elem) ==
+      cmd := concat(["weval(W_"ReplacePart_"(", getind(agg), ",",
+        getind(jWSRule(jWSExpr(i), elem pretend WSExpression)),"))"])
+      ret : Integer := jl_setindex_wrap_eval_string(jlId(agg),cmd)$Lisp
+      if ret = 0 then error "setelt!: bad element in input"
+      agg
+    replacePart(agg, part) == jbinfunc("W_"ReplacePart_"(", agg, part)
+    sort(agg) == junfunc("W_"Sort_"(", agg)
+    string(obj) == jlEvalString(concat(["string(", getind(obj),")"]))
+    convert(obj) : String == string(obj)
+    coerce(agg : %) : WSExpression == agg pretend WSExpression
+    coerce(agg : List(E)) == jWSAggregate agg
+    jWSAggregate(l : List(E)) ==
+      agg := jlref("W_`{}_`")
+      for x in l repeat agg := append(agg, x)
+      agg
+    coerce(agg) : OutputForm == coerce(agg pretend WSExpression)
+
+)abbrev domain WSLIST WSList
+++ Generic domain for Julia WS lists
+++ Author: G. Vanuxem
+++ Date Created: June, 2024
+++ Description:
+++  Julia Wolfram Symbolic lists using the MathLink Julia package.
+++ Trademark(s): Wolfram is a registered trademark of Wolfram Research, Inc.
+WSList(E : WSObject) : Exports == Implementation where
+  getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+  Exports ==> WSAggregate(E) with
+    coerce  : % -> List(E)
+    ++ coerce(l) coerces l to a FriCAS List.
+    jWSList : List(E) -> %
+    ++ jWSList(list) constructs list as a WSList.
+    jWSList : String -> %
+    ++ jWSList(str) constructs str as a WSList.
+    ++ str must be in the WS language.
+  Implementation ==> JLObject add
+    import from JLUtilityFunctions
+
+    jlInitialize(true)
+    if not jlUsing("MathLink") then
+      error "The Julia MathLink package is not installed."
+    Rep := SExpression
+
+    coerce(wslist) : List(E) ==
+      l : List(E) := []
+      for i in 1..integer length(wslist) repeat  l := concat(l, wslist.i)
+      l
+
+    jWSList(str : String) == jlref(concat(["W_`", str, "_`"]))
+    -- TODO?
+    jWSList(l : List(E)) == jWSAggregate(l)
+    coerce(l) : OutputForm == coerce(l pretend WSExpression)
+
+)abbrev domain WSVEC WSVector
+++ Generic domain for Julia WS vectors
+++ Author: G. Vanuxem
+++ Date Created: June, 2024
+++ Description:
+++  Julia Wolfram Symbolic vectors using the MathLink Julia package.
+++ Trademark(s): Wolfram is a registered trademark of Wolfram Research, Inc.
+WSVector(E : WSObject) : Exports == Implementation where
+  getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+  Exports ==> Join(WSAggregate(E), VectorCategory(E)) with
+    --cross Length_
+    "+" : (%, %) -> %
+    ++ a + b is the vector addition. WS error if dimensions are incompatible.
+    "-" : (%, %) -> %
+    ++ a - b is the vector subtraction. WS error if dimensions are incompatible.
+    "-" : % -> %
+    ++ -a negates each element of the vector a.
+    "*" : (WSInteger, %) -> %
+    ++ n*a scales the vector a by n.
+    "*": (E,%) -> %
+    ++ \spad{r*x} is the left scalar multiple of the scalar r and the
+    ++ vector x.
+    "*": (%,E) -> %
+    ++ \spad{x * r} is the right scalar multiple of the scalar r and the
+    ++ vector x.
+    dot : (%, %) -> E
+    ++ dot(v1, v2) is the dot product of v1 and v2.
+    norm : % -> E
+    ++ norm(v) computes the norm of the vector v.
+    cross : (%,%) -> %
+    ++ cross(v1,v2) computes the vector cross product of v1 and v2.
+    transpose : % -> %
+    ++ transpose(v) transposes v. For esoteric purpose, and if you know what you are
+    ++ doing. There is only one type of vector in the Wolfram language.
+    ++ Should not be used, and for normal purpose, does nothing.
+    vector : WSList(E) -> %
+    ++ vector(list) returns list as a vector.
+    ++ Inplace coercion.
+    ++ \example{vector(range(5)}
+    if E has WSRing then
+      coerce : % -> WSMatrix(E)
+      ++ coerce(v) coerces inplace v to a WS matrix.
+    jWSVector : List(E) -> %
+    ++ jWSVector(list) constructs list as a WSVector.
+    jWSVector : String -> %
+    ++ jWSVector(str) constructs str as a WSVector.
+    ++ str must be in the WS language (list).
+  Implementation ==> JLObject add
+    import from JLUtilityFunctions
+    import from WSInteger
+
+    jbinop(op,a,b) ==> jlref(concat(["weval(", getind(a), op, getind(b),")"]))
+    junfunc(func,a) ==> jlref(concat(["weval(",func, getind(a),"))"]))
+    jbinfunc(func,a,b) ==>
+      jlref(concat(["weval(", func, getind(a), ",", getind(b),"))"]))
+    jterfunc(func,a,b,c) ==>
+      jlref(concat(["weval(", func, getind(a), ",",
+        getind(b), ",", getind(c)"))"]))
+    jquatfunc(func,a,b,c,d) ==>
+      jlref(concat(["weval(", func, getind(a), ",", getind(b), ",",
+        getind(c), ",", getind(d)"))"]))
+    jbinbop(op,a,b) ==>
+      jlEvalString(concat([getind(a), op, getind(b)]))@Boolean
+
+    jlInitialize(true)
+    if not jlUsing("MathLink") then
+      error "The Julia MathLink package is not installed."
+    Rep := SExpression
+
+    x = y  == jbinbop("==",x,y)
+    x ~= y == jbinbop("!=",x,y)
+    x + y == jbinop("+", x, y)
+    x - y == jbinop("-", x, y)
+    - x   == junfunc("-(", x)
+    --x : % * y : % == jbinfunc("W_"Dot_"(", x, y)
+    x : Integer * y : % == jbinop("*", jWSInt(x), y)
+    x : WSInteger * y : % == jbinop("*", x, y)
+    a : E * x : % == jbinop("*", a, x)
+    x : % * a : E == jbinop("*", x, a)
+
+    dot(v1,v2) == jbinfunc("W_"Dot_"(", v1, v2)
+    cross(v1,v2) == jbinfunc("W_"Cross_"(", v1, v2)
+    norm(v) == junfunc("W_"Norm_"(", v)
+    transpose(v) == junfunc("W_"Transpose_"(", v)
+
+    vector(list) : % == list pretend %
+    if E has WSRing then
+      coerce(vec) : WSMatrix(E) == vec pretend WSMatrix(E)
+    jWSVector(str : String) == jlref(concat(["W_`", str, "_`"]))
+    jWSVector(l : List(E)) == jWSAggregate(l)
+    coerce(vec) : OutputForm ==
+      coerce(matrixForm(vec pretend WSExpression))@OutputForm
+
+)abbrev domain WSMAT WSMatrix
+++ Generic domain for Julia WS matrices
+++ Author: G. Vanuxem
+++ Date Created: June, 2024
+++ Description:
+++  Julia Wolfram Symbolic matrices using the MathLink Julia package.
+++ Trademark(s): Wolfram is a registered trademark of Wolfram Research, Inc.
+-- WSRing?
+WSMatrix(E : WSRing) : Exports == Implementation where
+  NNI   ==> NonNegativeInteger
+  Row   ==> WSVector(E)
+  Col   ==> WSVector(E)
+  MLAF  ==> MatrixLinearAlgebraFunctions(E, Row, Col, %)
+  parsei    ==> PARSE_-INTEGER$Lisp
+  Exports ==> Join(WSAggregate(WSVector(E)),
+            MatrixCategory(E, Row, Col)) with
+  --WSObject with -- TODO:adapt to aggregates
+    square?  : % -> Boolean
+    ++ \spad{square?(m)} returns true if m is a square matrix
+    ++ (i.e. if m has the same number of rows as columns) and false otherwise.
+    diagonal? : % -> Boolean
+    ++ \spad{diagonal?(m)} returns true if the matrix m is square and
+    ++ diagonal (i.e. all entries of m not on the diagonal are zero) and
+    ++ false otherwise.
+    symmetric? : % -> Boolean
+    ++ \spad{symmetric?(m)} returns true if the matrix m is square and
+    ++ symmetric (i.e. \spad{m[i, j] = m[j, i]} for all i and j) and false
+    ++ otherwise.
+    --if R has AbelianGroup then
+    antisymmetric? : % -> Boolean
+    ++ \spad{antisymmetric?(m)} returns true if the matrix m is
+    ++ square and antisymmetric (i.e. \spad{m[i, j] = -m[j, i]} for
+    ++ all i and j) and false otherwise.
+    positiveDefinite? : % -> Boolean
+    ++ \spad{positiveDefinite?(m)} checks whether or not m is positive definite.
+    hermitian? : % -> Boolean
+    ++ \spad{hermitian?(m)} checks whether or not m is hermitian.
+    "+" : (%, %) -> %
+    ++ a + b is the matrix addition. WS error if dimensions are incompatible.
+    "-" : (%, %) -> %
+    ++ a - b is the matrix subtraction. WS error if dimensions are incompatible.
+    "-" : % -> %
+    ++ -a negates each element of the matrix a.
+    "*" : (%, %) -> %
+    ++ a * b is the matrix multiplication, not the element-wise multiplication.
+    ++ WS error if dimensions are incompatible.
+    "*" : (Integer, %) -> %
+    ++ n*a scales the matrix a by n.
+    "*": (E,%) -> %
+    ++ \spad{r*x} is the left scalar multiple of the scalar r and the
+    ++ matrix x.
+    "*": (%,E) -> %
+    ++ \spad{x * r} is the right scalar multiple of the scalar r and the
+    ++ matrix x.
+    "*": (%,WSVector(E)) -> %
+    ++ \spad{x * c} is the product of the matrix x and the column
+    ++ vector c.  Error: if the dimensions are incompatible.
+    "*": (WSVector(E),%) -> %
+    ++ \spad{r * x} is the product of the row vector r and the matrix x.
+    ++ Error: if the dimensions are incompatible.
+    "^" : (%, PositiveInteger) -> %
+    ++ a^n is the matrix power by the positive integer n.
+    "^" : (%, NonNegativeInteger) -> %
+    ++ a^n is the matrix power by the non-negative integer n.
+    elt : (%, Integer, Integer) -> E
+    ++ elt(mat, m, n) returns the element (m,n) of the matrix mat.
+    qelt : (%, Integer, Integer) -> E
+    ++ qelt(mat, m, n) returns the element (m,n) of the matrix mat.
+    ++ No checks are done at the FriCAS level.
+    setelt : (%, Integer, Integer, E) -> %
+    ++ setelt(mat,n,m,elt) returns a new matrix with element (n,m)
+    ++ replaced by the element elt.
+    qsetelt : (%, Integer, Integer, E) -> %
+    ++ qsetelt(mat,n,m,elt) returns a new matrix with element (n,m)
+    ++ replaced by the element elt.
+    qsetelt! : (%, Integer, Integer, E) -> E
+    ++ qsetelt!(mat,n,m,elt) returns the element elt.
+    ++ The matrix mat is modified in place.
+    row : (%, Integer) -> %
+    ++ row(mat,i) returns the i-th row.
+    column : (%, Integer) -> %
+    ++ column(mat,i) returns the i-th column.
+    transpose : % -> %
+    ++ transpose(m) returns the transposition of m.
+    adjoint : % -> %
+    ++ adjoint(m) returns the adjoint of m, i.e. the conjugate transposition of m.
+    adjugate : % -> %
+    ++ adjugate(m) returns the adjugate of square m.
+    norm : % -> E
+    ++ norm(m) returns the norm of m, i.e. the value of the maximum
+    ++ singular values of m.
+    norm : (%, WSExpression) -> E
+    ++ norm(m, type) returns the type norm of m. For example, norm(m,2) returns
+    ++ the usual norm, norm(m, "Infinity") or norm(m, "Frobenius") returns their
+    ++ respective norms. See documentation for information.
+    trace : % -> E
+    ++ trace(m) returns the trace of m.
+    permanent : % -> E
+    ++ permanent(m) returns the permanent of m.
+    diagonal : % -> WSVector(E)
+    ++ diagonal(m) returns the diagonal elements of m as a vector.
+    inverse : % -> %
+    ++ inverse(m) computes the inverse of m.
+    ++ For example:
+    ++ \example{m:=jWSMatrix("\{\{a, b\}, \{b, a\}\}")@WSMAT(WSEXPR)}
+    ++ \example{inverse m}
+    if E has IntegralDomain then
+      invertIfCan : % -> Union(%,"failed")
+      ++ invertIfCan(m) returns the inverse of the matrix m.
+      ++ If the matrix is not invertible, "failed" is returned.
+      ++ Error: if the matrix is not square.
+    generalizedInverse : % -> %
+    ++ generalizedInverse(m) computes the pseudo inverse of m also known as
+    ++ Moore-Penrose inverse.
+    linearSolve : (%, %) -> %
+    ++ linearSolve(mat, b) finds x, solution of the equation mat * x = b.
+    nullSpace : % -> WSList(WSVector(E))
+    ++ nullSpace(m) returns the null space of m as a list of vectors.
+    minors : % -> %
+    ++ minors(m) returns the minors of m.
+    minors : (%, WSInteger) -> %
+    ++ minors(m,i) returns the i-th minors of m.
+    eigenvalues  : % -> WSVector(WSExpression)
+    ++ eigenvalues(m) returns the eigenvalues of the square matrix m.
+    eigenvectors : % -> WSMatrix(WSExpression)
+    ++ eigenvectors(m) returns the eigenvectors of the square matrix m.
+    eigenSystem  : % -> Record(values : WSVector(WSExpression),
+                          vectors : WSMatrix(WSExpression))
+    ++ eigenSystem(m) computes the spectral decomposition of the square
+    ++ matrix m. It returns in a Record, the eigenvalues, selector 'values',
+    ++ and the eigenvectors selector 'vectors'.
+    svd : % -> Record(S : %, sv : %, V : %)
+    ++ svd(m) computes the singular value decomposition of the matrix m.
+    svdvals : % -> WSList(E)
+    ++ svdvals(m) returns the singular values of the matrix m.
+    schur : % -> Record(q : %, t : %)
+    ++ schur(m) computes the Schur decomposition of the square matrix m.
+    qr : % -> Record(q : %, r : %)
+    ++ qr(m) computes the QR decomposition of the matrix m.
+    jordan : % -> Record(s : %, j : %)
+    ++ jordan(m) computes the Jordan decomposition of the square matrix m.
+    hessenberg : % -> Record(p : %, h : %)
+    ++ hessenberg(m) computes the Hessenberg decomposition of
+    ++ the square matrix m.
+    cholesky : % -> Record(l : %, u : %)
+    ++ cholesky(m) computes the Cholesky decomposition of
+    ++ the positive definite/hermitian square matrix m.
+    lu : % -> Record(lu : %, p : %, c : %)
+    ++ lu(m) computes the LU decomposition of the matrix m.
+    matrixFunction : (WSExpression, %) -> WSMatrix(WSExpression)
+    ++ matrixFunction(func, m) applies the matrix function func,
+    ++ if available, to the matrix m. The Wolfram Language operator needs to be used.
+    ++ Note that it is not an element-wise operation. For example:
+    ++ \example{m := jWSMatrix("\{\{1.2, 1.7\},\{1.12, -2.1\}\}")@WSMAT(WSREAL)}
+    ++ \example{matrixFunction("Sqrt", m)}
+    randomRealMatrix :
+      (WSList(WSReal), WSList(WSInteger)) -> WSMatrix(WSReal)
+    ++ randomRealMatrix(range, dims) returns a random matrix with random numbers in the range
+    ++ range and dims dimensions.
+    ++ \example{range := jWSList("\{-5,5\}")$WSLIST(WSREAL)}
+    ++ \example{randomRealMatrix(range,jWSList("\{3,3\}")$WSLIST(WSINT))@WSMAT(WSREAL)}
+    randomComplexMatrix :
+      (WSList(WSComplex), WSList(WSInteger)) -> WSMatrix(WSComplex)
+    ++ randomComplexMatrix(range, dims) returns a random matrix with random complex numbers
+    ++ in the range range and dims dimensions.
+    ++ \example{range:=jWSList("\{1+I\}")@WSLIST(WSCPLX)}
+    ++ \example{randomComplexMatrix(range,jWSList("\{3,3\}")$WSLIST(WSINT))@WSMAT(WSCPLX)}
+    diagonalMatrix : WSList(E) -> %
+    ++ \spad{diagonalMatrix(l)} returns a diagonal matrix with elements
+    ++ of l as diagonal elements.
+    toString : (%, WSExpression) -> String
+    ++ toString(mat, form) returns the string representation of mat
+    ++ with WS language format form.
+    matrix : WSVector(E) -> %
+    ++ matrix(vec) returns vec as a matrix (inplace coercion).
+    jWSMatrix : String -> %
+    ++ jWSMatrix(str) constructs str as a WSMatrix.
+    ++ str must be in the WS language (WS list of WS list(s)).
+  Implementation ==> JLObject add
+    import from JLUtilityFunctions
+    import from WSExpression
+    import from WSInteger
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    jbinop(op,a,b) ==> jlref(concat(["weval(", getind(a), op, getind(b),")"]))
+    junfunc(func,a) ==> jlref(concat(["weval(",func, getind(a),"))"]))
+    jbinfunc(func,a,b) ==>
+      jlref(concat(["weval(", func, getind(a), ",", getind(b),"))"]))
+    jterfunc(func,a,b,c) ==>
+      jlref(concat(["weval(", func, getind(a), ",",
+        getind(b), ",", getind(c)"))"]))
+    jquatfunc(func,a,b,c,d) ==>
+      jlref(concat(["weval(", func, getind(a), ",", getind(b), ",",
+        getind(c), ",", getind(d)"))"]))
+    jbinbop(op,a,b) ==>
+      jlEvalString(concat([getind(a), op, getind(b)]))@Boolean
+
+    jlInitialize(true)
+    if not jlUsing("MathLink") then
+      error "The Julia MathLink package is not installed."
+    
+    Rep := SExpression
+    WT : WSSymbol := WTrue()
+
+    latex(expr) == jlEvalString(concat(["W2Tex(", getind(expr),")"]))
+
+    square?(m) == junfunc("W_"SquareMatrixQ_"(", m) = WT
+    diagonal?(m) == junfunc("W_"DiagonalMatrixQ_"(", m) = WT
+    symmetric?(m) == junfunc("W_"SymmetricMatrixQ_"(", m) = WT
+    antisymmetric?(m) == junfunc("W_"AntisymmetricMatrixQ_"(", m) = WT
+    positiveDefinite?(m) == junfunc("W_"PositiveDefiniteMatrixQ_"(", m) = WT
+    hermitian?(m) == junfunc("W_"HermitianMatrixQ_"(", m) = WT
+    
+    x = y  == jbinbop("==",x,y)
+    x ~= y == jbinbop("!=",x,y)
+    x + y ==
+      dimensions(x) ~= dimensions(y) =>
+        error "+$WSMatrix: incompatible dimensions"
+      jbinop("+", x, y)
+    x - y ==
+      dimensions(x) ~= dimensions(y) =>
+        error "-$WSMatrix: incompatible dimensions"
+      jbinop("-", x, y)
+    - x   == junfunc("-(", x)
+    x : % * y : % ==
+      last(dimensions(x)) ~= first(dimensions(y)) =>
+        error "*$WSMatrix: incompatible dimensions"
+      jbinfunc("W_"Dot_"(", x, y)
+    x : % * v : WSVector(E) == jbinfunc("W_"Dot_"(", x, v)
+    v : WSVector(E) * y : % == jbinfunc("W_"Dot_"(", v, y)
+    x : Integer * y : % == jbinop("*", coerce(x), y)
+    a : E * x : % == jbinop("*", a, x)
+    x : % * a : E == jbinop("*", x, a)
+    x ^ n : PositiveInteger ==
+      jbinfunc("W_"MatrixPower_"(", x, coerce(n)@WSInteger)
+    x ^ n : NonNegativeInteger ==
+      jbinfunc("W_"MatrixPower_"(", x, coerce(n)@WSInteger)
+
+    minRowIndex(mat) == 1$Integer
+    minColIndex(mat) == 1$Integer
+    maxRowIndex(mat) == integer(first(dimensions(mat)))
+    nrows(mat) == integer(first(dimensions(mat))) pretend NNI
+    maxColIndex(mat) == integer(last(dimensions(mat)))
+    ncols(mat) == integer(last(dimensions(mat))) pretend NNI
+    elt(mat, i, j) ==
+      dims := dimensions(mat)
+      i > integer first(dims) or j > integer last(dims) =>
+        error "elt$WSMatrix: index is/are too large"
+      jterfunc("W_"Part_"(", mat, jWSInt(i), jWSInt(j))
+    qelt(mat, i, j) == jterfunc("W_"Part_"(", mat, jWSInt(i), jWSInt(j))
+    setelt(mat : %,i : Integer, j : Integer, elem) ==
+      dims := dimensions(mat)
+      i > integer first(dims) or j > integer last(dims) =>
+        error "setelt$WSMatrix: index(es) is/are too large"
+      inds : List(WSInteger)  := [jWSInt(i), jWSInt(j)]
+      rule := jWSRule(jWSList(inds)@WSList(WSInteger) pretend WSExpression,
+        elem pretend WSExpression)
+      jbinfunc("W_"ReplacePart_"(", mat, rule)
+    qsetelt(mat : %,i : Integer, j : Integer, elem) ==
+      dims := dimensions(mat)
+      inds : List(WSInteger)  := [jWSInt(i), jWSInt(j)]
+      rule := jWSRule(jWSList(inds)@WSList(WSInteger) pretend WSExpression,
+        elem pretend WSExpression)
+      jbinfunc("W_"ReplacePart_"(", mat, rule)
+    setelt!(mat : %,i : Integer,j : Integer, elem : E) ==
+      dims := dimensions(mat)
+      i > integer first(dims) or j > integer last(dims) =>
+        error "setelt!$WSMatrix: index(es) is/are too large"
+      inds : List(WSInteger)  := [jWSInt(i), jWSInt(j)]
+      rule := jWSRule(jWSList(inds)@WSList(WSInteger) pretend WSExpression,
+        elem pretend WSExpression)
+      cmd := concat(["weval(W_"ReplacePart_"(", getind(mat), ",", getind(rule),"))"])
+      ret : Integer := jl_setindex_wrap_eval_string(jlId(mat), cmd)$Lisp
+      if ret = 0 then error "setelt!$WSMatrix: bad element in input"
+      elem
+    qsetelt!(mat,i,j,elem) ==
+      dims := dimensions(mat)
+      inds : List(WSInteger)  := [jWSInt(i), jWSInt(j)]
+      rule := jWSRule(jWSList(inds)@WSList(WSInteger) pretend WSExpression,
+        elem pretend WSExpression)
+      cmd := concat(["weval(W_"ReplacePart_"(", getind(mat), ",", getind(rule),"))"])
+      ret : Integer := jl_setindex_wrap_eval_string(jlId(mat), cmd)$Lisp
+      if ret = 0 then error "setelt!$WSMatrix: bad element in input"
+      elem
+    elt(m, i) ==
+      i > integer last(dimensions(m)) =>
+        error "elt$WSMatrix: index is too large"
+      jbinfunc("W_"Extract_"", m, jWSExpr(concat(["{All,", string(i),"}("])))
+    qelt(m, i) ==
+      jbinfunc("W_"Extract_"", m, jWSExpr(concat(["{All,", string(i),"}("])))
+    row(m, i) ==
+      i > integer first(dimensions(m)) =>
+        error "row$WSMatrix: index is too large"
+      jbinfunc("W_"Part_"(", m, jWSInt(i))
+    column(m, i) ==
+      i > integer last(dimensions(m)) =>
+        error "column$WSMatrix: index is too large"
+      jbinfunc("W_"Extract_"", m, jWSExpr(concat(["{All,", string(i),"}("])))
+
+    transpose(mat) == junfunc("W_"Transpose_"(", mat)
+    adjoint(mat) == junfunc("W_"ConjugateTranspose_"(", mat)
+    adjugate(mat) == junfunc("W_"Adjugate_"(", mat)
+
+    nullSpace(mat) == junfunc("W_"NullSpace_"(", mat)
+    rowEchelon(mat) == junfunc("W_"RowReduce_"(", mat)
+
+    rank(mat) == parsei toString junfunc("W_"MatrixRank_"(", mat)
+    inverse(mat) ==
+      not square?(mat) => error "inverse$WSMatrix: not a square matrix"
+      junfunc("W_"Inverse_"(", mat)
+    generalizedInverse(mat) == junfunc("W_"PseudoInverse_"(", mat)
+    linearSolve(mat, b) == jbinfunc("W_"LinearSolve_"(", mat, b)
+    matrixFunction(func, mat) == jbinfunc("W_"MatrixFunction_"(", func, mat) 
+
+    minors(mat) == junfunc("W_"Minors_"(", mat)
+    minors(mat, k) == jbinfunc("W_"Minors_"(", mat, k)
+
+    eigenvalues(mat) ==
+      not square?(mat) => error "eigenvalues: not a square matrix"
+      junfunc("W_"Eigenvalues_"(", mat)
+    eigenvectors(mat) ==
+      not square?(mat) => error "eigenvectors: not a square matrix"
+      junfunc("W_"Eigenvectors_"(", mat)
+    eigenSystem(mat) ==
+      not square?(mat) => error "eigenSystem: not a square matrix"
+      ret : WSList(WSExpression) := junfunc("W_"Eigensystem_"(", mat)
+      [first(ret) pretend WSVector(WSExpression),
+        last(ret) pretend WSMatrix(WSExpression)]
+    svd(mat) ==
+      ret : WSList(%) := junfunc("W_"SingularValueDecomposition_"(", mat)
+      [first(ret), qelt(ret,2), last(ret)]
+    svdvals(mat) == junfunc("W_"SingularValueList_"(", mat)
+    schur(mat) ==
+      not square?(mat) => error "schur: not a square matrix"
+      ret : WSList(%) := junfunc("W_"SchurDecomposition_"(", mat)
+      [first(ret),last(ret)]
+    qr(mat) ==
+      ret : WSList(%) := junfunc("W_"QRDecomposition_"(", mat)
+      [first(ret),last(ret)]
+    hessenberg(mat) ==
+      not square?(mat) => error "hessenberg: not a square matrix"
+      ret : WSList(%) := junfunc("W_"HessenbergDecomposition_"(", mat)
+      [first(ret),last(ret)]
+    jordan(mat) ==
+      not square?(mat) => error "jordan: not a square matrix"
+      ret : WSList(%) := junfunc("W_"JordanDecomposition_"(", mat)
+      [first(ret),last(ret)]
+    cholesky(mat) ==
+      not square?(mat) => error "cholesky: not a square matrix"
+      ret : WSList(%) := junfunc("W_"CholeskyDecomposition_"(", mat)
+      [first(ret),last(ret)]
+    lu(mat) ==
+      ret : WSList(%) := junfunc("W_"LUDecomposition_"(", mat)
+      [first(ret), qelt(ret,2), last(ret)]
+
+    determinant(mat) ==
+      not square?(mat) => error "determinant: not a square matrix"
+      junfunc("W_"Det_"(", mat)
+    if E has IntegralDomain then
+      nullity(m) == nullity(m)$MLAF
+      nullSpace(mat) == junfunc("W_"NullSpace_"(", mat)
+      invertIfCan(m) == invertIfCan(m)$MLAF
+    if E has CommutativeRing then
+      minordet(mat) ==
+        not square?(mat) => error "minordet$WSMatrix: not a square matrix"
+        minordet(mat)$MLAF
+    trace(mat) == junfunc("W_"Tr_"(", mat)
+    diagonal(mat) == junfunc("W_"Diagonal_"(", mat)
+    norm(mat) == junfunc("W_"Norm_"(", mat)
+    norm(mat,type) ==  jbinfunc("W_"Norm_"(", mat, type)
+    permanent(mat) ==
+      not square?(mat) => error "permanent: not a square matrix"
+      junfunc("W_"Permanent_"(", mat)
+    kroneckerProduct(mat1, mat2) ==
+      jbinfunc("W_"KroneckerProduct_"(", mat1, mat2)
+
+    toString(mat, form) == string jbinfunc("W_"ToString_"(", mat, form)
+    qnew(m,n) ==
+      jbinfunc("W_"ConstantArray_"(", 0$E,
+        jWSList([jWSInt(m), jWSInt(n)])@WSList(WSInteger))
+    matrix(vec) : %  == vec pretend %
+    diagonalMatrix(l) == junfunc("W_"DiagonalMatrix_"(", l)
+    randomRealMatrix(range, dims) == jbinfunc("W_"RandomReal_"(", range, dims)
+    randomComplexMatrix(range, dims) ==
+      jbinfunc("W_"RandomComplex_"(", range, dims)
+    jWSMatrix(str : String) == jlref(concat(["W_`", str, "_`"]))
+    coerce(obj) : OutputForm ==
+      coerce(matrixForm(obj pretend WSExpression))@OutputForm

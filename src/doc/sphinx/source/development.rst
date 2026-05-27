@@ -12,7 +12,7 @@ In fact, almost all public discussion currently happens on that list.
 
 You can get the sources from the |git repository|::
 
-  git clone https://github.com/fricas/fricas.git
+  git clone https://github.com/gvanuxem/jlfricas.git
 
 Better, press the fork button on the |git repository| and send
 an ordinary `Github pull request`_.
@@ -58,7 +58,7 @@ Other resources
 
 * `Language Differences <http://wiki.fricas.org/LanguageDifferences>`_
 
-* `The )set command <https://fricas.github.io/fricas-notebooks/system-command-set.html>`_
+* `The )set command <fricas-notebooks/system-command-set.html>`_
 
 * `Aldor User Guide <http://www.aldor.org/docs/aldorug.pdf>`_
 

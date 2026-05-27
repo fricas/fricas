@@ -93,16 +93,19 @@ $systemCommands := [
    ['summary,       :'interpreter], ['synonym,       :'interpreter], _
    ['system,        :'interpreter], ['trace,         :'interpreter], _
    ['undo,          :'interpreter], ['what,          :'interpreter], _
-   ['version,       :'interpreter]]
+   ['version,       :'interpreter], ['jldoc,         :'interpreter], _
+   ['jlapropos,     :'interpreter], ['julia,         :'interpreter], _
+   ['juliad,        :'interpreter], ['mcp,            :'interpreter]]
 
 $SYSCOMMANDS := [first x for x in $systemCommands]
 
 $noParseCommands := ['boot, 'copyright, 'credits, 'fin, 'lisp, 'piles,
-    'pquit, 'quit, 'synonym, 'system, 'version]
+    'pquit, 'quit, 'synonym, 'system, 'version, 'julia,
+    'juliad, 'jldoc, 'jlapropos, 'mcp]
 
 $tokenCommands := ['abbreviations, 'cd, 'clear, 'close, 'compile,
     'depends, 'display, 'edit, 'frame, 'help, 'history, 'input, _
-    'library, 'ltrace, 'nopiles, 'read, 'set, 'spool, 'undo, _
+    'library, 'ltrace, 'nopiles, 'read, 'set, 'spool, 'undo,
     'what, 'with]
 
 --% Top level system command
@@ -1100,11 +1103,11 @@ helpSpad2Cmd args ==
 
   sayBrightly '"Available help topics for system commands are:"
   sayBrightly '""
-  sayBrightly '" boot   cd      clear    close    compile   display"
-  sayBrightly '" edit   fin     frame    help     history   library"
-  sayBrightly '" lisp   ltrace  pquit    quit     read      set"
-  sayBrightly '" show   spool   synonym  system   trace     undo"
-  sayBrightly '" what"
+  sayBrightly '" boot    cd      clear    close    compile   display"
+  sayBrightly '" edit    fin     frame    help     history   jlapropos"
+  sayBrightly '" jldoc   julia   juliad   library  lisp      ltrace"
+  sayBrightly '" pquit   quit    read     set      show      spool"
+  sayBrightly '" synonym system  trace    undo     what"
   sayBrightly '""
   sayBrightly '"Issue _")help help_" for more information about the help command."
 
@@ -2044,7 +2047,7 @@ readSpad2Cmd l ==
   if SYMBOLP(l) then l := SYMBOL_-NAME(l)
   not(STRINGP(l)) => BREAK()
 
-  devFTs := '("input" "boot" "lisp")
+  devFTs := '("input" "boot" "lisp" "jl")
   fileTypes :=
       $UserLevel = 'interpreter or $UserLevel = 'compiler => '("input")
       devFTs
@@ -2085,6 +2088,10 @@ read_or_compile(quiet, i_name) ==
         LOAD(fricas_compile_fasl(input_file, ffile))
     type = $lisp_bin_filetype => LOAD(input_file)
     type = '"input" => ncINTERPFILE(input_file, not(quiet))
+    if type = '"jl" then
+        if not _*JULIA_-INITIALIZED_* then
+            init_julia_env()
+        _*JULIA_-INITIALIZED_* => jl_include_file input_file
 
 --% )show
 
@@ -2838,6 +2845,16 @@ handleNoParseCommands(unab, string) ==
     else npsystem(unab, string)
   unab = "synonym" =>
     npsynonym(unab, (null spaceIndex => '""; SUBSEQ(string, spaceIndex+1)))
+  member(unab, '( jlapropos _
+    jldoc  _
+    julia  _
+    juliad _
+    mcp )) =>
+      if (null spaceIndex) then
+        say_invalid_args()
+      else
+        funName := INTERN CONCAT('"np",STRING unab)
+        FUNCALL(funName, SUBSEQ(string, spaceIndex+1)) 
   null spaceIndex =>
     FUNCALL unab
   member(unab, '( quit     _
@@ -2872,6 +2889,26 @@ stripLisp str ==
 nplisp str ==
     ans := EVAL(READ_-FROM_-STRING(str))
     FORMAT(true, '"~&Value = ~S~%", ans)
+
+npjlapropos str ==
+  if not _*JULIA_-INITIALIZED_* then
+    init_julia_env() 
+  jl_eval_string CONCAT('"Base.Docs.apropos(",str,")")
+
+npjldoc str ==
+  if not _*JULIA_-INITIALIZED_* then
+    init_julia_env() 
+  jl_eval_string CONCAT('"display(@doc ",str,")")
+
+npjulia str ==
+  if not _*JULIA_-INITIALIZED_* then
+    init_julia_env()
+  jl_eval_string str
+
+npjuliad str ==
+  if not _*JULIA_-INITIALIZED_* then
+    init_julia_env() 
+  jl_eval_string CONCAT('"display(",str,")")
 
 npsystem(unab, str) ==
   spaceIndex := SEARCH('" ", str)
@@ -2972,6 +3009,35 @@ getFirstWord string ==
   stripSpaces SUBSEQ(string, 0, spaceIndex)
 
 ltrace l == trace l
+
+--% )mcp
+
+-- Internal function
+mcp() == mcpStatus()
+
+-- TODO: rework
+npmcp str ==
+  str := stripSpaces str
+  str = '"status" => mcpStatus()
+  str = '"on" or str = '"start" => mcpStart()
+  str = '"off" or str = '"stop" => mcpStop()
+  say_msg("S2IZ0080", '"mcp requires an argument: status, on, off, start or stop", [])
+
+mcpStart() ==
+  startMCPServer()
+  terminateSystemCommand()
+
+mcpStop() ==
+  stopMCPServer()
+  terminateSystemCommand()
+
+mcpStatus() ==
+  s := FIND_-SYMBOL('"*MCP-RUNNING*", '"FRICAS-MCP")
+  if s and SYMBOL_-VALUE(s) then
+    sayBrightly '"MCP server is running."
+  else
+    sayBrightly '"MCP server is not running."
+  terminateSystemCommand()
 
 --------------------> NEW DEFINITION (see intint.lisp)
 stripSpaces str ==

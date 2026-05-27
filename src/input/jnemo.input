@@ -1,0 +1,178 @@
+)set break resume
+)set mess type off
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "Julia Nemo"
+
+testcase "NMInteger arithmetic"
+a := jninteger 2;
+b := jninteger 4;
+testEquals("a+a", "b")
+testEquals("a-a", "0$NMInteger")
+testEquals("a*a", "b")
+testEquals("2*a", "b")
+testEquals("a^2", "b")
+
+testcase "NM Rational arithmetic"
+a := coerce(2)@NMFraction(NMInteger);
+b := coerce(4)@NMFraction(NMInteger);
+c := coerce(1/2)@NMFraction(NMInteger);
+testEquals("a+a", "b")
+testEquals("a-a", "0$NMFraction(NMInteger)")
+testEquals("a*a", "b")
+testEquals("2*a", "b")
+testEquals("a^2", "b")
+testEquals("b/a", "a")
+testEquals("a/b", "c")
+
+testcase "NMAlgebraicNumber Extensions"
+-- norm
+-- Create an algebraic number. sqrt(2)
+a := sqrt(jnanumber(2))
+-- minimal polynomial is x^2 - 2. Roots are sqrt(2), -sqrt(2).
+-- norm is product of roots = -2.
+testEquals("norm(a)$NMAlgebraicNumber", "jnanumber(-2)")
+
+-- Another one: 1 + sqrt(2).
+-- conjugates: 1+sqrt(2), 1-sqrt(2).
+-- product: 1 - 2 = -1.
+b := 1 + a
+testEquals("norm(b)$NMAlgebraicNumber", "jnanumber(-1)")
+
+testcase "NMAlgebraicNumber Arithmetic"
+a := coerce(2)@NMAlgebraicNumber;
+b := coerce(4)@NMAlgebraicNumber;
+c := coerce(1/2)@NMAlgebraicNumber;
+testEquals("a+a", "b")
+testEquals("a-a", "0$NMAlgebraicNumber")
+testEquals("a*a", "b")
+testEquals("2*a", "b")
+testEquals("a^2", "b")
+testEquals("b/a", "a")
+testEquals("a/b", "c")
+
+testcase "NMAlgebraicNumber minimal polynomial"
+a:=sqrt(jnanumber(7))+3/sqrt jnanumber(-3)
+v1:=conjugates(a);
+v2 := roots(minimalPolynomial(a)@NUP(NINT,'x))
+testEquals("v1", "v2")
+
+testcase "rootOfUnity"
+zeta := rootOfUnity(4)$NMAlgebraicNumber
+testTrue("equal?(zeta^2, -1$NMAlgebraicNumber)")
+zeta2 := rootOfUnity(8, 2)$NMAlgebraicNumber
+testTrue("equal?(zeta, zeta2)")
+
+testcase "rootsOf simple"
+p_sup : SparseUnivariatePolynomial(NMAlgebraicNumber) := monomial(1$NMAlgebraicNumber, 2)$SparseUnivariatePolynomial(NMAlgebraicNumber) + monomial(1$NMAlgebraicNumber, 0)$SparseUnivariatePolynomial(NMAlgebraicNumber)
+roots_list : List(NMAlgebraicNumber) := (rootsOf(p_sup)$NMAlgebraicNumber)@List(NMAlgebraicNumber)
+testEquals("#roots_list", "2")
+r1 := roots_list.1
+testTrue("equal?(r1^2, -1$NMAlgebraicNumber)")
+
+testcase "rootsOf higher"
+p_sup : SparseUnivariatePolynomial(NMAlgebraicNumber) := monomial(1$NMAlgebraicNumber, 3)$SparseUnivariatePolynomial(NMAlgebraicNumber) - monomial(1$NMAlgebraicNumber, 0)$SparseUnivariatePolynomial(NMAlgebraicNumber)
+roots_list : List(NMAlgebraicNumber) := (rootsOf(p_sup)$NMAlgebraicNumber)@List(NMAlgebraicNumber)
+testEquals("#roots_list", "3")
+r1 := roots_list.1
+testTrue("equal?(r1^3, 1$NMAlgebraicNumber)")
+
+testcase "rootOf single"
+p_sup : SparseUnivariatePolynomial(NMAlgebraicNumber) := monomial(1$NMAlgebraicNumber, 4)$SparseUnivariatePolynomial(NMAlgebraicNumber) - jnanumber(2)$NMAlgebraicNumber::SparseUnivariatePolynomial(NMAlgebraicNumber)
+r : NMAlgebraicNumber := (rootOf(p_sup)$NMAlgebraicNumber)@NMAlgebraicNumber
+testTrue("equal?(r^4, 2$NMAlgebraicNumber)")
+
+testcase "Optimized norm"
+a1 := jnanumber(2)$NMAlgebraicNumber
+testEquals("norm(a1)$NMAlgebraicNumber", "a1")
+
+i_p : SparseUnivariatePolynomial(NMAlgebraicNumber) := monomial(1$NMAlgebraicNumber, 2)$SparseUnivariatePolynomial(NMAlgebraicNumber) + monomial(1$NMAlgebraicNumber, 0)$SparseUnivariatePolynomial(NMAlgebraicNumber)
+i_root : NMAlgebraicNumber := (rootOf(i_p)$NMAlgebraicNumber)@NMAlgebraicNumber
+n1 : NMAlgebraicNumber := (norm(i_root)$NMAlgebraicNumber)@NMAlgebraicNumber
+testEquals("n1", "1$NMAlgebraicNumber")
+
+one_plus_i : NMAlgebraicNumber := 1$NMAlgebraicNumber + i_root
+n2 : NMAlgebraicNumber := (norm(one_plus_i)$NMAlgebraicNumber)@NMAlgebraicNumber
+testEquals("n2", "2$NMAlgebraicNumber")
+
+
+testcase "NMIntegerMod arithmetic"
+a := jnzmod(2)$NZMOD(5);
+b := jnzmod(4)$NZMOD(5);
+testEquals("a+a", "b")
+testEquals("a-a", "0$NMIntegerMod(5)")
+testEquals("a*a", "b")
+testEquals("2*a", "b")
+testEquals("a^2", "b")
+testEquals("b+1", "0$NMIntegerMod(5)")
+
+testcase "NMPrimeField Extensions"
+p := 5
+F := NMPrimeField(p)
+a := jnpf(2)$F
+-- trace(a, 1) should be a
+testEquals("trace(a, 1)", "a")
+-- norm(a, 1) should be a
+testEquals("norm(a, 1)", "a")
+
+-- quadraticNonResidue
+q := quadraticNonResidue()$F
+-- In field of size 5, squares are 0, 1, 4. Non-squares are 2, 3.
+-- q should be 2 (smallest non-negative)
+testEquals("convert(q)@Integer", "2")
+
+testcase "NMPrimeField arithmetic"
+a := jnpf(2)$NPF(5);
+b := jnpf(4)$NPF(5);
+testEquals("a+a", "b")
+testEquals("a-a", "0$NMPrimeField(5)")
+testEquals("a*a", "b")
+testEquals("2*a", "b")
+testEquals("a^2", "b")
+testEquals("b/a", "a")
+testEquals("b+1", "0$NMPrimeField(5)")
+
+testcase "NMFiniteField arithmetic"
+a := jnff(2)$NFF(5,3);
+b := jnff(4)$NFF(5,3);
+testTrue("equal?(a+a, b)")
+testTrue("equal?(a-a, 0$NMFiniteField(5,3))")
+testTrue("equal?(a*a, b)")
+testTrue("equal?(2*a, b)")
+testTrue("equal?(a^2, b)")
+testTrue("equal?(b/a, a)")
+testTrue("equal?(b+1, 0$NMFiniteField(5,3))")
+testEquals("rank()$NMFiniteField(5,3)", "3")
+
+testcase "NMExactCalciumField arithmetic"
+a := jnecf(2);
+b := jnecf(4);
+c := jnecf(1/2);
+testEquals("a+a", "b")
+testEquals("a-a", "0$NECF")
+testEquals("a*a", "b")
+testEquals("2*a", "b")
+testEquals("a^2", "b")
+testEquals("b/a", "a")
+testEquals("a/b", "c")
+
+testcase "NMExactCalciumField trigonometric functions"
+a := jnecf(1/2)
+testEquals("asin sin(a)", "a")
+testEquals("cos acos(a)", "a")
+testEquals("tan atan(a)", "a")
+
+testcase "NMFraction(NMInteger) retraction"
+nf1 := coerce(3/4)@NMFraction(NMInteger)
+res1 := retractIfCan(nf1)@Union(Fraction(Integer), "failed")
+testTrue("not (res1 case _"failed_")")
+testEquals("res1::Fraction(Integer)", "3/4")
+testEquals("retract(nf1)@Fraction(Integer)", "3/4")
+
+nf2 := coerce(5)@NMFraction(NMInteger)
+res2 := retractIfCan(nf2)@Union(Fraction(Integer), "failed")
+testTrue("not (res2 case _"failed_")")
+testEquals("res2::Fraction(Integer)", "5/1")
+testEquals("retract(nf2)@Fraction(Integer)", "5/1")
+
+statistics()

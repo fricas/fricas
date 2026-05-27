@@ -22,10 +22,16 @@ DOC=$(fricas_target_docdir)/src/algebra
 OUTSRC=$(fricas_target_srcdir)/algebra
 # INPUT=${INT}/input
 INPUT=../input
+lisp_flavor = $(word 1, @fricas_lisp_flavor@)
+JULIA_WRAP_SO_TARGET=@JULIA_WRAP_SO_TARGET@
+JULIA_USE_MLINK=@JULIA_USE_MLINK@
 
 
 INTERPSYS=FRICAS=${FRICAS} FRICAS_INITFILE='' $(fricas_build_bindir)/interpsys
 
+JULIALIST =
+JULIACATLIST =
+JULIACATDOMS =
 
 SPAD_SRCS= \
      acplot aggcat2 aggcat ainterval algcat algext algfact \
@@ -54,11 +60,12 @@ SPAD_SRCS= \
      groebsol gseries hashstate html hypertex ideal idecomp indexedp \
      intaf intalg intaux intclos intden intef integer \
      integrat interval intfact intlocp intpar intpm intrf intspec irexpand \
-     irsn ituple jet kl kovacic laplace laurent \
-     leadcdet lie limitps lindep lingrob linpen liouv \
-     listgcd list lll lmdict lodof lodof2 lodo logic \
-     mama manip mantepse math_sym mathml mappkg matcat matfuns matrix \
-     matstor mesh mfinfact mkfunc mkrecord \
+     irsn ituple jarray32 jarray64 jcfsf jimobject jla32 jla64 jnemo jnpoly \
+     jnseries jobject jplot jfsf jfsf2 jf32sf jf64sf jf32sf2 jf64sf2 jnball \
+     julia jutils jet jws jwsagg jwsexpr jwsnsf jwsutils kl kovacic laplace \
+     laurent leadcdet lie limitps lindep lingrob linpen liouv listgcd list \
+     lll lmdict lodof lodof2 lodo logic mama manip mantepse math_sym mathml \
+     mappkg matcat matfuns matrix matstor mcp mesh mfinfact mkfunc mkrecord \
      mlift modgcd modhpsol modmonom modmon modring \
      moebius mring mrv_limit mset mts muldep multfact multpoly \
      multsqfr naalgc naalg newdata newpoint newpoly \
@@ -76,7 +83,7 @@ SPAD_SRCS= \
      random ratfact rdeefx real0q \
      realzero reclos rec regset rep1 rep2 \
      resring retract rf riccati rinterp rsimp \
-     rule scene seg serexp setorder sets sex sf \
+     rule scene sdoc seg serexp setorder sets sex sf \
      sgcf sign si skpol smith smith2 solvedio \
      solvelin solverad sortpak space special special2 sregset \
      ssolve stream string sttaylor sttf \
@@ -209,7 +216,7 @@ SPADLIST4=\
 
 SPADLIST5=\
      MATLIN MATOP32 MATOPC MATRIX MATSTOR MCALCFN MCDEN MCMPLX \
-     MDAGG MEETLAT MESH MEVCAT MEVAL1 MEVAL2 \
+     MCPSRV MDAGG MEETLAT MESH MEVCAT MEVAL1 MEVAL2 \
      MFGRPH MFINFACT MFLOAT MFOPC MHROWRED \
      MINT MKBCFUNC MKCHSET MKFUNC MKRECORD \
      MKUCFUNC MLIFT MMAP MMLFORM \
@@ -272,7 +279,7 @@ SPADLIST7=\
      RSETGCD RSIMP RULECOLD RULESET RULE RURPK \
      SAE SAOS SARGND SBOUND SCACHE SCANUTIL \
      SCELL SCENE SCIFS SCNP SCONF SCPKG SCRT SDPOL \
-     SDVAR SEG2 SEGBIND2 SEGBIND SEGCAT SEG \
+     SDOC SDVAR SEG2 SEGBIND2 SEGBIND SEGCAT SEG \
      SEGXCAT SEM SEQU SEQU2 SEQUCAT SETAGG SETCAT SETMN SETLAT SEXCAT \
      SEXOF SEX SFORT SFQCMPK SFRGCD SFRTCAT \
      SGCF SGROUP SHDP SHP SIGNEF SIGNRF \
@@ -389,6 +396,29 @@ GUESSLIST= SMPEXPR FAMR2 NEWTON UFPS GOPT GUESSF1 GUESSP1\
            UTSSOL FFFG UFPS1 GOPT0 EXPRSOL FFFGF \
            RECOP STNSR GUESS GUESSEB  GUESSINT GUESSF GUESSP GUESSPI GUESSAN
 
+ifdef JULIA_WRAP_SO_TARGET
+JULIALIST = INPOLY INMP INECF JARBPR JCF32 JCF32VEC JCF32MAT JCF32SMA JCF64 \
+            JCF64MAT JCF64MTF JCF64SMA JCF64VEC JCFSF JCFLOAT JCF32LA \
+            JCF64LA JCRING JDFRAME JDRAW JF32 JF32AF JF32VEC JF32VEC2 JF32MAT \
+		  JF32SMAT JF64 JF64AF JF64MAT JF64MTF JF32SF JF64SF JF32SF2 JF64SF2 \
+            JF64SMAT JF64VEC JF64VEC2 JFLOAT JFSF JFSF2 JI64 JI64VEC JMATCAT \
+            JMATRIX JMFLOAT JMTYPE JOBJECT JOBAGG JOBBOOL JOBBINT JOBCF32 JOBCF64 \
+            JOBANFUN JOBDICT JOBDLINK JOBF32 JOBF64 JOBFUNC JOBI64 JOBPAIR JOBPY JOBRING JOBTPLE \
+		  JOBUI64 JOBNTPL JOBRAT JOBTYPE JPLOT JRING JF32LA JF64LA JSTRU JSYM JUF JTYPE \
+		  JVECCAT JVECTOR JVECTOR2 NAN NACB NARB NULS NUPS NUPXS NCB NCF NCRING NECF \
+		  NFF NFR NFRAC NPADICC NFIELD NINT NMLP NMP NPADICR NPADICZ NPF \
+		  NPOLY NRB NRF NRING NTYPE NULP NUP NXPADICR NXPADICZ NZMOD
+JULIACATLIST = JARBPR JCRING JMATCAT JMFLOAT JMTYPE JOBAGG JOBRING JOBTYPE \
+               JRING JTYPE JVECCAT NCRING NPADICC NFIELD NRING NTYPE
+JULIACATDOMS = JMTYPE JOBAGG JOBRING JOBTYPE NRING
+ifeq ($(JULIA_USE_MLINK),yes)
+JULIALIST += WSAGG WSAPCPX WSAPR WSCPLX WSEXPR WSGINT WSINT WSLIST WSMAT \
+             WSNUM WSNSF WSO WSRAT WSREAL WSRING WSSTR WSSYM WSUF WSVEC      
+JULIACATLIST += WSAGG WSO WSNUM WSRING
+JULIACATDOMS += WSAGG WSO
+endif
+endif
+
 TESTLIST= TESTCNT TESTAUX TESTUNIT
 
 
@@ -405,8 +435,8 @@ all-ax all-algebra: abbrev.list
 	@ echo finished $(builddir)
 
 ifeq ($(BUILD_WAY),use_lisp)
-SPADLIST99=${EXTRASPADS} ${GUESSLIST} ${TESTLIST} \
-               $(patsubst %, %-, ${CATDOMS})
+SPADLIST99=${EXTRASPADS} ${GUESSLIST} ${TESTLIST} ${JULIALIST} \
+               $(patsubst %, %-, ${CATDOMS}) $(patsubst %, %-, ${JULIACATDOMS})
 
 FULL_FASL_LIST=${SPADLIST} ${SPADLIST99}
 LISTS=1 2 3 4 5 6 7 8 99
@@ -428,7 +458,8 @@ ${STAMP_FASLS}: stamp-fasls% :
 ${TARGET_FASLS}: ${STAMP_FASLS}
 endif
 
-NSPADLIST = ${SPADLIST} ${EXTRASPADS} ${GUESSLIST} ${TESTLIST}
+NSPADLIST = ${SPADLIST} ${EXTRASPADS} ${GUESSLIST} ${TESTLIST} \
+            ${JULIALIST}
 
 stamp-db: $(patsubst %, %.spad, ${NSPADLIST})
 	@echo doing stamp-db
@@ -439,7 +470,7 @@ stamp-db: $(patsubst %, %.spad, ${NSPADLIST})
               echo ")compile $$A.spad" >> komp_all.input ; \
           done ; \
           rm -f boot_doms.input ; \
-          for A in ${CATLIST} ${DOMLIST} ; do \
+          for A in ${CATLIST} ${JULIACATLIST} ${DOMLIST} ; do \
               echo ")compile $$A.spad" >> boot_doms.input ; \
           done ; \
           ${MKDIR_P} r1/algebra ; \
@@ -464,10 +495,10 @@ stamp-oboo3: stamp-db
 	@echo doing stamp-oboo3
 	@if [ ! -f stamp-oboo3 ] ; then \
            echo "Bootstrap object copy" ; \
-           for A in ${CATLIST} ${DOMLIST} ; do \
+           for A in ${CATLIST} ${JULIACATLIST} ${DOMLIST}; do \
               cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
            done; \
-           for A in ${CATDOMS} ; do \
+           for A in ${CATDOMS} ${JULIACATDOMS} ; do \
               cp $${A}-.NRLIB/$${A}-.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
            done; \
            rm -rf *.NRLIB ; \
@@ -500,7 +531,7 @@ stamp-bootstrap: stamp-oboo3
               echo >> boot.mak ; \
            done ; \
            ${MAKE} -f boot.mak main-bootstrap && \
-	   echo ')boot make_databases([], false)' | \
+       echo ')boot make_databases([], false)' | \
               DAASE=./r7 ${INTERPSYS} && \
 	   ${MKDIR_P} rf/algebra && \
 	   mv category.daase interp.daase \
@@ -534,7 +565,7 @@ spad.mak : Makefile
 	@for A in ${NSPADLIST} ; do \
 	    $(ECHO_B) "${OUT}"/$${A}."$(FASLEXT) " >> spad.mak ; \
 	done
-	@for A in $(patsubst %, ${OUT}/%-.$(FASLEXT), ${CATDOMS}) ; do \
+	@for A in $(patsubst %, ${OUT}/%-.$(FASLEXT), ${CATDOMS} ${JULIACATDOMS}) ; do \
 	    $(ECHO_B) $${A}" " >> spad.mak ; \
 	done
 	@for A in ${NSPADLIST} ; do \

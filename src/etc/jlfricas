@@ -1,0 +1,283 @@
+#!/bin/sh
+
+# Personal file - require rlwrap
+
+PATH=$FRICAS/bin:${PATH}:/usr/bin/X11
+export PATH
+
+# 0. Basic utilities
+
+showuse() {
+  echo "Usage:"
+  echo "  fricas [options]"
+  echo
+  echo "The following options are recognized."
+  echo "  -clef | -noclef    use Clef (default: -clef)"
+  echo "  -clefprog fname    use named program for Clef"
+  echo "  --mcp              start as an MCP (Model Context Protocol) server"
+  echo "  --mcp-port port    start as an MCP server listening on specified port"
+  echo "  -eval code         evaluate specified code at start"
+  echo "  -go   | -nogo      whether to start system"
+  echo "  -gr   | -nogr      use Graphics (default: -gr)"
+  echo "  -ht   | -noht      use HyperDoc (default: -noht)"
+  echo "  -ihere| -noihere   start an interpreter buffer in the original window"
+  echo "  -iw   | -noiw      start in interpreter window"
+  echo "  -list              list workspaces only"
+  echo "  -nox               don't use X Windows"
+  echo "  -rl                use GNU Readline via rlwrap if available (default)"
+  echo "  -ws wsname         use named workspace"
+  #echo "  -grprog fname      use named program for Graphics"
+  #echo "  -htprog fname      use named program for HyperDoc"
+  #echo "  -sessionprog fname use named program for session"
+  #echo "  -clientprog fname  use named program for spadclient"
+  echo
+  echo "Some options can only be given in the first position."
+  echo
+  echo "Start only a plain commandline interface."
+  echo "  fricas -nosman [-rl] [-eval code]"
+  echo
+  echo "Print this help screen and exit."
+  echo "  fricas --help"
+  echo
+  echo "Print version information and exit."
+  echo "  fricas --version"
+  echo
+  echo "Setup special frontends."
+  echo "  fricas -texmacs"
+  echo "  fricas -emacs"
+}
+
+ciao() {
+    echo "Goodbye."
+    exit 1
+}
+
+needsubopt () {
+    echo "The $1 option requires an argument."
+    ciao
+}
+
+# Redundant, TODO: improve.
+if ! command -v rlwrap >/dev/null 2>&1
+then
+    echo "jlfricas requires the rlwrap program. Install it or use the fricas script instead."
+    ciao
+fi
+
+RLWRAP=${RLWRAP:=rlwrap}
+have_rlwrap() {
+    if [ -z "$(command -v ${RLWRAP})" ] ; then
+	echo "Ignoring -rl option; rlwrap program \"${RLWRAP}\" not found."
+	return 1
+    fi
+    return 0
+}
+
+# 1. Ensure the environment is set.
+
+# The aldor compiler is usually expected to be in PATH at the time of
+# starting fricas, but, we allow for more flexibility.
+# 1) If ALDOR_COMPILER is set, it's assumed to be the absolute path
+#    to the aldor compiler executable.
+# 2) If there is a program ${exec_prefix}/bin/aldor, then this will
+#     be used.
+# 3) It's assumed that "aldor" is in PATH.
+if [ -z ${ALDOR_COMPILER} ]; then
+    if [ -x ${exec_prefix}/bin/aldor ]; then
+        ALDOR_COMPILER=${exec_prefix}/bin/aldor
+    else
+        ALDOR_COMPILER=aldor
+    fi
+fi
+export ALDOR_COMPILER
+
+if [ ! -d "$FRICAS" ] ; then
+  echo "The directory for FriCAS, $FRICAS, does not exist."
+  ciao
+fi
+
+# Name the workspace directories.
+rootwsdir=$FRICAS/bin
+
+# 2. Process command line arguments.
+algebra_off=')set output algebra off'
+texmacs_on=')set output texmacs on'
+markers=")lisp (setf |\$ioHook| (lambda (x &optional args) (cond ((eq x '|startPrompt|) (princ (concat (code-char 2) \"prompt\#\") ))  ((eq x '|endOfTeXmacsOutput|) (princ (concat (code-char 5) (code-char 10)))) ((eq x '|startTeXmacsOutput|) (princ (code-char 2)))  ((eq x '|startKeyedMsg|)  (princ (concat (code-char 2) \"verbatim:\")))  ((eq x '|endOfKeyedMsg|)  (princ (code-char 5)))  ((eq x '|endOfPrompt|) (princ (code-char 5) ))  )))"
+
+list=no
+go=yes
+wsname=FRICASsys
+mcp_mode=false
+opt_mcp=""
+otheropts=""
+
+had_nogr=false
+had_noht=false
+
+while [ "$*" != "" ] ; do
+    opt=$1
+    case $1 in
+        -h|--help)
+            showuse
+            exit 0
+            ;;
+        --mcp)
+            mcp_mode=true
+            opt_mcp="--mcp"
+            otheropts="$otheropts --mcp"
+            ;;
+        --mcp-port)
+            if [ "$2" = "" ] ; then needsubopt "$1" ; fi
+            mcp_mode=true
+            opt_mcp="--mcp-port $2"
+            otheropts="$otheropts --mcp-port $2"
+            shift
+            ;;
+        --version)
+            echo "FriCAS $FRICAS_VERSION"
+            echo "based on $FRICAS_LISP_FLAVOR $FRICAS_LISP_VERSION"
+            exit 0
+            ;;
+        -list)
+            list=yes
+            go=no
+            ;;
+        -go)
+            go=yes
+            ;;
+        -nogo)
+            go=no
+            ;;
+        -ws)
+            if [ "$2" = "" ] ; then needsubopt "$1" ; fi
+            shift
+            wsname="$1"
+            ;;
+        -grprog|-htprog|-clefprog|-sessionprog|-clientprog|-paste|-rm|-rv)
+            if [ "$2" = "" ] ; then needsubopt "$1" ; fi
+            otheropts="$otheropts $1 $2"
+            shift
+            ;;
+        -nogr)
+            had_nogr=true
+            otheropts="$otheropts $1"
+            ;;
+        -noht)
+            had_noht=true
+            otheropts="$otheropts $1"
+            ;;
+        -nox)
+            had_nogr=true
+            had_noht=true
+            otheropts="$otheropts $1"
+            ;;
+        -clef|-noclef|-gr|-ht|-iw|-noiw|-ihere|-noihere)
+            otheropts="$otheropts $1"
+            ;;
+        -rl)
+            # handled by default in jlfricas
+            ;;
+        -eval)
+            shift
+            if [ -z "$*" ] ; then
+                echo "Parameter of -eval must be provided with a value"
+                ciao
+            else
+                patt='s,[^A-Za-z0-9],\\&,g'
+                npar=`echo "$1" | sed $patt`
+                otheropts="$otheropts -eval $npar"
+            fi
+            ;;
+        -nosman)
+            # Handled later by skipping sman
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo
+            showuse
+            ciao
+            ;;
+        esac
+        shift
+done
+
+# Setup special frontends.
+if [ "$otheropts" = "-texmacs" ] ; then
+    exec "$FRICAS/bin/FRICASsys" -- -eval "$algebra_off" -eval "$markers" -eval "$texmacs_on"
+fi
+
+# Start FriCAS from inside emacs. Discard output to stderr.
+if [ "$otheropts" = "-emacs" ] ; then
+    eval "exec $FRICAS/bin/sman -noclef 2>/dev/null"
+fi
+
+# Call FRICASsys directly if -nosman or MCP mode
+if [ "$mcp_mode" = "true" ] ; then
+    if [ "$opt_mcp" = "" ] ; then
+        # -nosman Case (no MCP flag, just skip sman)
+        exec $RLWRAP -s 1000 "$FRICAS/bin/FRICASsys" $otheropts
+    else
+        # MCP Mode: save original stdout as fd 3 for JSON output,
+        # then redirect stdout to stderr so the FRICASsys banner
+        # doesn't pollute the JSON-RPC stream.
+        exec 3>&1 1>&2 "$FRICAS/bin/FRICASsys" $otheropts
+    fi
+    exit 1
+fi
+
+otheropts="$otheropts -clefprog ${FRICAS}/bin/fricas-readline"
+
+if [ $had_nogr != true -a ! -f $FRICAS/lib/viewman ] ; then
+    echo "viewman not present, disabling graphics"
+    otheropts="$otheropts -nogr"
+fi
+
+if [ $had_noht != true -a ! -f $FRICAS/bin/hypertex ]; then
+    echo "hypertex not present, disabling HyperDoc"
+    otheropts="$otheropts -noht"
+fi
+
+# 3. List the available workspaces, if asked
+
+listwspaces()
+{
+        echo "$1"
+        ls -l $2 | grep "sys$"
+        echo ""
+}
+
+if [ $list = yes ] ; then
+    listwspaces "FriCAS workspaces in \$FRICAS/bin = $rootwsdir: " $rootwsdir
+fi
+
+# 5. Try to ensure a suitable workspace on this host.
+
+if [ `expr $wsname : '.*/.*'` = 0 ] ; then
+        serverws=$rootwsdir/$wsname
+else
+        serverws=$wsname
+fi
+
+if [ ! -f $serverws ] ; then
+        showuse
+        ciao
+fi
+
+# 6. Start processes
+
+if [ "$mcp_mode" = "true" ] ; then
+    # MCP Mode: save original stdout as fd 3 for JSON output,
+    # then redirect stdout to stderr so the FRICASsys banner
+    # doesn't pollute the JSON-RPC stream.
+    exec 3>&1 1>&2 "$FRICAS/bin/FRICASsys" $otheropts
+fi
+
+if [ $go = no ] ; then
+    echo "Would now execute the following."
+    echo "FRICAS=\"${exec_prefix}/lib/fricas/target/x86_64-linux-gnu\""
+    echo "export FRICAS"
+    echo "$FRICAS/bin/sman $otheropts -ws $serverws"
+    exit 0
+fi
+
+eval "exec $FRICAS/bin/sman  -noht $otheropts -ws $serverws"

@@ -1,0 +1,1308 @@
+)abbrev package JF32LA JLF32LinearAlgebra
+++ Linear Algebra functions computed using Julia and its algorithms.
+++ 32 bits version.
+JLF32LinearAlgebra() : Exports == Implementation where
+  JF32     ==> JLFloat32
+  JI64     ==> JLInt64
+  JI64VEC  ==> JLInt64Vector
+  JF32VEC  ==> JLFloat32Vector
+  JF32MAT  ==> JLFloat32Matrix
+  JCF32VEC ==> JLComplexF32Vector
+  JCF32MAT ==> JLComplexF32Matrix
+  NNI      ==> NonNegativeInteger
+  Exports ==> with
+    normalize : JF32VEC -> JF32VEC
+    ++ normalize(v) returns normalized v such that its norm equals 1.
+    normalize! : JF32VEC -> JF32VEC
+    ++ normalize!(v) destructively normalize v such that
+    ++ norm(v) equals 1.
+    normalize : JF32MAT -> JF32MAT
+    ++ normalize(m) returns normalized m such that its norm equals 1.
+    normalize! : JF32MAT -> JF32MAT
+    ++ normalize!(m) destructively normalize m such that
+    ++ its norm equals 1.
+    norm    : JF32VEC -> JF32
+    ++ norm(v) computes the 2-norm of v.
+    norm    : (JF32VEC,JF32) -> JF32
+    ++ norm(v,p) computes the p-norm of v.
+    norm    : JF32MAT -> JF32
+    ++ norm(m) computes the 2-norm of m,
+    ++ also known as the Frobenius norm.
+    norm    : (JF32MAT,JF32) -> JF32
+    ++ norm(m,p) computes the p-norm of m.
+    operatorNorm    : JF32MAT -> JF32
+    ++ operatorNorm(m) computes the operator norm of m
+    ++ induced by the vector 2-norm.
+    operatorNorm    : (JF32MAT,JF32) -> JF32
+    ++ operatorNorm(m,p) computes the operator norm of m
+    ++ induced by the vector p-norm.
+    conditionNumber    : JF32MAT -> JF32
+    ++ conditionNumber(m) computes the condition number of m.
+    conditionNumber    : (JF32MAT,JF32) -> JF32
+    ++ conditionNumber(m, p) computes the p-condition number of m.
+    condSkeel    : JF32MAT -> JF32
+    ++ condSkeel(m) computes the Skeel condition number of m.
+    trace   : JF32MAT -> JF32
+    ++ trace(m) computes the trace of m.
+    rank        : (JF32MAT, JF32) -> NNI
+    ++ rank(m, tol) computes the rank of m. Counts singular value
+    ++ with magnitude greater than tol.
+    rank!        : (JF32MAT, JF32) -> NNI
+    ++ rank!(m, tol) computes the rank of m. Counts singular value
+    ++ with magnitude greater than tol but overwrites m to save
+    ++ memory space.
+    logDeterminant : JF32MAT -> JF32
+    ++ logDeterminant(m) computes the logarithm of the determinant of m,
+    ++ possibly with more accuracy and avoiding under/overflow.
+    svd : JF32MAT -> Record(U:JF32MAT, sv:JF32VEC, Vt:JF32MAT)
+    ++ svd(m) computes the singular value decomposition SVD of m
+    ++ such that SVD.U * diagonalMatrix(SVD.sv) * SVD.Vt = m.
+    svd! : JF32MAT -> Record(U:JF32MAT, sv:JF32VEC, Vt:JF32MAT)
+    ++ svd!(m) is the same as svd(m) but overwrites m to save
+    ++ memory space.
+    svdvals : JF32MAT -> JF32VEC
+    ++ svdvals(m) returns the singular values of m.
+    svdvals! : JF32MAT -> JF32VEC
+    ++ svdvals!(m) returns the singular values of m but overwrites
+    ++ m to save memory space.
+    eigvals : JF32MAT -> JCF32VEC
+    ++ eigvals(m) returns the eigen values of m.
+    eigvals! : JF32MAT -> JCF32VEC
+    ++ eigvals!(m) returns the eigen values of m but overwrites
+    ++ m to save memory space.
+    eigvecs : JF32MAT -> JCF32MAT
+    ++ eigvecs(m) returns the eigen vectors of m.
+    eigen : JF32MAT -> Record(values:JCF32VEC, vectors:JCF32MAT)
+    ++ eigen(m) computes the spectral decomposition of m.
+    eigen! : JF32MAT -> Record(values:JCF32VEC, vectors:JCF32MAT)
+    ++ eigen!(m) computes the spectral decomposition of m but overwrites
+    ++ m to save memory space.
+    eigenSystem : JF32MAT ->
+        Record(values:JCF32VEC, leftVectors:JF32MAT, rightVectors:JF32MAT)
+    ++ eigenSystem(m) computes the spectral decomposition of m.
+    ++ If the j-th eigenvalue (values) is real, then the left eigenvectors
+    ++ u(j) = column(leftVectors,j), the j-th column of leftVectors.
+    ++ If the j-th and (j+1)-st eigenvalues form a complex
+    ++ conjugate pair, then the left eigenvectors are
+    ++ u(j) = column(leftVectors,j) + %i*column(leftVectors,j+1) and
+    ++ u(j+1) = column(leftVectors,j) - %i*column(leftVectors,j+1).
+    ++ This applies also to rightVectors.
+    eigenSystem! : JF32MAT ->
+        Record(values:JCF32VEC, leftVectors:JF32MAT, rightVectors:JF32MAT)
+    ++ eigenSystem!(m) computes the spectral decomposition of m but overwrites
+    ++ m to save memory space.
+    ++ If the j-th eigenvalue (values) is real, then the left eigenvectors
+    ++ u(j) = column(leftVectors,j), the j-th column of leftVectors.
+    ++ If the j-th and (j+1)-st eigenvalues form a complex
+    ++ conjugate pair, then the left eigenvectors are
+    ++ u(j) = column(leftVectors,j) + %i*column(leftVectors,j+1) and
+    ++ u(j+1) = column(leftVectors,j) - %i*column(leftVectors,j+1).
+    ++ This applies also to rightVectors.
+    solve : (JF32MAT, JF32MAT) -> JF32MAT
+    ++ solve(A,B) solves the matrix equation A*X=B, and returns X.
+    solve! : (JF32MAT, JF32MAT) -> JF32MAT
+    ++ solve!(A,B) solves the matrix equation A*X=B. Overwrites
+    ++ B with matrix X and returns X.
+    lu      : JF32MAT -> Record(LU:JF32MAT,
+                L:JF32MAT, U:JF32MAT, ipiv:JI64VEC)
+    ++ lu(m) computes the LU factorisation of m.
+    lu!     : JF32MAT -> Record(LU:JF32MAT, ipiv:JI64VEC)
+    ++ lu!(m) computes in-place the LU factorisation of m.
+    ++ m is overwritten by its decomposition.
+    luReorder : (JF32MAT, JI64VEC) -> JF32MAT
+    ++ luReorder(mat, ipiv) returns a copy of mat reordered
+    ++ using the ipiv pivot indices.
+    luReorder! : (JF32MAT, JI64VEC) -> JF32MAT
+    ++ luReorder!(mat, ipiv) returns mat reordered
+    ++ in-place using the ipiv pivot indices.
+    mpInverse : JF32MAT -> JF32MAT
+    ++ mpInverse(m) returns the Moore-Penrose pseudo inverse of m.
+    sqrt : JF32MAT -> JCF32MAT
+    ++ sqrt(m) returns the principal square root of m.
+    exp : JF32MAT -> JF32MAT
+    ++ exp(m) returns the matrix exponential of m.
+    log : JF32MAT -> JCF32MAT
+    ++ log(m) tries to compute the principal matrix logarithm of m.
+    ++ Otherwise, returns a non principal matrix logarithm of m if possible.
+    triu    : JF32MAT -> JF32MAT
+    ++ triu(m) returns the upper triangular matrix of m.
+    triu!   : JF32MAT -> JF32MAT
+    ++ triu!(m) overwrites m with its upper triangular matrix counterpart.
+    ++ Returns m.
+    tril    : JF32MAT -> JF32MAT
+    ++ tril(m) returns the lower triangular matrix of m.
+    tril!   : JF32MAT -> JF32MAT
+    ++ tril!(m) overwrites m with its lower triangular matrix counterpart.
+    ++ Returns m.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLF32ArrayFunctions
+    jlImport("LinearAlgebra.LAPACK.gesv!")
+    jlImport("LinearAlgebra.LAPACK.geev!")
+
+    normalize(v : JF32VEC) ==
+      vt := copy(v)
+      jlApplyFunction("normalize!", vt)
+      vt
+    normalize!(v: JF32VEC) == (jlApplyFunction("normalize!", v);v)
+    normalize(m : JF32MAT) ==
+      nr := nrows(m)
+      mt := qnew(nr, ncols(m))$JF32MAT
+      jlApplyFunction!("normalize", jlVector(mt), jlVector(m), nr)
+      mt
+    normalize!(m: JF32MAT) ==
+      jlApplyFunction("normalize!", jlVector(m), nrows(m))
+      m
+
+    norm(v : JF32VEC) == jlApplyFunction("norm", v)
+    norm(v : JF32VEC, p:JF32) ==
+      jlApplyFunction("norm", v, p)
+    norm(m : JF32MAT) == jlApplyFunction("norm", jlVector(m),nrows(m))
+    norm(m : JF32MAT, p:JF32) ==
+      jlApplyFunction( "norm", jlVector(m),nrows(m), p)
+    operatorNorm(m : JF32MAT) ==
+      jlApplyFunction("opnorm", jlVector(m), nrows(m))
+    operatorNorm(m : JF32MAT, p:JF32) ==
+      jlApplyFunction("opnorm", jlVector(m), nrows(m), p)
+    conditionNumber(m : JF32MAT) ==
+      jlApplyFunction("cond", jlVector(m), nrows(m))
+    conditionNumber(m : JF32MAT, p:JF32) ==
+      jlApplyFunction("cond", jlVector(m), nrows(m), p)
+    condSkeel(m : JF32MAT) ==
+      jlApplyFunction("condskeel", jlVector(m), nrows(m))
+    trace(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "trace: matrix is not square"
+      jlApplyFunction("tr", jlVector(m), nr)
+
+    rank(m, tol) : NNI == count(x +-> x > tol, svdvals(m))$JF32VEC
+    rank!(m, tol) : NNI == count(x +-> x > tol, svdvals!(m))$JF32VEC
+
+    logDeterminant(m) ==
+      jlApplyFunction("logdet", jlVector(m), nrows(m))
+
+    svd_wrapper : (String, JF32MAT) -> Record(U:JF32MAT, sv:JF32VEC, Vt:JF32MAT)
+    svd_wrapper(func, a) ==
+      u, vt : JF32MAT
+      sv : JF32VEC
+      nr := nrows(a)
+      nc := ncols(a)
+      sv := qnew(min(nr,nc))$JF32VEC
+      if nr < nc then
+        u  := qnew(nr, nr)
+        vt := qnew(nr, nc)
+      else if nr > nc then
+        u  := qnew(nr, nc)
+        vt := qnew(nc, nc)
+      else 
+        u  := qnew(nr, nc)
+        vt := qnew(nr,nc)
+      jl_svd_ffunction(0$NNI, func, jlVector(u), sv, jlVector(vt),
+          jlVector(a), nr)$Lisp
+      [u,sv,vt]
+
+    svd(a) == svd_wrapper("svd", a)
+
+    svd!(a) == svd_wrapper("svd!", a)
+
+    svdvals(a) ==
+      m := nrows(a)
+      n := ncols(a)
+      v := qnew(min(m,n))$JF32VEC
+      jlApplyFunction!("svdvals", v, jlVector(a), m)
+      v
+
+    svdvals!(a) ==
+      m := nrows(a)
+      n := ncols(a)
+      v := qnew(min(m,n))$JF32VEC
+      jlApplyFunction!("svdvals!", v, jlVector(a), m)
+      v
+    
+    eigvals(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvals: matrix is not square"
+      v := qnew(m)$JCF32VEC
+      jlApplyFunction!("eigvals", v, jlVector(a), m)
+      v
+
+    eigvals!(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvals!: matrix is not square"
+      v := qnew(m)$JCF32VEC
+      jlApplyFunction!("eigvals!", v, jlVector(a), m)
+      v
+
+    eigvecs(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvecs: matrix is not square"
+      ret := qnew(m,m)$JCF32MAT
+      jlApplyFunction!("eigvecs", jlVector(ret),
+        jlVector(a), m)
+      ret
+        
+    eigen(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigen: matrix is not square"
+      vecs := qnew(m,m)$JCF32MAT
+      vals := qnew(m)$JCF32VEC
+      jl_eigen_ffunction(0$NNI, "eigen", vals, jlVector(vecs),
+        jlVector(a), m)$Lisp
+      [vals,vecs]
+
+    eigen!(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigen!: matrix is not square"
+      vecs := qnew(m,m)$JCF32MAT
+      vals := qnew(m)$JCF32VEC
+      jl_eigen_ffunction(0$NNI, "eigen!", vals, jlVector(vecs),
+        jlVector(a), m)$Lisp
+      [vals,vecs]
+
+    eigenSystem(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigenSystem: matrix is not square"
+      ca := copy a
+      lvecs := qnew(m,m)$JF32MAT
+      rvecs := qnew(m,m)$JF32MAT
+      vals := qnew(m)$JCF32VEC
+      jl_eigen_system_ffunction(0$NNI, "geev!", vals, jlVector(lvecs),
+        jlVector(rvecs), jlVector(ca), m)$Lisp
+      [vals,lvecs,rvecs]
+
+    eigenSystem!(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigenSystem!: matrix is not square"
+      lvecs := qnew(m,m)$JF32MAT
+      rvecs := qnew(m,m)$JF32MAT
+      vals := qnew(m)$JCF32VEC
+      jl_eigen_system_ffunction(0$NNI, "geev!", vals, jlVector(lvecs),
+        jlVector(rvecs), jlVector(a), m)$Lisp
+      [vals,lvecs,rvecs]
+
+    solve(a,b) ==
+      aa := copy a
+      bb := copy b
+      jlApplyFunction!("gesv!", jlVector(aa), nrows(aa),
+        jlVector(bb), nrows(bb))
+      bb
+
+    solve!(a,b) ==
+      aa := copy a
+      jlApplyFunction!("gesv!", jlVector(aa), nrows(aa),
+        jlVector(b), nrows(b))
+      b
+
+    mpInverse(a) ==
+      mpinv := qnew(ncols(a), nrows(a))$JF32MAT
+      jlApplyFunction!("pinv", jlVector(mpinv),
+        jlVector(a), nrows(a))
+      mpinv
+
+    sqrt(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "sqrt: matrix is not square"
+      ret := qnew(m,m)$JCF32MAT
+      jlApplyFunction!("sqrt", jlVector(ret), jlVector(a), m)
+      ret
+
+    exp(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "exp: matrix is not square"
+      ret := qnew(m,m)
+      jlApplyFunction!("exp", jlVector(ret), jlVector(a), m)
+      ret
+
+    log(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "log: matrix is not square"
+      ret := qnew(m,m)$JCF32MAT
+      jlApplyFunction!("log", jlVector(ret), jlVector(a), m)
+      ret
+
+    -- local
+    ldiv!   : (JF32MAT, JF32MAT) -> JF32MAT
+    rdiv!   : (JF32MAT, JF32MAT) -> JF32MAT
+
+    lu(a) ==
+      m    := nrows(a)
+      n    := ncols(a)
+      mn   := min(m,n)
+      lu   := qnew(m,n)$JF32MAT
+      l    := new(m, mn, 0)$JF32MAT
+      u    := new(mn, n, 0)$JF32MAT
+      ipiv := qnew(mn)$JI64VEC
+      copy!(lu,a)
+      jl_iarray_2dffunction(0$NNI,"lu!", ipiv, jlVector(lu),m)$Lisp            
+      for i in 1 .. m repeat
+        for j in 1 .. n repeat
+          if j < i then
+            setelt!(l, i, j, qelt(lu,i, j))
+          else if j > i then
+            setelt!(u, i, j, qelt(lu, i, j))
+          else
+            setelt!(u, i, j, qelt(lu, i, j))
+            setelt!(l, i, j, 1)
+      [lu, l, u, ipiv]
+
+    lu!(a) ==
+      m := nrows(a)
+      n := ncols(a)
+      ipiv := qnew(min(m,n))$JI64VEC
+      jl_iarray_2dffunction(0$NNI,"lu!", ipiv, jlVector(a), m)$Lisp
+      [a, ipiv]
+    
+    luReorder(mat, ipiv) : JF32MAT == luReorder!(copy(mat), ipiv)
+
+    luReorder!(mat, ipiv) : JF32MAT ==
+      n := #ipiv
+      for i in 1..n repeat
+        swapRows!(mat, i, qelt(ipiv, i) pretend Integer)
+      mat
+
+    ldiv!(a, b) ==
+      c := qnew(nrows(a), ncols(b))
+      jl_2d3ffunction(0$NNI,"ldiv!", jlVector(c), nrows(c),
+        jlVector(a), nrows(a), jlVector(b), nrows(b))$Lisp
+      c
+
+    rdiv!(a, b) ==
+      c := qnew(nrows(a), ncols(b))
+      jl_2d3ffunction(0$NNI,"rdiv!", jlVector(c), nrows(c),
+        jlVector(a), nrows(a), jlVector(b), nrows(b))$Lisp
+      c
+
+    triu(m) ==
+      mm := copy m
+      jlApplyFunction("triu!", jlVector(mm), nrows(mm))
+      mm
+
+    triu!(m) ==
+      jlApplyFunction("triu!", jlVector(m), nrows(m))
+      m
+
+    tril(m) ==
+      mm := copy m
+      jlApplyFunction("tril!", jlVector(mm), nrows(mm))
+      mm
+
+    tril!(m) ==
+      jlApplyFunction("tril!", jlVector(m), nrows(m))
+      m
+
+)abbrev package JCF32LA JLCF32LinearAlgebra
+++ Linear Algebra functions computed using Julia and its algorithms.
+++ 32 bits version.
+JLCF32LinearAlgebra() : Exports == Implementation where
+  JF32     ==> JLFloat32
+  JI64     ==> JLInt64
+  JF32VEC  ==> JLFloat32Vector
+  JF32MAT  ==> JLFloat32Matrix
+  JCF32VEC ==> JLComplexF32Vector
+  JCF32MAT ==> JLComplexF32Matrix
+  NNI      ==> NonNegativeInteger
+  Exports ==> with
+    normalize : JCF32VEC -> JCF32VEC
+    ++ normalize(v) returns normalized v such that its norm equals 1.
+    normalize! : JCF32VEC -> JCF32VEC
+    ++ normalize!(v) destructively normalize v such that
+    ++ norm(v) equals 1.
+    normalize : JCF32MAT -> JCF32MAT
+    ++ normalize(m) returns normalized m such that its norm equals 1.
+    normalize! : JCF32MAT -> JCF32MAT
+    ++ normalize!(m) destructively normalize m such that
+    ++ its norm equals 1.
+    norm    : JCF32VEC -> JF32
+    ++ norm(v) computes the 2-norm of v.
+    norm    : (JCF32VEC,JF32) -> JF32
+    ++ norm(v,p) computes the p-norm of v.
+    norm    : JCF32MAT -> JF32
+    ++ norm(m) computes the 2-norm of m,
+    ++ also known as the Frobenius norm.
+    norm    : (JCF32MAT,JF32) -> JF32
+    ++ norm(m,p) computes the p-norm of m.
+    operatorNorm    : JCF32MAT -> JF32
+    ++ operatorNorm(m) computes the operator norm of m
+    ++ induced by the vector 2-norm.
+    operatorNorm    : (JCF32MAT,JF32) -> JF32
+    ++ operatorNorm(m,p) computes the operator norm of m
+    ++ induced by the vector p-norm.
+    conditionNumber    : JCF32MAT -> JF32
+    ++ conditionNumber(m) computes the condition number of m.
+    conditionNumber    : (JCF32MAT,JF32) -> JF32
+    ++ conditionNumber(m, p) computes the p-condition number of m.
+    condSkeel    : JCF32MAT -> JF32
+    ++ condSkeel(m) computes the Skeel condition number of m.
+    rank        : (JCF32MAT, JF32) -> NNI
+    ++ rank(m, tol) computes rank of m. Counts singular value
+    ++ with magnitude greater than tol.
+    rank!        : (JCF32MAT, JF32) -> NNI
+    ++ rank!(m, tol) computes rank of m. Counts singular value
+    ++ with magnitude greater than tol but overwrites m to save
+    ++ memory space.
+    solve : (JCF32MAT, JCF32MAT) -> JCF32MAT
+    ++ solve(A,B) solves the matrix equation A*X=B, and returns X.
+    solve! : (JCF32MAT, JCF32MAT) -> JCF32MAT
+    ++ solve!(A,B) solves the matrix equation A*X=B. Overwrites
+    ++ B with matrix X and returns X.
+    svd : JCF32MAT -> Record(U:JCF32MAT, sv:JF32VEC, Vt:JCF32MAT)
+    ++ svd(m) computes the singular value decomposition SVD of m
+    ++ such that SVD.U * diagonalMatrix(SVD.sv) * SVD.Vt = m.
+    svd! : JCF32MAT -> Record(U:JCF32MAT, sv:JF32VEC, Vt:JCF32MAT)
+    ++ svd!(m) is the same as svd(m) but overwrites m to save
+    ++ memory space.
+    eigen : JCF32MAT -> Record(values:JCF32VEC, vectors:JCF32MAT)
+    ++ eigen(m) computes the spectral decomposition of m.
+    eigen! : JCF32MAT -> Record(values:JCF32VEC, vectors:JCF32MAT)
+    ++ eigen!(m) computes the spectral decomposition of m but overwrites
+    ++ m to save memory space.
+    eigenSystem : JCF32MAT ->
+        Record(values:JCF32VEC, leftVectors:JCF32MAT, rightVectors:JCF32MAT)
+    ++ eigenSystem(m) computes the spectral decomposition of m.
+    eigenSystem! : JCF32MAT ->
+        Record(values:JCF32VEC, leftVectors:JCF32MAT, rightVectors:JCF32MAT)
+    ++ eigenSystem!(m) computes the spectral decomposition of m but overwrites
+    ++ m to save memory space.
+    svdvals : JCF32MAT -> JF32VEC
+    ++ svdvals(m) returns the singular values of m.
+    svdvals! : JCF32MAT -> JF32VEC
+    ++ svdvals!(m) returns the singular values of m but overwrites
+    ++ m to save memory space.
+    eigvals : JCF32MAT -> JCF32VEC
+    ++ eigvals(m) returns the eigen values of m.
+    eigvals! : JCF32MAT -> JCF32VEC
+    ++ eigvals!(m) returns the eigen values of m but overwrites
+    ++ m to save memory space.
+    eigvecs : JCF32MAT -> JCF32MAT
+    ++ eigvecs(m) returns the eigen vectors of m.
+    mpInverse : JCF32MAT -> JCF32MAT
+    ++ mpInverse(m) returns the Moore-Penrose pseudo inverse of m.
+    sqrt : JCF32MAT -> JCF32MAT
+    ++ sqrt(m) returns the principal square root of m.
+    exp : JCF32MAT -> JCF32MAT
+    ++ exp(m) returns the matrix exponential of m.
+    log : JCF32MAT -> JCF32MAT
+    ++ log(m) tries to compute the principal matrix logarithm of m.
+    ++ Otherwise, returns a non principal matrix logarithm of m if possible.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLF32ArrayFunctions
+
+    jlImport("LinearAlgebra.LAPACK.gesv!")
+    jlImport("LinearAlgebra.LAPACK.geev!")
+
+
+    normalize(v : JCF32VEC) == -- TODO: avoid copy (use qnew)
+      vtmp := copy(v)
+      jlApplyFunction("normalize!", vtmp)
+      vtmp
+
+    normalize!(v: JCF32VEC) == (jlApplyFunction("normalize!", v);v)
+
+    normalize(m : JCF32MAT) ==
+      nr := nrows(m)
+      mtmp := qnew(nr, ncols(m))$JCF32MAT
+      jlApplyFunction!("normalize", jlVector(mtmp), jlVector(m), nr)
+      mtmp
+
+    normalize!(m: JCF32MAT) ==
+      jlApplyFunction("normalize!", jlVector(m), nrows(m))
+      m
+
+    norm(v : JCF32VEC) == jlApplyFunction("norm", v)
+    norm(v : JCF32VEC, p:JF32) == jlApplyFunction("norm", v, p)
+    norm(m : JCF32MAT) ==
+      jlApplyFunction("norm", jlVector(m), nrows(m))
+    norm(m : JCF32MAT, p:JF32) ==
+      jlApplyFunction("norm",jlVector(m), nrows(m), p)
+    operatorNorm(m : JCF32MAT) ==
+      jlApplyFunction("opnorm", jlVector(m), nrows(m))
+    operatorNorm(m : JCF32MAT, p:JF32) ==
+      jlApplyFunction("opnorm", jlVector(m), nrows(m), p)
+    conditionNumber(m : JCF32MAT) ==
+      jlApplyFunction("cond", jlVector(m), nrows(m))
+    conditionNumber(m : JCF32MAT, p:JF32) ==
+      jlApplyFunction("cond", jlVector(m), nrows(m), p)
+    condSkeel(m : JCF32MAT) ==
+      jlApplyFunction("condskeel", jlVector(m),nrows(m))
+
+    rank(m, tol) : NNI == count(x +-> x > tol, svdvals(m))$JF32VEC
+    rank!(m, tol): NNI == count(x +-> x > tol, svdvals!(m))$JF32VEC
+
+    solve(a,b) ==
+      aa := copy(a)
+      bb := copy(b)
+      jlApplyFunction!("gesv!", jlVector(aa), nrows(aa),
+        jlVector(bb), nrows(bb))
+      bb
+
+    solve!(a,b) ==
+      aa := copy(a)
+      jlApplyFunction!("gesv!", jlVector(aa), nrows(aa),
+        jlVector(b), nrows(b))
+      b
+
+    mpInverse(a) ==
+      mpinv := qnew(ncols(a), nrows(a))$JCF32MAT
+      jlApplyFunction!("pinv", jlVector(mpinv),
+        jlVector(a), nrows(a))
+      mpinv
+
+    svdvals(a) ==
+      m := nrows(a)
+      n := ncols(a)
+      v := qnew(min(m,n))$JF32VEC
+      jlApplyFunction!("svdvals", v, jlVector(a), m)
+      v
+
+    svdvals!(a) ==
+      m := nrows(a)
+      n := ncols(a)
+      v := qnew(min(m,n))$JF32VEC
+      jlApplyFunction!("svdvals!", v, jlVector(a), m)
+      v
+    
+    eigvals(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvals: matrix is not square"
+      v := qnew(m)$JCF32VEC
+      jlApplyFunction!("eigvals", v, jlVector(a), m)
+      v
+
+    eigvals!(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvals!: matrix is not square"
+      v := qnew(m)$JCF32VEC
+      jlApplyFunction!("eigvals!", v, jlVector(a), m)
+      v
+
+    eigvecs(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvecs: matrix is not square"
+      ret := qnew(m,m)$JCF32MAT
+      jlApplyFunction!("eigvecs", jlVector(ret), jlVector(a), m)
+      ret
+
+    svd_wrapper : (String, JCF32MAT) -> Record(U:JCF32MAT, sv:JF32VEC, Vt:JCF32MAT)
+    svd_wrapper(func, a) ==
+      u, vt : JCF32MAT
+      sv : JF32VEC
+      nr := nrows(a)
+      nc := ncols(a)
+      sv := qnew(min(nr,nc))$JF32VEC
+      if nr < nc then
+        u  := qnew(nr, nr)$JCF32MAT
+        vt := qnew(nr, nc)$JCF32MAT
+      else if nr > nc then
+        u  := qnew(nr, nc)$JCF32MAT
+        vt := qnew(nc, nc)$JCF32MAT
+      else 
+        u  := qnew(nr, nc)$JCF32MAT
+        vt := qnew(nr, nc)$JCF32MAT
+      jl_svd_ffunction(1$NNI, func, jlVector(u), sv, jlVector(vt),
+        jlVector(a), nr)$Lisp
+      [u,sv,vt]
+
+    svd(a) == svd_wrapper("svd", a)
+
+    svd!(a) == svd_wrapper("svd!", a)
+
+    eigen(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigen: matrix is not square"
+      vecs := qnew(m,m)$JCF32MAT
+      vals := qnew(m)$JCF32VEC
+      jl_eigen_ffunction(1$NNI, "eigen", vals, jlVector(vecs),
+        jlVector(a), m)$Lisp
+      [vals,vecs]
+
+    eigen!(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigen!: matrix is not square"
+      vecs := qnew(m,m)$JCF32MAT
+      vals := qnew(m)$JCF32VEC
+      jl_eigen_ffunction(1$NNI, "eigen!", vals, jlVector(vecs),
+        jlVector(a), m)$Lisp
+      [vals,vecs]
+
+    eigenSystem(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigenSystem: matrix is not square"
+      ca := copy a
+      lvecs := qnew(m,m)$JCF32MAT
+      rvecs := qnew(m,m)$JCF32MAT
+      vals := qnew(m)$JCF32VEC
+      jl_eigen_system_ffunction(1$NNI, "geev!", vals, jlVector(lvecs),
+        jlVector(rvecs), jlVector(ca), m)$Lisp
+      [vals,lvecs,rvecs]
+
+    eigenSystem!(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigenSystem!: matrix is not square"
+      lvecs := qnew(m,m)$JCF32MAT
+      rvecs := qnew(m,m)$JCF32MAT
+      vals := qnew(m)$JCF32VEC
+      jl_eigen_system_ffunction(1$NNI, "geev!", vals, jlVector(lvecs),
+        jlVector(rvecs), jlVector(a), m)$Lisp
+      [vals,lvecs,rvecs]
+
+    sqrt(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "sqrt: matrix is not square"
+      ret := qnew(m,m)$JCF32MAT
+      jlApplyFunction!("sqrt", jlVector(ret), jlVector(a), m)
+      ret
+
+    exp(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "exp: matrix is not square"
+      ret := qnew(m,m)$JCF32MAT
+      jlApplyFunction!("exp", jlVector(ret), jlVector(a), m)
+      ret
+
+    log(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "log: matrix is not square"
+      ret := qnew(m,m)$JCF32MAT
+      jlApplyFunction!("log", jlVector(ret), jlVector(a), m)
+      ret
+
+)abbrev package JF32MTF JLF32MatrixTranscendentalFunctions
+++ Matrix transcendental functions computed
+++ using Julia and its algorithms. 32 bits version.
+JLF32MatrixTranscendentalFunctions() : Exports == Implementation where
+  JF32     ==> JLFloat32
+  JI64     ==> JLInt64
+  JF32VEC  ==> JLFloat32Vector
+  JF32MAT  ==> JLFloat32Matrix
+  JCF32VEC ==> JLComplexF32Vector
+  JCF32MAT ==> JLComplexF32Matrix
+  NNI      ==> NonNegativeInteger
+  Exports ==> with
+    sin   : JF32MAT -> JF32MAT
+    ++ sin(m) computes the matrix sine of m.
+    sind  : JF32MAT -> JF32MAT
+    ++ sind(m) computes the matrix sine of m, where m is in degrees.
+    cos   : JF32MAT -> JF32MAT
+    ++ cos(m) computes the matrix cosine of m.
+    cosd  : JF32MAT -> JF32MAT
+    ++ cosd(m) computes the matrix cosine of m, where m is in degrees.
+    tan   : JF32MAT -> JF32MAT
+    ++ tan(m) computes the matrix tangent of m.
+    tand   : JF32MAT -> JF32MAT
+    ++ tand(m) computes the matrix tangent of m, where m is in degrees.
+    sec   : JF32MAT -> JF32MAT
+    ++ sec(m) computes the matrix secant of m.
+    csc   : JF32MAT -> JF32MAT
+    ++ csc(m) computes the matrix cosecant of m.
+    cot   : JF32MAT -> JF32MAT
+    ++ cot(m) computes the matrix cotangent of m.
+    sinh   : JF32MAT -> JF32MAT
+    ++ sinh(m) computes the matrix hyperbolic sine of m.
+    cosh   : JF32MAT -> JF32MAT
+    ++ cosh(m) computes the matrix hyperbolic cosine of m.
+    tanh   : JF32MAT -> JF32MAT
+    ++ tanh(m) computes the matrix hyperbolic tangent of m.
+    sech   : JF32MAT -> JF32MAT
+    ++ sech(m) computes the matrix hyperbolic secant of m.
+    csch   : JF32MAT -> JF32MAT
+    ++ csch(m) computes the matrix hyperbolic cosecant of m.
+    coth   : JF32MAT -> JF32MAT
+    ++ coth(m) computes the matrix hyperbolic cotangent of m.
+    asin   : JF32MAT -> JCF32MAT
+    ++ asin(m) computes the inverse matrix sine of m.
+    asind   : JF32MAT -> JCF32MAT
+    ++ asind(m) computes the inverse matrix sine of m. Output is in degrees.
+    acos   : JF32MAT -> JCF32MAT
+    ++ acos(m) computes the inverse matrix cosine of m.
+    acosd   : JF32MAT -> JCF32MAT
+    ++ acosd(m) computes the inverse matrix cosine of m. Output is in degrees.
+    atan   : JF32MAT -> JCF32MAT
+    ++ atan(m) computes the inverse matrix tangent of m.
+    atand   : JF32MAT -> JCF32MAT
+    ++ atand(m) computes the inverse matrix tangent of m. Output is in degrees.
+    asec   : JF32MAT -> JCF32MAT
+    ++ asec(m) computes the inverse matrix secant of m.
+    asecd   : JF32MAT -> JCF32MAT
+    ++ asecd(m) computes the inverse matrix secant of m. Output is in degrees.
+    acsc   : JF32MAT -> JCF32MAT
+    ++ acsc(m) computes the inverse matrix cosecant of m.
+    acscd   : JF32MAT -> JCF32MAT
+    ++ acscd(m) computes the inverse matrix cosecant of m. Output is in degrees.
+    acot   : JF32MAT -> JCF32MAT
+    ++ acot(m) computes the inverse matrix cotangent of m.
+    acotd   : JF32MAT -> JCF32MAT
+    ++ acotd(m) computes the inverse matrix cotangent of m. Output is in degrees.
+    asinh   : JF32MAT -> JCF32MAT
+    ++ asinh(m) computes the inverse matrix hyperbolic sine of m.
+    acosh   : JF32MAT -> JCF32MAT
+    ++ acosh(m) computes the inverse matrix hyperbolic cosine of m.
+    atanh   : JF32MAT -> JCF32MAT
+    ++ atanh(m) computes the inverse matrix hyperbolic tangent of m.
+    asech   : JF32MAT -> JCF32MAT
+    ++ asech(m) computes the inverse matrix hyperbolic secant of m.
+    acsch   : JF32MAT -> JCF32MAT
+    ++ acsch(m) computes the inverse matrix hyperbolic cosecant of m.
+    acoth   : JF32MAT -> JCF32MAT
+    ++ acoth(m) computes the inverse matrix hyperbolic cotangent of m.
+    cis     : JF32MAT -> JCF32MAT
+    ++ cis(x) returns exp(%i*x) computed efficiently.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLF32ArrayFunctions
+
+    sin(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sin: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sin", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sind(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sind: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sind", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cos(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cos: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cos", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cosd(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cosd: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cosd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tan(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tan: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tan", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tand(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tand: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tand", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sec(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sec: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sec", jlVector(ret), jlVector(m), nr)
+      ret
+
+    csc(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "csc: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("csc", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cot(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cot: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cot", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sinh(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sinh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sinh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cosh(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cosh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cosh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tanh(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tanh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tanh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sech(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sech: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sech", jlVector(ret), jlVector(m), nr)
+      ret
+
+    csch(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "csch: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("csch", jlVector(ret), jlVector(m), nr)
+      ret
+
+    coth(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "coth: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("coth", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asin(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asin: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asin", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asind(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asind: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asind", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acos(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acos: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acos", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acosd(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acosd: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acosd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atan(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atan: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("atan", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atand(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atand: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("atand", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asec(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asec: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asec", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asecd(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asecd: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asecd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acsc(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acsc: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acsc", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acscd(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acscd: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acscd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acot(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acot: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acot", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acotd(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acotd: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acotd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asinh(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asinh: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asinh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acosh(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acosh: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acosh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atanh(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atanh: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("atanh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asech(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asech: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asech", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acsch(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acsch: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acsch", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acoth(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acoth: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acoth", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cis(m : JF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cis: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("cis", jlVector(ret), jlVector(m), nr)
+      ret
+
+)abbrev package JCF32MTF JLComplexF32MatrixTranscendentalFunctions
+++ Complex Matrix transcendental functions computed
+++ using Julia and its algorithms. 32 bits version.
+JLComplexF32MatrixTranscendentalFunctions() : Exports == Implementation where
+  JF32     ==> JLFloat32
+  JI64     ==> JLInt64
+  JCF32MAT ==> JLComplexF32Matrix
+  NNI      ==> NonNegativeInteger
+  Exports ==> with
+    sin   : JCF32MAT -> JCF32MAT
+    ++ sin(m) computes the matrix sine of m.
+    sind  : JCF32MAT -> JCF32MAT
+    ++ sind(m) computes the matrix sine of m, where m is in degrees.
+    cos   : JCF32MAT -> JCF32MAT
+    ++ cos(m) computes the matrix cosine of m.
+    cosd  : JCF32MAT -> JCF32MAT
+    ++ cosd(m) computes the matrix cosine of m, where m is in degrees.
+    tan   : JCF32MAT -> JCF32MAT
+    ++ tan(m) computes the matrix tangent of m.
+    tand  : JCF32MAT -> JCF32MAT
+    ++ tand(m) computes the matrix tangent of m, where m is in degrees.
+    sec   : JCF32MAT -> JCF32MAT
+    ++ sec(m) computes the matrix secant of m.
+    csc   : JCF32MAT -> JCF32MAT
+    ++ csc(m) computes the matrix cosecant of m.
+    cot   : JCF32MAT -> JCF32MAT
+    ++ cot(m) computes the matrix cotangent of m.
+    sinh  : JCF32MAT -> JCF32MAT
+    ++ sinh(m) computes the matrix hyperbolic sine of m.
+    cosh  : JCF32MAT -> JCF32MAT
+    ++ cosh(m) computes the matrix hyperbolic cosine of m.
+    tanh  : JCF32MAT -> JCF32MAT
+    ++ tanh(m) computes the matrix hyperbolic tangent of m.
+    sech  : JCF32MAT -> JCF32MAT
+    ++ sech(m) computes the matrix hyperbolic secant of m.
+    csch  : JCF32MAT -> JCF32MAT
+    ++ csch(m) computes the matrix hyperbolic cosecant of m.
+    coth  : JCF32MAT -> JCF32MAT
+    ++ coth(m) computes the matrix hyperbolic cotangent of m.
+    asin  : JCF32MAT -> JCF32MAT
+    ++ asin(m) computes the inverse matrix sine of m.
+    asind : JCF32MAT -> JCF32MAT
+    ++ asind(m) computes the inverse matrix sine of m. Output is in degrees.
+    acos  : JCF32MAT -> JCF32MAT
+    ++ acos(m) computes the inverse matrix cosine of m.
+    acosd : JCF32MAT -> JCF32MAT
+    ++ acosd(m) computes the inverse matrix cosine of m. Output is in degrees.
+    atan  : JCF32MAT -> JCF32MAT
+    ++ atan(m) computes the inverse matrix tangent of m.
+    atand : JCF32MAT -> JCF32MAT
+    ++ atand(m) computes the inverse matrix tangent of m. Output is in degrees.
+    asec  : JCF32MAT -> JCF32MAT
+    ++ asec(m) computes the inverse matrix secant of m.
+    asecd : JCF32MAT -> JCF32MAT
+    ++ asecd(m) computes the inverse matrix secant of m. Output is in degrees.
+    acsc  : JCF32MAT -> JCF32MAT
+    ++ acsc(m) computes the inverse matrix cosecant of m.
+    acscd : JCF32MAT -> JCF32MAT
+    ++ acscd(m) computes the inverse matrix cosecant of m. Output is in degrees.
+    acot  : JCF32MAT -> JCF32MAT
+    ++ acot(m) computes the inverse matrix cotangent of m.
+    acotd : JCF32MAT -> JCF32MAT
+    ++ acotd(m) computes the inverse matrix cotangent of m. Output is in degrees.
+    asinh : JCF32MAT -> JCF32MAT
+    ++ asinh(m) computes the inverse matrix hyperbolic sine of m.
+    acosh : JCF32MAT -> JCF32MAT
+    ++ acosh(m) computes the inverse matrix hyperbolic cosine of m.
+    atanh : JCF32MAT -> JCF32MAT
+    ++ atanh(m) computes the inverse matrix hyperbolic tangent of m.
+    asech : JCF32MAT -> JCF32MAT
+    ++ asech(m) computes the inverse matrix hyperbolic secant of m.
+    acsch : JCF32MAT -> JCF32MAT
+    ++ acsch(m) computes the inverse matrix hyperbolic cosecant of m.
+    acoth : JCF32MAT -> JCF32MAT
+    ++ acoth(m) computes the inverse matrix hyperbolic cotangent of m.
+    cis   : JCF32MAT -> JCF32MAT
+    ++ cis(m) returns exp(%i*m) computed efficiently.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLF32ArrayFunctions
+
+    sin(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sin: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sin", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sind(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sind: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sind", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cos(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cos: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cos", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cosd(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cosd: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cosd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tan(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tan: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tan", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tand(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tand: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tand", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sec(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sec: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sec", jlVector(ret), jlVector(m), nr)
+      ret
+
+    csc(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "csc: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("csc", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cot(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cot: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cot", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sinh(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sinh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sinh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cosh(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cosh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cosh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tanh(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tanh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tanh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sech(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sech: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sech", jlVector(ret), jlVector(m), nr)
+      ret
+
+    csch(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "csch: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("csch", jlVector(ret), jlVector(m), nr)
+      ret
+
+    coth(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "coth: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("coth", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asin(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asin: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asin", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asind(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asind: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asind", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acos(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acos: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acos", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acosd(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acosd: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acosd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atan(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atan: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("atan", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atand(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atand: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("atand", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asec(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asec: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asec", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asecd(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asecd: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asecd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acsc(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acsc: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acsc", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acscd(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acscd: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acscd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acot(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acot: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acot", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acotd(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acotd: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acotd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asinh(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asinh: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asinh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acosh(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acosh: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acosh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atanh(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atanh: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("atanh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asech(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asech: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("asech", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acsch(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acsch: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acsch", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acoth(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acoth: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("acoth", jlVector(ret), jlVector(m), nr)
+      ret
+    cis(m : JCF32MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cis: matrix is not square"
+      ret := qnew(nr,nr)$JCF32MAT
+      jlApplyFunction!("cis", jlVector(ret), jlVector(m), nr)
+      ret

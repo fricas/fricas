@@ -109,6 +109,10 @@ with this hack and will try to convince the GCL crowd to fix this.
                    #'(lambda () nil)))
          (top-fun #'(lambda ()
                        (set-initial-parameters)
+                       #+:fricas_has_mcp
+                       (let ((mcp-check (and (find-package "FRICAS-MCP")
+                                             (find-symbol "CHECK-MCP-ARGS" "FRICAS-MCP"))))
+                         (when mcp-check (funcall mcp-check)))
                        (funcall restart-fun)
                        (sb-impl::toplevel-repl nil)))
          (save-options-keyword (find-symbol "SAVE-RUNTIME-OPTIONS" "KEYWORD"))
@@ -138,6 +142,10 @@ with this hack and will try to convince the GCL crowd to fix this.
                    #'(lambda () nil)))
          (top-fun #'(lambda ()
                        (set-initial-parameters)
+                       #+:fricas_has_mcp
+                       (let ((mcp-check (and (find-package "FRICAS-MCP")
+                                             (find-symbol "CHECK-MCP-ARGS" "FRICAS-MCP"))))
+                         (when mcp-check (funcall mcp-check)))
                        (funcall restart-fun)
                        (ccl::toplevel-loop))))
         (setf *ccl-default-directory* ccl-dir)
@@ -308,10 +316,16 @@ with this hack and will try to convince the GCL crowd to fix this.
 )
 
 (defvar *c_type_as_string* '(
-    (int "int")
+    (void     "void")
+    (jbool    "int8_t")
+    (int      "int")
+    (long     "long")
     (c-string "char *")
-    (double "double")
-    (char-* "char *")
+    (float    "float")
+    (double   "double")
+    (char-*   "char *")
+    (float-*  "float *")
+    (double-* "double *")
 ))
 
 (defun c_type_as_string(c_type) (nth 1 (assoc c_type *c_type_as_string*)))
@@ -333,9 +347,14 @@ with this hack and will try to convince the GCL crowd to fix this.
 #+:GCL
 (eval-when (:compile-toplevel :load-toplevel :execute)
 (setf *c-type-to-ffi* '(
+    ;(void si::void)
+    ;;(jbool si::int8_t)
     (int SI::int)
+    ;(long SI::long)
     (c-string SI::string)
+    ;(float SI::float)
     (double SI::double)
+
 ))
 
 (defun c-args-to-gcl (arguments)
@@ -410,10 +429,16 @@ with this hack and will try to convince the GCL crowd to fix this.
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
 (setf *c-type-to-ffi* '(
-    (int SB-ALIEN::int)
-    (c-string SB-ALIEN::c-string)
-    (double SB-ALIEN::double)
-    (char-* (sb-alien:* sb-alien:char))
+    (void     sb-alien::void)
+    (jbool    (sb-alien::signed 8)) ; -1 is an error (Julia interface)
+    (int      sb-alien::int)
+    (long     sb-alien::integer)
+    (c-string (sb-alien::c-string))
+    (float    sb-alien:single-float)
+    (double   sb-alien::double-float)
+    (char-*   (sb-alien:* sb-alien:char))
+    (float-*  (sb-alien:* sb-alien:single-float))
+    (double-* (sb-alien:* sb-alien:double-float))
 ))
 
 (defun c-args-to-sbcl (arguments)
@@ -435,10 +460,16 @@ with this hack and will try to convince the GCL crowd to fix this.
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
 (setf *c-type-to-ffi* '(
-    (int :int)
+    (void     :void)
+    (jbool    :signed-byte)
+    (int      :int)
+    (long     :signed-doubleword)
     (c-string :address)
-    (double :double-float)
-    (char-* :address)
+    (float    :single-float)
+    (double   :double-float)
+    (char-*   :address)
+    (float-*  :adress)
+    (double-* :address)
 ))
 
 (defun c-args-to-openmcl (arguments)
@@ -463,7 +494,7 @@ with this hack and will try to convince the GCL crowd to fix this.
                  `(ccl::external-call ,c-name ,@fargs ,l-ret))
                (fun-body
                   (if strs
-                     `(ccl::with-cstrs ,strs ,call-body)
+                     `(ccl::with-encoded-cstrs :utf-8  ,strs ,call-body)
                       call-body)))
                `(defun ,name ,largs ,fun-body))))
 
@@ -1047,6 +1078,31 @@ with this hack and will try to convince the GCL crowd to fix this.
   #+:lispworks (pathname-type (compile-file-pathname "foo.lisp"))
   #+:poplog "lsp"
   #+:abcl "abcl"
+)
+
+(defparameter *julia-initialized* nil)
+; TODO
+#+(and :sbcl :fricas_has_julia)
+(progn
+(defparameter *jqueue* (sb-concurrency:make-queue :name "JuliaQueue"))
+(defun jgc ()
+  (loop while (not (sb-concurrency:queue-empty-p *jqueue*))
+  do (|jl_delete_wrapped_index| (sb-concurrency:dequeue *jqueue*))))
+)
+#+(and :openmcl :fricas_has_julia)
+(progn
+(require 'queues.simple-cqueue)
+(defparameter *jqueue*
+  (queues:make-queue :simple-cqueue :comparison #'eq))
+(defun jgc ()
+  (loop while (> (queues:qsize *jqueue*) 0)
+  do (|jl_delete_wrapped_index| (queues:qpop *jqueue*))))
+)
+
+#-:fricas_has_julia
+(progn
+(defun jgc () nil)
+(defun |clear_julia_env| () nil)
 )
 
 ;;; Macros used in Boot code

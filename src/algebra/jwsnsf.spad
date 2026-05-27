@@ -1,0 +1,1001 @@
+)abbrev package WSNSF WSNumericalSpecialFunctions
+++ Generic package for Julia WS numerical special functions
+++ Author: G. Vanuxem
+++ Date Created: June, 2024
+++ Description:
+++  Julia Wolfram Symbolic numerical special functions using
+++  the MathLink Julia package.
+++ Trademark(s): Wolfram is a registered trademark of Wolfram Research, Inc.
+-- TODO: check duplicate signatures, missing implementations
+-- integer arguments
+WSNumericalSpecialFunctions(R : WSNumber) : Exports ==Implementation where
+  getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+  Exports ==> with --SpecialFunctionCategory with
+    sign : R -> R
+    ++ sign(x) is 1 if x is positive, -1 if x is negative, 0 if x equals 0.
+    Gamma : R -> R
+    ++ Gamma(z) is the Euler Gamma function.
+    Beta : (R, R) ->R
+    ++ Beta(x, y) is \spad{Gamma(x) * Gamma(y)/Gamma(x+y)}.
+    Beta : (R, R, R) -> R
+    ++ Beta(z, a, b) is the incomplete Beta function.
+    digamma : R -> R
+    ++ digamma(z) is the logarithmic derivative of \spad{Gamma(z)}
+    ++ (often written \spad{psi(z)} in the literature).
+    polygamma : (R, R) -> R
+    ++ polygamma(k, z) is the \spad{k-th} derivative of \spad{digamma(z)},
+    ++ (often written \spad{psi(k, z)} in the literature).
+    Gamma : (R, R) -> R
+    ++ Gamma(a, z) is the incomplete Gamma function.
+    besselJ : (R, R) -> R
+    ++ besselJ(v, z) is the Bessel function of the first kind.
+    besselJZero : (R, R) -> R
+    ++ besselJZero(n,x) returns the n-th zero of the
+    ++ Bessel J n-th function.
+    besselY : (R, R) -> R
+    ++ besselY(v, z) is the Bessel function of the second kind.
+    besselYZero : (R, R) -> R
+    ++ besselYZero(n,x) returns the n-th zero of the
+    ++ Bessel Y n-th function.
+    besselI : (R, R) -> R
+    ++ besselI(v, z) is the modified Bessel function of the first kind.
+    besselK : (R, R) -> R
+    ++ besselK(v, z) is the modified Bessel function of the second kind.
+    airyAi : R -> R
+    ++ airyAi(z) is the Airy function \spad{Ai(z)}.
+    airyAiPrime : R -> R
+    ++ airyAiPrime(z) is the derivative of the Airy function \spad{Ai(z)}.
+    airyAiZero : R -> R
+    ++ airyAiZero(n) is the n-th zero function of the Airy function \spad{Ai(z)}.
+    airyAiZero : (R, R) -> R
+    ++ airyAiZero(n,x) is the n-th zero function of the Airy function \spad{Ai(z)}
+    ++ smaller than x.
+    airyBi : R -> R
+    ++ airyBi(z) is the Airy function \spad{Bi(z)}.
+    airyBiZero : R -> R
+    ++ airyBiZero(n) is the n-th zero function of the Airy function \spad{Bi(z)}.
+    airyBiZero : (R, R) -> R
+    ++ airyBiZero(n,x) is the n-th zero function of the Airy function \spad{Bi(z)}
+    ++ smaller than x.
+    airyBiPrime : R -> R
+    ++ airyBiPrime(z) is the derivative of the Airy function \spad{Bi(z)}.
+    angerJ : (R, R) -> R
+    ++ angerJ(v, z) is the Anger J function.
+    angerJ : (R, R, R) -> R
+    ++ angerJ(v, n, z) is the associated Anger J function.
+    conjugate : R -> R
+    ++ conjugate(z) is the conjugate of the complex number z.
+    dawson  : R -> R
+    ++ dawson(x) computes the Dawson integral of x.
+    lambertW : R -> R
+    ++ lambertW(z) = w is the principal branch of the solution
+    ++ to the equation \spad{we^w = z}.
+    polylog : (R, R) -> R
+    ++ polylog(s, z) is the polylogarithm of order s at z.
+    weierstrassP : (R, R, R) -> R
+    ++ weierstrassP(g2, g3, z) is the Weierstrass P function.
+    weierstrassPPrime : (R, R, R) -> R
+    ++ weierstrassPPrime(g2, g3, z) is the derivative of Weierstrass P
+    ++ function.
+    weierstrassSigma : (R, R, R) -> R
+    ++ weierstrassSigma(g2, g3, z) is the Weierstrass sigma function.
+    weierstrassZeta : (R, R, R) -> R
+    ++ weierstrassZeta(g2, g3, z) is the Weierstrass Zeta function.
+    weierstrassPInverse : (R, R, R) -> R
+    ++ weierstrassPInverse(g2, g3, z) is the inverse of Weierstrass
+    ++ P function, defined by the formula
+    ++ \spad{weierstrassP(g2, g3, weierstrassPInverse(g2, g3, z)) = z}.
+    whittakerM : (R, R, R) -> R
+    ++ whittakerM(k, m, z) is the Whittaker M function.
+    whittakerW : (R, R, R) -> R
+    ++ whittakerW(k, m, z) is the Whittaker W function.
+    angerJ : (R, R) -> R
+    ++ angerJ(v, z) is the Anger J function.
+    weberE : (R, R) -> R
+    ++ weberE(v, z) is the Weber E function.
+    weberE : (R, R, R) -> R
+    ++ weberE(v, n, z) is the associated Weber E function.
+    struveH : (R, R) -> R
+    ++ struveH(v, z) is the Struve H function.
+    struveL : (R, R) -> R
+    ++ struveL(v, z) is the Struve L function defined by the formula
+    ++ \spad{struveL(v, z) = -Ri^exp(-v*Rpi*Ri/2)*struveH(v, Ri*z)}.
+    hankelH1 : (R, R) -> R
+    ++ hankelH1(v, z) is the first Hankel function (Bessel function of
+    ++ the third kind).
+    hankelH2 : (R, R) -> R
+    ++ hankelH2(v, z) is the second Hankel function (Bessel function of
+    ++ the third kind).
+    lommelS1 : (R, R, R) -> R
+    ++ lommelS1(mu, nu, z) is the Lommel s function.
+    lommelS2 : (R, R, R) -> R
+    ++ lommelS2(mu, nu, z) is the Lommel S function.
+    legendreP : (R, R, R) -> R
+    ++ legendreP(nu, mu, z) is the Legendre P function.
+    legendreQ : (R, R, R) -> R
+    ++ legendreQ(nu, mu, z) is the Legendre Q function.
+    kelvinBei : (R, R) -> R
+    ++ kelvinBei(v, z) is the Kelvin bei function defined by equality
+    ++ \spad{kelvinBei(v, z) = imag(besselJ(v, exp(3*Rpi*Ri/4)*z))}
+    ++ for z and v real.
+    kelvinBer : (R, R) -> R
+    ++ kelvinBer(v, z) is the Kelvin ber function defined by equality
+    ++ \spad{kelvinBer(v, z) = real(besselJ(v, exp(3*Rpi*Ri/4)*z))}
+    ++ for z and v real.
+    kelvinKei : (R, R) -> R
+    ++ kelvinKei(v, z) is the Kelvin kei function defined by equality
+    ++ \spad{kelvinKei(v, z) =
+    ++ imag(exp(-v*Rpi*Ri/2)*besselK(v, exp(Rpi*Ri/4)*z))}
+    ++ for z and v real.
+    kelvinKer : (R, R) -> R
+    ++ kelvinKer(v, z) is the Kelvin ker function defined by equality
+    ++ \spad{kelvinKer(v, z) =
+    ++ real(exp(-v*Rpi*Ri/2)*besselK(v, exp(Rpi*Ri/4)*z))}
+    ++ for z and v real.
+    jacobiSn : (R, R) -> R
+    ++ jacobiSn(z, m) is the Jacobi elliptic sn function, defined
+    ++ by the formula \spad{jacobiSn(ellipticF(z, m), m) = z}.
+    jacobiCn : (R, R) -> R
+    ++ jacobiCn(z, m) is the Jacobi elliptic cn function, defined
+    ++ by \spad{jacobiCn(z, m)^2 + jacobiSn(z, m)^2 = 1} and
+    ++ \spad{jacobiCn(0, m) = 1}.
+    jacobiDn : (R, R) -> R
+    ++ jacobiDn(z, m) is the Jacobi elliptic dn function, defined
+    ++ by \spad{jacobiDn(z, m)^2 + m*jacobiSn(z, m)^2 = 1} and
+    ++ \spad{jacobiDn(0, m) = 1}.
+    jacobiZeta : (R, R) -> R
+    ++ jacobiZeta(z, m) is the Jacobi elliptic zeta function, defined
+    ++ by \spad{D(jacobiZeta(z, m), z) =
+    ++ jacobiDn(z, m)^2 - ellipticE(m)/ellipticK(m)} and
+    ++ \spad{jacobiZeta(0, m) = 0}.
+    jacobiTheta : (WSInteger, R, R) -> R
+    ++ jacobiTheta(n, z, m) are the Jacobi theta functions.
+    lerchPhi : (R, R, R) -> R
+    ++ lerchPhi(z, s, a) is the Lerch Phi function.
+    riemannZeta : R -> R
+    ++ riemannZeta(z) is the Riemann Zeta function.
+    charlierC : (R, R, R) -> R
+    ++ charlierC(n, a, z) is the Charlier polynomial
+    --meixnerM : (R, R, R, R) -> R
+    --++ meixnerM(n, b, c, z) is the Meixner polynomial
+    --if R has RetractableTo(Integer) then
+    --    hypergeometricF : (List R, List R, R) -> R
+    --    ++ hypergeometricF(la, lb, z) is the generalized hypergeometric
+    --    ++ function.
+    --    meijerG : (List R, List R, List R, List R, R) -> R
+    --    ++ meijerG(la, lb, lc, ld, z) is the meijerG function.
+    ------------------------------------------------------------------
+    EiEn : (WSInteger, R) -> R
+    ++ EiEn(n,z) returns the exponential integral En of z.
+    lambertW : (WSInteger, R) -> R
+    ++ lambertW(k,z) returns the k-th solution to LambertW function.
+    haversine : R -> R
+    ++ haversine(z)	computes the Haversine of z.
+    inverseHaversine : R -> R
+    ++ inverseHaversine(z)	computes the inverse Haversine of z.
+    gudermannian : R -> R
+    ++ gudermannian(z) computes the Gudermannian of z.
+    inverseGudermannian : R -> R
+    ++ inverseGudermannian(z)	computes the inverse Gudermannian of z.
+    digamma     : (R , R) -> R
+    ++ digamma(n,z) is the n-th derivative of the digamma function.
+    sphericalBesselJ : (R , R)-> R
+    ++ sphericalBesselJ(n,z) returns the spherical Bessel
+    ++ of the first kind of z.
+    sphericalBesselY : (R , R)-> R
+    ++ sphericalBesselY(n,z) returns the spherical Bessel
+    ++ of the second kind of z.
+    sphericalHankelH1 : (R , R)-> R
+    ++ sphericalHankelH1(n,z) returns the spherical Hankel
+    ++ of the first kind of z.
+    sphericalHankelH2 : (R , R)-> R
+    ++ sphericalHankelH2(n,z) computes the spherical Hankel
+    ++ of the second kind of z.
+    dirichletL : (R, R, R) ->  R
+    ++ dirichletL(k,j,s) returns Dirichlet L-function of s, modulus k, index j.
+    diracDelta : R-> WSExpression
+    ++ diracDelta(x) returns the Dirac delta function of x.
+    lerchPhi : (R, R, R) -> R
+    ++ lerchPhi(z,s,a) returns Lerch's transcendent phi of arguments.
+    polylog : (R, R, R) -> R
+    ++ polylog(n,p,z) is the Nielsen generalized polylogarithm function.
+    ramanujanTau : R -> R
+    ++ ramanujanTau(n) returns the Ramanujan tau of n.
+    ramanujanTauL : R -> R
+    ++ ramanujanTauL(s) computes the Ramanujan tau Dirichlet L-function of s.
+    ramanujanTauTheta : R -> R
+    ++ ramanujanTauTheta(z) returns the Ramanujan tau theta of z.
+    ramanujanTauZ : R -> R
+    ++ ramanujanTauZ(t) computes the Ramanujan tau Z-function of t.
+    riemannSiegelTheta : R -> R
+    ++ riemannSiegelTheta(t) returns the Riemann-Siegel theta function of t.
+    riemannSiegelZ : R -> R
+    ++ riemannSiegelZ(t)  computes the Riemann-Siegel Z function of t.
+    -- expect a non-negative integer:
+    stieltjesGamma : WSInteger -> R
+    ++ stieltjesGamma(n) returns the n-th Stieltjes constant.
+    stieltjesGamma : (WSInteger, R) -> R
+    ++ stieltjesGamma(n,a) returns the generalized n-th Stieltjes constant.
+    hurwitzZeta : (R, R) -> R
+    ++ hurwitzZeta(s,a) computes the Hurwitz zeta.
+    hurwitzLerchPhi : (R, R, R) -> R
+    ++ hurwitzLerchPhi(z,s,a) computes the Hurwitz-Lerch transcendent phi function.
+    riemannZeta : (R, R) -> R
+    ++ riemannZeta(s,a) is the generalized Riemann Zeta function.
+    inverseErf : R -> R
+    ++ inverseErf(z) computes the inverse error function of z.
+    inverseErfc : R -> R
+    ++ inverseErfc(z) computes the inverse complementary
+    ++ error function of z.
+    betaRegularized : (R, R, R) -> R
+    ++ betaRegularized(z,a,b) computes the regularized incomplete Beta function.
+    gammaRegularized : (R, R) -> R
+    ++ gammaRegularized(a,z) computes the regularized incomplete Gamma function.
+    Gamma : (R, R, R) -> R
+    ++ Gamma(a,z1,z2) computes the generalized incomplete Gamma function.
+    inverseBetaRegularized : (R, R, R) -> R
+    ++ inverseBetaRegularized(s,a,b) computes the Beta inverse.
+    inverseGammaRegularized : (R, R) -> R
+    ++ inverseGammaRegularized(a,s) computes the Gamma inverse.
+    pochhammer : (R, R) -> R
+    ++ pochhammer(a,n) returns the Pochhammer symbol. 
+    logGamma : R -> R
+    ++ logGamma(z) returns the log-Gamma of z.
+    logBarnesG : R -> R
+    ++ logBarnesG(z) is the logarithm of Barnes-G. 
+    barnesG : R -> R
+    ++ barnesG(z) computes the Barnes G-function of z.
+    hyperFactorial : R -> R
+    ++ hyperFactorial(n) computes the hyperfactorial of n.
+    fibonacci : (WSInteger, R) -> R
+    ++ fibonacci(n, z) evaluates the Fibonacci polynomial at z.
+    legendreP : (R, R) -> R
+    ++ legendreP(n, z) evaluates the Legendre polynomial
+    ++ of the first kind at z. 
+    legendreQ : (R, R) -> R
+    ++ legendreQ(n, z) returns the Legendre function of the second kind.
+    legendreP  : (R, R, R) -> R
+    ++ legendreP(n, m, z) evaluates the associated Legendre polynomial
+    ++ of the first type at z.
+    legendreQ  : (R, R, R) -> R
+    ++ legendreQ(n, m, z) evaluates the associated Legendre function
+    ++ of the second kind at z.
+    sphericalHarmonicY : (R, R, R, R) -> R
+    ++ sphericalHarmonicY(l, m, theta, phi) returns the spherical
+    ++ harmonic Y or evaluates it.
+    gegenbauerC : (WSInteger, R) -> R
+    ++ gegenbauerC(n,z) evaluates the renormalized form of the
+    ++ Gegenbauer polynomial at z.
+    gegenbauerC : (WSInteger, R, R) -> R
+    ++ gegenbauerC(n,lambda,z) evaluates the Gegenbauer polynomial at z.
+    chebyshevT : (R, R) -> R
+    ++ chebyshevT(n, z) evaluates the Chebyshev polynomial of the first kind
+    ++ at z.
+    chebyshevU : (R, R) -> R
+    ++ chebyshevU(n, expr) evaluates the Chebyshev polynomial of the
+    ++ second kind at z.
+    hermiteH : (R, R) -> R
+    ++ hermiteH(n, z) evaluates the Hermite polynomial at z.
+    laguerreL : (R, R) -> R
+    ++ laguerreL(n, z) evaluates the Laguerre polynomial at z.
+    laguerreL : (R, R, R) -> R
+    ++ laguerreL(n, a, z) evaluates the generalized Laguerre polynomial a z.
+    zernikeR : (R, R, R) -> R
+    ++ zernikeR(n, m, z) evaluates the Zernike radial polynomial at z.
+    jacobiP  : (R, R, R, R) -> R
+    ++ jacobiP(n, a, b, z) evaluates the Jacobi polynomial at z.
+    hypergeometric0F1 : (R, R) -> R
+    ++ hypergeometric0F1(a,z) is the hypergeometric 0F1.
+    hypergeometric0F1Regularized : (R, R) -> R
+    ++ hypergeometric0F1Regularized(a,z) is the regularized hypergeometric 0F1.
+    hypergeometric1F1 : (R, R, R) -> R
+    ++ hypergeometric1F1(a,b,z) is the Kummer confluent hypergeometric function
+    ++ 1F1.
+    hypergeometric1F1Regularized : (R, R, R) -> R
+    ++ hypergeometric1F1Regularized(a,b,z) is the regularized confluent
+    ++ hypergeometric function 1F1.
+    hypergeometricU : (R, R, R) -> R
+    ++ hypergeometricU(a,b,z) is the confluent hypergeometric function U.
+    whittakerM : (R, R, R) -> R
+    ++ whittakerM(k,m,z) computes the Whittaker function M of z.
+    whittakerW : (R, R, R) -> R
+    ++ whittakerW(k,m,z) computes the Whittaker function W of z.
+    parabolicCylinderD : (R, R) -> R
+    ++ parabolicCylinderD(nu,z) computes the parabolic cylinder function D of z.
+    coulombF : (R, R, R) -> R
+    ++ coulombF(l,eta,ro) is the regular Coulomb wave function.
+    coulombG : (R, R, R) -> R
+    ++ coulombG(l,eta,ro) is the irregular Coulomb wave function.
+    coulombH1 : (R, R, R) -> R
+    ++ coulombH1(l,eta,ro) is the incoming irregular Coulomb wave function H^(+).
+    coulombH2: (R, R, R) -> R
+    ++ coulombH2(l,eta,ro) is the incoming irregular Coulomb wave function H^(-).
+    qPochhammer : (R, R) -> R
+    ++ qPochhammer(z,q) returns the q-Pochhammer symbol of z.
+    qPochhammer : (R, R, R) -> R
+    ++ qPochhammer(z,q,n) returns the q-Pochhammer symbol of z.
+    qFactorial : (R, R) -> R
+    ++ qFactorial(z,q) returns the q-analog of factorial of z.
+    qBinomial : (R, R, R) -> R
+    ++ qBinomial(n,m,q) returns the q-analog of binomial coefficient.
+    qGamma : (R, R) -> R
+    ++ qGamma(z,q) returns the q-analog of Euler Gamma of z.
+    qPolyGamma : (R, R)-> R
+    ++ qPolyGamma(z,q) returns the q-digamma of z.
+    qPolyGamma : (R, R, R) -> R
+    ++ qPolyGamma(n,z,q) returns the n-th derivative of the q-digamma function of z.
+    mathieuC : (R, R, R) -> R
+    ++ mathieuC(a,q,z) is the even Mathieu function with
+    ++ characteristic a and parameter q.
+    mathieuS : (R, R, R) -> R
+    ++ mathieuS(b,q,z) is the odd Mathieu function with
+    ++ characteristic b and parameter q.
+    mathieuCPrime : (R, R, R) -> R
+    ++ mathieuCPrime(a,q,z) derivative of the even Mathieu function.
+    mathieuSPrime : (R, R, R) -> R
+    ++ mathieuSPrime(b,q,z) derivative of the odd Mathieu function.
+    mathieuCharacteristicA : (R, R) -> R
+    ++ mathieuCharacteristicA(r,q) returns the characteristic
+    ++ for even Mathieu function.
+    mathieuCharacteristicB : (R, R) -> R
+    ++ mathieuCharacteristicB(r,q) returns the characteristic
+    ++ for odd Mathieu function.
+    mathieuCharacteristicExponent : (R, R) -> R
+    ++ mathieuCharacteristicExponent(a,q) returns the characteristic exponent
+    ++ of the Mathieu function.
+    jacobiAmplitude : (R, R) -> R
+    ++ jacobiAmplitude(u,m) computes the amplitude function am.
+    unitStep : R -> WSExpression
+    ++ unitStep(x) returns the unit step function i.e. 0 for x less
+    ++ than 0, 1 for x greater or equal to 0.
+    inverseJacobiSn : (R, R) -> R
+    ++ inverseJacobiSn(nu, m) computes the inverse Jacobi's SN elliptic function.
+    inverseJacobiCn : (R, R) -> R
+    ++ inverseJacobiCn(nu, m) computes the inverse Jacobi's CN elliptic function.
+    ellipticTheta : (R, R, R) -> R
+    ++ ellipticTheta(a, u, q) computes the theta function, a ranges from 1 to 4.
+    ellipticThetaPrime : (R, R, R) -> R
+    ++ ellipticThetaPrime(a, u, q) computes the derivative of the
+    ++ theta function, a ranges from 1 to 4.
+    --siegelTheta : (R, R) -> R
+    --++ siegelTheta(tau, s) computes the Siegel theta function.
+    --siegelTheta : (R, R, R) -> R
+    --++ siegelTheta(nu, tau, s) computes the Siegel theta function.
+    ellipticK : R -> R
+    ++ ellipticK(m) computes the complete elliptic integral
+    ++ of the first kind.
+    ellipticF : (R, R) -> R
+    ++ ellipticF(phi,m) computes the elliptic integral of the first kind.
+    ellipticE : R -> R
+    ++ ellipticE(z) computes the complete elliptic integral of the second kind.
+    ellipticE : (R, R)-> R
+    ++ ellipticE(phi,m) computes the elliptic integral of the second kind.
+    ellipticPi : (R, R)-> R
+    ++ ellipticPi(n,m) computes the complete elliptic integral
+    ++ of the third kind.
+    ellipticPi : (R, R, R)-> R
+    ++ ellipticPi(n,phi,m) computes the elliptic integral of the third kind.
+    jacobiZeta : (R, R)-> R
+    --++ jacobiZeta(ϕ,m) computes the Jacobi Zeta function.
+    ++ jacobiZeta(phi,m) computes the Jacobi Zeta function.
+    dedekindEta : R -> R
+    ++ dedekindEta(tau) computes the Dedekind eta modular function.
+    dirichletEta : R -> R
+    ++ dirichletEta(z) computes the Dirichlet eta function of z.
+    kleinInvariantJ : R -> R
+    ++ kleinInvariantJ(tau) computes the Klein's absolute invariant.
+    modularLambda : R -> R
+    ++ modularLambda(tau) computes the lambda modular function.
+  Implementation ==> add
+    junfunc(func,a) ==> jlref(concat(["weval(", func, getind(a),"))"]))
+    jbinfunc(func,a,b) ==>
+      jlref(concat(["weval(", func, getind(a), ",", getind(b),"))"]))
+    jterfunc(func,a,b,c) ==>
+      jlref(concat(["weval(", func, getind(a), ",", getind(b), ",", getind(c)"))"]))
+    jquatfunc(func,a,b,c,d) ==>
+      jlref(concat(["weval(", func, getind(a), ",", getind(b), ",",
+        getind(c), ",", getind(d)"))"]))
+    jtypeassert(a,b) ==> jlHead(a) ~= jlHead(b)
+        => error "Type of output does not match input type"
+  
+    polylog(x,y) ==
+      ret : R := jbinfunc("W_"PolyLog_"(", x, y)
+      jtypeassert(y,ret)
+      ret
+    riemannZeta(z) ==
+      ret : R := junfunc("W_"Zeta_"(",z)
+      jtypeassert(z,ret)
+      ret
+    riemannZeta(x,y) ==
+      ret : R := jbinfunc("W_"Zeta_"(",x, y)
+      jtypeassert(y,ret)
+      ret
+    dawson(z) ==
+      ret : R := junfunc("W_"DawsonF_"(",z)
+      jtypeassert(z,ret)
+      ret
+    lambertW(z) ==
+      ret : R := junfunc("W_"ProductLog_"(",z)
+      jtypeassert(z,ret)
+      ret
+    lambertW(x,y) ==
+      ret : R := jbinfunc("W_"ProductLog_"(",x, y)
+      jtypeassert(y,ret)
+      ret
+    polygamma(x,y) ==
+      ret : R := jbinfunc("W_"PolyGamma_"(", x, y)
+      jtypeassert(y,ret)
+      ret
+    haversine(z) ==
+      ret : R := junfunc("W_"Haversine_"(", z)
+      jtypeassert(z,ret)
+      ret
+    inverseHaversine(z) ==
+      ret : R := junfunc("W_"InverseHaversine_"(", z)
+      jtypeassert(z,ret)
+      ret
+    gudermannian(z) ==
+      ret : R := junfunc("W_"Gudermannian_"(", z)
+      jtypeassert(z,ret)
+      ret
+    inverseGudermannian(z) ==
+      ret : R := junfunc("W_"InverseGudermannian_"(", z)
+      jtypeassert(z,ret)
+      ret
+
+    conjugate(z) ==
+      ret : R := junfunc("W_"Conjugate_"(", z)
+      jtypeassert(z,ret)
+      ret
+
+    airyAi(z) ==
+      ret : R := junfunc("W_"AiryAi_"(", z)
+      jtypeassert(z,ret)
+      ret
+    airyAiZero(z) ==
+      ret : R := junfunc("W_"AiryAiZero_"(", z)
+      jtypeassert(z,ret)
+      ret
+    airyAiZero(n,z) ==
+      ret : R := jbinfunc("W_"AiryAiZero_"(", n, z)
+      jtypeassert(z,ret)
+      ret
+    airyBi(z) ==
+      ret : R := junfunc("W_"AiryBi_"(", z)
+      jtypeassert(z,ret)
+      ret
+    airyBiZero(z) ==
+      ret : R := junfunc("W_"AiryBiZero_"(", z)
+      jtypeassert(z,ret)
+      ret
+    airyBiZero(n,z) ==
+      ret : R := jbinfunc("W_"AiryBiZero_"(", n, z)
+      jtypeassert(z,ret)
+      ret
+    airyAiPrime(z) ==
+      ret : R := junfunc("W_"AiryAiPrime_"(", z)
+      jtypeassert(z,ret)
+      ret
+    airyBiPrime(z) ==
+      ret : R := junfunc("W_"AiryBiPrime_"(", z)
+      jtypeassert(z,ret)
+      ret
+
+    angerJ(v,z) ==
+      ret : R := jbinfunc("W_"AngerJ_"(", v,z)
+      jtypeassert(z,ret)
+      ret
+    angerJ(v,n,z) ==
+      ret : R := jterfunc("W_"AngerJ_"(", v,n,z)
+      jtypeassert(z,ret)
+      ret
+
+    jacobiTheta(n,z,m) ==
+      ret : R := jterfunc("W_"JacobiTheta_"(", n,z,m)
+      jtypeassert(z,ret)
+      ret
+
+    besselJ(n,z) ==
+      ret : R := jbinfunc("W_"BesselJ_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    besselJZero(n,z) ==
+      ret := jbinfunc("W_"BesselJZero_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    besselY(n,z) ==
+      ret : R := jbinfunc("W_"BesselY_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    besselYZero(n,z) ==
+      ret := jbinfunc("W_"BesselYZero_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    besselI(n,z) ==
+      ret : R := jbinfunc("W_"BesselI_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    besselK(n,z) ==
+      ret : R := jbinfunc("W_"BesselK_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+
+    lommelS1(v,n,z) ==
+      ret : R := jterfunc("W_"LommelS1_"(", v,n,z)
+      jtypeassert(z,ret)
+      ret
+    lommelS2(v,n,z) ==
+      ret : R := jterfunc("W_"LommelS2_"(", v,n,z)
+      jtypeassert(z,ret)
+      ret
+
+    kelvinBer(n,z) ==
+      ret : R := jbinfunc("W_"KelvinBer_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    kelvinBei(n,z) ==
+      ret : R := jbinfunc("W_"KelvinBei_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    kelvinKer(n,z) ==
+      ret : R := jbinfunc("W_"KelvinKer_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    kelvinKei(n,z) ==
+      ret : R := jbinfunc("W_"KelvinKei_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    hankelH1(n,z) ==
+      ret : R := jbinfunc("W_"HankelH1_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    hankelH2(n,z) ==
+      ret : R := jbinfunc("W_"HankelH2_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+
+    sphericalBesselJ(n,z) ==
+      ret : R := jbinfunc("W_"SphericalBesselJ_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    sphericalBesselY(n,z) ==
+      ret : R := jbinfunc("W_"SphericalBesselY_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    sphericalHankelH1(n,z) ==
+      ret : R := jbinfunc("W_"SphericalHankelH1_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    sphericalHankelH2(n,z) ==
+      ret : R := jbinfunc("W_"SphericalHankelH2_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    struveH(n,z) ==
+      ret : R := jbinfunc("W_"StruveH_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    struveL(n,z) ==
+      ret : R := jbinfunc("W_"StruveL_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+
+    dirichletL(k,j,s) ==
+      ret : R := jterfunc("W_"DirichletL_"(", k,j,s)
+      jtypeassert(s,ret)
+      ret
+    diracDelta(x) == junfunc("W_"DiracDelta_"(", x)
+    lerchPhi(z,s,a) ==
+      ret : R := jterfunc("W_"LerchPhi_"(", z,s,a)
+      jtypeassert(a,ret)
+      ret
+    polylog(n,p,z) ==
+      ret : R := jterfunc("W_"PolyLog_"(", n,p,z)
+      jtypeassert(z,ret)
+      ret
+    weierstrassP(g2,g3,z) ==
+      ret := jbinfunc("W_"WeierstrassP_"(", z, jWSList([g2,g3])@WSList(R))
+      jtypeassert(z,ret)
+      ret
+    weierstrassPPrime(g2,g3,z) ==
+      ret := jbinfunc("W_"WeierstrassPPrime_"(", z, jWSList([g2,g3])@WSList(R))
+      jtypeassert(z,ret)
+      ret
+    weierstrassSigma(g2,g3,z) ==
+      ret := jbinfunc("W_"WeierstrassSigma_"(", z, jWSList([g2,g3])@WSList(R))
+      jtypeassert(z,ret)
+      ret
+    weierstrassZeta(g2,g3,z) ==
+      ret := jbinfunc("W_"WeierstrassZeta_"(", z, jWSList([g2,g3])@WSList(R))
+      jtypeassert(z,ret)
+      ret
+    weierstrassPInverse(g2,g3,z) ==
+      ret := jbinfunc("W_"InverseWeierstrassP_"(", z, jWSList([g2,g3])@WSList(R))
+      jtypeassert(z,ret)
+      ret
+    ramanujanTau(n) ==
+      ret : R := junfunc("W_"RamanujanTau_"(", n)
+      jtypeassert(n,ret)
+      ret
+    ramanujanTauL(n) ==
+      ret : R := junfunc("W_"RamanujanTauL_"(", n)
+      jtypeassert(n,ret)
+      ret
+    ramanujanTauTheta(n) ==
+      ret : R := junfunc("W_"RamanujanTauTheta_"(", n)
+      jtypeassert(n,ret)
+      ret
+    ramanujanTauZ(n) ==
+      ret : R := junfunc("W_"RamanujanTauZ_"(", n)
+      jtypeassert(n,ret)
+      ret
+    riemannSiegelTheta(t) ==
+      ret : R := junfunc("W_"RiemannSiegelTheta_"(", t)
+      jtypeassert(t,ret)
+      ret
+    riemannSiegelZ(t) ==
+      ret : R := junfunc("W_"RiemannSiegelZ_"(", t)
+      jtypeassert(t,ret)
+      ret
+    --stieltjesGamma(n) ==
+    --  ret : R := junfunc("W_"StieltjesGamma_"(", n)
+    --  ret
+    stieltjesGamma(n, a) ==
+      negative?(n) => error "stieltjesGamma: n must be a non negative integer"
+      ret : R := jbinfunc("W_"StieltjesGamma_"(", n, a)
+      jtypeassert(a,ret)
+      ret
+    hurwitzZeta(s,a) ==
+      ret : R := jbinfunc("W_"HurwitzZeta_"(", s,a)
+      jtypeassert(a,ret)
+      ret
+    hurwitzLerchPhi(z,s,a) ==
+      ret : R := jterfunc("W_"HurwitzLerchPhi_"(", z,s,a)
+      jtypeassert(a,ret)
+      ret
+
+    inverseErf(s) ==
+      ret : R := junfunc("W_"InverseErf_"(", s)
+      jtypeassert(s,ret)
+      ret
+    inverseErfc(s) ==
+      ret : R := junfunc("W_"InverseErfc_"(", s)
+      jtypeassert(s,ret)
+      ret
+
+    Beta(x,y) ==
+      ret : R := jbinfunc("W_"Beta_"(", x, y)
+      jtypeassert(x,ret)
+      ret
+    Beta(z,a,b) ==
+      ret : R := jterfunc("W_"Beta_"(", z,a,b)
+      jtypeassert(b,ret)
+      ret
+    betaRegularized(z,a,b) ==
+      ret : R := jterfunc("W_"BetaRegularized_"(", z,a,b)
+      jtypeassert(b,ret)
+      ret
+    Gamma(z) ==
+      ret : R := junfunc("W_"Gamma_"(", z)
+      jtypeassert(z,ret)
+      ret
+    Gamma(a,z) ==
+      ret : R := jbinfunc("W_"Gamma_"(", a,z)
+      jtypeassert(z,ret)
+      ret
+    Gamma(a, z1, z2) ==
+      ret : R := jterfunc("W_"Gamma_"(", a, z1,z2)
+      jtypeassert(z2,ret)
+      ret
+
+    gammaRegularized(a,z) ==
+      ret : R := jbinfunc("W_"GammaRegularized_"(", a,z) 
+      jtypeassert(z,ret)
+      ret
+    inverseBetaRegularized(s,a,b) ==
+      ret : R := jterfunc("W_"InverseBetaRegularized_"(", s,a,b)
+      jtypeassert(b,ret)
+      ret
+    inverseGammaRegularized(a,s) ==
+      ret : R := jbinfunc("W_"InverseGammaRegularized_"(", a,s)
+      jtypeassert(s,ret)
+      ret
+
+    pochhammer(a,n) ==
+      ret : R := jbinfunc("W_"Pochhammer_"(", a,n)
+      jtypeassert(n,ret)
+      ret
+    digamma(z) ==
+      ret : R := junfunc("W_"PolyGamma_"(", z)
+      jtypeassert(z,ret)
+      ret
+    digamma(n,z) ==
+      ret : R := jbinfunc("W_"PolyGamma_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    logGamma(z) ==
+      ret : R := junfunc("W_"LogGamma_"(", z)
+      jtypeassert(z,ret)
+      ret
+    logBarnesG(z) ==
+      ret : R := junfunc("W_"LogBarnesG_"(", z)
+      jtypeassert(z,ret)
+      ret
+    barnesG(z) ==
+      ret : R := junfunc("W_"BarnesG_"(", z)
+      jtypeassert(z,ret)
+      ret
+    hyperFactorial(z) ==
+      ret : R := junfunc("W_"Hyperfactorial_"(", z)
+      jtypeassert(z,ret)
+      ret
+    fibonacci(n,z) ==
+      ret : R := jbinfunc("W_"Fibonacci_"(", n, z)
+      jtypeassert(z,ret)
+      ret
+
+    EiEn(n,z)     ==
+      ret : R := jbinfunc("W_"ExpIntegralE_"(", n, z)
+      jtypeassert(z,ret)
+      ret
+
+    legendreP(n,z) ==
+      ret : R := jbinfunc("W_"LegendreP_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    legendreP(n,m,z) ==
+      ret : R := jterfunc("W_"LegendreP_"(", n,m,z)
+      jtypeassert(z,ret)
+      ret
+    legendreQ(n,z) ==
+      ret : R := jbinfunc("W_"LegendreQ_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    legendreQ(n,m,z) ==
+      ret : R := jterfunc("W_"LegendreQ_"(", n,m,z)
+      jtypeassert(z,ret)
+      ret
+
+    unitStep(x) == junfunc("W_"UnitStep_"(", x)
+
+    sphericalHarmonicY(l, m, theta, phi) ==
+      ret : R := jquatfunc("W_"SphericalHarmonicY_"(", l,m,theta,phi)
+      jtypeassert(phi,ret)
+      ret
+    gegenbauerC(n,z) ==
+      ret : R := jbinfunc("W_"GegenbauerC_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    gegenbauerC(n,lambda,z) ==
+      ret : R := jterfunc("W_"GegenbauerC_"(",n,lambda,z)
+      jtypeassert(z,ret)
+      ret
+    chebyshevT(n,z) ==
+      ret : R := jbinfunc("W_"ChebyshevT_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    chebyshevU(n,z) ==
+      ret : R := jbinfunc("W_"ChebyshevU_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    hermiteH(n,z) ==
+      ret : R := jbinfunc("W_"HermiteH_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    laguerreL(n,z) ==
+      ret : R := jbinfunc("W_"LaguerreL_"(", n,z)
+      jtypeassert(z,ret)
+      ret
+    laguerreL(n,a,z) ==
+      ret : R := jterfunc("W_"LaguerreL_"(", n,a,z)
+      jtypeassert(z,ret)
+      ret
+    zernikeR(n,m,z) ==
+      ret : R := jterfunc("W_"ZernikeR_"(", n,m,z)
+      jtypeassert(z,ret)
+      ret
+    jacobiP(n,a,b,z) ==
+      ret : R := jquatfunc("W_"JacobiP_"(", n,a,b,z)
+      jtypeassert(z,ret)
+      ret
+
+    hypergeometric0F1(a,z) ==
+      ret : R := jbinfunc("W_"Hypergeometric0F1_"(", a,z)
+      jtypeassert(z,ret)
+      ret
+    hypergeometric0F1Regularized(a,z) ==
+      ret : R := jbinfunc("W_"Hypergeometric0F1Regularized_"(", a,z)
+      jtypeassert(z,ret)
+      ret
+    hypergeometric1F1(a,b,z) ==
+      ret : R := jterfunc("W_"Hypergeometric1F1_"(", a,b,z)
+      jtypeassert(z,ret)
+      ret
+    hypergeometric1F1Regularized(a,b,z) ==
+      ret : R := jterfunc("W_"Hypergeometric1F1Regularized_"(", a,b,z)
+      jtypeassert(z,ret)
+      ret
+    hypergeometricU(a,b,z) ==
+      ret : R := jterfunc("W_"HypergeometricU_"(", a,b,z)
+      jtypeassert(z,ret)
+      ret
+    whittakerM(k,m,z) ==
+      ret : R := jterfunc("W_"WhittakerM_"(", k,m,z)
+      jtypeassert(z,ret)
+      ret
+    whittakerW(k,m,z) ==
+      ret : R := jterfunc("W_"WhittakerW_"(", k,m,z)
+      jtypeassert(z,ret)
+      ret
+    weberE(v,z) ==
+      ret : R := jbinfunc("W_"WeberE_"(",v,z)
+      jtypeassert(z,ret)
+      ret
+    weberE(v,n,z) ==
+      ret : R := jterfunc("W_"WeberE_"(",v,n,z)
+      jtypeassert(z,ret)
+      ret
+    parabolicCylinderD(v,z) ==
+      ret : R := jbinfunc("W_"ParabolicCylinderD_"(", v, z)
+      jtypeassert(z,ret)
+      ret
+    coulombF(l,eta,ro) ==
+      ret : R := jterfunc("W_"CoulombF_"(", l, eta, ro)
+      jtypeassert(ro,ret)
+      ret
+    coulombG(l,eta,ro) ==
+      ret : R := jterfunc("W_"CoulombG_"(", l, eta, ro)
+      jtypeassert(ro,ret)
+      ret
+    coulombH1(l,eta,ro) ==
+      ret : R := jterfunc("W_"CoulombH1_"(", l, eta, ro)
+      jtypeassert(ro,ret)
+      ret
+    coulombH2(l,eta,ro) ==
+      ret : R := jterfunc("W_"CoulombH2_"(", l, eta, ro)
+      jtypeassert(ro,ret)
+      ret
+
+    qPochhammer(z,q) ==
+      ret : R := jbinfunc("W_"QPochhammer_"(", z,q)
+      jtypeassert(q,ret)
+      ret
+    qPochhammer(z,q,n) ==
+      ret : R := jterfunc("W_"QPochhammer_"(", z,q,n)
+      jtypeassert(q,ret)
+      ret
+    qFactorial(z,q) ==
+      ret : R := jbinfunc("W_"QFactorial_"(", z,q)
+      jtypeassert(q,ret)
+      ret
+    qBinomial(n,m,q) ==
+      ret : R := jterfunc("W_"QBinomial_"(", n,m,q)
+      jtypeassert(q,ret)
+      ret
+    qGamma(z,q) ==
+      ret : R := jbinfunc("W_"QGamma_"(", z,q)
+      jtypeassert(q,ret)
+      ret
+    qPolyGamma(z,q) ==
+      ret : R := jbinfunc("W_"QPolyGamma_"(", z,q)
+      jtypeassert(q,ret)
+      ret
+    qPolyGamma(n,z,q) ==
+      ret : R := jterfunc("W_"QPolyGamma_"(", n,z,q)
+      jtypeassert(q,ret)
+      ret
+
+    mathieuC(a,q,z) ==
+      ret : R := jterfunc("W_"MathieuC_"(", a,q,z)
+      jtypeassert(z,ret)
+      ret
+    mathieuS(b,q,z)==
+      ret : R := jterfunc("W_"MathieuS_"(", b,q,z)
+      jtypeassert(z,ret)
+      ret
+    mathieuCPrime(a,q,z) ==
+      ret : R := jterfunc("W_"MathieuCPrime_"(", a,q,z)
+      jtypeassert(z,ret)
+      ret
+    mathieuSPrime(b,q,z) ==
+      ret : R := jterfunc("W_"MathieuSPrime_"(", b,q,z)
+      jtypeassert(z,ret)
+      ret
+    mathieuCharacteristicA(r,q) ==
+      ret : R := jbinfunc("W_"MathieuCharacteristicA_"(", r,q)
+      jtypeassert(q,ret)
+      ret
+    mathieuCharacteristicB(r,q) ==
+      ret : R := jbinfunc("W_"MathieuCharacteristicB_"(", r,q)
+      jtypeassert(q,ret)
+      ret
+    mathieuCharacteristicExponent(a,q) ==
+      ret : R := jbinfunc("W_"MathieuCharacteristicExponent_"(", a,q)
+      jtypeassert(q,ret)
+      ret
+
+    jacobiAmplitude(u,m) ==
+      ret : R := jbinfunc("W_"JacobiAmplitude_"(", u,m)
+      jtypeassert(m,ret)
+      ret
+    jacobiSn(u,m) ==
+      ret : R := jbinfunc("W_"JacobiSN_"(", u,m)
+      jtypeassert(u,ret)
+      ret
+    jacobiCn(u,m) ==
+      ret : R := jbinfunc("W_"JacobiCN_"(", u,m)
+      jtypeassert(u,ret)
+      ret
+    jacobiDn(u,m) ==
+      ret : R := jbinfunc("W_"JacobiDN_"(", u,m)
+      jtypeassert(u,ret)
+      ret
+    inverseJacobiSn(v,m) ==
+      ret : R := jbinfunc("W_"InverseJacobiSN_"(", v,m)
+      jtypeassert(v,ret)
+      ret
+    inverseJacobiCn(v,m) ==
+      ret : R := jbinfunc("W_"InverseJacobiCN_"(", v,m)
+      jtypeassert(m,ret)
+      ret
+    ellipticTheta(a,u,q) ==
+      ret : R := jterfunc("W_"EllipticTheta_"(", a,u,q)
+      jtypeassert(a,ret)
+      ret
+    ellipticThetaPrime(a,u,q) ==
+      ret : R := jterfunc("W_"EllipticThetaPrime_"(", a,u,q)
+      jtypeassert(a,ret)
+      ret
+    --siegelTheta(t,s) ==
+    --  ret : R := jbinfunc("W_"SiegelTheta_"(", t,s)
+    --  jtypeassert(s,ret)
+    --  ret
+    --siegelTheta(v,t,s) ==
+    --  ret : R := jterfunc("W_"SiegelTheta_"(", v,t,s)
+    -- jtypeassert(s,ret)
+    --  ret
+
+    ellipticK(m) ==
+      ret : R := junfunc("W_"EllipticK_"(", m)
+      jtypeassert(m,ret)
+      ret
+    ellipticF(z,m) ==
+      ret : R := jbinfunc("W_"EllipticF_"(", z,m)
+      jtypeassert(z,ret)
+      ret
+    ellipticE(m) ==
+      ret : R := junfunc("W_"EllipticE_"(", m)
+      jtypeassert(m,ret)
+      ret
+    ellipticE(z,m) ==
+      ret : R := jbinfunc("W_"EllipticE_"(", z,m)
+      jtypeassert(z,ret)
+      ret
+    ellipticPi(n,m) ==
+      ret : R := jbinfunc("W_"EllipticPi_"(", n,m)
+      jtypeassert(m,ret)
+      ret
+    ellipticPi(n,z,m) ==
+      ret : R := jterfunc("W_"EllipticPi_"(", n,z,m)
+      jtypeassert(z,ret)
+      ret
+    jacobiZeta(z,m) ==
+      ret : R := jbinfunc("W_"JacobiZeta_"(", z,m)
+      jtypeassert(z,ret)
+      ret
+
+    dedekindEta(tau) ==
+      ret : R := junfunc("W_"DedekindEta_"(", tau)
+      jtypeassert(tau,ret)
+      ret
+    dirichletEta(z) ==
+      ret : R := junfunc("W_"DirichletEta_"(", z)
+      jtypeassert(z,ret)
+      ret
+    kleinInvariantJ(tau) ==
+      ret : R := junfunc("W_"KleinInvariantJ_"(", tau)
+      jtypeassert(tau,ret)
+      ret
+    modularLambda(tau) ==
+      ret : R := junfunc("W_"ModularLambda_"(", tau)
+      jtypeassert(tau,ret)
+      ret

@@ -1,0 +1,55 @@
+)set break resume
+)set mess type off
+)expose UnittestCount UnittestAux Unittest
+)expose JLUtilityFunctions JLStringUtilities
+
+testsuite "JL Utils"
+
+testcase "JL shared library dynamic loading"
+libm:= jlDlOpen "libopenlibm"
+squareRoot:=jlDlSym(libm,jsym(sqrt))
+testTrue("jlApprox?(jlF64CApply(squareRoot,jfloat64(2)), jlApply(_"sqrt_",jfloat64(2)) pretend JLObjFloat64)")
+
+testcase "JLUtilityFunctions"
+testTrue("jlEvalString(_"true_")@Boolean")
+testEquals("jlEvalString(_"1+1_")@Integer", "2")
+-- Use explicit string concatenation in Julia
+testEquals("jlEvalString(_"string(_\"a_\", _\"b_\")_")@String", "_"ab_"")
+
+testTrue("jlDefined?(_"Base_")")
+testTrue("not jlDefined?(_"NonExistentThing_")")
+
+z := ZZ(123)
+testEquals("string(z)", "_"123_"")
+q := QQ(1/2)
+testEquals("string(q)", "_"1//2_"")
+
+testcase "JLStringUtilities"
+l := jlSplit("a,b,c", ",")
+str := "hello"
+testEquals("#l", "3")
+testEquals("l.1", "_"a_"")
+testTrue("jlRegexMatch?(_"hello world_", jlRegex(str))")
+testEquals("jlRegexMatch(_"hello world_" , jlRegex(str))", "_"hello_"")
+ret := jlRegexMatch("hello world", jlRegex "(h[a-z]+)\s*(the)?\s+(world)")@List(String);
+testEquals("#ret", "3")
+testEquals("ret.2", "_"_"")
+ret := jlRegexMatch("18:00", jlRegex("(?<hours>\d+):(?<minutes>\d+)"))@StringTable(String);
+testEquals("qelt(ret, _"hours_")", "_"18_"")
+testEquals("jlRegexReplace(_"herro world_", jlRegex(_"rr_"),_
+    jlSubstitute(_"ll_"))", "_"hello world_"")
+
+
+
+
+-- Use jlRegex to create a Julia regex object string
+testTrue("jlRegexMatch?(_"hello_", jlRegex(_"h.*o_"))")
+testTrue("not jlRegexMatch?(_"hello_", jlRegex(_"^z_"))")
+
+m := jlRegexMatch("hello world", jlRegex("h\w+"))
+testEquals("m", "_"hello_"")
+
+r := jlRegexReplace("hello world", jlRegex("world"), jlString("universe"))
+testEquals("r", "_"hello universe_"")
+
+statistics()

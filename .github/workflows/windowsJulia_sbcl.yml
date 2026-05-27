@@ -1,0 +1,53 @@
+name: FriCAS CI on x64 Windows (with Julia support - SBCL based)
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      SBCL_VER: 2.6.2
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: msys2/setup-msys2@v2
+      with:
+        install: make mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp gmp-devel unzip zip
+    - name: download and install SBCL
+      run: |
+        wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-x86-64-windows-binary.msi
+        msiexec -i sbcl-${SBCL_VER}-x86-64-windows-binary.msi -passive
+    - name: download and install Julia
+      run: |
+        wget https://julialang-s3.julialang.org/bin/winnt/x64/1.12/julia-1.12.6-win64.zip
+        unzip julia-1.12.6-win64.zip
+        cp -rf julia-1.12.6/* /usr/local/
+    - name: install Julia libraries
+      run: julia -e "import Pkg;Pkg.add([\"Nemo\", \"Suppressor\", \"SpecialFunctions\", \"DataFrames\", \"Latexify\", \"LaTeXStrings\", \"Statistics\"]);Pkg.precompile()"
+    - uses: actions/checkout@v6
+
+    - name: configure and make
+      run: |
+        cp -R "/c/Program Files/Steel Bank Common Lisp" /usr/local/share/sbcl
+        export SBCL_HOME=/usr/local/share/sbcl
+        export PATH=$SBCL_HOME:$PATH
+        mkdir ../build && cd ../build
+        ../jlfricas/configure --enable-gmp --enable-julia --enable-mathlink || cat config.log
+        make -j4 --output-sync
+    - name: make check
+      run: cd ../build && make check -j2 --output-sync
+
+    - name: Create artifact archives
+      run: |
+        rm ../build/target/x86_64-w64-mingw32/bin/{fricas,jlfricas}
+        mv ../build/target/x86_64-w64-mingw32 jlFriCAS-windows-x86_64
+        cp /mingw64/bin/libgmp-10.dll jlFriCAS-windows-x86_64/lib/
+        zip -r jlFriCAS-windows-x86_64-${{ github.sha }}.zip jlFriCAS-windows-x86_64
+
+    - name: Upload Windows binary
+      uses: actions/upload-artifact@v7
+      with:
+        archive: false
+        path: jlFriCAS-windows-x86_64-${{ github.sha }}.zip

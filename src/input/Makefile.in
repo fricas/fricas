@@ -2,6 +2,9 @@
 subdir = src/input/
 
 IN=$(fricas_src_srcdir)/input
+lisp_flavor = $(word 1, @fricas_lisp_flavor@)
+JULIA_WRAP_SO_TARGET=@JULIA_WRAP_SO_TARGET@
+JULIA_USE_MLINK=@JULIA_USE_MLINK@
 
 .PHONY: all all-ax all-input
 
@@ -147,6 +150,23 @@ REGRESS0 = agcd.output array.output bezout.output bugs2007.output \
       pgcd.output polylift.output polop.output psgenfcn.output \
       rsimp.output series3.output ssolve.output \
       table.output tensor.output vsbasis.output
+
+ifdef JULIA_WRAP_SO_TARGET
+REGRESS0 += jf64sf.output jla.output jnpadic.output \
+           jnseries.output jnseries2.output julia.output \
+           jf32sf.output jfsf.output jnball.output jnemo.output \
+           jobject.output jnpoly.output jdataframe.output \
+           jafunction.output jfunction.output jrational.output
+ifeq ($(JULIA_USE_MLINK),yes)
+# Check if Wolfram engine is available in PATH
+WOLFRAM_EXISTS := $(shell command -v WolframKernel 2> /dev/null || command -v MathKernel 2> /dev/null || command -v math 2> /dev/null)
+ifneq ($(WOLFRAM_EXISTS),)
+REGRESS0 += jws.output jwssf.output 
+# jwsexpr.output -- TODO: not testable through make check
+endif
+endif
+endif
+
 
 ifeq (@BUILD_ALDOR_INTERFACE@,yes)
 

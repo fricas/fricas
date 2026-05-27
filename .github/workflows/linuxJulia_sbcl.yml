@@ -1,0 +1,59 @@
+name: FriCAS CI on x64|arm64 Linux (with Julia support - SBCL based)
+
+on: [push, pull_request]
+permissions: {}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    env:
+      ARCH: ${{ matrix.os == 'ubuntu-24.04' && 'x86-64' || 'arm64' }}
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: julia-actions/setup-julia@latest
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install sbcl libgmp-dev libxpm-dev cl-hunchentoot cl-yason python3-sphinx
+        # wget https://github.com/gvanuxem/aldor/releases/download/20241216/aldor_1.4.0+20241216_amd64.deb
+        # sudo dpkg -i aldor_1.4.0+20241216_amd64.deb
+    - name: install Julia libraries
+      run: |
+        julia -e "import Pkg;Pkg.add([\"Nemo\", \"Suppressor\", \"SpecialFunctions\", \"DataFrames\", \"Latexify\", \"LaTeXStrings\", \"Statistics\"]);Pkg.precompile()"
+    - name: configure
+      run: ./configure --with-lisp=sbcl --with-gmp --enable-julia --enable-mcp --enable-hunchentoot --enable-mathlink --with-x || cat config.log
+
+    - name: make
+      run: make -j4 --output-sync && make htmldoc
+
+    - name: Create artifact archives
+      run: |
+        tar -czf jlFriCAS-linux-sbcl-${ARCH}-${{ github.sha }}.tar.gz target/
+
+    - name: Upload Linux binary
+      uses: actions/upload-artifact@v6
+      with:
+        archive: false
+        path: jlFriCAS-linux-sbcl-${{ env.ARCH }}-${{ github.sha }}.tar.gz
+
+    - name: make check
+      run: make check -j4 --output-sync
+
+    - name: make book
+      if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+      run: |
+        sudo apt-get install xvfb texlive-font-utils texlive-latex-extra texlive-science
+        make -j4 book
+
+    - name: Upload reference book
+      if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: fricas-reference-book-${{ env.ARCH }}
+        path: src/doc/book.pdf

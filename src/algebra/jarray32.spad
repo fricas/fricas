@@ -1,0 +1,990 @@
+)abbrev domain JF32VEC JLFloat32Vector
+++ Domain for Julia Float32 vectors
+++ Author: G. Vanuxem
+++ Date Created: November, 2024
+++ Description: This domain provides a fast JLFloat32 vector type
+++ with no bound checking on elt's. Minimum index is 1.
+JLFloat32Vector() : Exports == Implementation where
+  NNI             ==> NonNegativeInteger
+  JF32            ==> JLFloat32
+  Qnew            ==> make_sf_array1$Lisp
+  Qnew1           ==> make_sf_iarray1$Lisp
+  Qsize           ==> SFVSIZE$Lisp
+  Qelt            ==> SFAREF11$Lisp
+  Qsetelt         ==> SFSETAREF11$Lisp
+  Exports ==> JLVectorCategory(JLFloat32) with
+    vector  : List JF32 -> %
+    ++ vector(l) converts the list l to a vector.
+    qnew    : NonNegativeInteger -> %
+    ++ qnew(n) returns an uninitialized vector of dimension n.
+    copy! : (%, %) -> %
+    ++ copy!(b,a) efficiently copies a to b. No checks are performed on
+    ++ array dimensions.
+    jlApply : (String, %) -> Void
+    ++ jlApply(func, v) applies func to argument v.
+    jlApply : (String, %) -> JF32
+    ++ jlApply(func, v) applies func to argument v.
+    ++ and returns a Julia Float32.
+    jlApply : (String, %) -> %
+    ++ jlApply(func, v) applies func to argument v.
+    ++ and returns a JLFloat32Vector.
+    jlApply : (String, %, JF32) -> JF32
+    ++ jlApply(func, v, val) applies func to arguments v and val
+    ++ and returns a Julia Float32.
+    jlApply : (String, %, %) -> Void
+    ++ jlApply(func, v1, v2) applies func to arguments v1 and v2.
+    jlApply : (String, %, %, %) -> Void
+    ++ jlApply(func, v1, v2, v3) applies func to
+    ++ arguments v1, v2 and v3.
+    jlApprox? : (%, %) -> Boolean
+    ++ jlApprox?(x,y) computes inexact equality comparison
+    ++ with default parameters. Two numbers compare equal
+    ++ if their relative distance or their absolute distance
+    ++ is within tolerance bounds. Applied component-wise.
+    urand : (PositiveInteger, JF32) -> %
+    ++ urand(n, x) returns a uniformly (0..x) distributed
+    ++ Julia vector of size n. Use the underlying Common
+    ++ Lisp random number generator so jlSeed! will not
+    ++ affect it.
+    urand01 : PositiveInteger -> %
+    ++ urand01(n) returns a uniformly (0..1) distributed
+    ++ Julia vector of size n.
+    nrand : PositiveInteger -> %
+    ++ nrand(n) returns a normally distributed Julia vector of size n
+    ++ with mean=0 and standard deviation=1.
+    exprand : PositiveInteger -> %
+    ++ exprand(n) returns a vector of size n with random elements
+    ++ from the exponential distribution with scale 1.
+    jlDisplay : % -> Void
+    ++ jlDisplay(v) pretty prints v (à la Julia).
+    juliaVPrint : Boolean -> Boolean
+    ++ juliaVPrint(b) defines whether or not FriCAS uses 
+    ++ the printing version of Julia for vectors instead of
+    ++ its OutputForm version. Returns previous value.
+    ++ By default it is the Julia version.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    jlInitialize(true)
+    defined?(func) ==> not jlDefined?(func) =>
+      error concat(func, " is not defined in Julia")
+    pprint := true
+
+    #x                          == Qsize x
+    minIndex x                  == 1$Lisp
+    maxIndex x                  == Qsize(x)
+    empty()                     == Qnew(0$Lisp)
+    qnew(n)                     == Qnew(n)
+    new(n, x:JF32)              == Qnew1(n, x)
+    qelt(x, i)                  == Qelt(x, i)
+    elt(x, i : Integer)         ==
+      i < 1 or i > #x =>
+        error "elt$JLFloat32Vector: index out of range"
+      Qelt(x, i)
+    qsetelt!(x, i, s:JF32)      == Qsetelt(x, i, s)
+    setelt!(x : %, i : Integer, s : JF32) ==
+      i < 1 or i > #x =>
+        error "setelt!$JLFloat32Vector: index out of range"
+      Qsetelt(x, i, s)
+    fill!(v, x)       == (for i in 1..Qsize v repeat Qsetelt(v, i, x); v)
+    less?(v,n) == #v < n
+    vector l == construct l
+    coerce(v) : OutputForm      ==
+      ~pprint =>
+        bracket [qelt(v, k)::OutputForm for k in 1$Lisp .. maxIndex v]
+      ret: List OutputForm := jl_stringify_1dffunction(0$NNI, "show", "_"text/plain_"", v)$Lisp
+      pile(append(["" pretend OutputForm], rest ret))
+
+    copy!(b, a) ==
+      jl_1d2ffunction(0$NNI,"copy!", b, a)$Lisp
+      b
+
+    copy(a) ==
+      b := qnew(Qsize a)
+      jl_1d2ffunction(0$NNI,"copy!", b, a)$Lisp
+      b
+
+    jlApply(func, v : %) : Void ==
+      defined?(func)
+      jl_1dffunction(0$NNI,func, v)$Lisp
+    jlApply(func, v : %) : JF32 ==
+      defined?(func)
+      jl_flt_1dffunction(0$NNI, func, v)$Lisp
+    jlApply(func, v : %) : % ==
+      defined?(func)
+      ret := qnew(#v)
+      jl_array_1dffunction(0$NNI, 0$NNI,func, ret, v)$Lisp
+      ret
+    jlApply(func, v : %, val : JF32) : JF32 ==
+      defined?(func)
+      jl_flt_1dffunction_flt(0$NNI, func, v, val)$Lisp
+    jlApply(func, v1, v2) : Void ==
+      defined?(func)
+      jl_1d2ffunction(0$NNI, func, v1, v2)$Lisp
+    jlApply(func, v1, v2, v3) : Void ==
+      defined?(func)
+      jl_1d3ffunction(func, v1, v2, v3)$Lisp
+    jlApprox?(x, y) == jl_bool_1d2ffunction(0$NNI,"isapprox", x, y)$Lisp
+    juliaVPrint(b) ==
+      oldpprint := pprint
+      pprint:=b
+      oldpprint
+
+    jlDisplay(v) == jl_1dffunction(0$NNI,"display", v)$Lisp
+
+    length(v) == jl_flt_1dffunction(0$NNI,"norm", v)$Lisp
+
+    reverse(v) ==
+      vt := copy(v)
+      jl_1dffunction(0$NNI,"reverse!", vt)$Lisp
+      vt
+
+    reverse!(v) == (jl_1dffunction(0$NNI,"reverse!", v)$Lisp;v)
+
+    sort(v) ==
+      vt := copy(v)
+      jl_1dffunction(0$NNI,"sort!", vt)$Lisp;
+      vt
+
+    sort!(v) == (jl_1dffunction(0$NNI,"sort!", v)$Lisp;v)
+
+    dot(v1,v2) == jl_flt_1d2ffunction(0$NNI,"dot",v1,v2)$Lisp
+
+    urand01(n) ==
+      v := qnew(n)
+      (jl_1dffunction(0$NNI,"rand!", v)$Lisp;v)
+
+    urand(n, r) ==
+      v := qnew(n)
+      for i in 1..maxIndex(v) repeat
+        setelt!(v, i, RANDOM(r)$Lisp)
+      v
+    nrand(n) ==
+      v := qnew(n)
+      (jl_1dffunction(0$NNI,"randn!", v)$Lisp;v)
+
+    exprand(n) ==
+      v := qnew(n)
+      jl_1dffunction(0$NNI,"randexp!", v)$Lisp
+      v
+
+)abbrev package JF32VEC2 JLFloat32VectorFunctions2
+++ Package for operations on Julia Float32 vectors
+++ Author: G. Vanuxem
+++ Date Created: November, 2024
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   This package provides operations which all take as arguments
+++ JLFloat32Vector and functions from JLFloat32 to
+++ JLFloat32. The operations all iterate over their vector argument
+++ and either return a value of type JLFloat32Vector or a JLFloat32.
+
+JLFloat32VectorFunctions2() : Exports == Implementation where
+  A  ==> JLFloat32
+  B  ==> JLFloat32
+  VA ==> JLFloat32Vector
+  VB ==> JLFloat32Vector
+  O2 ==> FiniteLinearAggregateFunctions2(A, VA, B, VB)
+  UB ==> Union(B, "failed")
+
+  Exports ==> with
+    scan   : ((A, B) -> B, VA, B) -> VB
+    ++ scan(func, vec, ident) creates a new vector whose elements are
+    ++ the result of applying reduce to the binary function func,
+    ++ increasing initial subsequences of the vector vec,
+    ++ and the element ident.
+    reduce : ((A, B) -> B, VA, B) -> B
+    ++ reduce(func, vec, ident) combines the elements in vec using the
+    ++ binary function func. Argument ident is returned if vec is empty.
+    map    : (A -> B, VA) -> VB
+    ++ map(f, v) applies the function f to every element of the vector v
+    ++ producing a new vector containing the values.
+    map : (A -> UB, VA) -> Union(VB, "failed")
+    ++ map(f, v) applies the function f to every element of the vector v
+    ++ producing a new vector containing the values or \spad{"failed"}.
+
+  Implementation ==> add
+    scan(f, v, b)   == scan(f, v, b)$O2
+    reduce(f, v, b) == reduce(f, v, b)$O2
+    map(f : (A->B), v : VA) : VB == map(f, v)$O2
+
+    map(f:(A -> UB), a:VA):Union(VB, "failed") ==
+     res : List B  := []
+     for u in entries(a) repeat
+       r := f u
+       r = "failed" => return "failed"
+       res := cons(r::B, res)
+     vector reverse! res
+
+)abbrev domain JF32MAT JLFloat32Matrix
+++ Domain for Julia Float32 matrices
+++ Author: G. Vanuxem
+++ Date Created: November, 2024
+++ Description: This domain provides a fast JLFloat32 matrix type
+++ with no bound checking on elt's. Minimum index is 1.
+JLFloat32Matrix() : Exports == Implementation where
+  NNI         ==> NonNegativeInteger
+  INT         ==> Integer
+  JF32        ==> JLFloat32
+  JF32VEC     ==> JLFloat32Vector
+  Qnew        ==> make_sf_array2$Lisp
+  Qnew1       ==> make_sf_iarray2$Lisp
+  Qelt2       ==> SFAREF21$Lisp
+  Qsetelt2    ==> SFSETAREF21$Lisp
+  Row         ==> JLFloat32Vector
+  Col         ==> JLFloat32Vector
+  MLAF        ==> MatrixLinearAlgebraFunctions(JF32, Row, Col, %)
+  Exports ==> JLMatrixCategory(JF32, Row, Col) with
+    elt : (%, NonNegativeInteger) -> JF32
+    ++ elt(m, i) returns the i-th element of m.
+    ++ Column major order.
+    qelt : (%, NonNegativeInteger) -> JF32
+    ++ qelt(m, i) returns the i-th element of m.
+    ++ Column major order.
+    setelt! : (%, NonNegativeInteger, JF32) -> JF32
+    ++ setelt!(m, i, r) sets the i-th element of m to r.
+    ++ Column major order.
+    qsetelt! : (%, NonNegativeInteger, JF32) -> JF32
+    ++ qsetelt!(m, i, r) sets the i-th element of m to r.
+    ++ Column major order.
+    jlVector : % -> JLFloat32Vector
+    ++ jlVector(m) returns reference to the internal vector representation.
+    jlApply : (String, %) -> Void
+    ++ jlApply(func, x) applies func to argument x.
+    jlApply : (String, %) -> JF32
+    ++ jlApply(func, x) applies func to argument x.
+    jlApply : (String, %, JF32) -> JF32
+    ++ jlApply(func, x, val) applies func to arguments x and val.
+    jlApply : (String, %) -> %
+    ++ jlApply(func, x) applies func to argument x.
+    jlDisplay : % -> Void
+    ++ jlDisplay(m) pretty prints m (à la Julia).
+    juliaMPrint : Boolean -> Boolean
+    ++ juliaMPrint(b) defines whether or not FriCAS uses 
+    ++ the printing version of Julia for matrices instead of
+    ++ its OutputForm version. Returns previous value.
+    ++ By default it is the Julia version.
+    copy! : (%, %) -> %
+    ++ copy!(b,a) efficiently copies a to b. No checks are performed on
+    ++ array dimensions.
+    identity : PositiveInteger -> %
+    ++ identity(n) returns a n by n identity matrix.
+    urand : (PositiveInteger, PositiveInteger, JF32) -> %
+    ++ urand(m,n,x) returns a uniformly (0..x) distributed
+    ++ Julia matrix of size (m,n). Use the underlying Common
+    ++ Lisp random number generator so jlSeed! will not
+    ++ affect it.
+    urand01 : (PositiveInteger, PositiveInteger) -> %
+    ++ urand01(m,n) returns a uniformly (0..1) distributed
+    ++ Julia matrix of size (m,n).
+    nrand : (PositiveInteger, PositiveInteger) -> %
+    ++ nrand(m,n) returns a Julia matrix of size (m,n) with random
+    ++ elements from the normal distribution with mean=0
+    ++ and standard deviation=1.
+    exprand : (PositiveInteger, PositiveInteger) -> %
+    ++ exprand(m,n) returns a Julia matrix of size (m,n) with random elements
+    ++ from the exponential distribution with scale 1.
+    positiveDefinite? : % -> Boolean
+    ++ positiveDefinite?(m) tests whether or not m is positive definite.
+    ++ Use a Cholesky factorisation.
+    jlApprox?: (%, %) -> Boolean
+    ++ jlApprox?(x,y) computes inexact equality comparison
+    ++ with default parameters. Two numbers compare equal
+    ++ if their relative distance or their absolute distance
+    ++ is within tolerance bounds. Applied component-wise.
+    symmetricPart : % -> %
+    ++ symmetricPart(m) returns the symmetric part of m (m + m')/2.
+    symmetricPart! : % -> %
+    ++ symmetricPart!(m) overwrites m with the symmetric part of m (m + m')/2
+    ++ to save memory space and returns m.
+    skewPart : % -> %
+    ++ skewPart(m) returns the skew part of m (m - m')/2.
+    diagonalMatrix : JF32VEC -> %
+    ++ diagonalMatrix(v) returns a diagonal matrix with elements of v.
+    transpose! : (%, %) -> %
+    ++ transpose!(b, a) stores transposed a in b.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLF32LinearAlgebra
+    import from JLFloat32Vector
+    jlInitialize(true)
+
+    Rep := Record(elts : JLFloat32Vector,
+      ncols : NonNegativeInteger, nrows : NonNegativeInteger)
+
+    defined?(func) ==> not jlDefined?(func)
+      => error concat(func, " is not defined in Julia")
+    pprint := true
+
+    minRowIndex x == 1
+    minColIndex x == 1
+    nrows x == x.ncols
+    ncols x == x.nrows
+    maxRowIndex x == x.ncols
+    maxColIndex x == x.nrows
+    #m == #m.elts
+
+    qelt(m, i, j) == Qelt2(m.elts, m.ncols, m.nrows, j, i)
+    elt(m:%, i:INT, j:INT) : JF32 ==
+      i < 1 or i > m.ncols or j < 1 or j > m.nrows=>
+        error "elt$JLFloat32Matrix: index(es) out of range"
+      Qelt2(m.elts, m.ncols, m.nrows, j, i)
+    qsetelt!(m, i, j, r) == Qsetelt2(m.elts, m.ncols, m.nrows, j, i, r)
+    setelt!(m : %, i : Integer, j : Integer, r : JF32) ==
+      i < 1 or i > m.ncols or j < 1 or j > m.nrows=>
+        error "setelt!$JLFloat32Matrix: index(es) out of range"
+      Qsetelt2(m.elts, m.ncols, m.nrows, j, i, r)
+    elt(m:%, i:NonNegativeInteger) ==
+      i > #m => error "elt$JLFloat64Matrix: index out of range"
+      SFAREF11(m.elts,i)$Lisp
+    qelt(m:%, i:NonNegativeInteger) ==
+      SFAREF11(m.elts,i)$Lisp
+    setelt!(m : %, i : NonNegativeInteger, r : JF32) ==
+      i > #m =>
+        error "setelt!$JLFloat64Matrix: index out of range"
+      SFSETAREF11(m.elts,i,r)$Lisp
+    qsetelt!(m : %, i : NonNegativeInteger, r : JF32) ==
+      SFSETAREF11(m.elts,i,r)$Lisp
+    empty() == error "empty()$JLFloat32Matrix is not supported"
+    qnew(rows, cols) ==
+      m: JLFloat32Vector := Qnew(rows, cols)
+      [m, rows, cols]
+  
+    new(rows, cols, a) ==
+      m: JLFloat32Vector := Qnew1(cols, rows, a)
+      [m, rows, cols]
+    jlVector(mat) == mat.elts
+  
+    zero(m,n) == new(m,n,0)
+
+    jlApply(func, m : %) : Void ==
+      defined?(func)
+      jl_2dffunction(0$NNI,func, m.elts, m.ncols)$Lisp
+    jlApply(func, m : %) : JF32 ==
+      defined?(func)
+      jl_flt_2dffunction(0$NNI, func, m.elts, m.ncols)$Lisp
+    jlApply(func, m : %, val : JF32) : JF32 ==
+      defined?(func)
+      jl_flt_2dffunction_flt(0$NNI,func,  m.elts, m.ncols, val)$Lisp
+    jlApply(func, m) : % ==
+      defined?(func)
+      ret := qnew(m.nrows, m.ncols)
+      jl_array_2dffunction(0$NNI,0$NNI,func, ret.elts, m.elts, m.ncols)$Lisp
+      ret
+
+    jlDisplay(m) == jl_2dffunction(0$NNI,"display", m.elts, m.ncols)$Lisp
+
+    juliaMPrint(b) ==
+      oldpprint := pprint
+      pprint:=b
+      oldpprint
+
+    coerce(m : %) : OutputForm ==
+      if pprint then
+        ret: List OutputForm :=
+          jl_stringify_2dffunction(0$NNI, "show", "_"text/plain_"",
+            m.elts, m.ncols)$Lisp
+        pile(append(["" pretend OutputForm],rest ret))
+      else
+        l : List List OutputForm
+        l := [[qelt(m, j, i) :: OutputForm _
+          for i in 1 .. ncols(m)] _
+          for j in 1 .. nrows(m)]
+        matrix l
+
+    square?(m) == m.nrows = m.ncols
+    zero?(m) == jl_bool_2dffunction(0$NNI, "iszero", m.elts, m.ncols)$Lisp
+    diagonal?(m) == jl_bool_2dffunction(0$NNI, "isdiag", m.elts, m.ncols)$Lisp
+    symmetric?(m : %) : Boolean ==
+      jl_bool_2dffunction(0$NNI,"issymmetric", m.elts, m.ncols)$Lisp
+    positiveDefinite?(m : %) : Boolean ==
+      jl_bool_2dffunction(0$NNI,"isposdef", m.elts, m.ncols)$Lisp
+    jlApprox?(x, y) ==
+      jl_bool_2d2ffunction(0$NNI,"isapprox", jlVector(x), nrows(x),
+        jlVector(y), nrows(y))$Lisp
+    copy!(b, a) ==
+      jl_2d2ffunction(0$NNI,"copy!", b.elts, b.ncols, a.elts, a.ncols)$Lisp
+      b
+
+    copy(a) ==
+      b := qnew(a.ncols, a.nrows)
+      jl_2d2ffunction(0$NNI,"copy!", b.elts, b.ncols, a.elts, a.ncols)$Lisp
+      b
+
+    transpose(m) ==
+      b := qnew(m.nrows, m.ncols)
+      jl_2d2ffunction(0$NNI,"transpose!", b.elts, b.ncols, m.elts, m.ncols)$Lisp
+      b
+
+    transpose!(b,a) ==
+      jl_2d2ffunction(0$NNI,"transpose!", b.elts, b.ncols, a.elts, a.ncols)$Lisp
+      b
+
+    -- ??? why the pretend?
+    rank(m) ==
+      prec : JF32 := SINGLE_-FLOAT_-EPSILON$Lisp
+      rank(m pretend JLFloat32Matrix, prec * jf32(10))$JLF32LinearAlgebra
+
+    inverse(m) ==
+      m.nrows ~= m.ncols => error "inverse: matrix is not square"
+      inv := qnew(m.ncols, m.ncols)
+      jl_array_2dffunction(0$NNI,0$NNI,"inv", inv.elts, m.elts, m.ncols)$Lisp
+      inv
+
+    symmetricPart(m) ==
+      m.nrows ~= m.ncols => error "symmetricPart: matrix is not square"
+      sym := copy m
+      jl_2dffunction(0$NNI,"hermitianpart!", sym.elts, sym.ncols)$Lisp
+      sym
+
+    symmetricPart!(m) ==
+      m.nrows ~= m.ncols => error "symmetricPart!: matrix is not square"
+      jl_2dffunction(0$NNI,"hermitianpart!", m.elts, m.ncols)$Lisp
+      m
+
+    skewPart(m) ==
+      m.nrows ~= m.ncols => error "skewPart: matrix is not square"
+      sym := copy m
+      jl_2dffunction(0$NNI,"hermitianpart!", sym.elts, sym.ncols)$Lisp
+      m - sym
+
+    a : % * b : % ==
+      (nr := a.nrows) ~= (nc := b.ncols) =>
+        error "Matrix multiplication: ncols(a) ~= nrows(b)"
+      c := qnew(nrows(a), ncols(b))
+      jl_2d3ffunction(0$NNI,"mul!", c.elts, c.ncols,
+        a.elts, a.ncols, b.elts, b.ncols)$Lisp
+      c
+
+    identity(n) ==
+      m := new(n,n,0)
+      for i in 1..n repeat setelt!(m,i,i,1$JF32)
+      m
+
+    urand01(m, n) ==
+      mat := qnew(m,n)
+      jl_2dffunction(0$NNI,"rand!", mat.elts, mat.ncols)$Lisp
+      mat
+
+    urand(m, n, r) ==
+      mat := qnew(m,n)
+      for i in 1 .. ncols(mat) repeat _
+      for j in 1 .. nrows(mat) repeat _
+        setelt!(mat, j, i, RANDOM(r)$Lisp)
+      mat
+
+    nrand(m, n) ==
+      mat := qnew(m,n)
+      jl_2dffunction(0$NNI,"randn!", mat.elts, mat.ncols)$Lisp
+      mat
+
+    exprand(m, n) ==
+      mat := qnew(m,n)
+      jl_2dffunction(0$NNI,"randexp!", mat.elts, mat.ncols)$Lisp
+      mat
+
+    determinant(m) ==
+      m.nrows ~= m.ncols => error "determinant: matrix is not square"
+      jl_flt_2dffunction(0$NNI,"det", m.elts, m.ncols)$Lisp
+    
+    diagonalMatrix(v:JF32VEC) ==
+      n : NNI := #v
+      u := new(n, n, 0$JF32)
+      for i in 1..n repeat setelt!(u, i, i, elt(v,i))
+      u
+
+    nullity(m) == nullity(m)$MLAF
+    nullSpace(m) == nullSpace(m)$MLAF
+    rowEchelon(m) == rowEchelon(m)$MLAF
+    minordet(m) == minordet(m)$MLAF
+
+)abbrev domain JF32SMAT JLF32SquareMatrix
+++ Domain for Julia Float32 square matrices
+++ Author: G. Vanuxem
+++ Date Created: November, 2024
+++ Description: This domain provides a fast Julia Float32
+++ square matrix type with no bound checking on elt's. Minimum index is 1.
+JLF32SquareMatrix(n: NonNegativeInteger) : Exports == Implementation where
+  Row ==> DirectProduct(n, JLFloat32)
+  Col ==> DirectProduct(n, JLFloat32)
+  Exports ==> Join(JLType, SquareMatrixCategory(n, JLFloat32,
+        Row, Col), CoercibleTo(JLFloat32Matrix)) with
+    qcoerce : JLFloat32Matrix -> %
+    ++ qcoerce(m) coerces m to JLF32SquareMatrix
+    ++ trusting that m is square.
+    squareMatrix : JLFloat32Matrix -> %
+    ++ squareMatrix(m) returns a copy of m as a JLF32SquareMatrix.
+  Implementation ==>  JLFloat32Matrix add
+    import from JLFloat32Matrix
+    JF32MAT ==> JLFloat32Matrix
+    NNI ==> NonNegativeInteger
+
+    qcoerce(m) == m pretend %
+    coerce(m) == m pretend JLFloat32Matrix
+
+    0  : % == new(n,n,0)$JF32MAT pretend %
+    1  : % == scalarMatrix(n,1)$JF32MAT pretend %
+    scalarMatrix(x) == scalarMatrix(n, x)$JF32MAT pretend %
+
+    matrix(ll) ==
+      (#ll = n) and (#ll.1 = n) => matrix(ll)$JF32MAT pretend %
+      error "matrix: incompatible dimensions"
+
+    squareMatrix(m) ==
+      nr := nrows(m)
+      nr ~= n or nr ~= ncols(m) => error "squareMatrix: incompatible dimensions"
+      copy(m) pretend %
+
+    one?(m) == jl_bool_2dffunction(0$NNI, "isone",
+      jlVector(m pretend JF32MAT), ncols(m pretend JF32MAT))$Lisp
+
+)abbrev domain JCF32VEC JLComplexF32Vector
+++ Domain for Julia Complex Float32 vectors
+++ Author: G. Vanuxem
+++ Date Created: November, 2024
+++ Description: This domain provides a fast JLComplexF32 vector type
+++ with no bound checking on elt's. Minimum index is 1.
+JLComplexF32Vector() : Exports == Implementation where
+  NNI         ==> NonNegativeInteger
+  JF32        ==> JLFloat32
+  JF32VEC     ==> JLFloat32Vector
+  Qelt1       ==> JCFELT$Lisp
+  Qsetelt1    ==> JCFSETELT$Lisp
+  Qsize       ==> JCFLEN$Lisp
+  Qnew        ==> MAKE_CF_ARRAY1$Lisp
+  Exports ==> JLVectorCategory(JLComplexF32) with
+    qnew : NNI -> %
+      ++ qnew(n) creates a new uninitialized vector of length n.
+    vector : List JLComplexF32 -> %
+    ++ vector(l) converts the list l to a vector.
+    real : % -> JF32VEC
+    ++ real(v) returns a JLFloat32 vector with the real part
+    ++ of the v elements.
+    imag : % -> JF32VEC
+    ++ imag(v) returns a JLFloat32 vector with the imaginary part
+    ++ of the v elements.
+    copy!   : (%, %) -> %
+    ++ copy!(b,a) efficiently copies a to b. No checks are performed on
+    ++ array dimensions.
+    jlApply : (String, %) -> Void
+    ++ jlApply(func, x) applies func to argument x.
+    jlApply : (String, %) -> JF32
+    ++ jlApply(func, x) applies func to argument x.
+    jlApply : (String, %, JF32) -> JF32
+    ++ jlApply(func, x, val) applies func to arguments x and val.
+    jlApprox?: (%, %) -> Boolean
+    ++ jlApprox?(x,y) computes inexact equality comparison
+    ++ with default parameters. Two numbers compare equal
+    ++ if their relative distance or their absolute distance
+    ++ is within tolerance bounds. Applied component-wise.
+    urand01 : PositiveInteger -> %
+    ++ urand01(n) returns a uniformly (0..1) distributed
+    ++ Julia vector of size n.
+    nrand : PositiveInteger -> %
+    ++ nrand(n) returns a normally distributed Julia vector of size n
+    ++ with mean=0 and standard deviation=1.
+    ++ See Julia documentation (randn) for this complex version used here.
+    jlDisplay : % -> Void
+    ++ jlDisplay(v) pretty prints v (à la Julia).
+    juliaCVPrint : Boolean -> Boolean
+    ++ juliaCVPrint(b) defines whether or not FriCAS uses 
+    ++ the printing version of Julia for matrices instead of
+    ++ its OutputForm version. Returns previous value.
+    ++ By default it is the Julia version.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLCF32LinearAlgebra
+    jlInitialize(true)
+    defined?(func) ==> not jlDefined?(func) =>
+      error concat(func, " is not defined in Julia")
+    pprint := true
+
+    qelt(x, i)                  == Qelt1(x, i)
+    elt(x, i : Integer)         ==
+        i < 1 or i > #x =>
+            error "elt$JLComplexF32Vector: index out of range"
+        Qelt1(x, i)
+    qsetelt!(x, i, s)           == Qsetelt1(x, i, s)
+    setelt!(x : %, i : Integer, s:JLComplexF32) ==
+        i < 1 or i > #x =>
+            error "setelt!$JLComplexF32Vector: index out of range"
+        Qsetelt1(x, i, s)
+    #x          == Qsize(x)
+    minIndex x  == 1
+    maxIndex x  == Qsize(x)
+    empty()     == Qnew(0$Lisp)
+    qnew(n)     == Qnew(n)
+    new(n, x)   ==
+      res : % := Qnew(n)
+      fill!(res, x)
+    vector l == construct l
+
+    fill!(x, s) ==
+      for i in 1..Qsize(x) repeat Qsetelt1(x, i, s)
+      x
+
+    real(v) ==
+      ret := qnew(#v)$JF32VEC
+      jl_array_1dffunction(0$NNI, 1$NNI,"real", ret, v)$Lisp
+      ret
+
+    imag(v) ==
+      ret := qnew(#v)$JF32VEC
+      jl_array_1dffunction(0$NNI, 1$NNI,"imag", ret, v)$Lisp
+      ret
+    
+    copy!(b, a) ==
+      jl_1d2ffunction(1$NNI,"copy!",b,a)$Lisp
+      b
+
+    copy(a) ==
+      b := qnew(Qsize a)
+      jl_1d2ffunction(1$NNI,"copy!",b,a)$Lisp
+      b
+    jlApprox?(x, y) == jl_bool_1d2ffunction(1$NNI, "isapprox", x, y)$Lisp
+    jlApply(func, v : %) : Void ==
+      defined?(func)
+      jl_1dffunction(1$NNI, func, v)$Lisp
+    jlApply(func, v : %) : JF32 ==
+      defined?(func)
+      jl_flt_1dffunction(1$NNI, func, v)$Lisp
+    jlApply(func, v : %, val : JF32) : JF32 ==
+      defined?(func)
+      jl_flt_1dffunction_flt(1$NNI,func, v, val)$Lisp
+
+    urand01(n) ==
+      v := qnew(n)
+      jl_1dffunction(1$NNI, "rand!", v)$Lisp
+      v
+    nrand(n) ==
+      v := qnew(n)
+      jl_1dffunction(1$NNI, "randn!", v)$Lisp
+      v
+
+    juliaCVPrint(b) ==
+      oldpprint := pprint
+      pprint:=b
+      oldpprint
+
+    jlDisplay(v) == jl_1dffunction(1$NNI,"display", v)$Lisp
+
+    coerce(v) : OutputForm      ==
+      ~pprint => bracket [qelt(v, k)::OutputForm for k in 1$Lisp .. maxIndex v]
+      ret: List OutputForm :=
+        jl_stringify_1dffunction(1$NNI, "show", "_"text/plain_"", v)$Lisp
+      pile(append(["" pretend OutputForm],rest ret))
+
+)abbrev domain JCF32MAT JLComplexF32Matrix
+++ Domain for Julia Complex Float32 matrices.
+++ Author: G. Vanuxem
+++ Date Created: November, 2024
+++ Description: This domain provides a fast JLComplexF32 matrix type
+++ with no bound checking on elt's. Minimum index is 1.
+JLComplexF32Matrix() : Exports == Implementation where
+  JF32        ==> JLFloat32
+  JF32MAT     ==> JLFloat32Matrix
+  JCF32       ==> JLComplexF32
+  JCF32VEC    ==> JLComplexF32Vector
+  NNI         ==> NonNegativeInteger
+  Qelt2       ==> JCFELT2$Lisp
+  Qsetelt2    ==> JCFSETELT2$Lisp
+  Qnew        ==> MAKE_CF_ARRAY1$Lisp
+  Row         ==> JLComplexF32Vector
+  Col         ==> JLComplexF32Vector
+  MLAF        ==> MatrixLinearAlgebraFunctions(JCF32, Row, Col, %)
+  Exports ==> JLMatrixCategory(JCF32, Row, Col) with
+    elt : (%, NonNegativeInteger) -> JCF32
+    ++ elt(m, i) returns the i-th element of m.
+    ++ Column major order.
+    qelt : (%, NonNegativeInteger) -> JCF32
+    ++ qelt(m, i) returns the i-th element of m.
+    ++ Column major order.
+    setelt! : (%, NonNegativeInteger, JCF32) -> JCF32
+    ++ setelt!(m, i, r) sets the i-th element of m to r.
+    ++ Column major order.
+    qsetelt! : (%, NonNegativeInteger, JCF32) -> JCF32
+    ++ qsetelt!(m, i, r) sets the i-th element of m to r.
+    ++ Column major order.
+    coerce : JF32MAT -> %
+    ++ coerce(m) coerces m to a Julia Complex Float 32 matrix.
+    jlDisplay : % -> Void  
+    ++ jlDisplay(m) pretty prints m (à la Julia).
+    jlVector : % -> JLComplexF32Vector
+    ++ jlVector(m) returns reference to the internal vector representation.
+    real : % -> JF32MAT
+    ++ real(m) returns a JLFloat32 matrix with the real part of the
+    ++ m elements.
+    imag : % -> JF32MAT
+    ++ imag(m) returns a JLFloat32 matrix with the imaginary part
+    ++ of the m elements.
+    jlApply : (String, %) -> Void
+    ++ jlApply(func, x) applies func to argument x.
+    jlApply : (String, %) -> JF32
+    ++ jlApply(func, x) applies func to argument x.
+    jlApply : (String, %, JF32) -> JF32
+    ++ jlApply(func, x, val) applies func to arguments x and val.
+    hermitian? : % -> Boolean
+    ++ hermitian?(m) tests hermiticity of m.
+    positiveDefinite? : % -> Boolean
+    ++ positiveDefinite?(m) tests whether or not m is Hermitian
+    ++ positive definite using a Cholesky factorisation.
+    jlApprox?: (%, %) -> Boolean
+    ++ jlApprox?(x,y) computes inexact equality comparison
+    ++ with default parameters. Two numbers compare equal
+    ++ if their relative distance or their absolute distance
+    ++ is within tolerance bounds. Applied component-wise.
+    hermitianPart : % -> %
+    ++ hermitianPart(m) returns the symmetric part of m (m + m')/2.
+    hermitianPart! : % -> %
+    ++ hermitianPart!(m) overwrites m with the symmetric part of m (m + m')/2
+    ++ to save memory space and returns m.
+    copy!   : (%, %) -> %
+    ++ copy!(b,a) efficiently copies a to b. No checks are performed on
+    ++ array dimensions.
+    diagonalMatrix : JCF32VEC -> %
+    ++ diagonalMatrix(v) returns a diagonal matrix with elements of v.
+    urand01 : (PositiveInteger, PositiveInteger) -> %
+    ++ urand01(m,n) returns a uniformly (0..1) distributed
+    ++ Julia matrix of size (m,n).
+    nrand : (PositiveInteger, PositiveInteger) -> %
+    ++ nrand(m,n) returns a Julia matrix of size (m,n) with random
+    ++ elements from the normal distribution with mean=0
+    ++ and standard deviation=1.
+    ++ See Julia documentation (randn) for this complex version used here.
+    transpose! : (%, %) -> %
+    ++ transpose!(b, a) stores transposed a in b.
+    adjoint : % -> %
+    ++ adjoint(m) returns the adjoint of m i.e. the conjugate
+    ++ transposition of m.
+    adjoint! : (%, %) -> %
+    ++ adjoint!(a, m) stores in a the adjoint of m i.e.
+    ++ the conjugate transposition of m.
+    juliaCMPrint : Boolean -> Boolean
+    ++ juliaCMPrint(b) defines whether or not FriCAS uses 
+    ++ the printing version of Julia for matrices instead of
+    ++ its OutputForm version. Returns previous value.
+    ++ By default it is the Julia version.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLCF32LinearAlgebra
+    import from JLFloat32Vector
+    import from JLFloat32Matrix
+
+    jlInitialize(true)
+
+    defined?(func) ==> not jlDefined?(func) =>
+      error concat(func, " is not defined in Julia")
+    pprint := true
+    Rep := Record(elts : JLComplexF32Vector,
+        ncols : NonNegativeInteger, nrows : NonNegativeInteger)
+    minRowIndex x == 1
+    minColIndex x == 1
+    nrows x == x.ncols
+    ncols x == x.nrows
+    maxRowIndex x == x.ncols
+    maxColIndex x == x.nrows
+    qelt(m, i, j) == Qelt2(m.elts, m.ncols, j, i)
+    elt(m:%, i : Integer, j : Integer) ==
+        i < 1 or i > m.ncols or j < 1 or j > m.nrows =>
+            error "elt$JLComplexF32Matrix: index(es) out of range"
+        Qelt2(m.elts, m.ncols, j, i)
+    qsetelt!(m, i, j, r) == Qsetelt2(m.elts, m.ncols, j, i, r)
+    setelt!(m : %, i : Integer, j : Integer, r : JCF32) ==
+        i < 1 or i > m.ncols or j < 1 or j > m.nrows =>
+            error "setelt!$JLComplexF32Matrix: index(es) out of range"
+        Qsetelt2(m.elts, m.ncols, j, i, r)
+    elt(m:%, i:NonNegativeInteger) ==
+      i > #m => error "elt$JLComplexF32Matrix: index out of range"
+      JCFELT(m.elts,i)$Lisp
+    qelt(m:%, i:NonNegativeInteger) ==
+      JCFELT(m.elts,i)$Lisp
+    setelt!(m : %, i : NonNegativeInteger, r : JCF32) ==
+      i > #m =>
+        error "setelt!$JLComplexF32Matrix: index out of range"
+      JCFSETELT(m.elts,i,r)$Lisp
+    qsetelt!(m : %, i : NonNegativeInteger, r : JCF32) ==
+      JCFSETELT(m.elts,i,r)$Lisp
+    empty() == error "empty()$JLComplexF32Matrix is not supported"
+    qnew(rows, cols) ==
+        vec : JCF32VEC := Qnew(rows*cols)
+        [vec, rows, cols]
+    new(rows, cols, a) ==
+        vec : JCF32VEC := new(rows*cols, a)
+        [vec,rows,cols]
+    jlVector(mat) == mat.elts
+    zero(m,n) == new(m,n,0)
+    real(m) ==
+        nr := nrows(m)
+        ret := qnew(nr, ncols(m))$JF32MAT
+        jl_array_2dffunction(0$NNI,1$NNI,"real",
+            jlVector(ret), jlVector(m), nr)$Lisp
+        ret
+    imag(m) ==
+        nr := nrows(m)
+        ret := qnew(nr, ncols(m))$JF32MAT
+        jl_array_2dffunction(0$NNI,1$NNI,"imag",
+            jlVector(ret), jlVector(m), nr)$Lisp
+        ret
+    square?(m) == m.nrows = m.ncols
+    zero?(m) == jl_bool_2dffunction(1$NNI, "iszero", m.elts, m.ncols)$Lisp
+    diagonal?(m) == jl_bool_2dffunction(1$NNI, "isdiag", m.elts, m.ncols)$Lisp
+    symmetric?(m : %) : Boolean ==
+        jl_bool_2dffunction(1$NNI,"issymmetric", m.elts, m.ncols)$Lisp
+    hermitian?(m : %) : Boolean ==
+        jl_bool_2dffunction(1$NNI,"ishermitian", m.elts, m.ncols)$Lisp
+    positiveDefinite?(m : %) : Boolean ==
+        jl_bool_2dffunction(1$NNI,"isposdef", m.elts, m.ncols)$Lisp
+    jlApprox?(x, y) : Boolean ==
+        jl_bool_2d2ffunction(1$NNI,"isapprox", jlVector(x), nrows(x),
+            jlVector(y), nrows(y))$Lisp
+    hermitianPart(m) ==
+        m.nrows ~= m.ncols => error "hermitianPart: matrix is not square"
+        her := copy m
+        jl_2dffunction(1$NNI,"hermitianpart!", her.elts, her.ncols)$Lisp
+        her
+    hermitianPart!(m) ==
+        m.nrows ~= m.ncols => error "hermitianPart!: matrix is not square"
+        jl_2dffunction(1$NNI,"hermitianpart!", m.elts, m.ncols)$Lisp
+        m
+    copy!(b, a) ==
+        jl_2d2ffunction(1$NNI,"copy!", b.elts, b.ncols,
+            a.elts, a.ncols)$Lisp
+        b
+    copy(a) ==
+        b := qnew(a.ncols, a.nrows)
+        jl_2d2ffunction(1$NNI,"copy!",
+            b.elts, b.ncols, a.elts, a.ncols)$Lisp
+        b
+    transpose(m) ==
+        b := qnew(m.nrows, m.ncols)
+        jl_2d2ffunction(1$NNI,"transpose!",
+            b.elts, b.ncols, m.elts, m.ncols)$Lisp
+        b
+    transpose!(b,a) ==
+        jl_2d2ffunction(1$NNI,"transpose!",
+            b.elts, b.ncols, a.elts, a.ncols)$Lisp
+        b
+    adjoint(m) ==
+        b := qnew(m.ncols, m.nrows)
+        jl_2d2ffunction(1$NNI,"adjoint!",
+            b.elts, b.ncols, m.elts, m.ncols)$Lisp
+        b
+    adjoint!(b,a) ==
+        jl_2d2ffunction(1$NNI,"adjoint!",
+            b.elts, b.ncols, a.elts, a.ncols)$Lisp
+        b
+    jlApply(func, m : %) : Void ==
+        defined?(func)
+        jl_2dffunction(1$NNI,func, m.elts, m.ncols)$Lisp
+    jlApply(func, m : %) : JF32 ==
+        defined?(func)
+        jl_flt_2dffunction(1$NNI,func,  m.elts, m.ncols)$Lisp
+    jlApply(func, m : %, val : JF32) : JF32 ==
+        defined?(func)
+        jl_flt_2dffunction_flt(1$NNI,func,  m.elts, m.ncols, val)$Lisp
+    a : % * b : % ==
+        (nr := a.nrows) ~= (nc := b.ncols) =>
+            error "Matrix multiplication: ncols(a) ~= nrows(b)"
+        c := qnew(nrows(a), ncols(b))
+        jl_2d3ffunction(1$NNI,"mul!", c.elts, c.ncols,
+            a.elts, a.ncols, b.elts, b.ncols)$Lisp
+        c
+    -- ??? why the pretend?
+    rank(m) ==
+        prec : JF32 := SINGLE_-FLOAT_-EPSILON$Lisp
+        rank(m pretend JLComplexF32Matrix,
+            prec * jf32(10))$JLCF32LinearAlgebra
+    inverse(m) ==
+        m.nrows ~= m.ncols => error "inverse: matrix is not square"
+        inv := qnew(m.ncols, m.ncols) 
+        jl_array_2dffunction(1$NNI,1$NNI,"inv", inv.elts, m.elts, m.ncols)$Lisp
+        inv
+    determinant(m) == determinant(m)$MLAF
+        
+    nullity(m) == nullity(m)$MLAF
+    nullSpace(m) == nullSpace(m)$MLAF
+    rowEchelon(m) == rowEchelon(m)$MLAF
+    minordet(m) == minordet(m)$MLAF
+    jlDisplay(m) ==
+        jl_2dffunction(1$NNI,"display", m.elts, m.ncols)$Lisp
+    juliaCMPrint(b) ==
+        oldpprint := pprint
+        pprint:=b
+        oldpprint
+    diagonalMatrix(v:JCF32VEC) ==
+        n : NNI := #v
+        u := new(n, n, 0$JCF32)
+        for i in 1..n repeat setelt!(u, i, i, elt(v,i))
+        u
+    urand01(m, n) ==
+        mat := qnew(m, n)
+        jl_2dffunction(1$NNI,"rand!", mat.elts, mat.ncols)$Lisp
+        mat
+    nrand(m, n) ==
+        mat := qnew(m, n)
+        jl_2dffunction(1$NNI,"randn!", mat.elts, mat.ncols)$Lisp
+        mat
+    coerce(m : %) : OutputForm ==
+        if pprint then
+            ret: List OutputForm :=
+                jl_stringify_2dffunction(1$NNI, "show", "_"text/plain_"",
+                    m.elts, m.ncols)$Lisp
+            pile(append(["" pretend OutputForm],rest ret))
+        else
+            l : List List OutputForm
+            l := [[qelt(m, j, i) :: OutputForm _
+                for i in 1 .. ncols(m)] _
+                for j in 1 .. nrows(m)]
+            matrix l
+    coerce(m : JLFloat32Matrix) : % ==
+      newm := qnew(nrows(m), ncols(m))
+      for i in 1 .. ncols(m) repeat
+        for j in 1 .. nrows(m) repeat
+          qsetelt!(newm, i, j, complex(qelt(m, i, j), 0)$JCF32)             
+      newm
+
+)abbrev domain JCF32SMA JLComplexF32SquareMatrix
+++ Domain for Julia Complex Float32 square matrices
+++ Author: G. Vanuxem
+++ Date Created: November, 2024
+++ Description: This domain provides a fast Julia Float32
+++ square matrix type with no bound checking on elt's. Minimum index is 1.
+JLComplexF32SquareMatrix(n : NonNegativeInteger) : Exports == Implementation where
+  Row ==> DirectProduct(n, JLComplexF32)
+  Col ==> DirectProduct(n, JLComplexF32)
+  Exports ==> Join(JLType, SquareMatrixCategory(n, JLComplexF32, 
+        Row, Col), CoercibleTo(JLComplexF32Matrix)) with
+    qcoerce : JLComplexF32Matrix -> %
+    ++ qcoerce(m) coerces m to JLComplexF32SquareMatrix
+    ++ trusting that m is square.
+    coerce : % -> JLComplexF32Matrix
+    ++ coerce(m) coerces m to JLComplexF32Matrix
+    squareMatrix : JLComplexF32Matrix -> %
+    ++ squareMatrix(m) returns a copy of m as 
+    ++ a JLComplexF32SquareMatrix.
+  Implementation ==> JLComplexF32Matrix add
+    import from JLComplexF32Matrix
+    JCF32MAT ==> JLComplexF32Matrix
+    NNI ==> NonNegativeInteger
+
+    qcoerce(m) == m pretend %
+    coerce(m) == m pretend JLComplexF32Matrix
+
+    0  : % == new(n,n,0)$JCF32MAT pretend %
+    1  : % == scalarMatrix(n,1)$JCF32MAT pretend %
+
+    matrix(ll) ==
+        (#ll = n) and (#ll.1 = n) => matrix(ll)$JCF32MAT pretend %
+        error "matrix: incompatible dimensions"
+
+    squareMatrix(m) ==
+        nr := nrows(m)
+        nr ~= n or nr ~= ncols(m) => error "squareMatrix: incompatible dimensions"
+        copy(m) pretend %
+
+    one?(m) == jl_bool_2dffunction(1$NNI, "isone",
+                jlVector(m pretend JCF32MAT), ncols(m pretend JCF32MAT))$Lisp

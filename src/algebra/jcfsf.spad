@@ -1,0 +1,83 @@
+)abbrev package JCFSF JLComplexFloatSpecialFunctions
+++ Special functions computed using Julia's ecosystem.
+JLComplexFloatSpecialFunctions() : Exports == Implementation where
+  JCF ==> JLComplexFloat
+  Exports ==> with
+    sind   : JCF -> JCF
+    ++ sind(x) computes sine of x, where x is in degrees.
+    sinpi  : JCF -> JCF
+    ++ sinpi(x) computes sin(pi*x) more accurately.
+    sinc   : JCF -> JCF
+    ++ sinc(x) computes sin(pi*x)/(pi*x) if x~=0, and 1 if x=0.
+    cosd  : JCF -> JCF
+    ++ cosd(x) computes cosine of x, where x is in degrees.
+    cospi : JCF -> JCF
+    ++ cospi(x) computes cos(pi*x) more accurately.
+    cosc  : JCF -> JCF
+    ++ cosc(x) computes cos(pi*x)/x−sin(pi*x)/(pi*x^2)
+    ++ if x~=0, and 0 if x=0 i.e. the derivative of sinc(x).
+    tand  : JCF -> JCF
+    ++ tand(x) computes tangent of x, where x is in degrees.
+    tanpi : JCF -> JCF
+    ++ tanpi(x) computes tan(pi*x) more accurately.
+    cotd  : JCF -> JCF
+    ++ cotd(x) computes cotangent of x, where x is in degrees.
+    secd  : JCF -> JCF
+    ++ secd(x) computes secant of x, where x is in degrees.
+    cscd  : JCF -> JCF
+    ++ cscd(x) computes cosecant of x, where x is in degrees.
+    hypot : (JCF, JCF) -> JCF
+    ++ hypot(x,y) computes the hypotenuse avoiding overflow and underflow.
+
+    asind : JCF -> JCF
+    ++ asind(x) computes the inverse sine of x, where output is in degrees.
+    acosd : JCF -> JCF
+    ++ acosd(x) computes the inverse cosine of x, where output is in degrees.
+    atand : JCF -> JCF
+    ++ atand(x) computes the inverse tangent of x, where output is in degrees.
+    atand  : (JCF, JCF) -> JCF
+    ++ atand(x, y) computes the inverse tangent of x/y, where output is in degrees.
+    acotd : JCF -> JCF
+    ++ acotd(x) computes the inverse cotangent of x, where output is in degrees.
+    asecd : JCF -> JCF
+    ++ asecd(x) computes the inverse secant of x, where output is in degrees.
+    acscd : JCF -> JCF
+    ++ acscd(x) computes the inverse cosecant of x, where output is in degrees.
+    rad2Deg  : JCF -> JCF
+    ++ rad2Deg(x) converts x to degrees, where x is in radians.
+    deg2Rad  : JCF -> JCF
+    ++ deg2Rad(x) converts x to radians, where x is in degrees.
+
+  Implementation ==> add
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+
+    jl_cfloat_function_cfloat(func, fl) ==>
+      jlref(concat([func, "(", getind(fl),")"]))$JCF
+    jl_cfloat_function_cfloat_cfloat(func, a, b) ==> 
+      jlref(concat([func, "(", getind(a), ",", getind(b), ")"]))$JCF
+
+    sinpi(x) == jl_cfloat_function_cfloat("sinpi", x)
+    sinc(x)  == jl_cfloat_function_cfloat("sinc", x)
+    cospi(x) == jl_cfloat_function_cfloat("cospi", x)
+    cosc(x)  == jl_cfloat_function_cfloat("cosc", x)
+    tanpi(x) == jl_cfloat_function_cfloat("tanpi", x)
+    hypot(x,y) == jl_cfloat_function_cfloat_cfloat("hypot", x, y)
+
+    sind(x) == jl_cfloat_function_cfloat("sind", x)
+    cosd(x) == jl_cfloat_function_cfloat("cosd", x)
+    tand(x) == jl_cfloat_function_cfloat("tand", x)
+    cotd(x) == jl_cfloat_function_cfloat("cotd", x)
+    secd(x) == jl_cfloat_function_cfloat("secd", x)
+    cscd(x) == jl_cfloat_function_cfloat("cscd", x)
+  
+    asind(x) == jl_cfloat_function_cfloat("asind", x)
+    acosd(x) == jl_cfloat_function_cfloat("acosd", x)
+    atand(x) == jl_cfloat_function_cfloat("atand", x)
+    atand(x,y) == jl_cfloat_function_cfloat_cfloat("atand", x, y)
+    acotd(x) == jl_cfloat_function_cfloat("acotd", x)
+    asecd(x) == jl_cfloat_function_cfloat("asecd", x)
+    acscd(x) == jl_cfloat_function_cfloat("acscd", x)
+
+    rad2Deg(x) == jl_cfloat_function_cfloat("rad2deg", x)
+    deg2Rad(x) == jl_cfloat_function_cfloat("deg2rad", x)

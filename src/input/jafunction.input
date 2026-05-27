@@ -1,0 +1,58 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+)expose JLObjAnonymousFunction JLObject JLObjInt64 JLObjFloat64
+
+testsuite "JL Anonymous Function"
+
+testcase "Creation and basic application"
+-- From String
+f := jafunction("x -> x^2")
+res := elt(f, 3$Integer::JLObject)
+testEquals("res", "jobject(_"9_")")
+
+-- From AnonymousFunction
+g := jafunction(x +-> x+1)
+res2 := elt(g, 10$Integer::JLObject)
+testEquals("res2", "jobject(_"11_")")
+
+-- Explicit coercion
+g2 := (x +-> x * 2)::JLObjAnonymousFunction
+res2b := elt(g2, 21$Integer::JLObject)
+testEquals("res2b", "jobject(_"42_")")
+
+testcase "Multiple arguments"
+h := jafunction("(x, y) -> x + y")
+res3 := elt(h, 5$Integer::JLObject, 7$Integer::JLObject)
+testEquals("res3", "jobject(_"12_")")
+
+k := jafunction("(x, y, z) -> x * y + z")
+res4 := elt(k, 2$Integer::JLObject, 3$Integer::JLObject, 4$Integer::JLObject)
+testEquals("res4", "jobject(_"10_")")
+
+testcase "Zero arguments"
+f0 := jafunction("() -> 42")
+res0 := elt(f0, []$List(JLObject))
+testEquals("res0", "jobject(_"42_")")
+
+testcase "Boolean and String returns"
+fb := jafunction("x -> x > 0")
+resb := elt(fb, 1$Integer::JLObject)
+testEquals("resb", "jobject(_"true_")")
+
+fs := jafunction("x -> _"abc_" * x")
+ress := elt(fs, jstring("def") pretend JLObject)
+testTrue("test((jl_string_getindex(jlId(ress))$Lisp pretend String) = _"abcdef_")")
+
+testcase "4 arguments"
+h4 := jafunction("(a, b, c, d) -> a + b + c + d")
+res4val := elt(h4, [1$Integer::JLObject, 2$Integer::JLObject, 3$Integer::JLObject, 4$Integer::JLObject])
+testEquals("res4val", "jobject(_"10_")")
+
+testcase "Higher-order (using Julia objects)"
+-- Testing with Float64
+p := jafunction("x -> sin(x)")
+x64 := jfloat64(3.141592653589793)
+res6 := elt(p, x64 pretend JLObject)
+testTrue("jlApprox?(res6 pretend JLObjFloat64, jfloat64(0.0), jfloat64(1.e-15))")
+
+statistics()

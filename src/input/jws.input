@@ -1,0 +1,78 @@
+)set break resume
+)set mess type off
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "Julia WS Object Domains"
+
+testcase "WSSymbol"
+testTrue("((WTrue()$WSSymbol = WTrue()$WSSymbol)@Boolean)")
+testTrue("((WTrue()$WSSymbol ~= WFalse()$WSSymbol)@Boolean)")
+testTrue("coerce(WTrue()$WSSymbol)@Boolean")
+testTrue("not(coerce(WFalse()$WSSymbol)@Boolean)")
+testTrue("(jWSSym(_"x_")$WSSymbol; true)")
+
+testcase "WSInteger"
+i1 := 5::WSInteger
+i2 := 10::WSInteger
+testEquals("i1 + i2", "15::WSInteger")
+testEquals("i2 - i1", "5::WSInteger")
+testEquals("i1 * i2", "50::WSInteger")
+testEquals("i2 quo i1", "2::WSInteger")
+testEquals("i2 rem i1", "0::WSInteger")
+testEquals("factorial(i1)", "120::WSInteger")
+testEquals("fibonacci(i1)", "5::WSInteger")
+testTrue("prime?(i1)")
+testTrue("not prime?(i2)")
+testEquals("gcd(i1, i2)", "5::WSInteger")
+testEquals("lcm(i1, i2)", "10::WSInteger")
+-- StirlingS1[10, 2] = 1026576
+testEquals("stirling1(i2, 2::WSInteger)", "1026576::WSInteger")
+
+testcase "WSRational"
+q1 := (1/2)::WSRational
+q2 := (1/3)::WSRational
+testEquals("q1 + q2", "(5/6)::WSRational")
+testEquals("q1 * q2", "(1/6)::WSRational")
+testEquals("numer(q1)", "1::WSInteger")
+testEquals("denom(q1)", "2::WSInteger")
+testEquals("q1 ^ 2", "(1/4)::WSRational")
+
+testcase "WSReal"
+r1 := jWSReal(0.5)
+r2 := jWSReal(2.0)
+testTrue("jlApprox?(r1 + r1, jWSReal(1.0))")
+testTrue("jlApprox?(r2 * r1, jWSReal(1.0))")
+testTrue("jlApprox?(cos(pi()$WSReal), jWSReal(-1.0))")
+testTrue("abs(sin(pi()$WSReal)) < jWSReal(1.e-10)")
+testTrue("jlApprox?(exp(jWSReal(1.0)), exp()$WSReal)")
+
+testcase "WSAPReal"
+apr1 := jWSReal(0.5)$WSAPReal(100)
+apr2 := jWSReal(2.0)$WSAPReal(100)
+testTrue("jlApprox?(apr1 + apr1, jWSReal(1.0)$WSAPReal(100))")
+testEquals("precision()$WSAPReal(100)", "100")
+testTrue("jlApprox?(sqrt(apr2)^2, apr2)")
+
+testcase "WSGaussianInteger"
+gi1 := complex(1, 2)$WSGaussianInteger
+gi2 := complex(3, 4)$WSGaussianInteger
+testEquals("gi1 + gi2", "complex(4, 6)$WSGaussianInteger")
+testEquals("gi1 * gi2", "complex(-5, 10)$WSGaussianInteger")
+testEquals("real(gi1)", "1::WSInteger")
+testEquals("imag(gi1)", "2::WSInteger")
+testEquals("conjugate(gi1)", "complex(1, -2)$WSGaussianInteger")
+
+testcase "WSComplex"
+c1 := complex(jWSReal(1.0), jWSReal(2.0))$WSComplex
+c2 := complex(jWSReal(3.0), jWSReal(4.0))$WSComplex
+testTrue("jlApprox?(c1 + c2, complex(jWSReal(4.0), jWSReal(6.0))$WSComplex)")
+testTrue("jlApprox?(real(c1), jWSReal(1.0))")
+testTrue("jlApprox?(imag(c1), jWSReal(2.0))")
+testTrue("jlApprox?(abs(c1)^2, jWSReal(5.0))")
+
+testcase "WSAPComplex"
+ac1 := complex(jWSReal(1.0)$WSAPReal(100), jWSReal(2.0)$WSAPReal(100))$WSAPComplex(100)
+testTrue("jlApprox?(real(ac1), jWSReal(1.0)$WSAPReal(100))")
+testTrue("jlApprox?(abs(ac1)^2, jWSReal(5.0)$WSAPReal(100))")
+
+statistics()

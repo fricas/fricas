@@ -144,19 +144,44 @@ parseAndEvalToHypertex str ==
   for s in lines repeat
     sockSendString($MenuServer, s)
 
+string2Lines(str) ==
+  s := MAKE_-STRING_-INPUT_-STREAM(str)
+  lines := nil
+  while not (null (line := read_line(s))) repeat
+    lines := [line, :lines]
+  NREVERSE lines
+
 parseAndEvalToString str ==
   $collectOutput:local := true
   $outputLines: local := nil
   $IOindex: local := nil
-  v := CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str))
-  v = 'restart => ['"error"]
+  str_stream := MAKE_-STRING_-OUTPUT_-STREAM()
+  old_stream := $algebra_out_rec.$stream_off
+  $algebra_out_rec.$stream_off := cons(false, str_stream)
+  v := UNWIND_-PROTECT(
+    CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str)),
+    ($algebra_out_rec.$stream_off := old_stream)
+  )
+  captured_msg := GET_-OUTPUT_-STREAM_-STRING(str_stream)
+  v = 'restart =>
+    captured_msg = '"" => ['"Unknown error during parsing in BOOT function parseAndEvalToString"]
+    string2Lines(captured_msg)
   NREVERSE $outputLines
 
 parseAndEvalToStringEqNum str ==
   $collectOutput:local := true
   $outputLines: local := nil
-  v := CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str))
-  v = 'restart => ['"error"]
+  str_stream := MAKE_-STRING_-OUTPUT_-STREAM()
+  old_stream := $algebra_out_rec.$stream_off
+  $algebra_out_rec.$stream_off := cons(false, str_stream)
+  v := UNWIND_-PROTECT(
+    CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str)),
+    ($algebra_out_rec.$stream_off := old_stream)
+  )
+  captured_msg := GET_-OUTPUT_-STREAM_-STRING(str_stream)
+  v = 'restart =>
+    captured_msg = '"" => ['"Unknown error during parsing in BOOT function parseAndEvalToStringEqNum"]
+    string2Lines(captured_msg)
   NREVERSE $outputLines
 
 parseAndEvalStr string ==

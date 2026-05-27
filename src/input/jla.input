@@ -1,0 +1,122 @@
+-- Unit tests whith help of Gemini Code Assist (Gemini is a registered trademark of Google LLC)
+-- TODO: more transcendental functions, complex, Float32
+
+)set break resume
+)set mess type off
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "Julia Linear Algebra"
+
+testcase "Inverse"
+a := nrand(4,4)$JF64MAT;
+testTrue("jlApprox?(diagonalMatrix new(4,1)$JF64VEC, inverse(a)*a)")
+testTrue("jlApprox?(inverse(a),jlApply(_"inv_",a)@JLFloat64Matrix)")
+
+testcase "Transpose/Copy"
+
+a := nrand(4,5)$JF64MAT;b := nrand(5,4)$JF64MAT;
+testTrue("jlApprox?(copy(a),a)")
+testTrue("jlApprox?(transpose(transpose(a)),a)")
+
+testcase "LU for a square matrix"
+
+a_square := nrand(4,4)$JF64MAT;
+decomp_square := lu(a_square);
+pa_square := luReorder(a_square, decomp_square.ipiv);
+lu_prod_square := decomp_square.L * decomp_square.U;
+testTrue("jlApprox?(pa_square, lu_prod_square)")
+
+
+testcase "LU for a tall matrix (more rows than columns)"
+
+-- for a tall matrix (more rows than columns)
+a_tall := nrand(5,3)$JF64MAT;
+decomp_tall := lu(a_tall);
+pa_tall := luReorder(a_tall, decomp_tall.ipiv);
+lu_prod_tall := decomp_tall.L * decomp_tall.U;
+testTrue("jlApprox?(pa_tall, lu_prod_tall)")
+
+testcase "LU for for a wide matrix (more columns than rows)"
+
+a_wide := nrand(3,5)$JF64MAT;
+decomp_wide := lu(a_wide);
+pa_wide := luReorder(a_wide, decomp_wide.ipiv);
+lu_prod_wide := decomp_wide.L * decomp_wide.U;
+testTrue("jlApprox?(pa_wide, lu_prod_wide)")
+
+testcase "svd for a square matrix"
+
+a_svd_square := nrand(4,4)$JF64MAT;
+svd_square := svd(a_svd_square);
+s_square := diagonalMatrix(svd_square.sv);
+svd_prod_square := svd_square.U * s_square * svd_square.Vt;
+testTrue("jlApprox?(a_svd_square, svd_prod_square)")
+
+testcase "svd for a tall matrix"
+
+a_svd_tall := nrand(5,3)$JF64MAT;
+svd_tall := svd(a_svd_tall);
+s_tall := diagonalMatrix(svd_tall.sv);
+svd_prod_tall := svd_tall.U * s_tall * svd_tall.Vt;
+testTrue("jlApprox?(a_svd_tall, svd_prod_tall)")
+
+testcase "svd for a wide matrix"
+
+a_svd_wide := nrand(3,5)$JF64MAT;
+svd_wide := svd(a_svd_wide);
+s_wide := diagonalMatrix(svd_wide.sv);
+svd_prod_wide := svd_wide.U * s_wide * svd_wide.Vt;
+testTrue("jlApprox?(a_svd_wide, svd_prod_wide)")
+
+testcase "solve(A,B) for A*X=B"
+
+a_solve := nrand(4,4)$JF64MAT;
+b_solve := nrand(4,2)$JF64MAT;
+x_solve := solve(a_solve, b_solve);
+testTrue("jlApprox?(a_solve * x_solve, b_solve)")
+
+testcase "eigen for a square matrix"
+
+)expose JLComplexF64Matrix
+a_eigen := nrand(4,4)$JF64MAT;
+e_eigen := eigen(a_eigen);
+d_eigen := diagonalMatrix(e_eigen.values);
+testTrue("jlApprox?(a_eigen * e_eigen.vectors, e_eigen.vectors * d_eigen)")
+)unexpose JLComplexF64Matrix
+
+testcase "eigenSystem for a square matrix"
+
+a_esys := nrand(4,4)$JF64MAT;
+esys := eigenSystem(a_esys);
+-- This test is complex due to the way Julia returns eigenvectors for
+-- complex conjugate eigenvalues. A full verification is non-trivial
+-- to implement here. We will just check if the function runs.
+testEquals("nrows(esys.leftVectors)", "4")
+
+testcase "mpInverse (Moore-Penrose pseudo-inverse)"
+
+a_mp := nrand(4,4)$JF64MAT;
+a_pinv := mpInverse(a_mp);
+testTrue("jlApprox?(a_mp, a_mp * a_pinv * a_mp)")
+testTrue("jlApprox?(a_pinv, a_pinv * a_mp * a_pinv)")
+
+testcase "Matrix sqrt"
+
+a_sqrt := nrand(4,4)$JF64MAT;
+s_sqrt := sqrt(a_sqrt);
+testTrue("jlApprox?(a_sqrt, s_sqrt*s_sqrt)")
+
+testcase "Matrix exp and log"
+
+a_explog := nrand(4,4)$JF64MAT;
+exp_a := exp(a_explog);
+log_exp_a := log(exp_a);
+testTrue("jlApprox?(a_explog, log_exp_a)")
+
+testcase "transcendental functions"
+
+a:= nrand(4,4)$JF64MAT;
+testTrue("jlApprox?(sin(a)*asin(a),asin(a)*sin(a))")
+testTrue("jlApprox?(cos(a)*acos(a),acos(a)*cos(a))")
+
+statistics()

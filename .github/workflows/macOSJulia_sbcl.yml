@@ -1,0 +1,55 @@
+name: FriCAS CI on arm64|intel macOS (with Julia support - SBCL based)
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15-intel, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    env:
+      SBCL_VER: ${{ matrix.os == 'macos-15-intel' && '2.2.9' || '2.4.0' }}
+      ARCH: ${{ matrix.os == 'macos-15-intel' && 'x86-64' || 'arm64' }}
+    steps:
+    - uses: actions/checkout@v6
+    - uses: julia-actions/setup-julia@latest
+
+    - name: download and install prerequities
+      run: |
+        brew install make
+        wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-${ARCH}-darwin-binary.tar.bz2
+        tar xvf sbcl-${SBCL_VER}-${ARCH}-darwin-binary.tar.bz2
+        cd sbcl-${SBCL_VER}-${ARCH}-darwin && sudo ./install.sh
+        pip install --break-system-packages sphinx
+
+    - name: install Julia libraries
+      run: julia -e "import Pkg;Pkg.add([\"Nemo\", \"Suppressor\", \"SpecialFunctions\", \"DataFrames\", \"Latexify\", \"LaTeXStrings\", \"Statistics\"]);Pkg.precompile()"
+
+    - name: configure
+      run: |
+        mkdir ../build && cd ../build
+        ../jlfricas/configure --with-lisp=sbcl --with-gmp=`brew --prefix` --enable-julia  --enable-mathlink || cat config.log
+
+    - name: make
+      run: cd ../build && gmake -j4 --output-sync all htmldoc
+
+    - name: Create artifact archives
+      run: |
+        cd ../build
+        make dist-macos
+        cp -v `brew list gmp | grep libgmp.10.dylib` FriCAS.app/Contents/Resources/usr/local/lib/fricas/target/*/lib/
+        ## reduce chance of error caused by "hdiutil: Resource busy"
+        make dist-macos-dmg || make dist-macos-dmg
+        mv FriCAS.dmg ../jlfricas/jlFriCAS-macOS-${ARCH}-${{ github.sha }}.dmg
+
+    - name: Upload macOS binary
+      uses: actions/upload-artifact@v7
+      with:
+        archive: false
+        path: jlFriCAS-macOS-${{ env.ARCH }}-${{ github.sha }}.dmg
+
+    - name: make check
+      run: cd ../build && gmake check -j4 --output-sync

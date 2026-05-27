@@ -1,0 +1,87 @@
+-- Test Julia loading principally
+
+)set break resume
+)set mess type off
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "Julia"
+testcase "Julia availability"
+testTrue("jlInitialize(true)")
+
+testcase "JLSymbol"
+sym   := jsym "mysym";
+ssym  := ":mysym"; 
+testEquals("string(sym)","ssym")
+testEquals("coerce(coerce(_"mysym_")@Symbol)@JSYM","sym")
+
+testcase "JLInt64"
+testEquals("coerce(0$JI64)@SINT","0$SINT")
+testEquals("coerce(0$SINT)@JI64","0$JI64")
+testEquals("convert(0$JI64)@Integer","0$Integer")
+testEquals("ji64(0$SINT)","0$JI64")
+testEquals("ji64(0$INT)","0$Integer")
+
+)expose JLFloat32
+testcase "JLFloat32"
+testEquals("convert(0$JF32)@SF","0$SF")
+testEquals("convert(0$SF)@JF32","0$JF32")
+testEquals("convert(0$JF32)@Float","0$Float")
+testEquals("jf32(0$SF)","0$JF32")
+testEquals("jf32(0$Integer)","0$JF32")
+
+testcase "JLFloat64"
+testEquals("coerce(0$JF64)@SF","0$SF")
+testEquals("coerce(0$SF)@JF64","0$JF64")
+testEquals("convert(0$JF64)@Float","0$Float")
+testEquals("jf64(0$SF)","0$JF64")
+testEquals("jf64(0$Integer)","0$JF64")
+
+)expose JLComplexF32
+testcase "JLComplexF32"
+c1 := jcf32(1.0::DoubleFloat::JLFloat32, 2.0::DoubleFloat::JLFloat32)
+c2 := jcf32(3.0::DoubleFloat::JLFloat32, 4.0::DoubleFloat::JLFloat32)
+c3 := c1 + c2
+testTrue("jlApprox?(c3, jcf32(4.0::DoubleFloat::JLFloat32, 6.0::DoubleFloat::JLFloat32))")
+c4 := c1 * c2
+-- (1+2i)(3+4i) = 3 + 4i + 6i - 8 = -5 + 10i
+testTrue("jlApprox?(c4, jcf32(-5.0::DoubleFloat::JLFloat32, 10.0::DoubleFloat::JLFloat32))")
+testTrue("jlApprox?(real(c1), 1.0::DoubleFloat::JLFloat32)")
+testTrue("jlApprox?(imag(c1), 2.0::DoubleFloat::JLFloat32)")
+
+)expose JLComplexF64
+testcase "JLComplexF64"
+d1 := jcf64(1.0::DoubleFloat::JLFloat64, 2.0::DoubleFloat::JLFloat64)
+d2 := jcf64(3.0::DoubleFloat::JLFloat64, 4.0::DoubleFloat::JLFloat64)
+d3 := d1 + d2
+testTrue("jlApprox?(d3, jcf64(4.0::DoubleFloat::JLFloat64, 6.0::DoubleFloat::JLFloat64))")
+d4 := d1 * d2
+testTrue("jlApprox?(d4, jcf64(-5.0::DoubleFloat::JLFloat64, 10.0::DoubleFloat::JLFloat64))")
+testTrue("jlApprox?(real(d1), 1.0::JLFloat64)")
+testTrue("jlApprox?(imag(d1), 2.0::JLFloat64)")
+
+testcase "JLUtilityFunctions"
+testTrue("jlEvalString(_"isnothing(using LinearAlgebra)_")@Boolean")
+testTrue("jlEvalString(_"isnothing(import LinearAlgebra.svd)_")@Boolean")
+testEquals("jlEvalString(_"0.0_")@JF64","0$JF64")
+
+czero := coerce(0$JF64)@JCF64;
+cone  := coerce(1$JF64)@JCF64;
+vec   := vector([0$JF64, 1$JF64]);
+mat   := matrix([[1$JF64, 0$JF64],[0$JF64, 1$JF64]]);
+cvec  := vector([czero, cone])@JCF64VEC;
+cmat  := matrix([[cone, czero],[czero, cone]])@JCF64MAT;
+testTrue("jlApprox?(0$JF64,0$JF64)")
+testTrue("jlApprox?(cone,cone)")
+testTrue("jlApprox?(vec,vec)")
+testTrue("jlApprox?(mat,mat)")
+testTrue("jlApprox?(cvec,cvec)")
+testTrue("jlApprox?(cmat,cmat)")
+
+testTrue("jlDefined?(jsym _"showerror_")")
+testTrue("jlDefined?( _"showerror_")")
+
+testEquals("jlApply(_"exp_",1$JF64)","exp(1$JF64)")
+testEquals("jlApply(_"-_",1$JF64,1$JF64)","0$JF64")
+testEquals("jlApply(_"+_",0$JF64,0$JF64,1$JF64)","1$JF64")
+
+statistics()

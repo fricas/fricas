@@ -1,0 +1,1328 @@
+)abbrev domain NARB NMArbField
+++ Domain for Nemo fixed precision real ball.
+++ Author: G. Vanuxem
+++ Date Created: March. 2024
+++ Keywords: float, floating point, number, real, ball
+++ Description:
+++  \spadtype{NMArbField} implements fixed precision ball
+++  arithmetic using the Nemo Julia package - based on the Arb library.
+++ Reference: https://nemocas.github.io/Nemo.jl/stable/
+NMArbField(p: PositiveInteger) : Exports == Implementation where
+  PI        ==> PositiveInteger
+  NNI       ==> NonNegativeInteger
+  JI64      ==> JLInt64
+  JF64      ==> JLFloat64
+  Exports ==> Join(NMRing, CommutativeRing, FloatingPointSystem,
+            Approximate, JLArbitraryPrecision,
+            TranscendentalFunctionCategory,
+            DifferentialRing) with
+    integer? : % -> Boolean
+    ++ integer?(x) checks whether or not x is an integer.
+    finite? : % -> Boolean
+    ++ finite?(x) checks whether or not x is finite, not an infinity
+    ++ for example.
+    exact? : % -> Boolean
+    ++ exact?(x) checks whether x is exact i.e. with 0 radius.
+    nonZero? : % -> Boolean
+    ++ nonZero?(x) returns true if x is not equal to 0.
+    nonNegative? : % -> Boolean
+    ++ nonNegative?(v) checks whether or not x is greater or equal to zero.
+    nonPositive? : % -> Boolean
+    ++ nonPositive?(v) checks whether or not x is lower or equal to zero.
+    eulerGamma : () -> %
+    ++ eulerGamma() returns the Euler's constant gamma (γ).
+    catalan : () -> %
+    ++ catalan() returns the Catalan's constant.
+    khinchin : () -> %
+    ++ khinchin() returns the Khinchin's constant.
+    glaisher : () -> %
+    ++ glaisher() returns the Glaisher's constant.
+    urand01 : () -> %
+    ++ urand01() returns a uniformly distributed random number
+    ++ contained in [0,1].
+    randtest : JLSymbol -> %
+    ++ randtest(randtype) returns a random number depending on the
+    ++ Julia symbol randtype.
+    ++ :urandom a uniformly distributed random number contained in [0,1].
+    ++ To test corner cases:
+    ++ :randtest returns a finite random number,
+    ++ :randtest_exact returns a zero radius random number,
+    ++ :randtest_precise returns a precise random number i.e. with a radius
+    ++ of around 2^-precision() the magnitude of the midpoint,
+    ++ :randtest_special returns a special random number where midpoint
+    ++ and/or radius might be NaNs or infinities,
+    ++ :randtest_wide returns a random number with a large radius that
+    ++ might be big relative to its midpoint.
+    abs2 : % -> %
+    ++ abs2(x) returns the square of the absolute value of x.
+    expm1 : % -> %
+    ++ expm1(x) computes accurately e^x-1. It avoids the loss of precision
+    ++ involved in the direct evaluation of exp(x)-1 for small values of x.
+    log1p : % -> %
+    ++ log1p(x) logarithm of 1+x computed accurately.
+    exp : () -> %
+    ++ exp() returns the NMArbField ℯ (exp(1)).
+    exp1 : () -> %
+    ++ exp1() returns the NMArbField ℯ (exp(1)).
+    ldexp : (%, NMInteger) -> %
+    ++ ldexp(x, n) returns x * 2^n.
+    atan : (%, %) -> %
+    ++ atan(x, y) computes the inverse tangent of x/y.
+    hurwitzZeta : (%, %) -> %
+    ++ hurwitzZeta(s,a) returns the Hurwitz zeta function of s and a.
+    Gamma : % -> % 
+    ++ Gamma(x) is the Euler Gamma function evaluated at x.
+    Gamma : (%, %) -> % 
+    ++ Gamma(x,y) is the incomplete Gamma function.
+    polyLog : (%, %) -> %
+    ++ polyLog(x,y) returns the polyLog function applied to x and y.
+    "*" : (%, Integer) -> %
+    ++ x*i is the multiplication by an integer.
+    "/" : (Integer, %) -> %
+    ++ i/x is the division of an integer by x.
+    overlaps? : (%, %) -> Boolean
+    ++ overlaps?(x,y) checks whether or not any part
+    ++ of x and y balls overlaps. 
+    contains? : (%, %) -> Boolean 
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    contains? : (%, NMInteger) -> Boolean
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    contains? : (%, NMFraction(NMInteger)) -> Boolean
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    contains? : (%, JLFloat) -> Boolean
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    containsZero? : % -> Boolean
+    ++ containsZero?(x) checks whether or not 0 is contained in x.
+    containsPositive? : % -> Boolean
+    ++ containsPositive?(x) cheks whether or not x contains any positive
+    ++ value.
+    containsNegative? : % -> Boolean
+    ++ containsNegative?(x) cheks whether or not x contains any negative
+    ++ value.
+    containsNonNegative? : % -> Boolean
+    ++ containsNonNegative?(x) cheks whether or not x contains
+    ++ any non negative value.
+    containsNonPositive? : % -> Boolean
+    ++ containsNonPositive?(x) checks whether or not x contains
+    ++ any non positive value.
+    bits     : % -> JI64
+    ++ bits(x) returns the bit length of the mantissa of x.
+    ++ For a result computed at prec bits of precision this can be anywhere
+    ++ in the range 0 <= b <= prec.
+    ++ For example 0 has 0 bits, 0.75 has 2 bits, and 3.7 has 126 bits
+    ++ after rounding to prec = 128 (with the default rounding mode) because
+    ++ the two least significant bits are zero and thus get discarded.
+    ++ Source: flint-devel@googlegroups.com
+    accuracyBits : % -> JLInt64
+    ++ accuracyBits(x) returns the relative accuracy of x in bits.
+    midpoint : % -> %
+    ++ midpoint(x) returns the midpoint of x. 
+    radius   : % -> %
+    ++ radius(x) returns the radius of x.
+    addError! : (%, %) -> %
+    ++ addError!(x, y) adds the values (absolute) of the midpoint and radius of y
+    ++ to the radius of x.
+    trim : % -> %
+    ++ trim(x) rounds off insignificant bits from the midpoint.
+    uniqueInteger : % -> Union(NMInteger, "failed")
+    ++ uniqueInteger(x) returns a NMInteger if there is a unique integer
+    ++ in the interval x, "failed" otherwise.
+    setUnion : (%, %) -> %
+    ++ setUnion(x,y) returns the unions of the intervals x and y.
+    guess    : (%, NonNegativeInteger) -> NMAlgebraicNumber
+    ++ guess(a, deg) returns the reconstructed algebraic
+    ++ number found if it succeeds. Up to degree deg.
+    convert  : % -> NMFraction(NMInteger)
+    ++ convert(x) converts x.
+    convert  : % -> JLFloat
+    ++ convert(x) converts x.
+    coerce   : JF64 -> %
+    ++ coerce(x) coerces x.
+    coerce   : Float -> %
+    ++ coerce(x) coerces x.
+    jnball : (%, %) -> %
+    ++ jnball(x,r) returns a ball with midpoint x and radius r.
+    jnrb   : NMAlgebraicNumber -> %
+    ++ jnrb(jan) evaluates numerically jan by converting it to a real Arb field.
+    jnrb   : NMExactCalciumField -> %
+    ++ jnrb(necf) evaluates numerically necf by converting it
+    ++ to a real Arb field.
+    jnrb   : String -> %
+    ++ jnrb(str) evaluates str by converting it to a real Arb field. 
+    jnrb   : Integer -> %
+    ++ jnrb(i) returns i as a real Arb ball.
+    jnrb   : Fraction(Integer) -> %
+    ++ jnrb(fi) returns fi as a real Arb ball.
+    jnrb   : Float -> %
+    ++ jnrb(fl) returns fl as a real Arb ball.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from String
+    import from NMInteger
+    import from NMFraction(NMInteger)
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    -- initialize
+    NARB := concat(["NARB", string(p)])
+    jlEvalString(concat([NARB, "=ArbField(", string(p),")"]))@Void
+    NARBP := concat(NARB,"(")
+
+    jlNMRing() == NARB
+    jlObject() == jlEvalString(concat(["string(", NARB,")"]))@String
+
+    0 == jlref(concat(["zero(", NARB, ")"]))
+    1 == jlref(concat(["one(", NARB, ")"]))
+    pi() == jlref(concat(["const_pi(", NARB, ")"]))
+    exp1() == jlref(concat(["const_e(", NARB, ")"]))
+    exp() == jlref(concat(["const_e(", NARB, ")"]))
+    eulerGamma() == jlref(concat(["const_euler(", NARB,")"]))
+    catalan() == jlref(concat(["const_catalan(", NARB,")"]))
+    glaisher() == jlref(concat(["const_glaisher(", NARB, ")"]))
+    khinchin() == jlref(concat(["const_khinchin(", NARB, ")"]))
+
+    urand01() == jlref(concat(["rand(", NARB, ")"]))
+    randtest(type) ==
+      jlref(concat(["rand(", NARB, ",randtype=", string(type),")"]))
+
+    midpoint(x) == junfunc("midpoint", x)
+    radius(x) == junfunc("radius", x)
+    addError!(x, y) ==
+      jlEvalString(concat ["add_error!(", getind(x), ",", getind(y),")"])
+      x
+    trim(x) == junfunc("trim",x)
+    uniqueInteger(x) ==
+      ret : JLObjTuple := junfunc("unique_integer",x)
+      not jlEvalString(concat(["first(", getind(ret), ")"]))@Boolean
+        => "failed"
+      junfunc("last", ret)@NMInteger
+    setUnion(x,y) == jbinfunc("setunion",x,y)
+
+    x < y  == jbinbfunc("<",x,y)
+    x > y  == jbinbfunc(">",x,y)
+    x >= y == jbinbfunc(">=",x,y)
+    x <= y == jbinbfunc("<=",x,y)
+
+    zero? x == junbfunc("iszero", x)
+    one? x == junbfunc("isone", x)
+    integer? x == junbfunc("isinteger", x)
+    nonZero? x == junbfunc("is_nonzero", x)
+    finite? x == junbfunc("isfinite", x)
+    exact? x == junbfunc("is_exact", x)
+    positive? x == junbfunc("is_positive", x)
+    nonNegative? x == junbfunc("is_nonnegative",x)
+    negative? x == junbfunc("is_negative", x)
+    nonPositive? x == junbfunc("is_nonpositive", x)
+    containsZero? x == junbfunc("contains_zero", x)
+    containsPositive? x == junbfunc("contains_positive", x)
+    containsNonPositive? x == junbfunc("contains_nonpositive", x)
+    containsNegative? x == junbfunc("contains_negative", x)
+    containsNonNegative? x == junbfunc("contains_nonnegative", x)
+    overlaps?(x,y) == jbinbfunc("overlaps", x, y)
+    contains?(x : %, y : %) == jbinbfunc("contains", x, y)
+    contains?(x : %, y : NMInteger) == jbinbfunc("contains", x, y)
+    contains?(x : %, y : NMFraction(NMInteger)) ==
+      jbinbfunc("contains", x, y)
+    contains?(x : %, y : JLFloat) == jbinbfunc("contains", x, y)
+
+    precision() == p
+    bits(x) == jlEvalString(concat(["bits(", getind(x),")"]))
+    accuracyBits(x) == jlEvalString(concat(["accuracy_bits(", getind(x),")"]))
+
+    x : % / y : % == jbinfunc("/", x, y)
+    x : % ^ y : % == jbinfunc("^", x, y)
+    x : % * y : Integer == jlref(concat([getind(x), "*", string(y)]))
+    x : Integer / y : % == jlref(concat([string(x), "/", getind(y)]))
+    x : % / y : Integer == jlref(concat([getind(x), "/", string(y)]))
+    x ^ y : PI == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : NNI == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : Integer == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : Fraction(Integer) ==
+      jlref(concat [getind(x), "^(", string(numer(y)),"//", string(denom(y)),")"])
+    recip(x) ==
+      zero?(x) => "failed"
+      junfunc("inv",x) pretend %
+
+
+    abs(x) == junfunc("abs", x)
+    abs2(x) == junfunc("abs2", x)
+    -- x quo y == jbinfunc("div", x, y)
+    x quo y == jbinfunc("÷", x, y)
+    x rem y == jbinfunc("%", x, y)
+    float(m, e, b) == jbinfunc("*", jnrb(m), jnrb(b)^e)
+
+    sqrt(x)  == junfunc("√",x)
+    exp(x)   == junfunc("exp",x)
+    log(x)   == junfunc("log",x)
+    expm1(x) == junfunc("expm1",x)
+    log1p(x) == junfunc("log1p",x)
+    nthRoot(x, i) == jlref(concat(["root(", getind(x), ",", string(i), ")"]))
+    ldexp(x,n) == jbinfunc("ldexp",x,n)
+
+    sin(x)  == junfunc("sin",x)
+    cos(x)  == junfunc("cos",x)
+    tan(x)  == junfunc("tan",x)
+    cot(x)  == junfunc("cot",x)
+
+    asin(x)  == junfunc("asin",x)
+    acos(x)  == junfunc("acos",x)
+    atan(x)  == junfunc("atan",x)
+    atan(x,y) == jbinfunc("atan",x,y)
+
+    sinh(x)  == junfunc("sinh",x)
+    cosh(x)  == junfunc("cosh",x)
+    tanh(x)  == junfunc("tanh",x)
+    coth(x)  == junfunc("coth",x)
+
+    asinh(x)  == junfunc("asinh",x)
+    acosh(x)  == junfunc("acosh",x)
+    atanh(x)  == junfunc("atanh",x)
+
+    Gamma(x)  == jlref(concat ["Nemo.gamma(", getind(x),")"])
+    Gamma(x,y) == jlref(concat ["Nemo.gamma(",getind(x),",",getind(y),")"])
+    hurwitzZeta(x,y) == jlref(concat ["Nemo.zeta(",getind(x),",",getind(y),")"])
+
+    polyLog(n,x) == jbinfunc("polylog",n, x)
+
+    guess(a, deg) ==
+      jlref(concat(["guess(QQBar,", getind(a), ",",
+        string(deg),")"]))$NMAlgebraicNumber
+
+    retractIfCan(x) : Union(Integer, "failed") ==
+      not integer?(x) => "failed"
+      convert(jlref(concat(["ZZ(", getind(x),")"]))$NMInteger)
+
+    retractIfCan(x) : Union(Fraction Integer, "failed") ==
+      tmp := jlref(concat(["QQ(rationalize(BigInt,BigFloat(",
+        getind(x),")))"]))$NMFraction(NMInteger)
+      retractIfCan(tmp)
+
+    convert(x) : NMFraction(NMInteger) ==
+      jlref(concat(["QQ(rationalize(BigInt,BigFloat(",
+        getind(x),")))"]))$NMFraction(NMInteger)
+
+    convert(x : %) : Float ==
+      tmp := jlref(concat(["QQ(rationalize(BigInt,BigFloat(",
+        getind(x),")))"]))$NMFraction(NMInteger)
+      coerce(retract(tmp)@Fraction(Integer))
+
+    convert(x) : JLFloat ==
+      jlref(concat(["BigFloat(", getind(x),")"]))$JLFloat
+    convert(x) : DoubleFloat ==
+      jlEvalString(concat ["convert(Float64,",
+        getind(x), ")"])@JF64 pretend DoubleFloat
+    convert(x : %) : Float ==
+      tmp := jlref(concat(["QQ(rationalize(BigInt,BigFloat(",
+        getind(x),")))"]))$NMFraction(NMInteger)
+      coerce(retract(tmp)@Fraction(Integer))
+
+    coerce(jf : JF64) : % == jlref(concat([NARBP, "_"", convert(jf),"_")"]))
+    coerce(f : Float) ==
+      tmp := outputSpacing(0)
+      ret := jlref(concat([NARBP,"_"", convert(f),"_")"]))
+      outputSpacing(tmp)
+      ret
+    coerce(q : Fraction Integer) == 
+      junfunc(NARB, coerce(q)@NMFraction(NMInteger))
+    coerce(i : Integer) ==
+      jlref(concat([NARBP, string(i),")"]))
+    jnball(a,b) == jbinfunc("ball", a, b)
+    jnrb(an : NMAlgebraicNumber) == junfunc(NARB, an)
+    jnrb(necf : NMExactCalciumField) == junfunc(NARB, necf)
+    jnrb(s : String) == jlref(concat([NARBP, "_"", s,"_")"]))
+    jnrb(i : Integer) == coerce(i)
+    jnrb(q : Fraction(Integer)) == coerce(q)
+    jnrb(f : Float) == coerce(f)
+    coerce(i : %) : OutputForm == message(string(i))
+
+)abbrev domain NRB NMRealBall
+++ Description: convenience domain to reflect
+++ Nemo ArbField(256), i.e. without parameters.
+NMRealBall() == NMArbField(256)
+
+)abbrev domain NACB NMAcbField
+++ Domain for Nemo fixed precision complex ball.
+++ Author: G. Vanuxem
+++ Date Created: March. 2024
+++ Keywords: floating point number, complex
+++ Description:
+++  \spadtype{NMAcbField} implements fixed precision
+++  complex ball arithmetic using
+++  the Nemo Julia package - based on the Arb library.
+++ Reference: https://nemocas.github.io/Nemo.jl/stable/
+NMAcbField(p: PositiveInteger) : Exports == Implementation where
+  PI        ==> PositiveInteger
+  NNI       ==> NonNegativeInteger
+  JI64      ==> JLInt64
+  JF64      ==> JLFloat64
+  Exports ==> Join(NMRing, CommutativeRing, ComplexCategory(NMArbField(p)),
+                Approximate, JLArbitraryPrecision,
+                DifferentialRing) with
+    integer? : % -> Boolean
+    ++ integer?(x) checks whether or not x is an integer.
+    finite? : % -> Boolean
+    ++ finite?(x) checks whether or not x is finite, not an infinity
+    ++ for example.
+    exact? : % -> Boolean
+    ++ exact?(x) checks whether x is exact i.e. with 0 radius.
+    overlaps? : (%, %) -> Boolean
+    ++ overlaps?(x,y) checks whether or not any part of x and y balls overlaps. 
+    contains? : (%, %) -> Boolean 
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    contains? : (%, NMInteger) -> Boolean
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    contains? : (%, NMFraction(NMInteger)) -> Boolean
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    containsZero? : % -> Boolean
+    ++ containsZero?(x) checks whether or not 0 is contained in x.
+    pi : () -> %
+    ++ pi() returns the JLFloat representation of π.
+    urand01 : () -> %
+    ++ urand01() returns an uniformly distributed random number
+    ++ contained in the unit disk.
+    randtest : JLSymbol -> %
+    ++ randtest(randtype) returns a random number depending on the
+    ++ Julia symbol randtype.
+    ++ :urandom an  uniformly distributed random number contained in
+    ++ the unit disk. To test corner cases:
+    ++ :randtest with separate real and imaginary parts,
+    ++ :randtest_precise with precise real and imaginary parts,
+    ++ :randtest_special with separate real and imaginary parts but
+    ++ eventually infinities and NaNs,
+    ++ :randtest_param with very high probability of returning integers
+    ++ or half-integers.
+    abs2 : % -> %
+    ++ abs2(x) returns the square of the absolute value of real
+    ++ part of x and imaginary part of x.
+    "*" : (%, Integer) -> %
+    ++ x*i is the multiplication by an integer.
+    "/"  : (Integer, %) -> %
+    ++ i/x is the division of an integer by x.
+    expm1 : % -> %
+    ++ expm1(x) computes accurately e^x-1. It avoids the loss of precision
+    ++ involved in the direct evaluation of exp(x)-1 for small values of x.
+    log1p : % -> %
+    ++ log1p(x) logarithm of 1+x computed accurately.
+    exp : () -> %
+    ++ exp() returns the NMAcbField ℯ (exp(1)).
+    exp1 : () -> %
+    ++ exp1() returns the NMAcbField ℯ (exp(1)).
+    ldexp : (%, NMInteger) -> %
+    ++ ldexp(x, n) returns x * 2^n.
+    hurwitzZeta : (%, %) -> %
+    ++ hurwitzZeta(s,a) returns the Hurwitz zeta function of s and a.
+    Gamma : % -> % 
+    ++ Gamma(x) is the Euler Gamma function evaluated at x.
+    Gamma : (%, %) -> % 
+    ++ Gamma(x,y) is the incomplete Gamma function.
+    polygamma : (%, %) -> %
+    ++ polygamma(x,y) returns the polygamma function applied to x and y.
+    polyLog : (%, %) -> %
+    ++ polyLog(x,y) returns the polyLog function applied to x and y.
+    airyAi : R -> R
+    ++ airyAi(z) is the Airy function \spad{Ai(z)}.
+    airyAiPrime : R -> R
+    ++ airyAiPrime(z) is the derivative of the Airy function \spad{Ai(z)}.
+    airyBi : R -> R
+    ++ airyBi(z) is the Airy function \spad{Bi(z)}.
+    airyBiPrime : R -> R
+    ++ airyBiPrime(z) is the derivative of the Airy function \spad{Bi(z)}.
+    ellipticE : % -> %
+    ++ ellipticE(x) is the complete elliptic integral of the second kind.
+    ellipticK : % -> %
+    ++ ellipticK(x) is the complete elliptic integral of the first kind.
+    besselI : (%, %) -> %
+    ++ besselI(nu,x) is the Bessel I function.
+    besselJ : (%, %) -> %
+    ++ besselJ(nu,x) is the Bessel J function.
+    besselK : (%, %) -> %
+    ++ besselK(nu,x) is the Bessel K function.
+    besselY : (%, %) -> %
+    ++ besselY(nu,x) is the Bessel Y function.
+    hypergeometric1F1 : (%, %, %) -> %
+    ++ hypergeometric1F1(a,b,z) is the confluent hypergeometric function
+    ++ 1F1.
+    hypergeometric1F1Regularized : (%, %, %) -> %
+    ++ hypergeometric1F1Regularized(a,b,z) is the regularized confluent
+    ++ hypergeometric function 1F1.
+    hypergeometricU : (%, %, %) -> %
+    ++ hypergeometricU(a,b,x) is the confluent hypergeometric function U.
+    bits : % -> JI64
+    ++ bits(x) returns the bit length of the mantissa of x.
+    ++ For a result computed at prec bits of precision this can be anywhere
+    ++ in the range 0 <= b <= prec.
+    ++ For example 0 has 0 bits, 0.75 has 2 bits, and 3.7 has 126 bits
+    ++ after rounding to prec = 128 (with the default rounding mode) because
+    ++ the two least significant bits are zero and thus get discarded.
+    ++ Source of documentation: flint-devel@googlegroups.com
+    accuracyBits : % -> JLInt64
+    ++ accuracyBits(x) returns the relative accuracy of x in bits.
+    trim : % -> %
+    ++ trim(x) rounds off insignificant bits from the midpoint.
+    uniqueInteger : % -> Union(NMInteger, "failed")
+    ++ uniqueInteger(x) returns a NMInteger if there is a unique integer
+    ++ in the interval x, "failed" otherwise.
+    rootOfUnity : (NonNegativeInteger) -> %
+    ++ rootOfUnity(n)Return the root of unity exp(2*%pi*%i/n).
+    precision : () -> PositiveInteger
+    ++ precision() returns precision in bits used. 
+    guess : (%, NonNegativeInteger) -> NMAlgebraicNumber
+    ++ guess(a, deg) returns the reconstructed algebraic number found if it succeeds.
+    ++ Up to degree deg.
+    coerce : Complex(Integer) -> % -- for %i operations
+    ++ coerce(z) coerces z. Convenience function.
+    coerce : Float -> %
+    ++ coerce(r) coerces the floating point number r.
+    jncb : NMAlgebraicNumber -> %
+    ++ jncb(an) evaluates numerically an by converting it to a complex Arb field.
+    jncb : NMExactCalciumField -> %
+    ++ jncb(necf) evaluates numerically necf by converting it to a complex Arb field.
+    jncb : String -> %
+    ++ jncb(str) evaluates str to a complex Arb field.
+    jncb : (String, String) -> %
+    ++ jncb(strr, stri) evaluates strr and stri to a complex Arb field.
+    ++ using real and imaginary part.
+    jncb : Integer -> %
+    ++ jncb(r) returns r as a complex complex Arb ball.
+    jncb : (Integer, Integer) -> %
+    ++ jncb(r,i) returns r and i as a complex Arb ball using
+    ++ real and imaginary part.
+    jncb : Float -> %
+    ++ jncb(r) returns r as a complex complex Arb ball.
+    jncb : (Float, Float) -> %
+    ++ jncb(r,i) returns r and i as a complex Arb ball using
+    ++ real and imaginary part.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from String
+    import from NMFraction(NMInteger)
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    jterfunc(func,a,b,c) ==> make_jlref_wcall3(func, a, b, c)$Lisp
+    junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    -- initialize
+    NACB : String := concat(["NACB", string(p)])
+    jlEvalString(concat([NACB,"=AcbField(", string(p),")"]))@Void
+    NACBP : String := concat(NACB,"(")
+
+    precision() : PositiveInteger == p
+    bits(x) == jlEvalString(concat(["bits(", getind(x),")"]))
+    accuracyBits(x) == jlEvalString(concat(["accuracy_bits(",
+        getind(x),")"]))
+    trim(x) == junfunc("trim",x)
+    uniqueInteger(x) ==
+      ret : JLObjTuple := junfunc("unique_integer",x)
+      not jlEvalString(concat(["first(", getind(ret), ")"]))@Boolean
+        => "failed"
+      junfunc("last", ret)@NMInteger
+
+    jlNMRing() == NACB
+    jlObject() == jlEvalString(concat(["string(", NACB,")"]))@String
+    urand01() == jlref(concat(["rand(", NACB, ")"]))
+    randtest(type) ==
+      jlref(concat(["rand(", NACB, ",randtype=", string(type),")"]))
+
+    0 == jlref(concat(["zero(", NACB, ")"]))
+    1 == jlref(concat(["one(", NACB, ")"]))
+    imaginary() == jlref(concat(["onei(", NACB, ")"]))
+    pi() == jlref(concat(["const_pi(", NACB, ")"]))
+    exp1() == jlref(concat(["exp(", NACB, "(1))"]))
+    exp() == jlref(concat(["exp(", NACB, "(1))"]))
+
+    real(x) == junfunc("real", x)
+    imag(x) == junfunc("imag", x)
+
+    zero? x == junbfunc("iszero",x)
+    one? x == junbfunc("isone",x)
+    integer? x == junbfunc("isinteger", x)
+    finite? x == junbfunc("isfinite", x)
+    exact? x == junbfunc("is_exact", x)
+    overlaps?(x,y) == jbinbfunc("overlaps", x, y)
+    contains?(x : %, y : %) == jbinbfunc("contains", x, y)
+    contains?(x : %, y : NMInteger) == jbinbfunc("contains", x, y)
+    contains?(x : %, y : NMFraction(NMInteger)) == jbinbfunc("contains", x, y)
+    containsZero? x == junbfunc("contains_zero", x)
+
+    x + y == jbinfunc("+", x, y)
+    x - y == jbinfunc("-", x, y)
+    - x   == junfunc("-", x)
+    x : % * y : % == jbinfunc("*", x, y)
+    x : NMInteger * y : % == jbinfunc("*", x, y)
+    x : Integer * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x : PositiveInteger * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x : NonNegativeInteger * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x ^ y : PositiveInteger == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : NonNegativeInteger == jlref(concat [getind(x), "^", string(y)])
+    x : % / y : % == jbinfunc("/", x, y)
+    x : % ^ y : % == jbinfunc("^", x, y)
+    x : % * y : Integer == jlref(concat([getind(x), "*", string(y)]))
+    x : Integer / y : % == jlref(concat([string(x), "/", getind(y)]))
+    x ^ y : PI == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : NNI == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : Integer == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : Fraction(Integer) ==
+      jlref(concat [getind(x), "^(", string(numer(y)),"//", string(denom(y)),")"])
+    recip(x) ==
+      zero?(x) => "failed"
+      junfunc("inv",x) pretend %
+
+    -- x quo y == jbinfunc("div", x, y)
+    x quo y == jbinfunc("÷", x, y)
+    x rem y == jbinfunc("%", x, y)
+
+    abs(x) == junfunc("abs", x)
+    abs2(x) == junfunc("abs2", x)
+
+    sqrt(x)  == junfunc("√",x)
+    exp(x)   == junfunc("exp",x)
+    log(x)   == junfunc("log",x)
+    expm1(x) == junfunc("expm1",x)
+    log1p(x) == junfunc("log1p",x)
+    ldexp(x,n) == jbinfunc("ldexp",x,n)
+
+    sin(x)  == junfunc("sin",x)
+    cos(x)  == junfunc("cos",x)
+    tan(x)  == junfunc("tan",x)
+    cot(x)  == junfunc("cot",x)
+    atan(x)  == junfunc("atan",x)
+
+    sinh(x)  == junfunc("sinh",x)
+    cosh(x)  == junfunc("cosh",x)
+    tanh(x)  == junfunc("tanh",x)
+    coth(x)  == junfunc("coth",x)
+
+    polyLog(n,x) == jbinfunc("polylog",n, x)
+
+    Gamma(x)  == jlref(concat ["Nemo.gamma(", getind(x),")"])
+    Gamma(x,y) == jlref(concat ["Nemo.gamma(",getind(x),",",getind(y),")"])
+    hurwitzZeta(x,y) == jlref(concat ["Nemo.zeta(",getind(x),",",getind(y),")"])
+    polygamma(x,y) == jlref(concat ["Nemo.polygamma(",getind(x),",",getind(y),")"])
+
+    airyAi(x) == junfunc("airy_ai", x)
+    airyBi(x) == junfunc("airy_bi", x)
+    airyAiPrime(x) == junfunc("airy_ai_prime", x)
+    airyBiPrime(x) == junfunc("airy_bi_prime", x)
+
+    ellipticE(x) == junfunc("elliptic_e", x)
+    ellipticK(x) == junfunc("elliptic_k", x)
+  
+    besselI(x,y) == jbinfunc("bessel_i", x, y)
+    besselJ(x,y) == jbinfunc("bessel_j", x, y)
+    besselK(x,y) == jbinfunc("bessel_k", x, y)
+    besselY(x,y) == jbinfunc("bessel_y", x, y)
+
+    hypergeometric1F1(x,y,z) == jterfunc("hypergeometric_1f1", x, y, z)
+    hypergeometric1F1Regularized(x,y,z) ==
+      jterfunc("hypergeometric_1f1_regularized", x, y, z)
+    hypergeometricU(x,y,z) == jterfunc("hypergeometric_u", x, y, z)
+
+    guess(a, deg) ==
+      jlref(concat(["guess(QQBar,", getind(a), ",",
+        string(deg),")"]))$NMAlgebraicNumber
+
+    rootOfUnity(n) ==
+      jlref(concat(["root_of_unity(", NACB, ",", string(n),")"]))
+
+    complex(r:NMArbField(p), i:NMArbField(p)) ==
+      jlref(concat([NACBP, getind(r),",",getind(i),")"]))
+
+    coerce(f : Float) ==
+      tmp := outputSpacing(0)
+      ret := jlref(concat([NACBP,"_"", convert(f),"_")"]))
+      outputSpacing(tmp)
+      ret
+    coerce(i : Integer) == jlref(concat([NACBP, "_"", string(i),"_")"]))
+    coerce(gi : Complex(Integer)) ==
+      jbinfunc(NACB, coerce(real gi)@NMArbField(p), coerce(imag gi)@NMArbField(p))
+    jncb(an : NMAlgebraicNumber) == junfunc(NACB, an)
+    jncb(necf : NMExactCalciumField) == junfunc(NACB, necf)
+    jncb(s : String) == jlref(concat([NACBP, "_"", s,"_")"]))
+    jncb(r : String, i : String) ==
+      jlref(concat([NACBP, "_"", r, "_",_"", i, "_")"]))
+    jncb(f : Float) == coerce(f)
+    jncb(r : Float, i : Float) ==
+      jbinfunc(NACB, coerce(r)@NMArbField(p),
+        coerce(i)@NMArbField(p))
+    jncb(i : Integer) == coerce(i)
+    jncb(r : Integer, i : Integer) ==
+      jbinfunc(NACB, coerce(r)@NMArbField(p), coerce(i)@NMArbField(p))
+    coerce(z : %) : OutputForm == message(string(z))
+
+)abbrev domain NCB NMComplexBall
+++ Description: convenience domain that reflects
+++ Nemo AcbField(256), i.e. without parameters.
+NMComplexBall() == NMAcbField(256)
+
+)abbrev domain NRF NMRealField
+++ Domain for Nemo Real Field based on the Arb
+++ library (arbitrary precision ball arithmetic).
+++ Author: G. Vanuxem
+++ Date Created: March. 2024
+++ Keywords: arbitrary precision, floating point number, real
+++ Description:
+++  \spadtype{NMRealField} implements arbitrary precision ball
+++  arithmetic using the Nemo Julia package.
+++ Reference: https://nemocas.github.io/Nemo.jl/stable/
+NMRealField() : Exports == Implementation where
+  PI        ==> PositiveInteger
+  NNI       ==> NonNegativeInteger
+  JI64      ==> JLInt64
+  JF64      ==> JLFloat64
+  Exports ==> Join(NMRing, CommutativeRing, FloatingPointSystem,
+            arbitraryPrecision, TranscendentalFunctionCategory,
+            DifferentialRing) with
+    integer? : % -> Boolean
+    ++ integer?(x) checks whether or not x is an integer.
+    finite? : % -> Boolean
+    ++ finite?(x) checks whether or not x is finite, not an infinity
+    ++ for example.
+    exact? : % -> Boolean
+    ++ exact?(x) checks whether x is exact i.e. with 0 radius.
+    nonZero? : % -> Boolean
+    ++ nonZero?(x) returns true if x is not equal to 0.
+    nonNegative? : % -> Boolean
+    ++ nonNegative?(v) checks whether or not x is greater or equal to zero.
+    nonPositive? : % -> Boolean
+    ++ nonPositive?(v) checks whether or not x is lower or equal to zero.
+    exp : () -> %
+    ++ exp() returns the NMRealField representation of ℯ (exp(1)).
+    exp1 : () -> %
+    ++ exp1() returns the NMRealField representation of ℯ (exp(1)).
+    eulerGamma : () -> %
+    ++ eulerGamma() returns the Euler's constant gamma (γ).
+    catalan : () -> %
+    ++ catalan() returns the Catalan's constant.
+    khinchin : () -> %
+    ++ khinchin() returns the Khinchin's constant.
+    glaisher : () -> %
+    ++ glaisher() returns the Glaisher's constant.
+    urand01 : () -> %
+    ++ urand01() returns a uniformly distributed random number
+    ++ contained in [0,1].
+    randtest : JLSymbol -> %
+    ++ randtest(randtype) returns a random number depending on the
+    ++ Julia symbol randtype.
+    ++ :urandom a uniformly distributed random number contained in [0,1].
+    ++ To test corner cases:
+    ++ :randtest returns a finite random number,
+    ++ :randtest_exact returns a zero radius random number,
+    ++ :randtest_precise returns a precise random number i.e. with a radius
+    ++ of around 2^-precision() the magnitude of the midpoint,
+    ++ :randtest_special returns a special random number where midpoint
+    ++ and/or radius might be NaNs or infinities,
+    ++ :randtest_wide returns a random number with a large radius that
+    ++ might be big relative to its midpoint.
+    abs2 : % -> %
+    ++ abs2(x) returns the square of the absolute value of x.
+    "*" : (%, Integer) -> %
+    ++ x*i is the multiplication by an integer.
+    "/" : (Integer, %) -> %
+    ++ x/i returns the division of an integer by x.
+    expm1 : % -> %
+    ++ expm1(x) computes accurately e^x-1. It avoids the loss of precision
+    ++ involved in the direct evaluation of exp(x)-1 for small values of x.
+    log1p : % -> %
+    ++ log1p(x) logarithm of 1+x computed accurately.
+    ldexp : (%, NMInteger) -> %
+    ++ ldexp(x, n) returns x * 2^n.
+    hurwitzZeta : (%, %) -> %
+    ++ hurwitzZeta(s,a) returns the Hurwitz zeta function of s and a.
+    Gamma : % -> % 
+    ++ Gamma(x) is the Euler Gamma function evaluated at x.
+    Gamma : (%, %) -> % 
+    ++ Gamma(x,y) is the incomplete Gamma function.
+    polyLog : (%, %) -> %
+    ++ polyLog(x,y) returns the polyLog function applied to x and y.
+    atan : (%, %) -> %
+    ++ atan(x, y) computes the inverse tangent of x/y.
+    midpoint : % -> %
+    ++ midpoint(x) returns the midpoint of x. 
+    radius : % -> %
+    ++ radius(x) returns the radius of x.
+    addError! : (%, %) -> %
+    ++ addError!(x, y) adds the values (absolute) of the midpoint and radius of y
+    ++ to the radius of x.
+    accuracyBits : % -> JLInt64
+    ++ accuracyBits(x) returns the relative accuracy of x in bits.
+    trim : % -> %
+    ++ trim(x) rounds off insignificant bits from the midpoint.
+    uniqueInteger : % -> Union(NMInteger, "failed")
+    ++ uniqueInteger(x) returns a NMInteger if there is a unique integer
+    ++ in the interval x, "failed" otherwise.
+    setUnion : (%, %) -> %
+    ++ setUnion(x,y) returns the unions of the intervals x and y.
+    overlaps? : (%, %) -> Boolean
+    ++ overlaps?(x,y) checks whether or not any part of x and y balls overlaps. 
+    contains? : (%, %) -> Boolean 
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    contains? : (%, NMInteger) -> Boolean
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    contains? : (%, NMFraction(NMInteger)) -> Boolean
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    contains? : (%, JLFloat) -> Boolean
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    containsZero? : % -> Boolean
+    ++ containsZero?(x) checks whether or not 0 is contained in x.
+    containsPositive? : % -> Boolean
+    ++ containsPositive?(x) cheks whether or not x contains any positive
+    ++ value.
+    containsNegative? : % -> Boolean
+    ++ containsNegative?(x) cheks whether or not x contains any negative
+    ++ value.
+    containsNonNegative? : % -> Boolean
+    ++ containsNonNegative?(x) cheks whether or not x contains
+    ++ any non negative value.
+    containsNonPositive? : % -> Boolean
+    ++ containsNonPositive?(x) checks whether or not x contains
+    ++ any non positive value.
+    guess : (%, NonNegativeInteger) -> NMAlgebraicNumber
+    ++ guess(a, deg) returns the reconstructed algebraic number found
+    ++ if it succeeds, up to degree deg.
+    retractIfCan : NMAlgebraicNumber -> Union(%, "failed")
+    ++ retractIfCan(x) retracts x if possible. "failed" othewise.
+    convert : % -> JLFloat
+    ++ convert(x) converts x to a JLFloat.
+    convert : % -> NMFraction(NMInteger)
+    ++ convert(x) converts x to a NMFraction(NMInteger).
+    coerce : Fraction(Integer) -> %
+    ++ coerce(q) coerces q.
+    coerce : JF64 -> %
+    ++ coerce(x) coerces(x).
+    coerce : Float -> %
+    ++ coerce(x) coerces x.
+    jnball : (%, %) -> %
+    ++ jnball(x,r) returns a ball with midpoint x and radius r.
+    jnrf : String -> %
+    ++ jnrf(str) evaluates str in Julia to returns a NMRealField element.
+    jnrf : Float -> %
+    ++ jnrf(x) returns x as a NMRealField element.
+    jnrf : Fraction(Integer) -> %
+    ++ jnrf(q) returns q as a NMRealField element.
+    jnrf : Integer -> %
+    ++ jnrf(i) returns i as a NMRealField element.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from String
+    import from NMFraction(NMInteger)
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    -- initialize
+    jlEvalString("NRF=RealField()")@Void
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    precision() == jlEvalString("precision(NRF)")
+    bits() == jlEvalString("precision(NRF)")
+    precision(p : PI) ==
+      oldp := precision()
+      jlEvalString(concat(["set_precision!(NRF,",string(p),")"]))@Void
+      oldp
+    accuracyBits(x) ==
+      jlEvalString(concat(["accuracy_bits(", getind(x),")"]))
+    trim(x) == junfunc("trim",x)
+
+    jlNMRing() == "NRF"
+    jlObject() == jlEvalString("string(NRF)")
+
+    0    == jlref("zero(NRF)")
+    1    == jlref("one(NRF)")
+    pi() == jlref("const_pi(NRF)")
+    exp1() == jlref("const_e(NRF)")
+    exp() == jlref("const_e(NRF)")
+    eulerGamma() == jlref("const_euler(NRF)")
+    catalan() == jlref("const_catalan(NRF)")
+    glaisher() == jlref("const_glaisher(NRF)")
+    khinchin() == jlref("const_khinchin(NRF)")
+
+    urand01() == jlref("rand(NRF)")
+    randtest(type) ==
+      jlref(concat(["rand(NRF,randtype=", string(type),")"]))
+
+
+
+    midpoint(x) == junfunc("midpoint", x)
+    radius(x) == junfunc("radius", x)
+    addError!(x, y) ==
+      jlEvalString(concat ["add_error!(", getind(x), ",", getind(y),")"])
+      x
+    uniqueInteger(x) ==
+      ret : JLObjTuple := junfunc("unique_integer",x)
+      not jlEvalString(concat(["first(", getind(ret), ")"]))@Boolean
+        => "failed"
+      junfunc("last", ret)@NMInteger
+    setUnion(x,y) == jbinfunc("setunion",x,y)
+
+    x < y  == jbinbfunc("<",x,y)
+    x > y  == jbinbfunc(">",x,y)
+    x >= y == jbinbfunc(">=",x,y)
+    x <= y == jbinbfunc("<=",x,y)
+
+    zero? x == junbfunc("iszero", x)
+    one? x == junbfunc("isone", x)
+    integer? x == junbfunc("isinteger", x)
+    nonZero? x == junbfunc("is_nonzero", x)
+    finite? x == junbfunc("isfinite", x)
+    exact? x == junbfunc("is_exact", x)
+    positive? x == junbfunc("is_positive", x)
+    nonNegative? x == junbfunc("is_nonnegative",x)
+    negative? x == junbfunc("is_negative", x)
+    nonPositive? x == junbfunc("is_nonpositive", x)
+    containsZero? x == junbfunc("contains_zero", x)
+    containsPositive? x == junbfunc("contains_positive", x)
+    containsNonPositive? x == junbfunc("contains_nonpositive", x)
+    containsNegative? x == junbfunc("contains_negative", x)
+    containsNonNegative? x == junbfunc("contains_nonnegative", x)
+    overlaps?(x,y) == jbinbfunc("overlaps", x, y)
+    contains?(x : %, y : %) == jbinbfunc("contains", x, y)
+    contains?(x : %, y : NMInteger) == jbinbfunc("contains", x, y)
+    contains?(x : %, y : NMFraction(NMInteger)) == jbinbfunc("contains", x, y)
+    contains?(x : %, y : JLFloat) == jbinbfunc("contains", x, y)
+
+    x : % / y : % == jbinfunc("/", x, y)
+    x : % ^ y : % == jbinfunc("^", x, y)
+    x : % * y : Integer == jlref(concat([getind(x), "*", string(y)]))
+    x : Integer / y : % == jlref(concat([string(x), "/", getind(y)]))
+    x : % / y : Integer == jlref(concat([getind(x), "/", string(y)]))
+    x ^ y : PI == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : NNI == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : Integer == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : Fraction(Integer) ==
+      jlref(concat [getind(x), "^(", string(numer(y)),"//", string(denom(y)),")"])
+    recip(x) ==
+      zero?(x) => "failed"
+      junfunc("inv",x) pretend %
+   
+    abs(x) == junfunc("abs", x)
+    abs2(x) == junfunc("abs2", x)
+
+    -- x quo y == jbinfunc("div", x, y)
+    x quo y == jbinfunc("÷", x, y)
+    x rem y == jbinfunc("%", x, y)
+    float(m, e, b) == jbinfunc("*",jnrf(m), jnrf(b)^e)
+
+    sqrt(x)  == junfunc("√",x)
+    exp(x)   == junfunc("exp",x)
+    log(x)   == junfunc("log",x)
+    expm1(x) == junfunc("expm1",x)
+    log1p(x) == junfunc("log1p",x)
+    nthRoot(x, i) == jlref(concat(["root(", getind(x), ",", string(i), ")"]))
+    ldexp(x,n) == jbinfunc("ldexp",x,n)
+
+    sin(x)  == junfunc("sin",x)
+    cos(x)  == junfunc("cos",x)
+    tan(x)  == junfunc("tan",x)
+    cot(x)  == junfunc("cot",x)
+
+    asin(x)  == junfunc("asin",x)
+    acos(x)  == junfunc("acos",x)
+    atan(x)  == junfunc("atan",x)
+    atan(x,y) == jbinfunc("atan",x,y)
+
+    sinh(x)  == junfunc("sinh",x)
+    cosh(x)  == junfunc("cosh",x)
+    tanh(x)  == junfunc("tanh",x)
+    coth(x)  == junfunc("coth",x)
+
+    asinh(x)  == junfunc("asinh",x)
+    acosh(x)  == junfunc("acosh",x)
+    atanh(x)  == junfunc("atanh",x)
+
+    Gamma(x)  == jlref(concat ["Nemo.gamma(", getind(x),")"])
+    Gamma(x,y) == jlref(concat ["Nemo.gamma(",getind(x),",",getind(y),")"])
+    hurwitzZeta(x,y) == jlref(concat ["Nemo.zeta(",getind(x),",",getind(y),")"])
+ 
+    polyLog(n,x) == jbinfunc("polylog",n, x)
+
+    guess(a, deg) ==
+      jlref(concat(["guess(QQBar,", getind(a), ",",
+        string(deg),")"]))$NMAlgebraicNumber
+
+    retractIfCan(x) : Union(Integer, "failed") ==
+      not integer?(x) => "failed"
+      convert(jlref(concat(["ZZ(", getind(x),")"]))$NMInteger)
+
+    retractIfCan(x : NMAlgebraicNumber) : Union(%, "failed") ==
+      real?(x) => junfunc("NRF", x)
+      "failed"
+
+    retractIfCan(x) : Union(Fraction Integer, "failed") ==
+      tmp := jlref(concat(["QQ(rationalize(BigInt,BigFloat(",
+        getind(x),")))"]))$NMFraction(NMInteger)
+      retractIfCan(tmp)
+
+    convert(x) : NMFraction(NMInteger) ==
+        jlref(concat(["QQ(rationalize(BigInt,BigFloat(",
+          getind(x),")))"]))$NMFraction(NMInteger)
+    convert(x) : DoubleFloat ==
+      jlEvalString(concat ["convert(Float64,",
+        getind(x), ")"])@JF64 pretend DoubleFloat
+    convert(x) : JLFloat ==
+      jlref(concat(["BigFloat(", getind(x),")"]))$JLFloat
+    convert(x : %) : Float ==
+      tmp := jlref(concat(["QQ(rationalize(BigInt,BigFloat(",
+        getind(x),")))"]))$NMFraction(NMInteger)
+      coerce(retract(tmp)@Fraction(Integer))
+    
+    coerce(jf : JF64) == jlref(concat(["NRF(_"", convert(jf),"_")"]))
+    coerce(f : Float) ==
+      tmp := outputSpacing(0)
+      ret := jlref(concat(["NRF(_"", convert(f), "_")"]))
+      outputSpacing(tmp)
+      ret
+    coerce(i : Integer) == jlref(concat(["NRF(", string(i),")"]))
+    coerce(q : Fraction(Integer)) ==
+      junfunc("NRF", coerce(q)@NMFraction(NMInteger))
+    jnball(a,b) == jbinfunc("ball", a, b)
+    jnrf(s : String) : % == jlref(concat(["NRF(_"", s,"_")"]))
+    jnrf(i : Integer) : % == coerce(i)
+    jnrf(q : Fraction Integer) : % == coerce(q)
+    jnrf(f : Float) == coerce(f)
+    coerce(i : %) : OutputForm == message(string(i))
+
+)abbrev domain NCF NMComplexField
+++ Domain for Nemo Complex Field based on the Arb
+++ library (arbitrary precision ball arithmetic).
+++ Author: G. Vanuxem
+++ Date Created: March. 2024
+++ Keywords: arbitrary precision, floating point  number, complex
+++ Description:
+++ \spadtype{NMComplexField} implements arbitrary precision ball
+++ arithmetic using the Nemo Julia package.
+++ Reference: https://nemocas.github.io/Nemo.jl/stable/
+NMComplexField() : Exports == Implementation where
+  JI64      ==> JLInt64
+  PI        ==> PositiveInteger
+  JF64      ==> JLFloat64
+  NRF       ==> NMRealField
+  Exports ==> Join(NMRing, CommutativeRing, ComplexCategory(NMRealField),
+            arbitraryPrecision, DifferentialRing) with
+    integer? : % -> Boolean
+    ++ integer?(x) checks whether or not x is an integer.
+    finite? : % -> Boolean
+    ++ finite?(x) checks whether or not x is finite, not an infinity
+    ++ for example.
+    exact? : % -> Boolean
+    ++ exact?(x) checks whether x is exact i.e. with 0 radius.
+    accuracyBits : % -> JLInt64
+    ++ accuracyBits(x) returns the relative accuracy of x in bits.
+    overlaps? : (%, %) -> Boolean
+    ++ overlaps?(x,y) checks whether or not any part of x and y balls overlaps. 
+    contains? : (%, %) -> Boolean 
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    contains? : (%, NMInteger) -> Boolean
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    contains? : (%, NMFraction(NMInteger)) -> Boolean
+    ++ contains?(x,y) checks whether or not y is contained in x.
+    containsZero? : % -> Boolean
+    ++ containsZero?(x) checks whether or not 0 is contained in x.
+    abs : % -> %
+    ++ abs(x) returns the  absolute value of x.
+    abs2 : % -> %
+    ++ abs2(x) returns the square of the absolute value of real
+    ++ part of x and imaginary part of x.
+    expm1 : % -> %
+    ++ expm1(x) computes accurately e^x-1. It avoids the loss of precision
+    ++ involved in the direct evaluation of exp(x)-1 for small values of x.
+    log1p : % -> %
+    ++ log1p(x) logarithm of 1+x computed accurately.
+    exp : () -> %
+    ++ exp() returns the NMComplexField ℯ (exp(1)).
+    exp1 : () -> %
+    ++ exp1() returns the NMComplexField ℯ (exp(1)).
+    ldexp : (%, NMInteger) -> %
+    ++ ldexp(x, n) returns x * 2^n.
+    pi : () -> %
+    ++ pi() returns the JLFloat representation of π.
+    "*" : (%, Integer) -> %
+    ++ x*i is the multiplication by an integer.
+    "/" : (Integer, %) -> %
+    ++ i/x is the division of an integer by x.
+    "/" : (%, Integer) -> %
+    ++ x/i is the division by an integer.
+    hurwitzZeta : (%, %) -> %
+    ++ hurwitzZeta(s,a) returns the Hurwitz zeta function of s and a.
+    Gamma : % -> % 
+    ++ Gamma(x) is the Euler Gamma function evaluated at x.
+    Gamma : (%, %) -> % 
+    ++ Gamma(x,y) is the incomplete Gamma function.
+    polygamma : (%, %) -> %
+    ++ polygamma(x,y) returns the polygamma function applied to x and y.
+    polyLog : (%, %) -> %
+    ++ polyLog(x,y) returns the polyLog function applied to x and y.
+    airyAi : R -> R
+    ++ airyAi(z) is the Airy function \spad{Ai(z)}.
+    airyAiPrime : R -> R
+    ++ airyAiPrime(z) is the derivative of the Airy function \spad{Ai(z)}.
+    airyBi : R -> R
+    ++ airyBi(z) is the Airy function \spad{Bi(z)}.
+    airyBiPrime : R -> R
+    ++ airyBiPrime(z) is the derivative of the Airy function \spad{Bi(z)}.
+    ellipticE : % -> %
+    ++ ellipticE(x) is the complete elliptic integral of the second kind.
+    ellipticK : %-> %
+    ++ ellipticK(x) is the complete elliptic integral of the first kind.
+    besselI : (%, %) -> %
+    ++ besselI(nu,x) is the Bessel I function.
+    besselJ : (%, %) -> %
+    ++ besselJ(nu,x) is the Bessel J function.
+    besselK : (%, %) -> %
+    ++ besselK(nu,x) is the Bessel K function.
+    besselY : (%, %) -> %
+    ++ besselY(nu,x) is the Bessel Y function.
+    hypergeometric1F1 : (%, %, %) -> %
+    ++ hypergeometric1F1(a,b,z) is the confluent hypergeometric function
+    ++ 1F1.
+    hypergeometric1F1Regularized : (%, %, %) -> %
+    ++ hypergeometric1F1Regularized(a,b,z) is the regularized confluent
+    ++ hypergeometric function 1F1.
+    hypergeometricU : (%, %, %) -> %
+    ++ hypergeometricU(a,b,x) is the confluent hypergeometric function U.
+    -- TODO
+    --atan : (%, JI64) -> %
+    --++ atan(x, y) computes the inverse tangent of x/y.
+    rootOfUnity : (NonNegativeInteger) -> %
+    ++ rootOfUnity(n)Return the root of unity exp(2*%pi*%i/n).
+    rootOfUnity : (NonNegativeInteger, Integer) -> %
+    ++ rootOfUnity(n,k)Return the root of unity exp(2*%pi*%i*k/n).
+    urand01 : () -> %
+    ++ urand01() returns an uniformly distributed random number
+    ++ contained in the unit disk.
+    randtest : JLSymbol -> %
+    ++ randtest(randtype) returns a random number depending on the
+    ++ Julia symbol randtype.
+    ++ :urandom an  uniformly distributed random number contained in
+    ++ the unit disk. To test corner cases:
+    ++ :randtest with separate real and imaginary parts,
+    ++ :randtest_precise with precise real and imaginary parts,
+    ++ :randtest_special with separate real and imaginary parts but
+    ++ eventually infinities and NaNs,
+    ++ :randtest_param with very high probability of returning integers
+    ++ or half-integers.
+    precision : () -> PI
+    ++ precision() returns the actual default precision used
+    ++ when creating a new element. 
+    precision : PI -> PI
+    ++ precision(p) changes the precision used for creating elements.
+    guess : (%, NonNegativeInteger) -> NMAlgebraicNumber
+    ++ guess(a, deg) returns the reconstructed algebraic number found if it succeeds.
+    ++ Up to degree deg.
+    trim : % -> %
+    ++ trim(x) rounds off insignificant bits from the midpoint.
+    uniqueInteger : % -> Union(NMInteger, "failed")
+    ++ uniqueInteger(x) returns a NMInteger if there is a unique integer
+    ++ in the interval x, "failed" otherwise.
+    coerce : JF64 -> %
+    ++ coerce(x) coerces x.
+    coerce : String -> %
+    ++ coerce(str) returns a NMComplexField element from
+    ++ evaluation in Julia of str.
+    coerce : Float -> %
+    ++ coerce(x) coerces x.
+    coerce : Complex(Integer) -> % -- for %i operations
+    ++ coerce(z) coerces z. Convenience function.
+    jncf : String -> %
+    ++ jncf(str) returns a NMComplexField element from
+    ++ evaluation in Julia of str.
+    jncf : (String, String) -> %
+    ++ jncf(r,i) returns a NMComplexField element from
+    ++ evaluation in Julia of r and i. r is the real part,
+    ++ i the imaginary one.
+    jncf : Float -> %
+    ++ jncf(x) returns x as a NMComplexField element.
+    jncf : (Float, Float) -> %
+    ++ jncf(r,i) returns r as real part and i as imaginary part
+    ++ as a NMComplexField element.
+    jncf : Integer -> %
+    ++ jncf(i)returns i as NMComplexField element.
+    jncf : (Integer, Integer) -> %
+    ++ jncf(r,i) returns r as real part and i as imaginary part
+    ++ as a NMComplexField element.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from String
+    import from NMFraction(NMInteger)
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    -- initialize
+    jlEvalString("NCF=ComplexField()")@Void
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    jterfunc(func,a,b,c) ==> make_jlref_wcall3(func, a, b, c)$Lisp
+    junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+  
+    precision() == jlEvalString("precision(NCF)")
+    precision(p : PI) ==
+      oldp := precision()
+      jlEvalString(concat(["set_precision!(NCF,",string(p),")"]))@Void
+      oldp
+    accuracyBits(x) == jlEvalString(concat(["accuracy_bits(",
+      getind(x),")"]))
+    trim(x) == junfunc("trim",x)
+    uniqueInteger(x) ==
+      ret : JLObjTuple := junfunc("unique_integer",x)
+      not jlEvalString(concat(["first(", getind(ret), ")"]))@Boolean
+        => "failed"
+      junfunc("last", ret)@NMInteger
+
+    jlNMRing() == "NCF"
+    jlObject() == jlEvalString("string(NCF)")
+    urand01() == jlref("rand(NCF)")
+    randtest(type) == jlref(concat(["rand(NCF,randtype=", string(type),")"]))
+
+    0    == jlref("zero(NCF)")
+    1    == jlref("one(NCF)")
+    imaginary() == jlref("onei(NCF)")
+    real(x) == junfunc("real", x)
+    imag(x) == junfunc("imag", x)
+    pi() == jlref("const_pi(NCF)")
+    exp1() == jlref("exp(NCF(1))")
+    exp() == jlref("exp(NCF(1))")
+
+    zero? x == junbfunc("iszero",x)
+    one? x == junbfunc("isone",x)
+    integer? x == junbfunc("isinteger", x)
+    finite? x == junbfunc("isfinite", x)
+    exact? x == junbfunc("is_exact", x)
+    overlaps?(x,y) == jbinbfunc("overlaps", x, y)
+    contains?(x : %, y : %) == jbinbfunc("contains", x, y)
+    contains?(x : %, y : NMInteger) == jbinbfunc("contains", x, y)
+    contains?(x : %, y : NMFraction(NMInteger)) == jbinbfunc("contains", x, y)
+    containsZero? x == junbfunc("contains_zero", x)
+
+    x + y == jbinfunc("+", x, y)
+    x - y == jbinfunc("-", x, y)
+    - x   == junfunc("-", x)
+    x : % * y : % == jbinfunc("*", x, y)
+    x : NMInteger * y : % == jbinfunc("*", x, y)
+    x : Integer * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x : PositiveInteger * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x : NonNegativeInteger * y : % == jlref(concat([string(x), "*", getind(y)]))
+    x ^ y : PositiveInteger == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : NonNegativeInteger == jlref(concat [getind(x), "^", string(y)])
+    x : % / y : % == jbinfunc("/", x, y)
+    x : % ^ y : % == jbinfunc("^", x, y)
+    x : % * y : Integer == jlref(concat([getind(x), "*", string(y)]))
+    x : Integer / y : % == jlref(concat([string(x), "/", getind(y)]))
+    x : % / y : Integer == jlref(concat([getind(x), "/", string(y)]))
+    x ^ y : Integer == jlref(concat [getind(x), "^", string(y)])
+    x ^ y : Fraction(Integer) ==
+      jbinfunc("^", x, coerce(y)@NMFraction(NMInteger))
+    recip(x) ==
+      zero?(x) => "failed"
+      junfunc("inv",x) pretend %
+
+    -- x quo y == jbinfunc("div", x, y)
+    x quo y == jbinfunc("÷", x, y)
+    x rem y == jbinfunc("%", x, y)
+
+    abs(x) == junfunc("abs", x)
+    abs2(x) == junfunc("abs2", x)
+
+    sqrt(x)  == junfunc("√",x)
+    exp(x)   == junfunc("exp",x)
+    log(x)   == junfunc("log",x)
+    expm1(x) == junfunc("expm1",x)
+    log1p(x) == junfunc("log1p",x)
+    nthRoot(x, i) == jlref(concat(["root(", getind(x), ",", string(i), ")"]))
+    ldexp(x,n) == jbinfunc("ldexp",x,n)
+
+    sin(x)  == junfunc("sin",x)
+    cos(x)  == junfunc("cos",x)
+    tan(x)  == junfunc("tan",x)
+    cot(x)  == junfunc("cot",x)
+    atan(x) == junfunc("atan",x)
+
+    sinh(x)  == junfunc("sinh",x)
+    cosh(x)  == junfunc("cosh",x)
+    tanh(x)  == junfunc("tanh",x)
+    coth(x)  == junfunc("coth",x)
+
+    polyLog(n,x) == jbinfunc("polylog",n, x)
+
+    Gamma(x)  == jlref(concat ["Nemo.gamma(", getind(x),")"])
+    Gamma(x,y) == jlref(concat ["Nemo.gamma(",getind(x),",",getind(y),")"])
+    hurwitzZeta(x,y) == jlref(concat ["Nemo.zeta(",getind(x),",",getind(y),")"])
+    polygamma(x,y) == jlref(concat ["Nemo.polygamma(",getind(x),",",getind(y),")"])
+
+    airyAi(x) == junfunc("airy_ai", x)
+    airyBi(x) == junfunc("airy_bi", x)
+    airyAiPrime(x) == junfunc("airy_ai_prime", x)
+    airyBiPrime(x) == junfunc("airy_bi_prime", x)
+
+    ellipticE(x) == junfunc("elliptic_e", x)
+    ellipticK(x) == junfunc("elliptic_k", x)
+  
+    besselI(x,y) == jbinfunc("bessel_i", x, y)
+    besselJ(x,y) == jbinfunc("bessel_j", x, y)
+    besselK(x,y) == jbinfunc("bessel_k", x, y)
+    besselY(x,y) == jbinfunc("bessel_y", x, y)
+
+    hypergeometric1F1(x,y,z) == jterfunc("hypergeometric_1f1", x, y, z)
+    hypergeometric1F1Regularized(x,y,z) ==
+      jterfunc("hypergeometric_1f1_regularized", x, y, z)
+    hypergeometricU(x,y,z) == jterfunc("hypergeometric_u", x, y, z)
+
+    rootOfUnity(n) == jlref(concat(["root_of_unity(NCF,",
+      string(n),")"]))
+    rootOfUnity(n,k) ==
+      jlref(concat(["root_of_unity(NCF,",
+        string(n), ",",string(k) ")"]))
+
+    guess(a, deg) ==
+      jlref(concat(["guess(QQBar,", getind(a), ",",
+        string(deg),")"]))$NMAlgebraicNumber
+
+    complex(r:NRF, i:NRF) == jlref(concat(["NCF(", getind(r),",",getind(i),")"]))
+    coerce(jf : JF64) : % == jlref(concat(["NCF(_"", convert(jf),"_")"]))
+    coerce(i : Integer) == jlref(concat(["NCF(", string(i),")"]))
+    coerce(gi : Complex(Integer)) ==
+      jlref(concat(["NCF(", string(real gi), ",", string(imag gi),")"]))
+    coerce(s : String) == jlref(concat(["NCF(_"", s,"_")"]))
+    coerce(f : Float) ==
+      tmp := outputSpacing(0)
+      ret := jlref(concat(["NCF(_"", convert(f),"_")"]))
+      outputSpacing(tmp)
+      ret
+    jncf(s : String) : % == jlref(concat(["NCF(_"", s,"_")"]))
+    jncf(r : String, i : String) : % ==
+      jlref(concat(["NCF(_"", r, "_",_"", i, "_")"]))
+    jncf(f : Float) : % == coerce(f)
+    jncf(r : Float, i : Float) : % ==
+      ret := jlref(concat(["NCF(_"", convert(r),
+          "_",_"", convert(i), "_")"]))
+      ret
+    jncf(i : Integer) : % == jlref(concat(["NCF(", string(i),")"]))
+    jncf(r : Integer, i : Integer) : % ==
+      jlref(concat(["NCF(", string(r), ",", string(i),")"]))
+    coerce(i : %) : OutputForm ==  message(string(i))

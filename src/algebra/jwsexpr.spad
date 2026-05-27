@@ -1,0 +1,2155 @@
+)abbrev domain WSEXPR WSExpression
+++ Generic domain for Julia WS expressions
+++ Author: G. Vanuxem
+++ Date Created: May, 2024
+++ Description:
+++  Julia Wolfram Symbolic expressions using the MathLink Julia package.
+++ It supports the Eltable category (interface) so, for example
+++ using Fibonacci polynomials
+++ fibonacci(12,jWSExpr x) =>
+++             3       5       7       9    11
+++   6 x + 35 x  + 56 x  + 36 x  + 10 x  + x
+++ %.5 => 10*x^9
+++ Trademark(s): Wolfram is a registered trademark of Wolfram Research, Inc.
+-- TODO
+-- Reduce or FindInstance
+-- interval({-2, 2})
+-- limit etc. "x=0" assignment vs. jlEval
+WSExpression() : Exports == Implementation where
+  getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+  WSL  ==> WSList
+  JF64  ==> JLFloat64
+  Exports ==> Join(WSAggregate(%), PartialOrder, WSRing,
+                  ComplexCategory(%), PartialDifferentialRing(%),
+                  ExpressionSpace) with
+    AlgebraicallyClosedFunctionSpace(%)
+    TranscendentalFunctionCategory
+    CombinatorialOpsCategory
+    LiouvillianFunctionCategory
+    SpecialFunctionCategory
+    AlgebraicallyClosedField
+    zero?   : % -> Boolean 
+    ++ zero? x tries to determine if x is 0.
+    ++ For example:
+    ++ \example{expr:=0$WSEXPR/1*sqrt(17::WSEXPR); zero? expr}
+    defined? : % -> Boolean
+    ++ defined?(sym) checks whether or not sym is a WS symbol.
+    real? : % -> Boolean
+    ++ real?(x) checks whether or not x represents a real number.
+    realNumeric? : % -> Boolean
+    ++ realNumeric?(x) checks whether or not x represents
+    ++ a real value (numeric).
+    integer? : % -> Boolean
+    ++ integer?(i) checks whether or not i is an integer.
+    rational? : % -> Boolean
+    ++ rational?(q) checks whether or not q is a rational number.
+    number? : % -> Boolean
+    ++ number?(expr) checks whether or not expr is a number.
+    machineNumber? : % -> Boolean
+    ++ machineNumber?(expr) checks whether or not expr is a
+    ++ CPU/GPU supported number.
+    exactNumber? : % -> Boolean
+    ++ exactNumber?(x) checks whether or not x is an exact number.
+    numeric? : % -> Boolean
+    ++ numeric?(x) checks whether or not x is or would yield a number.
+    positive? : % -> Boolean
+    ++ positive?(expr) checks whether or not expr is positive.
+    negative? : % -> Boolean
+    ++ negative?(expr) checks whether or not expr is negative.
+    member? : (%, %) -> Boolean
+    ++ member?(list, expr) checks if expr is in list.
+    key? : (%, %) -> Boolean
+    ++ key?(assoc,key) checks whether or not key exists
+    ++ in the association assoc.
+    missing? : % -> Boolean
+    ++ missing?(data) checks whether or not data is Missing.
+    jlWSDefined? : String -> Boolean
+    ++ jlWSDefined?(sym) checks whether or not the symbol sym is defined
+    ++ in the WS language.
+    ++ For example:
+    ++ \example{jlWSDefined? "Sin"}
+    ++ => true
+    "^"     : (%, WSRational) -> %
+    ++ ^ is the exponentiation by a rational.
+    round : % -> %
+    ++ round(x) returns the integer closest to x.
+    floor : % -> %
+    ++ floor(x) returns the greatest integer less than or equal to x
+    ceiling : % -> %
+    ++ ceiling(x) returns the smallest integer greater than or equal to x.
+    exp     : () -> %
+    ++ exp() returns ℯ (%e or exp(1)).
+    degree : () -> %
+    ++ degree() returns conversion factor from degrees to radians, π/180.
+    eulerGamma : () -> %
+    ++ eulerGamma() returns Euler's constant Gamma(γ).
+    positiveInfinity : () -> %
+    ++ positiveInfinity() returns positive infinity (∞).
+    catalan : () -> %
+    ++ catalan() returns Catalan's constant.
+    goldenRatio : () -> %
+    ++ goldenRatio() returns the golden ratio.
+    sinc    : % -> %
+    ++ sinc(x) computes the unnormalized sinc of x, sin(x)/x and 0 if x = 0.
+    log2    : % -> %
+    ++ log2(x) computes the logarithm of x in base 2.
+    log10   : % -> %
+    ++ log10(x) computes the logarithm of x in base 10.
+    atan    : (%, %) -> %
+    ++ atan(x,y) computes the arc tangent of y/x.
+    erf     : (%, %) -> %
+    ++ erf(x,x1) computes the generalized error function.
+    erfc    : % -> %
+    ++ erfc(x) computes the complementary error function.
+    dawson  : % -> %
+    ++ dawson(x) computes the Dawson integral of x.
+    -- TODO: WSINT package
+    eulerPhi : WSInteger -> %
+    ++ eulerPhi(n) is the totient function, i.e. the number of integers
+    ++ that are relatively prime to n in the range [1,n].
+    eulerE : WSInteger -> %
+    ++ eulerE(n) returns the Euler number En.
+    eulerE : (WSInteger , %) -> %
+    ++ eulerE(n,z) returns the Euler E polynomial of degree n.
+    lambertW : (WSInteger, %) -> %
+    ++ lambertW(k,z) returns the k-th solution to the LambertW function.
+    haversine : % -> %
+    ++ haversine(z) computes the Haversine of z.
+    inverseHaversine : % -> %
+    ++ inverseHaversine(z) computes the inverse Haversine.
+    angerJ : (%, %, %) -> %
+    ++ angerJ(v, n, z) is the associated Anger J function.
+    gudermannian : % -> %
+    ++ gudermannian(z) computes the Gudermannian of z.
+    inverseGudermannian : % -> %
+    ++ inverseGudermannian(z) computes the inverse Gudermannian.
+    digamma     : (%, %) -> %
+    ++ digamma(n,z) is the n-th derivative of the digamma function.
+    besselJZero : (%, %) -> %
+    ++ besselJZero(n,x) returns the n-th zero of the
+    ++ Bessel J n-th function.
+    besselYZero : (%, %) -> %
+    ++ besselYZero(n,x) returns the n-th zero of the
+    ++ Bessel Y n-th function.
+    sphericalBesselJ : (% , %)-> %
+    ++ sphericalBesselJ(n,z) returns the spherical Bessel
+    ++ of the first kind of z.
+    sphericalBesselY : (% , %)-> %
+    ++ sphericalBesselY(n,z) returns the spherical Bessel
+    ++ of the second kind of z.
+    sphericalHankelH1 : (% , %)-> %
+    ++ sphericalHankelH1(n,z) returns the spherical Hankel function
+    ++ of the first kind of z.
+    sphericalHankelH2 : (% , %)-> %
+    ++ sphericalHankelH2(n,z) returns the spherical Hankel function
+    ++ of the second kind of z.
+    airyAiZero : % -> %
+    ++ airyAiZero(n) is the n-th zero of the Airy function \spad{Ai(z)}.
+    airyAiZero : (%, %) -> %
+    ++ airyAiZero(n,x) is the n-th zero of the Airy function \spad{Ai(z)}
+    ++ less than x.
+    airyBiZero : % -> %
+    ++ airyBiZero(n) is the n-th zero of the Airy function \spad{Bi(z)}.
+    airyBiZero : (%, %) -> %
+    ++ airyBiZero(n,x) is the n-th zero of the Airy function \spad{Bi(z)}
+    ++ less than x.
+    weberE : (%, %, %) -> %
+    ++ weberE(v,n,z) is the associated Weber E function.
+    --unitStep : % -> % -- TODO: implement
+    --++ unitStep(x) returns the unit step function i.e. \spad{1} for \spad{x >= 0}
+    --++ and \spad{0} otherwise.
+    dirichletL : (%, %, %) ->  %
+    ++ dirichletL(k,j,s) returns Dirichlet L-function of s, modulus k,
+    ++ index j.
+    lerchPhi : (%, %, %) -> %
+    ++ lerchPhi(z,s,a) returns Lerch's transcendent phi of arguments.
+    polylog : (%, %, %) -> %
+    ++ polylog(n,p,x) is the Nielsen generalized polylogarithm function.
+    weierstrassP : (%, %, %) -> %
+    ++ weierstrassP(g2, g3, z) is the Weierstrass P function.
+    weierstrassPPrime : (%, %, %) -> %
+    ++ weierstrassPPrime(g2, g3, z) is the derivative of the Weierstrass P
+    ++ function.
+    weierstrassSigma : (%, %, %) -> %
+    ++ weierstrassSigma(g2, g3, z) is the Weierstrass sigma function.
+    weierstrassZeta : (%, %, %) -> %
+    ++ weierstrassZeta(g2, g3, z) is the Weierstrass Zeta function.
+    weierstrassPInverse : (%, %, %) -> %
+    ++ weierstrassPInverse(g2, g3, z) is the inverse of Weierstrass
+    ++ P function, defined by the formula
+    ++ \spad{WeierstrassP(g2, g3, WeierstrassPInverse(g2, g3, z)) = z}.
+    ramanujanTau : % -> %
+    ++ ramanujanTau(n) returns the Ramanujan tau of n.
+    ramanujanTauL : % -> %
+    ++ ramanujanTauL(s) computes the Ramanujan tau Dirichlet L-function of s.
+    ramanujanTauTheta : % -> %
+    ++ ramanujanTauTheta(z) returns the Ramanujan tau theta of z.
+    ramanujanTauZ : % -> %
+    ++ ramanujanTauZ(t) computes the Ramanujan tau Z-function of t.
+    riemannSiegelTheta : % -> %
+    ++ riemannSiegelTheta(t) returns the Riemann-Siegel theta function of t.
+    riemannSiegelZ : % -> %
+    ++ riemannSiegelZ(t)  computes the Riemann-Siegel Z function of t.
+    stieltjesGamma : % -> %
+    ++ stieltjesGamma(n) returns the n-th Stieltjes constant.
+    stieltjesGamma : (%, %) -> %
+    ++ stieltjesGamma(n,a) returns the generalized n-th Stieltjes constant.
+    hurwitzZeta : (%, %) -> %
+    ++ hurwitzZeta(s,a) computes the Hurwitz zeta.
+    hurwitzLerchPhi : (%, %, %) -> %
+    ++ hurwitzLerchPhi(z,s,a) computes the Hurwitz–Lerch transcendent
+    ++ phi function.
+    riemannZeta : (%, %) -> %
+    ++ riemannZeta(s,a) is the generalized Riemann zeta function.
+    inverseErf : % -> %
+    ++ inverseErf(x) computes the inverse error function of x.
+    inverseErfc : % -> %
+    ++ inverseErfc(x) computes the inverse complementary
+    ++ error function of x.
+    EiEn : (%,%) -> %
+    ++ EiEn(n,z) returns the exponential integral En(z).
+    betaRegularized : (%, %, %) -> %
+    ++ betaRegularized(x,a,b) computes the regularized incomplete Beta function.
+    gammaRegularized : (%, %) -> %
+    ++ gammaRegularized(a,x) computes the regularized incomplete Gamma function.
+    Gamma : (%, %, %) -> %
+    ++ Gamma(a,z1,z2) computes the generalized incomplete Gamma function.
+    inverseBetaRegularized : (%, %, %) -> %
+    ++ inverseBetaRegularized(s,a,b) computes the inverse Beta regularized function.
+    inverseGammaRegularized : (%, %) -> %
+    ++ inverseGammaRegularized(a,s) computes the inverse Gamma regularized function.
+    jacobiTheta : (WSInteger, %, %) -> %
+    ++ jacobiTheta(n, z, m) are the Jacobi Theta functions.
+    pochhammer : (%, %) -> %
+    ++ pochhammer(a,n) returns the Pochhammer symbol. 
+    logGamma : % -> %
+    ++ logGamma(z) returns the log-Gamma of z.
+    logBarnesG : % -> %
+    ++ logBarnesG(x) is the logarithm of the Barnes G-function.
+    barnesG : % -> %
+    ++ barnesG(z) computes the Barnes G-function of z.
+    hyperFactorial : % -> %
+    ++ hyperFactorial(n) computes the hyperfactorial of n.
+    fibonacci : (%, %) -> %
+    ++ fibonacci(n, x) returns the Fibonacci polynomial or evaluates it
+    ++ at x if x is a number.
+    legendreP : (%, %) -> %
+    ++ legendreP(n, x) returns the Legendre polynomial
+    ++ of the first kind or evaluates it at x if x is a number. 
+    legendreQ : (%, %) -> %
+    ++ legendreQ(n, x) returns the Legendre function
+    ++ of the second kind or evaluates it at x if x is a number.
+    ++ \example{legendreQ(3,jWSExpr x)}
+    legendreP  : (%, %, %) -> %
+    ++ legendreP(n, m, x) returns the associated Legendre polynomial
+    ++ of the first type or evaluates it at x if x is a number.
+    legendreQ  : (%, %, %) -> %
+    ++ legendreQ(n, m, x) returns the associated Legendre function
+    ++ of the second kind or evaluates it at x if x is a number.
+    sphericalHarmonicY : (%, %, %, %) -> %
+    ++ sphericalHarmonicY(l, m, theta, phi) returns the spherical
+    ++ harmonic Y function or evaluates it.
+    gegenbauerC : (%, %) -> %
+    ++ gegenbauerC(n,x) returns the renormalized form of the
+    ++ Gegenbauer polynomial or evaluates it at x if x is a number.
+    gegenbauerC : (%, %, %) -> %
+    ++ gegenbauerC(n,lambda,x) returns the Gegenbauer polynomial
+    ++ or evaluates it at x if x is a number.
+    chebyshevT : (%, %) -> %
+    ++ chebyshevT(n, x) returns the Chebyshev polynomial of the first kind
+    ++ or evaluates it at x if x is a number.
+    chebyshevU : (%, %) -> %
+    ++ chebyshevU(n, x) returns Chebyshev polynomial of the second kind
+    ++ or evaluates it at x if x is a number.
+    hermiteH : (%, %) -> %
+    ++ hermiteH(n, x) returns the Hermite polynomial or evaluates
+    ++ it at x if x is a number.
+    laguerreL : (%, %) -> %
+    ++ laguerreL(n, x) returns the Laguerre polynomial or evaluates
+    ++ it at x if x is a number.
+    ++ For example:
+    ++ \example{laguerreL(5, jWSExpr x)}
+    laguerreL : (%, %, %) -> %
+    ++ laguerreL(n, a, x) returns the generalized Laguerre polynomial
+    ++ or evaluates it at x if x is a number.
+    zernikeR : (%, %, %) -> %
+    ++ zernikeR(n, m, x) returns the Zernike radial polynomial
+    ++ or evaluates it at x if x is a number.
+    jacobiP  : (%, %, %, %) -> %
+    ++ jacobiP(n, a, b, x) returns the Jacobi polynomial
+    ++ or evaluates it at x if x is a number.
+    hypergeometric0F1 : (%, %) -> %
+    ++ hypergeometric0F1(a,z) is the hypergeometric 0F1.
+    hypergeometric0F1Regularized : (%, %) -> %
+    ++ hypergeometric0F1Regularized(a,z) is the regularized hypergeometric 0F1.
+    hypergeometric1F1 : (%, %, %) -> %
+    ++ hypergeometric1F1(a,b,z) is the Kummer confluent hypergeometric function
+    ++ 1F1.
+    hypergeometric1F1Regularized : (%, %, %) -> %
+    ++ hypergeometric1F1Regularized(a,b,z) is the regularized confluent
+    ++ hypergeometric function 1F1.
+    hypergeometricU : (%, %, %) -> %
+    ++ hypergeometricU(a,b,z) is the confluent hypergeometric function U.
+    whittakerM : (%, %, %) -> %
+    ++ whittakerM(k,m,x) computes the Whittaker function M of x.
+    whittakerW : (%, %, %) -> %
+    ++ whittakerW(k,m,z) computes the Whittaker function W of z.
+    parabolicCylinderD : (%, %) -> %
+    ++ parabolicCylinderD(nu,x) computes the parabolic cylinder function D of x.
+    coulombF : (%, %, %) -> %
+    ++ coulombF(l,eta,ro) is the regular Coulomb wave function.
+    coulombG : (%, %, %) -> %
+    ++ coulombG(l,eta,ro) is the irregular Coulomb wave function.
+    coulombH1 : (%, %, %) -> %
+    ++ coulombH1(l,eta,ro) is the incoming irregular Coulomb wave function H^(+).
+    coulombH2: (%, %, %) -> %
+    ++ coulombH2(l,eta,ro) is the incoming irregular Coulomb wave function H^(-).
+    qPochhammer : (%, %) -> %
+    ++ qPochhammer(x,q) returns the q-Pochhammer symbol of x.
+    qPochhammer : (%, %, %) -> %
+    ++ qPochhammer(x,q,n) returns the q-Pochhammer symbol of x.
+    qFactorial : (%, %) -> %
+    ++ qFactorial(x,q) returns the q-analog of factorial of x.
+    qBinomial : (%, %, %) -> %
+    ++ qBinomial(n,m,q) returns the q-analog of binomial coefficient.
+    qGamma : (%, %) -> %
+    ++ qGamma(x,q) returns the q-analog of Euler Gamma of x.
+    qPolyGamma : (%, %)-> %
+    ++ qPolyGamma(x,q) returns the q-Digamma of x.
+    qPolyGamma : (%, %, %) -> %
+    ++ qPolyGamma(n,x,q) returns the n-th derivative of the q-digamma
+    ++ function of x.
+    mathieuC : (%, %, %) -> %
+    ++ mathieuC(a,q,z) is the even Mathieu function with
+    ++ characteristic a and parameter q.
+    mathieuS : (%, %, %) -> %
+    ++ mathieuS(b,q,z) is the odd Mathieu function with
+    ++ characteristic b and parameter q.
+    mathieuCPrime : (%, %, %) -> %
+    ++ mathieuCPrime(a,q,z) is the derivative of the even Mathieu function.
+    mathieuSPrime : (%, %, %) -> %
+    ++ mathieuSPrime(b,q,z) is the derivative of the odd Mathieu function.
+    mathieuCharacteristicA : (%, %) -> %
+    ++ mathieuCharacteristicA(r,q) returns the characteristic
+    ++ for even Mathieu function.
+    mathieuCharacteristicB : (%, %) -> %
+    ++ mathieuCharacteristicB(r,q) returns the characteristic
+    ++ for odd Mathieu function.
+    mathieuCharacteristicExponent : (%, %) -> %
+    ++ mathieuCharacteristicExponent(a,q) returns the characteristic exponent
+    ++ of the Mathieu function. 
+    jacobiAmplitude : (%, %) -> %
+    ++ jacobiAmplitude(u,m) computes the amplitude function am.
+    inverseJacobiSn : (%, %) -> %
+    ++ inverseJacobiSn(nu, m) computes the inverse Jacobi SN elliptic function.
+    inverseJacobiCn : (%, %) -> %
+    ++ inverseJacobiCn(nu, m) computes the inverse Jacobi CN elliptic function.
+    ellipticTheta : (%, %, %) -> %
+    ++ ellipticTheta(a, u, q) computes the theta function,
+    ++ a ranges from 1 to 4.
+    ellipticThetaPrime : (%, %, %) -> %
+    ++ ellipticThetaPrime(a, u, q) computes the derivative of the
+    ++ theta function, a ranges from 1 to 4.
+    siegelTheta : (%, %) -> %
+    ++ siegelTheta(tau, s) computes the Siegel theta function.
+    siegelTheta : (%, %, %) -> %
+    ++ siegelTheta(nu, tau, s) computes the Siegel theta function.
+    ellipticK : % -> %
+    ++ ellipticK(m) computes the complete elliptic integral
+    ++ of the first kind.
+    ellipticF : (%, %) -> %
+    ++ ellipticF(phi,m) computes the elliptic integral of the first kind.
+    ellipticE : % -> %
+    ++ ellipticE(x) computes the complete elliptic integral of the second kind.
+    ellipticE : (%, %)-> %
+    ++ ellipticE(phi,m) computes the elliptic integral of the second kind.
+    ellipticPi : (%, %)-> %
+    ++ ellipticPi(n,m) computes the complete elliptic integral
+    ++ of the third kind.
+    ellipticPi : (%, %, %)-> %
+    ++ ellipticPi(n,phi,m) computes the elliptic integral of the third kind.
+    jacobiZeta : (%, %)-> %
+    ++ jacobiZeta(ϕ,m) computes the Jacobi Zeta function.
+    --++ jacobiZeta(phi,m) computes the Jacobi Zeta function.
+    dedekindEta : % -> %
+    ++ dedekindEta(tau) computes the Dedekind modular elliptic eta.
+    dirichletEta : % -> %
+    ++ dirichletEta(z) computes the Dirichlet eta.
+    kleinInvariantJ : % -> %
+    ++ kleinInvariantJ(tau) computes the Klein's absolute invariant.
+    modularLambda : % -> %
+    ++ modularLambda() computes the lambda modular function.
+    guessGeneratingFunction : (WSList(%), %) -> %
+    ++ guessGeneratingFunction(l,x) finds the generating function applied to x from
+    ++ the list of coefficients l. Or from the list of lists l (list of pairs as list
+    ++ (n-th, coef-th)).
+    ++ For example:
+    ++ \example{guessGeneratingFunction([1,2,4,8],x)}
+    guessGeneratingFunction : (%, %) -> %
+    ++ guessGeneratingFunction(l,x) finds the generating function applied to x from
+    ++ the list of coefficients l. Or from the list of lists l (list of pairs as list
+    ++ (n-th, coef-th)).
+    ++ For example:
+    ++ \example{guessGeneratingFunction(jWSExpr("{1,2,4,8}"),x)}
+    guessSequenceFunction : WSList(WSInteger) -> %
+    ++ guessSequenceFunction(l) finds the sequence from the list of coefficients l.
+    ++ For example:
+    ++ \example{guessSequenceFunction(jWSExpr("{1,2,4,8}"))}
+    guessSequenceFunction : % -> %
+    ++ guessSequenceFunction(l) finds the sequence from the list of coefficients l
+    ++ Or from the list of lists l (list of pairs as list (n-th, coef-th)).
+    ++ For example:
+    ++ \example{guessSequenceFunction(jWSExpr("{1,2,4,8}"))}
+    guessSequenceFunction : (%, %) -> %
+    ++ guessSequenceFunction(l,x) finds the sequence function applied to x from the
+    ++ list of coefficients l. For example:
+    ++ \example{guessSequenceFunction([1,2,4,jWSInt 8]::WSList(WSInteger),x)}
+    series : (%, %) -> %
+    ++ series(expr, opt) returns a series from expr.
+    ++ \example{x:=jWSExpr(x);a:=jWSExpr(a);}
+    ++ \example{opt:=jWSList [x,pi()$WSEXPR/4,7]}
+    ++ \example{series(sin(a*x),opt)}
+    ++ \example{series(cos(x),"\{x, 0, 12\}")}
+    ++ \example{series(inverseErfc(x),"\{x,0,3\}")}
+    sum : (%, %) -> %
+    ++ sum(f(n),range) returns the sum f(imin) + ... + f(imax) defined
+    ++ by the list range, for example \example{jWSExpr("\{i, imin, imax\}")}.
+    ++ See Wolfram Language specifications.
+    sum : (%, %, Segment(Integer)) -> %
+    ++ sum(f(n),n, a..b) returns the sum f(a) + ... + f(b).
+    sum : (%, Symbol) -> %
+    ++ sum(f(n),n) returns the indefinite sum of f(n).
+    product : (%, %) -> %
+    ++ product(f(n),range) returns the product f(imin) * ... * f(imax) defined
+    ++ by the list range, for example \example{jWSExpr("\{i, imin, imax\}")}.
+    ++ See Wolfram language specifications.
+    product : (%, %, Segment(Integer)) -> %
+    ++ product(f(n),n, a..b) returns the product f(a) * ... * f(b).
+    product : (%, Symbol) -> %
+    ++ product(f(n),n) returns the indefinite product of f(n).
+    numericSum : (%, %) -> %
+    ++ numericSum(f(n),range) returns an evaluated numerical approximation of
+    ++ the sum f(imin) + ... + f(imax) defined by the list range,
+    ++ for example \example{jWSExpr("\{i, imin, imax\}")}.
+    ++ See Wolfram language specifications.
+    numericSum     : (%, %, Segment(Integer)) -> %
+    ++ numericSum(f(n),n, a..b) returns an evaluated numerical approximation of the
+    ++ sum f(a) + ... + f(b).
+    numericProduct : (%, %) -> %
+    ++ numericProduct(f(n),range) returns an evaluated numerical approximation of
+    ++ the sum f(imin) + ... + f(imax) defined by the list range,
+    ++ for example \example{jWSExpr("\{i, imin, imax\}")}.
+    ++ See Wolfram language specifications.
+    numericProduct : (%, %, Segment(Integer)) -> %
+    ++ numericProduct(f(n),n, a..b) returns an evaluated numerical approximation of the
+    ++ product f(a) * ... * f(b).
+
+    minimize : (%, %) -> %
+    ++ minimize(expr, vars) is the WS symbolic minimization function.
+    ++ expr can contain constraints if it is a WS list of constraints with
+    ++ function to minimize as the first element. Global optimization function
+    ++ otherwise.
+    minimize : (%, Symbol) -> %
+    ++ minimize(expr, sym) symbolically minimizes expression function expr
+    ++ with respect to sym. expr can contain constraints if it is a WS list
+    ++ of constraints with function to minimize as the first element.
+    ++ Global optimization function otherwise.
+    minimize : (%, %, %) -> %
+    ++ minimize(expr, vars, dom) is the WS symbolic minimization function.
+    ++ dom restricts the domain of variables, for example, Integers.
+    numericMinimize : (%, %) -> %
+    ++ numericMinimize(expr, vars) minimizes numerically the expression
+    ++ function expr with respect to vars. For example,
+    ++ global optimization from the SIAM 100 digits challenge:
+    ++ \example{x := jWSExpr(x);y:=jWSExpr y;}
+    ++ \example{expr := exp(sin(50*x))+sin(60*exp(y))+ sin(70*sin(x))+
+    ++ sin(sin(80*y))-sin(10*(x+y))+(x^2+y^2)/4}
+    ++ \example{numericMinimize(expr, jWSList [x,y])}
+    numericMinimize : (%, Symbol) -> %
+    ++ numericMinimize(expr, sym) minimizes numerically the expression
+    ++ function expr with respect to sym.
+    numericMinimize : (%, %, %) -> %
+    ++ numericMinimize(expr, vars, dom) minimizes numerically the expression
+    ++ function expr with respect to vars and vars restricted to the domain dom.
+
+    maximize : (%, %) -> %
+    ++ maximize(expr, vars) is the WS symbolic maximization function.
+    ++ expr can contain constraints if it is a WS list of constraints with
+    ++ function to maximize as the first element. Global optimization function
+    ++ otherwise.
+    maximize : (%, Symbol) -> %
+    ++ maximize(expr, sym) symbolically maximizes expression function expr
+    ++ with respect to sym. expr can contain constraints if it is a WS list
+    ++ of constraints with function to maximize as the first element.
+    ++ Global optimization function otherwise.
+    maximize : (%, %, %) -> %
+    ++ maximize(expr, vars, dom) is the WS symbolic maximization function.
+    ++ dom restricts the domain of variables, for example, Integers.
+    numericMaximize : (%, %) -> %
+    ++ numericMaximize(expr, vars) maximizes numerically the expression
+    ++ function expr with respect to vars.
+    numericMaximize : (%, Symbol) -> %
+    ++ numericMaximize(expr, sym) maximizes numerically the expression
+    ++ function expr with respect to sym.
+    numericMaximize : (%, %, %) -> %
+    ++ numericMaximize(expr, vars, dom) maximizes numerically the expression
+    ++ function expr with respect to vars and vars restricted
+    ++ to the domain dom.
+
+    integrate : (%, %) -> %
+    ++ integrate(expr, opts|var) integrates expr with respect to opt or var
+    ++ as options. For example:
+    ++ \example{x:=jWSExpr x;integrate(1/(x^4-1),x)}
+    ++ \example{opt:=jWSList [x,-1,1]}
+    ++ \example{integrate(cos(x),opt)}
+    ++ => 2 sin(1)
+    ++ \example{integrate(cos(x),"\{x,-1.0,1.0\}")}
+    ++ => 1.68294
+    integrate : (%, %, Segment(Integer)) -> %
+    ++ integrate(expr, var, seg) is the definite integration of expr
+    ++ with respect to var using segment seg. 
+    integrate : (%, Symbol) -> %
+    ++ integrate(expr, var) is the indefinite integration of expr
+    ++ with respect to var.
+    numericIntegrate : (%, %) -> %
+    ++ numericIntegrate(expr, opt|var) integrates numerically expr with respect
+    ++ to opt or var as options.
+    numericIntegrate : (%, %, Segment(Integer)) -> %
+    ++ numericIntegrate(expr, var, seg) integrates expr using segment seg
+    ++ with respect to var.
+    limit : (%, %) -> %
+    ++ limit(expr, params) returns the limit, eventually nested or
+    ++ multivariate, of expr.
+    ++ For example:
+    ++ \example{x:=jWSExpr x; limit(sin(x)-sin(x-1/x),"x->Infinity")}
+    minLimit : (%, %) -> %
+    ++ minLimit(expr, params) returns the min limit, eventually nested or
+    ++ multivariate, of expr.
+    maxLimit : (%, %) -> %
+    ++ maxLimit(expr, params) returns the max limit, eventually nested or
+    ++  multivariate, of expr.
+    -- TODO: documentation
+    solve : (Equation(%), %) -> WSL(WSL(%))
+    ++ solve(eq, vars) tries to solve the equation eq.
+    solve : (%, %) -> WSL(WSL(%))
+    ++ solve(expr, vars) tries to solve the expression expr.
+    solve : (Equation(%), %, %) -> WSL(WSL(%))
+    ++ solve(expr, vars, dom) tries to solve the expression expr.
+    solve : (%, %, %) -> WSL(WSL(%))
+    ++ solve(expr, vars, dom) tries to solve the expression expr.
+    numericSolve : (Equation(%), %) -> %
+    ++ numericSolve(eq, vars) returns the solution(s) to the equation eq.
+    numericSolve : (%, %) -> %
+    ++ numericSolve(expr, vars) returns the solution(s) to the expression expr.
+    realNumericSolve : (Equation(%), %) -> %
+    ++ realNumericSolve(eq, vars) returns the real solution(s) to the equation eq.
+    realNumericSolve : (%, %) -> %
+    ++ realNumericSolve(expr, vars) returns the real solution(s) to the expression expr.
+
+    fourier : % -> %
+    ++ fourier(expr) returns the discrete Fourier transform
+    ++ from a list of numbers.
+    fourier : (%, %) -> %
+    ++ fourier(expr, pos) returns the elements of the discrete
+    ++ Fourier transform from a list of numbers with position(s)
+    ++ in the list pos.
+    fourier : WSL(%) -> WSL(%)
+    ++ fourier(list) returns the discrete Fourier transform
+    ++ from the list of numbers.
+    fourier : (WSL(%), WSL(%)) ->WSL(%)
+    ++ fourier(list, lpos) returns the elements of the discrete
+    ++ Fourier transform from a list of numbers with position(s)
+    ++ in the list lpos.
+    inverseFourier : % -> %
+    ++ inverseFourier(expr) returns the discrete inverse Fourier
+    ++ transform from a list of numbers.
+    inverseFourier : (%, %) -> %
+    ++ inverseFourier(expr, pos) returns the elements of the discrete
+    ++ inverse Fourier transform from a list of numbers with position(s)
+    ++ in the list pos.
+    inverseFourier : WSL(%) -> %
+    ++ inverseFourier(expr) returns the discrete inverse Fourier
+    ++ transform from a list of numbers.
+    inverseFourier : (WSL(%), WSL(%)) -> WSL(%)
+    ++ inverseFourier(list, lpos) returns the elements of the discrete
+    ++ inverse Fourier transform from a list of numbers with position(s)
+    ++ in the list lpos.
+
+    derivative : (BasicOperator, %) -> %
+    ++ derivative(func,n) returns the derivative of order n of func.
+    ++ \example{fprime:=derivative(operator('f),1)}
+    derivative : (BasicOperator, %, %) -> %
+    ++ derivative(func, n, var) returns the derivative of order n of func
+    ++ applied to var.
+    ++ \example{x := jWSExpr x}
+    ++ \example{fprimex:=derivative(operator('f),1,x)}
+    dSolve : (%, %, %) -> %
+    ++ dSolve(expr, funcs, vars) solves the (list of) differential equation(s)
+    ++ expr for the function(s) funcs with independent variable(s) vars.
+    ++ \example{x:=jWSExpr x;}
+    ++ \example{fx:=derivative(operator('f),0,x)}
+    ++ \example{fprimex:=derivative(operator('f),1,x)}
+    ++ \example{dSolve(jWSEqual(fprimex + fx , a *sin(x)),fx,x)}
+    dSolve : (Equation(%), %, %)  -> %
+    ++ dSolve(eq, func,var) solves the differential equation eq
+    ++ for the function(s) funcs with independent variable(s) vars.
+    ++ \example{x:=jWSExpr x;}
+    ++ \example{fx:=derivative(operator('f),0,x)}
+    ++ \example{fprimex:=derivative(operator('f),1,x)}
+    ++ \example{dSolve(fprimex + fx = a * sin(x)/cos(x),fx,x)}
+    dSolveValue : (%, %, %) -> %
+    ++ dSolveValue(expr,funcs, vars) returns the value determined by the
+    ++ differential equation(s) in expr for the function(s) funcs
+    ++ with independent variable(s) vars.
+    ++ \example{x:=jWSExpr x;}
+    ++ \example{f:=derivative(operator('f),0)}
+    ++ \example{f0:=derivative(operator('f),0,0)}
+    ++ \example{fx:=derivative(operator('f),0,x)}
+    ++ \example{fprimex:=derivative(operator('f),1,x)}
+    ++ \example{dSolveValue(jWSExpr([jWSEqual(fprimex + fx , a *sin(x)/cos(x)), jWSEqual(f0,0)]),f,x)}
+    dSolveValue : (Equation(%), %, %)  -> %
+    ++ dSolveValue(eq, func,var) returns the value determined by the
+    ++ differential equation eq for the function func
+    ++ with independent variable var.
+    numericDSolve : (%, %, %) -> %
+    ++ numericDSolve(expr,fun,xrange) solves numerically the differential
+    ++ equation(s) in expr for the function fun, in the range xrange.
+    ++ Other combinations of parameters are also available.
+    numericDSolve : (Equation(%), %, %) -> %
+    ++ numericDSolve(eq,fun,xrange) solves numerically the differential
+    ++ equation eq for the function fun, in the range xrange.
+    numericDSolve : (%, %, %, %) -> %
+    ++ numericDSolve(expr,fun,xrange,yrange) solves numerically the differential
+    ++ equation(s) in expr for the function fun, in the ranges xrange and yrange.
+    ++ Other combinations of parameters are also available (see documentation).
+    numericDSolveValue : (%, %, %) -> %
+    ++ numericDSolveValue(expr,fun,xrange) returns the numerical value solution
+    ++ of the differential equation(s) in expr for the function fun,
+    ++ in the range xrange.
+    ++ Other combinations of parameters are also available (see documentation).
+    numericDSolveValue : (Equation(%), %, %) -> %
+    ++ numericDSolveValue(eq,fun,xrange) returns the numerical solution of
+    ++ the differential equation eq for the function fun, in the range xrange.
+    numericDSolveValue : (%, %, %, %) -> %
+    ++ numericDSolveValue(expr,fun,xrange,yrange) returns the numerical solution
+    ++ of the differential equation(s) in expr for the function fun,
+    ++ in the ranges xrange and yrange.
+    ++ Other combinations of parameters are also available (see documentation).
+
+    residue : (%, %) -> %
+    ++ residue(expr, {x,x0}) returns the residue of expr at x0.
+    residueSum : (%, %) -> %
+    ++ residueSum(expr, var) returns the residue of expr.
+    ++ \example{residueSum(Gamma(x),x)}
+    reduce : (Equation(%), %) -> %
+    ++ reduce(expr,lvars) tries to reduce the equation in expr.
+    reduce : (%, %) -> %
+    ++ reduce(expr,lvars) tries to reduce the (in)equation in expr.
+    reduce : (Equation(%), %, %) -> %
+    ++ reduce(expr,lvars,dom) tries to reduce the equation in expr.
+    reduce : (%, %, %) -> %
+    ++ reduce(expr,lvars,dom) tries to reduce the (in)equation in expr.
+    findInstance : (Equation(%), %) -> WSL(WSL(%))
+    ++ findInstance(expr,lvars) tries to find an instance of the equation in expr.
+    findInstance : (%, %) -> WSL(WSL(%))
+    ++ findInstance(expr,lvars) tries to find an instance of the
+    ++ (in)equation in expr.
+    findInstance : (Equation(%), %, %) -> WSL(WSL(%))
+    ++ findInstance(expr,lvars,dom) tries to find an instance of the equation
+    ++ in expr.
+    findInstance : (Equation(%), %, %, %) -> WSL(WSL(%))
+    ++ findInstance(expr,lvars,dom,n) tries to find n instance(s) to the
+    ++ equation in expr.
+    findInstance : (%, %, %) -> WSL(WSL(%))
+    ++ findInstance(expr,lvars,dom) tries to find an instance to the equation
+    ++ in expr.
+    findInstance : (%, %, %, %) -> WSL(WSL(%))
+    ++ findInstance(expr,lvars,dom, n) tries to find n instance(s) to
+    ++ the (in)equation in expr.
+    
+    numerator : % -> %
+    ++ numerator(expr) returns the numerator of expr.
+    denominator : % -> %
+    ++ denominator(expr) returns the denominator of expr.
+    numerDenom : % -> WSL(%)
+    ++ numerDenom(expr) returns the numerator
+    ++ and denominator of expr.
+ 
+    polynomial? : (%, %) -> Boolean
+    ++ polynomial?(p,x) checks whether or not p is a polynomial in x.
+    polynomial? : (%, WSL(%)) -> Boolean
+    ++ polynomial?(p,vlist) checks whether or not p is a polynomial in
+    ++ the list of variables vlist.
+    polynomialExpression? : (%, %) -> Boolean
+    ++ polynomialExpression?(p,x) checks whether or not p is a
+    ++ polynomial expression in x.
+    polynomialExpression? : (%, WSL(%)) -> Boolean
+    ++ polynomialExpression?(p,vlist) checks whether or not p is a
+    ++ polynomial expression in the list of variables vlist.
+    rationalExpression? : (%, %) -> Boolean
+    ++ rationalExpression?(p,x) checks whether or not p is a
+    ++ rational expression in x.
+    rationalExpression? : (%, WSL(%)) -> Boolean
+    ++ rationalExpression?(p,vlist) checks whether or not p is a
+    ++ rational expression in the list of variables vlist.
+    variables : % -> WSL(%)
+    ++ variables(p) returns the list of variables in p.
+    exponent  : (%, %) -> %
+    ++ exponent(p,expr) returns the maximum exponent of p for expr.
+    ++ \example{x:= jWSExpr x;y := jWSExpr y}
+    ++ \example{p:=(x^2-2)^3*(y*x^3+x^11*y^7)*(y^5+x*y^2+x^11+y)}
+    ++ \example{exponent(%,(x^2-2))}
+    exponent  : (%, %, %) -> %
+    ++ exponent(p, expr, map) applies map to the exponents related to expr
+    ++ and returns it. By default map = "Max".
+    ++ \example{x:= jWSExpr x;y := jWSExpr y}
+    ++ \example{p:=expand((x^2-2)^3*(y*x^3+x^11*y^7)*(y^5+x*y^2+x^11+y))}
+    ++ \example{exponent(p,x,"Min")}
+    coefficient : (%, %) -> %
+    ++ coefficient(p,expr) returns the coefficient of expr in p.
+    ++ \example{x:= jWSExpr x}
+    ++ \example{coefficient((x - y)^4, x * y^3)}
+    coefficient : (%, %, %) -> %
+    ++ coefficient(p, expr, n) returns the coefficient of expr^n in p.
+    coefficientList : (%, %) -> %
+    ++ coefficientList(p,expr) returns the list of coefficients of expr in p.
+    coefficientRules : % -> %
+    ++ coefficientRules(p) returns the coefficients and exponents
+    ++ of p as WS rules.
+    coefficientRules : (%, %) -> %
+    ++ coefficientRules(p,vars) returns the coefficients and exponents
+    ++ of p with respect to var(s) as WS rules.
+    fromCoefficientRules : (%, %) -> %
+    ++ fromCoefficientRules(list, vars) constructs the polynomial
+    ++ from the list of coefficients and exponents rules.
+    ++ \example{x:= jWSExpr x;y := jWSExpr y}
+    ++ \example{coefficientRules((x + y)^2+x^11,jWSExpr [x,y])}
+    ++ \example{fromCoefficientRules(%, jWSExpr [x,y])}
+    monomialList : % -> %
+    ++ monomialList(p) returns the list of monomials in p.
+
+    polynomialQuotient  : (%, %, %) -> %
+    ++ polynomialQuotient(p1, p2, x) returns the quotient of p1 and p2 in x. 
+    polynomialRemainder : (%, %, %) -> %
+    ++ polynomialRemainder(p1,p2, x) returns the remainder of p1 and p2 in x.
+    polynomialQuotientRemainder : (%, %, %) -> WSList(%)
+    ++ polynomialQuotientRemainder(p1,p2,var) returns the quotient and remainder
+    ++ of p1 and p2 in x.
+
+    padeApproximant : (%, %) -> %
+    ++ padeApproximant(expr, "{x,x0, {n,m}"}) returns the Padé approximant at x0.
+
+    symmetricPolynomial : (%, WSL(%)) -> %
+    ++ symmetricPolynomial(n,lvars) returns the n-th elementary symmetric
+    ++ polynomial with respect to variables in lvars.
+    symmetricReduction : (%, WSL(%)) -> WSL(%)
+    ++ symmetricReduction(f,lvars) returns a pair of polynomials representing
+    ++ f = p+q where p is a symmetric polynomial, q the remainder. 
+    symmetricReduction : (%, WSL(%), WSL(%)) -> WSL(%)
+    ++ symmetricReduction(f, lvars, replnt) returns a pair of polynomials
+    ++ representing f = p+q where p is a symmetric polynomial, q the remainder
+    ++ where variables in p replaced by the ones in replnt.
+
+    polynomialGCD  : (%, %) -> %
+    ++ polynomialGCD(p1, p2) returns the greatest common divisor of
+    ++ p1 and p2.
+    polynomialGCD  : (%, %, %) -> %
+    ++ polynomialGCD(p1, p2, opt) returns the greatest common divisor of
+    ++ p1 and p2 with options opt, for example Modulus->p. 
+    polynomialExtendedGCD : (%, %, %) -> %
+    ++ polynomialExtendedGCD(p1, p2, x) returns the greatest common divisor
+    ++ of p1 and p2 considered as univariate polynomials in x
+    polynomialLCM : (%, %) -> %
+    ++ polynomialLCM(p1,p2) returns the least common divisor of p1 and p2.
+    polynomialLCM : (%, %, %) -> %
+    ++ polynomialLCM(p1,p2,opt) returns the least common divisor of p1 and p2
+    ++ with options opt, for example an Extension rule.
+    polynomialMod : (%, %) -> %
+    ++ polynomialMod(p,mod) reduces modulo p the integer coefficients
+    ++ of the polynomial p.
+    resultant : (%, %, %) -> %
+    ++ resultant(p1,p2,x) returns the resultant of p1 and p2.
+    subResultants : (%, %, %) -> %
+    ++ subResultants(p1,p2,x) returns the subresultant of p1 and p2 with
+    ++ respect to x.
+    discriminant : (%, %) -> %
+    ++ discriminant(p, x) returns the discriminant of p with respect to x.
+    groebnerBasis : (%, %) -> WSL(%)
+    ++ groebnerBasis(lpoly, lvar) computes a Groebner basis from the list
+    ++ of polynomials lpoly relative to the list of vars lvars.
+    groebnerBasis : (%, %, %) -> WSL(%)
+    ++ groebnerBasis(lpoly, lvar, opt) computes a Groebner basis from the list
+    ++ of polynomials lpoly relative to the list of variables in lvars
+    ++ without variables in opt. Opt can also give the modulus to compute it:
+    ++ "Modulus -> p". 
+    polynomialReduce : (%, %, %) -> %
+    ++ polynomialReduce(poly,lpoly,lvar) returns a minimal representation of
+    ++ the polynomial poly in terms of the polynomial list lpoly with
+    ++ respect to the list of variables lvar. 
+
+    factorPolynomial : % -> %
+    ++ factorPolynomial(p) factorizes the polynomial p.
+    ++ For example:
+    ++ \example{x := jWSExpr x}
+    ++ \example{p:=expand(chebyshevT(7,x)* chebyshevU(9,x))}
+    ++ \example{factorPolynomial p}
+    -- TODO: factor jWSExpr 70421676397833365421106577172389167104000000000000
+    factor : % -> %
+    ++ factor(expr) factors the expression or polynomial expr.
+    factor : (%, %) -> %
+    ++ factor(expr, opt) factors the expression or polynomial expr.
+    ++ For example:
+    ++ \example{x := jWSExpr x;}
+    ++ \example{factor(1 + x^2, "GaussianIntegers -> True")}
+    factorSquareFree : % -> %
+    ++ factorSquareFree(expr) factors the expression or polynomial expr in square
+    ++ free factors.
+    factorTerms : % -> %
+    ++ factorTerms(p) factors out numerical factors of the expression
+    ++ or polynomial expr.
+    factorTerms : (%, %) -> %
+    ++ factorTerms(p, var) factors out numerical factors of the expression
+    ++ or polynomial expr without those related to var.
+    factorTerms : (%, WSL(%)) -> %
+    ++ factorTerms(p, vars) factors the expression or polynomial expr by pulling out
+    ++ numerical factors without those related to var(s).
+    factorTermsList : % -> WSList(%)
+    ++ factorTermsList(expr) is the counterpart of factorTerms but here returned as
+    ++ a list of pairs (numerical factor, polynomial factor).
+    factorTermsList : (%, %) -> WSList(%)
+    ++ factorTermsList(expr, vars) is the counterpart of factorTerms but here
+    ++ returned as a list of pairs (numerical factor, polynomial factor).
+    ++ The numerical factors related to var(s) are not factored.
+    factorList : % -> WSList(WSList(%))
+    ++ factorList(expr) factors the expression or polynomial expr, but
+    ++ returns the result as a list of pairs (factor, exponent).
+    factorSquareFreeList : % -> WSList(WSList(%))
+    ++ factorSquareFreeList(expr) factors the expression or polynomial expr
+    ++ in square free factors but returns the result as a list of pairs
+    ++ (factor, exponent).
+    irreducible? : % -> Boolean
+    ++ irreducible?(p) checks whether or not p is irreducible.
+    irreducible? : (%, %) -> Boolean
+    ++ irreducible?(p) checks whether or not p is irreducible over Gaussian
+    ++ rationals or algebraic extensions.
+
+    decompose : (%, %) -> WSList(%)
+    ++ decompose(poly, x) is a polynomial decomposition function, here,
+    ++ related to x.
+    interpolatingPolynomial : (%, %) -> %
+    ++ interpolatingPolynomial(lpoly,x) interpolates the list of polynomials
+    ++ lpoly with respect to x.
+
+    minimalPolynomial : (%, %) -> %
+    ++ minimalPolynomial(expr,var) returns the minimal polynomial in the
+    ++ variable var of the expression expr.
+    minimalPolynomial : (%, %, %) -> %
+    ++ minimalPolynomial(expr,var, elem) returns the minimal polynomial
+    ++ in the variable var of the expression expr.
+    findRoot : (%, %) -> %
+    ++ findRoot(expr,start) tries to find the root of expr starting at start.
+    ++ \example{x:= jWSExpr x}
+    ++ \example{findRoot(sin(x) + cos(x), "\{x, 0\}")}
+
+    --finiteField : (%, %) -> %
+    --++ finiteField(p,n) returns the finite field p^n where p is a prime.
+
+    normal   : % -> %
+    ++ normal(expr) converts expr to a normal expression from different
+    ++ expression types. Can be applied to a power series for example.
+    ++ For example:
+    ++ \example{x:=jWSExpr x}
+    ++ \example{s:=series(exp(x),jWSExpr "\{x,0,10\}")}
+    ++ \example{normal(s)::EXPR INT}
+    normal   : (%, %) -> %
+    ++ normal(expr, list(Head)||Head) converts objects in expr to a normal
+    ++ expression form from different expression types, with Head, or a
+    ++ list of Head-s.
+    simplify : % -> %
+    ++ simplify(expr) simplifies the expr. 
+    ++ \example{x:=jWSExpr("x"); simplify(sqrt(x^2)^2)}
+    simplify : (%, %) -> %
+    ++ simplify(expr, assumptions) simplifies the expression expr
+    ++ assuming that assumptions are satisfied.
+    ++ For example:
+    ++ \example{x:=jWSExpr("x"); simplify(sqrt(x^2), "x>0")}
+    extendedSimplify : % -> %
+    ++ extendedSimplify(expr) is the extended version of simplify.
+    ++ This is the full version of simplify.
+    ++ \example{x:= jWSExpr x}
+    ++ \example{expr := Gamma(x)/Gamma(x-1)}
+    ++ Compare with simplify(expr).
+    ++ \example{extendedSimplify(expr)}
+    extendedSimplify : (%, %) -> %
+    ++ extendedSimplify(expr, assumptions) is the extended
+    ++ version of simplify with respect to assumptions
+    ++ or ExcludedForms. This is the full version.
+    refine : (%, %) -> %
+    ++ refine(expr, assums) refines the expression expr with assumptions
+    ++ assums.
+    assuming : (%, %) -> %
+    ++ assuming(assumption(s), expr) uses the assumptions for use of
+    ++ expr with refine, simplify and integrate for example.
+    ++ The assumption(s) are not always supported by MathLink.
+    ++ Use assumptions with 'refine' etc. directly instead.
+    expand : % -> %
+    ++ expand(expr) puts out products and positive powers of integers
+    ++ of the expression expr.
+    expand : (%, %) -> %
+    ++ expand(expr, opt) is the expand version with excluded pattern-s
+    ++ or any other options available (for example "Modulus->p").
+    extendedExpand : % -> %
+    ++ extendedExpand(expr) puts out all products and positive powers
+    ++ of integers.
+    collect : (%, %) -> %
+    ++ collect(expr, var) collects same power terms with respect to
+    ++ variable var.
+    collect : (%, WSL(%)) -> %
+    ++ collect(expr, vars)  collects same power terms with respect to
+    ++ variables in vars.
+    apart : % -> %
+    ++ apart(expr) converts a rational expression as a sum of terms,
+    ++ reducing denominator(s).
+    apart : (%, %) -> %
+    ++ apart(expr, vars) converts a rational expression as a sum of terms
+    ++ as the one arg apart does but only for vars (the others are considered
+    ++ as constants).
+    expandNumerator   : % -> %
+    ++ expandNumerator(expr) expands numerators of rational expression expr.
+    expandDenominator : % -> % 
+    ++ expandDenominator(expr) expands denominators of rational
+    ++ expression expr.
+    cancel : % -> %
+    ++ cancel(expr) cancels common factors in numerators and denominators
+    ++ of the rational expression expr.
+    together : % -> % 
+    ++ together(expr) puts together terms over a common denominator cancelling
+    ++ common factors.
+    distribute : % -> % 
+    ++ distribute(expr) distributes expr over addition.
+    ++ For illustration:
+    ++ \example{distribute(jWSExpr "(x + y) * (a + b + c)")}
+    distribute : (%, %) -> % 
+    ++ distribute(f,g) distributes f over g.
+    hornerForm : (%, %) -> %
+    ++ hornerForm(expr, x) returns the Horner form of expr
+    ++ (minimizing multiplications).
+    powerExpand : % -> %
+    ++ powerExpand(expr) expands powers in expr assuming no branch cut.
+    powerExpand : (%, %) -> %
+    ++ powerExpand(expr, sym) expands powers in expr with respect to sym,
+    ++ assuming no branch cut.
+    complexExpand : % -> %
+    ++ complexExpand(expr) expands expr assuming variables are real.
+    complexExpand : (%, %) -> %
+    ++ complexExpand(expr, cvars) expands expr assuming all but cvars
+    ++ variables are real.
+    trigExpand : % -> %
+    ++ trigExpand(expr) tries to expand (hyperbolic) trigonometric
+    ++ functions in expr. 
+    functionExpand : % -> %
+    ++ functionExpand(expr) tries to expand functions in expr to
+    ++ more elementary functions.
+    ++ For example:
+    ++ \example{functionExpand sphericalBesselJ(3,8)} 
+    functionExpand : (%, %) -> %
+    ++ functionExpand(expr,assumptions) tries to expand functions in expr to
+    ++ more elementary functions assuming that assumptions are satisfied.
+    trigReduce : % -> %
+    ++ trigReduce(expr) reduces power and products of trigonometric functions.
+    rootReduce : % -> %
+    ++ rootReduce(expr) reduces root functions.
+
+    trigFactor : % -> %
+    ++ trigFactor(expr) factors (hyperbolic) trigonometric
+    ++ functions in expr.
+    trigFactorList : % -> WSL(%)
+    ++ trigFactorList(expr) returns a list of factors of (hyperbolic)
+    ++ trigonometric functions in expr.
+    trigToExp : % -> %
+    ++ trigToExp(expr) returns expr with (hyperbolic) trigonometric
+    ++ functions converted to, eventually complex, exponentials.
+    expToTrig : % -> %
+    ++ expToTrig(expr) returns expr with exponentials converted to
+    ++ (hyperbolic) trigonometric functions.
+    toString : (%, %) -> String
+    ++ toString(expr, form) returns the string representation of expr
+    ++ with WS language format form.
+    toExpression : String -> %
+    ++ toExpression(expr) converts expr to a WS expression and evaluates it.
+    toExpression : (String, %) -> %
+    ++ toExpression(expr, form) converts expr to a WS expression and evaluates it
+    ++ with output in the format form.
+    toExpression : (String, %, %) -> %
+    ++ toExpression(expr, form, h) converts expr to a WS expression and evaluates it
+    ++ with output in the format form but wrapping the head with h. `Hold` for example. 
+    rationalApproximation : % -> %
+    ++ rationalApproximation(expr) tries to find a rational approximation
+    ++ of the expression expr.
+    rationalApproximation : (%, %) -> %
+    ++ rationalApproximation(expr, dx) tries to find a rational approximation
+    ++ of the expression expr within tolerance dx.
+    jlGreedyEval : Boolean -> Void
+    ++ jlGreedyEval(bool) toggles automatic arithmetic operations.
+    ++ Plus[a, a] can become Times[2, a] using or not Julia `weval`.
+    jlEval    : (%, String) -> %
+    ++ jlEval(expr, param) evaluates expression expr with param as parameter(s).
+    ++ See also `eval` or `replaceAll`.
+    ++ For example:
+    ++ \example{x:=jWSExpr("x");jlEval(sqrt(x),"x=2.0")}
+    jlEval    : (%, String, String) -> %
+    ++ jlEval(expr, param1, param2) evaluates expression expr
+    ++ with param1 and param2 as parameters.
+    ++ See also `eval` or `replaceAll`.
+    ++ \example{a:=jWSExpr("a");b:=jWSExpr("b");}
+    ++ \example{jlEval(sqrt(a^2+b^2),"a=1.0","b=1.0")}
+    jlEval    : (%, String, String, String) -> %
+    ++ jlEval(expr, param11, param2, param3) evaluates expression expr
+    ++ with param1, param2 and param3 as parameters.
+    ++ See also `eval` or `replaceAll`.
+    length : % -> %
+    ++ length(expr) returns the length of expr seen as a list.
+    level : (%, %) -> WSL(%)
+    ++ level(expr, lev) returns the list of expression expr at level lev.
+    level : (%, %, Boolean) -> WSL(%)
+    ++ level(expr, lev, head) returns the list of expression expr at level lev
+    ++ with heads if head is true.
+    extract : (%, NonNegativeInteger) -> %
+    ++ extract(expr,i) returns the i-th element of expr seen as a list.
+    keys : % -> %
+    ++ keys(expr) returns the key elements in expr if any.
+    values : % -> %
+    ++ values(expr) returns the values elements in expr.
+    lookup : (%, %) -> %
+    ++ lookup(assocs,keys) returns value(s) associated to key(s).
+    lookup : (%, %, %) -> %
+    ++ lookup(assocs,keys, defaultval) returns value(s) associated to key(s)
+    ++ if key(s) exist(s), otherwise defaultval
+    quantityUnit : % -> %
+    ++ quantityUnit(val) returns unit of val.
+    quantityMagnitude : % -> %
+    ++ quantityMagnitude(val) returns magnitude of val.
+
+    jlDisplay : WSExpression -> WSExpression
+    ++ jlDisplay(expr) returns the traditional form of expr.
+    ++ This is equivalent to:
+    ++ jWSExpr "Format[Sin[x]]" => sin(x)
+    jlDisplay : (WSExpression, WSExpression) -> WSExpression
+    ++ jlDisplay(expr, form) returns the `form` form of expr
+    ++ resulting for example in: "Format[Sin[x], TeXForm]" => \sin x
+
+    baseForm : (%, %) -> %
+    ++ baseForm(x, n) returns the printed representation of x in base b.
+    numberForm : % -> %
+    ++ numberForm(x) returns the default printed representation of x.
+    numberForm : (%, %) -> %
+    ++ numberForm(x, expr) returns the approximate printed
+    ++ representation of x with expr as specification
+    ++ (number of digits of precision or a 2-list of number of digits
+    ++ and the number of digits after the decimal point).
+    decimalForm : % -> %
+    ++ decimalForm(x) returns the printed representation of x
+    ++ in decimal form i.e. without scientific notation.
+    decimalForm : (%, %) -> %
+    ++ decimalForm(x, expr) returns the printed representation of x
+    ++ in decimal form with expr as specification
+    ++ (number of digits of precision or a 2-list of number of digits
+    ++ and the number of digits after the decimal point).
+    scientificForm : % -> %
+    ++ scientificForm(x) returns the printed representation
+    ++ of x in scientific form.
+    scientificForm : (%, %) -> %
+    ++ scientificForm(x,n) returns the printed representation
+    ++ of x in scientific form with n digits of precision.
+    engineeringForm : % -> %
+    ++ engineeringForm(x) returns the printed representation
+    ++ of x in engineering form.
+    engineeringForm : (%, %) -> %
+    ++ engineeringForm(x,n) returns the printed representation
+    ++ of x in engineering form with n digits of precision.
+    percentForm : % -> %
+    ++ percentForm(x) returns the printed representation
+    ++ of x in percent form.
+    ++ For example:
+    ++ \example{percentForm jWSExpr 0.50}
+    percentForm : (%, %) -> %
+    ++ percentForm(x,n) returns the printed representation
+    ++ of x in percent with n digits of precision.
+    accountingForm : % -> %
+    ++ accountingForm(x,n) returns the accounting printed
+    ++ representation of x.
+    accountingForm : (%, %) -> %
+    ++ accountingForm(x,n) returns the accounting printed
+    ++ representation of x with n digits of precision.
+    matrixForm : % -> %
+    ++ matrixForm(mat) returns a pretty-printable form of mat i.e.
+    ++ its WS 'MatrixForm'.
+    traditionalForm : % -> %
+    ++ traditionalForm(expr) returns a traditional form of expr i.e.
+    ++ its WS 'TraditionalForm'.
+    quantityForm : (%, %) -> %
+    ++ quantityForm(expr,form) returns expr as a quantity with format
+    ++ form.
+    quantityForm : (%, WSL(%)) -> %
+    ++ quantityForm(expr,lform) returns expr as a quantity with a list
+    ++ of formats lform.
+    replace : (%, %) -> %
+    ++ replace(expr, rule) applies rule(s) to expr.
+    replace : (%, %, %) -> %
+    ++ replace(expr, rule, lev) applies rule to expr with level lev.
+    replacePart : (%, %) -> %
+    ++ replacePart(expr, part) replaces expr using rule(s) expressing position(s).
+    replaceAt : (%, %, %) -> %
+    ++ replaceAt(expr, part, n) replaces the n-th element of expr using rule(s).
+    replaceAll : (%, %) -> %
+    ++ replaceAll(expr, rule) applies rule(s) to expr.
+    replaceRepeated : (%, %) -> %
+    ++ replaceRepeated(expr, rule) applies rule(s) to expr, but repeatedly.
+    select : (%, %) -> %
+    ++ select(expr, form) selects elements of expr if form(element) is true.
+    select : (%, %, %) -> %
+    ++ select(expr, form, n) selects the n first elements of expr if form(element) is true.
+    retractIfCan : % -> Union(JLFloat64, "failed")
+    ++ retractIfCan(expr) retracts expr to a JLFloat64 if it can be retracted
+    ++ to a 64 bits machine float.
+    retractIfCan : % -> Union(DoubleFloat, "failed")
+    ++ retractIfCan(expr) retracts expr to a DoubleFloat if it can be retracted
+    ++ to a Lisp machine float.
+    retractIfCan : % -> Union(Expression(Integer), "failed")
+    ++ retractIfCan(expr) tries to retract expr to an Expression(Integer).
+    retract : % -> Expression(Integer)
+    ++ retract(expr) tries to retract expr to an Expression(Integer).
+    ++ Throws an error otherwise.
+    retractIfCan : % -> Union(Expression(Float), "failed")
+    ++ retractIfCan(expr) tries to retract expr to an Expression(Float).
+    retract : % -> Expression(Float)
+    ++ retract(expr) tries to retract expr to an Expression(Integer).
+    ++ Throws an error otherwise.
+    coerce  : Integer  -> %
+    ++ coerce(z) coerces the integer z to a WSExpression.
+    ++ Convenience function.
+    coerce   : Complex(Integer) -> % -- for example, %i operations
+    ++ coerce(gi) coerces gi to a WSExpression. Convenience function.
+    coerce  : Fraction(Integer)  -> %
+    ++ coerce(q) coerces the rational q to a WSExpression.
+    ++ Convenience function.
+    coerce  : Float  -> %
+    ++ coerce(f) coerces the floating point number f to a WSExpression.
+    ++ Convenience function.
+    coerce : Equation(%) -> %
+    ++ coerce(eq) coerces the equation eq to a WSExpression equation.
+    coerce  : String  -> %
+    ++ coerce(str) coerces the string str to a WSExpression
+    ++ evaluating str as a Wolfram Symbolic Language Expression.
+    ++ For example:
+    ++ \example{expr := "Sqrt[x]"::WSEXPR;jlEval(expr,"x=2.0")}
+    -- The following breaks build process in src/doc and likely in src/input
+    coerce : Symbol -> %
+    ++ coerce(sym) coerces sym to a WSExpression.
+    coerce : WSSymbol -> %
+    ++ coerce(sym) coerces sym to a WSExpression.
+    coerce : List(%) -> %
+    ++ coerce(list) coerces list of WSExpression.
+    coerce : % -> WSInteger
+    ++ coerce(expr) coerces expr to a WSInteger if possible.
+    coerce : % -> WSRational
+    ++ coerce(expr) coerces expr to a WSRational if possible.
+    jlWSPrecision : % -> %
+    ++ jlWSPrecision get precision of expr.
+    jlWSAccuracy : % -> %
+    ++ jlWSAccuracy(expr) get accuracy of expr. 
+    jlWSSetPrecision : (%, %) -> %
+    ++ jlWSSetPrecision(expr, prec) sets precision of expr to prec.
+    jlWSSetAccuracy : (%, %) -> %
+    ++ jlWSSetAccuracy(expr, acc) sets accuracy of expr to acc.
+    jlWSSetOptions : (%, %) -> %
+    ++ jlWSSetOptions(type, opts) sets some internal engine options.
+    -- SetAttributes Hold*
+    jWSData : () -> %
+    ++ jWSData() returns the list of WS symbols.
+    ++ Note: Currently unprintable. 
+    jWSData : String -> %
+    ++ jWSData(sym) returns the entity(ies) associated to sym(s).
+    jWSData : (String, String) -> %
+    ++  jWSData(sym, prop) returns the property of sym.
+    jWSData : (String, String, String) -> %
+    ++ jWSData(sym, prop, ann) returns the annotation for the property of sym.
+    jWSData : % -> %
+    ++ jWSData(sym) returns the entity(ies) associated to sym(s).
+    jWSData : (%, %) -> %
+    ++  jWSData(sym, prop) returns the property of sym.
+    jWSData : (%, %, %) -> %
+    ++ jWSData(sym, prop, ann) returns the annotation for the property of sym.
+    jWSAssociation : WSList(%) -> %
+    ++ jWSAssociation(rules) returns the associations (key->value)
+    ++ created from the rules.
+    jWSTable : (%, %) -> WSList(%)
+    ++ jWSTable(expr, range) applies the expr to the defined range.
+    jWSTable : (%, %, %) -> WSList(WSList(%))
+    ++ jWSTable(expr, range1, range2) applies the expr to the defined ranges.
+    jWSRule : (%,  %) -> %
+    ++ jWSRule(lhs,rhs) returns the Julia WS rule lhs->rhs.
+    jWSRule : Equation(%) -> %
+    ++ jWSRule(eq) returns the Julia WS rule lhs->rhs for the equation eq.
+    ++ For example:
+    ++ \example{x := jWSExpr x}
+    ++ \example{p := 1/2 * legendreQ(5,x)}
+    ++ \example{replaceAll(p, jWSRule(x = jWSExpr "1.55555556444883838383833777333333333"))}
+    jWSEqual : (%,  %) -> %
+    ++ jWSEqual(lhs,rhs) returns the Julia WS equality lhs == rhs.
+    jWSNotEqual : (%,  %) -> %
+    ++ jWSNotEqual(lhs,rhs) returns the Julia WS inequality lhs != rhs.
+    jWSLess : (%,  %) -> %
+    ++ jWSLess(lhs,rhs) returns the Julia WS inequality lhs < rhs.
+    jWSLessEqual : (%,  %) -> %
+    ++ jWSLessEqual(lhs,rhs) returns the Julia WS inequality lhs <= rhs.
+    jWSGreater : (%,  %) -> %
+    ++ jWSGreater(lhs,rhs) returns the Julia WS inequality lhs > rhs.
+    jWSGreaterEqual : (%,  %) -> %
+    ++ jWSGreaterEqual(lhs,rhs) returns the Julia WS inequality lhs >= rhs.
+    jWSQuantity : % -> %
+    ++ jWSQuantity(jWSString(u)) returns quantity unit u of 1.
+    ++ For example:
+    ++ \example{jWSQuantity jWSString "Meter"}
+    jWSQuantity : (%, %) -> %
+    ++ jWSQuantity(x,jWSString(u)) returns quantity unit u of x.
+    ++ For example:
+    ++ \example{jWSQuantity(1.2, jWSString "Meter")}
+    jWSExpr : Symbol -> %
+    ++ jWSExpr(sym) coerces sym to a WSExpression.
+    ++ For example:
+    ++ x := jWSExpr x
+    jWSExpr : Integer -> %
+    ++ jWSExpr(z) returns the Integer z as a WSExpression.
+    jWSExpr : Fraction Integer -> %
+    ++ jWSExpr(q)  returns the Fraction(Integer) q as a WSExpression.
+    jWSExpr : DoubleFloat -> %
+    ++ jWSExpr(r)  returns the DoubleFloat as a WSExpression.
+    jWSExpr : JLFloat64 -> %
+    ++ jWSExpr(r)  returns the JLFloat64  as a WSExpression.
+    jWSExpr : Float -> %
+    ++ jWSExpr(r)  returns the Float r as a WSExpression.
+    jWSExpr : JLFloat -> %
+    ++ jWSExpr(r)  returns the JLFloat r as a WSExpression.
+    jWSExpr : List(%) -> %
+    ++ jWSExpr(list) returns the list of WSExpression
+    ++ as a WSExpression.
+    jWSExpr : String -> %
+    ++ jWSExpr(str) constructs str as a WSExpression evaluating
+    ++ str as a Wolfram Symbolic Language expression.
+    ++ For example:
+    ++ \example{jWSExpr "Factorial[5]"}
+    ++ \example{jWSExpr "3.14159"}
+    ++ \example{jlWSDateString(jWSExpr "Tomorrow")}
+    ++ \example{toString jWSExpr "TextSentences[WikipediaData[_"Sun_"]][[;; 40]]"}
+    ++ Example: jWSExpr "Probability[x < 1, x \[Distributed] NormalDistribution[]]"
+  Implementation ==> JLObject add
+    import from JLUtilityFunctions
+    import from JLStringUtilities
+    import from WSRational
+    import from WSComplex
+    import from WSReal
+    import from WSString
+
+    jlInitialize(true)
+    if not jlUsing("MathLink") then
+      error "The Julia MathLink package is not installed."
+    Rep := SExpression
+
+    jbinop(op,a,b) ==> jlref(concat(["weval(", getind(a), op, getind(b),")"]))
+    junfunc(func,a) ==> jlref(concat(["weval(", func, getind(a),"))"]))
+    jbinfunc(func,a,b) ==>
+      jlref(concat(["weval(",func, getind(a), ",", getind(b),"))"]))
+    jterfunc(func,a,b,c) ==>
+      jlref(concat(["weval(",func, getind(a), ",",
+        getind(b), ",", getind(c)"))"]))
+    jquatfunc(func,a,b,c,d) ==>
+      jlref(concat(["weval(",func, getind(a), ",", getind(b), ",",
+        getind(c), ",", getind(d),"))"]))
+    jbinbop(op,a,b) ==>
+      jlEvalString(concat([getind(a), op, getind(b)]))@Boolean
+    error1(msg, f) ==> error concat [msg, " ", toString f]
+
+    if not jlUsing("MathLink") then
+      error "The Julia MathLink package is not installed."
+    jlEvalString("import MathLink: WExpr, WSymbol, WReal, WRational, WInteger")
+    
+    strToExprInt(s : String) : Union(Expression(Integer), "failed") ==
+      str := concat("0$Expression(Integer)+", s)
+      af := parse(str)$InputForm
+      av := interpret_in_new_env(af)$InputForm
+      retractIfCan(av)$AnyFunctions1(Expression(Integer))
+
+    strToExprFloat(s : String) : Union(Expression(Float), "failed") ==
+      str := concat("0$Expression(Float)+", s)
+      af := parse(str)$InputForm
+      av := interpret_in_new_env(af)$InputForm
+      retractIfCan(av)$AnyFunctions1(Expression(Float))
+
+    jlEvalString "set_GreedyEval(true)"
+    jlGreedyEval(bool) ==
+      if bool then
+        jlEvalString "set_GreedyEval(true)"
+      else
+        jlEvalString "set_GreedyEval(false)"
+
+
+    0 == jlref("W_`0_`")
+    1 == jlref("W_`1_`")
+    imaginary() == jlref("W_`I_`")
+
+    pi()  == jlref("W_"Pi_"")
+    exp() == jlref("W_"E_"")
+    degree() == jlref("W_"Degree_"")
+    positiveInfinity() == jlref("W_"Infinity_"")
+    eulerGamma() == jlref("W_"EulerGamma_"")
+    catalan() == jlref("W_"Catalan_"")
+    goldenRatio() == jlref("W_"GoldenRatio_"")
+
+    real(z)      == junfunc("W_"Re_"(", z)
+    imag(z)      == junfunc("W_"Im_"(", z)
+
+    WS : WSSymbol := WString()
+    WL : WSSymbol := WList()
+    WT : WSSymbol := WTrue()
+    WF : WSSymbol := WFalse()
+    WRat : WSSymbol := WRational()
+    WR : WSSymbol := WReal()
+    WC : WSSymbol := WComplex()
+    WFormat : WSSymbol := WFormat()
+
+    defined?(x) == junfunc("W_"NameQ_"(", x) = WT
+    member?(list, expr) == jbinfunc("W_"MemberQ_"(", list, expr) = WT 
+    key?(assoc,key) == jbinfunc("W_"KeyExistsQ_"(",assoc,key) = WT
+    missing?(x) == junfunc("W_"MissingQ_"(", x) = WT
+    real?(x)    == junfunc("W_"RealValuedNumberQ_"(", x) = WT
+    realNumeric?(x) == junfunc("W_"RealValuedNumericQ_"(", x) = WT
+    integer?(x) == junfunc("W_"IntegerQ_"(", x) = WT
+    rational?(x) == jlHead(x) = WRat
+    number?(x) == junfunc("W_"NumberQ_"(", x) = WT
+    machineNumber?(x) == junfunc("W_"MachineNumberQ_"(", x) = WT
+    exactNumber?(x) == junfunc("W_"ExactNumberQ_"(", x) = WT
+    numeric?(x) == junfunc("W_"NumericQ_"(", x) = WT
+
+    jlWSDefined?(str) == not missing?(jWSData(str))
+
+    zero? expr == coerce junfunc("W_"PossibleZeroQ_"(",expr)
+    one? x == coerce jbinfunc("W_"Equal_"(", x, 1)
+
+    negative? x == junfunc("W_"Negative_"(", x) = WT
+    positive? x == junfunc("W_"Positive_"(", x) = WT
+
+    x = y  == jbinbop("==",x,y)
+    x ~= y == jbinbop("!=",x,y)
+    x < y  == jbinfunc("W_"Less_"(", x,y) = WT
+    x > y  == jbinfunc("W_"Greater_"(", x,y) = WT
+    x >= y == jbinfunc("W_"GreaterEqual_"(", x,y) = WT
+    x <= y == jbinfunc("W_"LessEqual_"(", x,y) = WT
+
+    -- TODO: fix space after LaTeX command, \sin, x for (Stats)Plots
+    -- Use TeXForm?
+    latex(expr) == jlEvalString(concat(["W2Tex(", getind(expr),")"]))
+
+    x + y == jbinop("+", x, y)
+    x - y == jbinop("-", x, y)
+    - x   == junfunc("-(", x)
+    x : % * y : % == jbinop("*", x, y)
+    x : Integer * y : % == jbinop("*", jWSExpr(x), y)
+    x : PositiveInteger * y : % == jbinop("*", jWSExpr(x), y)
+    x : NonNegativeInteger * y : % == jbinop("*", jWSExpr(x), y)
+    x : % * y : Fraction(Integer) == jbinop("*", x, coerce(y)@WSRational)
+    x : Fraction(Integer) * y : % == jbinop("*", coerce(x)@WSRational, y)
+    x : % / y : % == jbinop("/", x, y)
+    x : % ^ y : % == jbinop("^", x, y)
+    x : % ^ y : Integer == jbinop("^", x, coerce(y))
+    x : % ^ y : PositiveInteger == jbinop("^", x, coerce(y))
+    x : % ^ y : NonNegativeInteger == jbinop("^", x, coerce(y))
+    x : % ^ q : WSRational == jbinop("^", x, q)
+    x : % ^ q : Fraction(Integer) == jbinop("^", x, coerce(q)@WSRational)
+
+    round(x)   == junfunc("W_"Round_"(", x)
+    ceiling(x) == junfunc("W_"Ceiling_"(", x)
+    floor(x)   == junfunc("W_"Floor_"(", x)
+    abs(x)     == junfunc("W_"Abs_"(", x)
+    fractionPart(x) == junfunc("W_"FractionalPart_"(", x)
+    sign(x)    == junfunc("W_"Sign_"(", x)
+    conjugate(x) == junfunc("W_"Conjugate_"(", x)
+
+    exp(x)   == junfunc("W_"Exp_"(",x)
+    sqrt(x)  == junfunc("W_"Sqrt_"(",x)
+    log(x)   == junfunc("W_"Log_"(",x)
+    log2(x)  == junfunc("W_"Log2_"(",x)
+    log10(x) == junfunc("W_"Log10_"(",x)
+
+
+    sin(x) == junfunc("W_"Sin_"(",x)
+    cos(x) == junfunc("W_"Cos_"(",x)
+    tan(x) == junfunc("W_"Tan_"(",x)
+    sec(x) == junfunc("W_"Sec_"(",x)
+    csc(x) == junfunc("W_"Csc_"(",x)
+    cot(x) == junfunc("W_"Cot_"(",x)
+    sinc(x)== junfunc("W_"Sinc_"(",x)
+
+    asin(x)   == junfunc("W_"ArcSin_"(",x)
+    acos(x)   == junfunc("W_"ArcCos_"(",x)
+    atan(x)   == junfunc("W_"ArcTan_"(",x)
+    atan(x,y) == jbinfunc("W_"ArcTan_"(",x, y)
+    asec(x)   == junfunc("W_"ArcSec_"(",x)
+    acsc(x)   == junfunc("W_"ArcCsc_"(",x)
+    acot(x)   == junfunc("W_"ArcCot_"(",x)
+ 
+    sinh(x) == junfunc("W_"Sinh_"(",x)
+    cosh(x) == junfunc("W_"Cosh_"(",x)
+    tanh(x) == junfunc("W_"Tanh_"(",x)
+    sech(x) == junfunc("W_"Sech_"(",x)
+    csch(x) == junfunc("W_"Csch_"(",x)
+    coth(x) == junfunc("W_"Coth_"(",x)
+
+    asinh(x) == junfunc("W_"ArcSinh_"(",x)
+    acosh(x) == junfunc("W_"ArcCosh_"(",x)
+    atanh(x) == junfunc("W_"ArcTanh_"(",x)
+    asech(x) == junfunc("W_"ArcSech_"(",x)
+    acsch(x) == junfunc("W_"ArcCsch_"(",x)
+    acoth(x) == junfunc("W_"ArcCoth_"(",x)
+
+    erf(x)      == junfunc("W_"Erf_"(",x)
+    erfc(x)     == junfunc("W_"Erfc_"(",x)
+    erf(x, y)   == jbinfunc("W_"Erf_"(",x, y)
+    erfi(x)     == junfunc("W_"Erfi_"(",x)
+
+    Si(x)       == junfunc("W_"SinIntegral_"(",x)
+    Shi(x)      == junfunc("W_"SinhIntegral_"(",x)
+    Ci(x)       == junfunc("W_"CosIntegral_"(",x)
+    Chi(x)      == junfunc("W_"CoshIntegral_"(",x)
+    Ei(x)       == junfunc("W_"ExpIntegralEi_"(",x)
+    EiEn(n,x)   == jbinfunc("W_"ExpIntegralE_"(",n,x)
+    fresnelC(x) == junfunc("W_"FresnelC_"(",x)
+    fresnelS(x) == junfunc("W_"FresnelS_"(",x)
+    li(x)       == junfunc("W_"LogIntegral_"(",x)
+    dilog(x)    ==
+      two := jWSExpr("2")
+      jbinfunc("W_"PolyLog_"(", two, x)
+    dawson(x)   == junfunc("W_"DawsonF_"(",x)
+
+    polylog(x,y) == jbinfunc("W_"PolyLog_"(", x, y)
+    jacobiTheta(n,z) ==
+        error "Use the three argument version of jacobiTheta instead"
+    jacobiTheta(n,z,m) == jterfunc("W_"EllitpicTheta_"(", n, z, m)
+
+    weierstrassP(g2,g3,z) ==
+      jbinfunc("W_"WeierstrassP_"(", z, jWSList([g2,g3])@WSList(%))
+    weierstrassPPrime(g2,g3,z) ==
+      jbinfunc("W_"WeierstrassPPrime_"(", z, jWSList([g2,g3])@WSList(%))
+    weierstrassSigma(g2,g3,z) ==
+      jbinfunc("W_"WeierstrassSigma_"(", z, jWSList([g2,g3])@WSList(%))
+    weierstrassZeta(g2,g3,z) ==
+      jbinfunc("W_"WeierstrassZeta_"(", z, jWSList([g2,g3])@WSList(%))
+    weierstrassPInverse(g2,g3,z) ==
+      jbinfunc("W_"InverseWeierstrassP_"(", z, jWSList([g2,g3])@WSList(%))
+
+    unitStep(x) == junfunc("W_"UnitStep_"(", x)
+
+    riemannZeta(x) == junfunc("W_"Zeta_"(",x)
+    riemannZeta(x,y) == jbinfunc("W_"Zeta_"(",x, y)
+
+    eulerPhi(n) == junfunc("W_"EulerPhi_"(", n)
+    eulerE(n) == junfunc("W_"EulerE_"(", n)
+    eulerE(n,x) == jbinfunc("W_"EulerE_"(", n, x)
+
+    lambertW(x) == junfunc("W_"ProductLog_"(",x)
+    lambertW(x,y) == jbinfunc("W_"ProductLog_"(",x, y)
+    polygamma(x,y) == jbinfunc("W_"PolyGamma_"(", x, y)
+
+    haversine(z) == junfunc("W_"Haversine_"(", z)
+    inverseHaversine(z) == junfunc("W_"InverseHaversine_"(", z)
+    gudermannian(z) == junfunc("W_"Gudermannian_"(", z)
+    inverseGudermannian(z) == junfunc("W_"InverseGudermannian_"(", z)
+
+    airyAi(z) == junfunc("W_"AiryAi_"(", z)
+    airyAiZero(z) == junfunc("W_"AiryAiZero_"(", z)
+    airyAiZero(n,z) == jbinfunc("W_"AiryAiZero_"(", n, z)
+    airyBi(z) == junfunc("W_"AiryBi_"(", z)
+    airyBiZero(z) == junfunc("W_"AiryBiZero_"(", z)
+    airyBiZero(n,z) == jbinfunc("W_"AiryBiZero_"(", n, z)
+    airyAiPrime(z) == junfunc("W_"AiryAiPrime_"(", z)
+    airyBiPrime(z) == junfunc("W_"AiryBiPrime_"(", z)
+
+    angerJ(v,z) == jbinfunc("W_"AngerJ_"(", v,z)
+    angerJ(v,n,z) == jterfunc("W_"AngerJ_"(", v,n,z)
+    besselJ(n,z) == jbinfunc("W_"BesselJ_"(", n,z)
+    besselJZero(n,z) == jbinfunc("W_"BesselJZero_"(", n,z)
+    besselY(n,z) == jbinfunc("W_"BesselY_"(", n,z)
+    besselYZero(n,z) == jbinfunc("W_"BesselYZero_"(", n,z)
+    besselI(n,z) == jbinfunc("W_"BesselI_"(", n,z)
+    besselK(n,z) == jbinfunc("W_"BesselK_"(", n,z)
+    kelvinBer(n,z) == jbinfunc("W_"KelvinBer_"(", n,z)
+    kelvinBei(n,z) == jbinfunc("W_"KelvinBei_"(", n,z)
+    kelvinKer(n,z) == jbinfunc("W_"KelvinKer_"(", n,z)
+    kelvinKei(n,z) == jbinfunc("W_"KelvinKei_"(", n,z)
+    hankelH1(n,z) == jbinfunc("W_"HankelH1_"(", n,z)
+    hankelH2(n,z) == jbinfunc("W_"HankelH2_"(", n,z)
+
+    lommelS1(v,n,z) == jterfunc("W_"LommelS1_"(", v,n,z)
+    lommelS2(v,n,z) == jterfunc("W_"LommelS2_"(", v,n,z)
+
+    sphericalBesselJ(n,z) == jbinfunc("W_"SphericalBesselJ_"(", n,z)
+    sphericalBesselY(n,z) == jbinfunc("W_"SphericalBesselY_"(", n,z)
+    sphericalHankelH1(n,z) == jbinfunc("W_"SphericalHankelH1_"(", n,z)
+    sphericalHankelH2(n,z) == jbinfunc("W_"SphericalHankelH2_"(", n,z)
+    struveH(n,z) == jbinfunc("W_"StruveH_"(", n,z)
+    struveL(n,z) == jbinfunc("W_"StruveL_"(", n,z)
+    weberE(n,z) == jbinfunc("W_"WeberE_"(", n,z)
+    weberE(v,n,z) == jterfunc("W_"WeberE_"(", v,n,z)
+
+    -- Check k > s ?
+    dirichletL(k,j,s) == jterfunc("W_"DirichletL_"(", k,j,s)
+    diracDelta(x) == junfunc("W_"DiracDelta_"(", x)
+    lerchPhi(z,s,a) == jterfunc("W_"LerchPhi_"(", z,s,a)
+    polylog(n,p,z) == jterfunc("W_"PolyLog_"(", n,p,z)
+    ramanujanTau(n) == junfunc("W_"RamanujanTau_"(", n)
+    ramanujanTauL(n) == junfunc("W_"RamanujanTauL_"(", n)
+    ramanujanTauTheta(n) == junfunc("W_"RamanujanTauTheta_"(", n)
+    ramanujanTauZ(n) == junfunc("W_"RamanujanTauZ_"(", n)
+    riemannSiegelTheta(t) == junfunc("W_"RiemannSiegelTheta_"(", t)
+    riemannSiegelZ(t) == junfunc("W_"RiemannSiegelZ_"(", t) 
+    stieltjesGamma(n) ==
+      negative?(n) => error "stieltjesGamma: n must be a non negative integer"
+      junfunc("W_"StieltjesGamma_"(", n)
+    stieltjesGamma(n,a) ==
+      negative?(n) => error "stieltjesGamma: n must be a non negative integer"
+      jbinfunc("W_"StieltjesGamma_"(", n,a)
+    hurwitzZeta(s,a) == jbinfunc("W_"HurwitzZeta_"(", s,a)
+    hurwitzLerchPhi(z,s,a) == jterfunc("W_"HurwitzLerchPhi_"(", z,s,a) 
+
+    inverseErf(s) == junfunc("W_"InverseErf_"(", s)
+    inverseErfc(s) == junfunc("W_"InverseErfc_"(", s)
+
+    Beta(x,y) == jbinfunc("W_"Beta_"(", x, y)
+    Beta(z,a,b) == jterfunc("W_"Beta_"(", z,a,b)
+    betaRegularized(z,a,b) == jterfunc("W_"BetaRegularized_"(", z,a,b)
+    Gamma(x) == junfunc("W_"Gamma_"(", x)
+    Gamma(a,z) == jbinfunc("W_"Gamma_"(", a,z)
+    Gamma(a, z1, z2) == jterfunc("W_"Gamma_"(", a, z1,z2)
+    -- Checks?
+    gammaRegularized(a,z) == jbinfunc("W_"GammaRegularized_"(", a,z) 
+    inverseBetaRegularized(s,a,b) ==
+      jterfunc("W_"InverseBetaRegularized_"(", s,a,b)
+    inverseGammaRegularized(a,s) ==
+      jbinfunc("W_"InverseGammaRegularized_"(", a,s)
+
+    pochhammer(a,n) == jbinfunc("W_"Pochhammer_"(", a, n)
+    digamma(x) == junfunc("W_"PolyGamma_"(", x)
+    digamma(n,z) == jbinfunc("W_"PolyGamma_"(", n, z) 
+    logGamma(x) == junfunc("W_"LogGamma_"(", x)
+    logBarnesG(x) == junfunc("W_"LogBarnesG_"(", x)
+    barnesG(x) == junfunc("W_"BarnesG_"(", x)
+    hyperFactorial(x) == junfunc("W_"Hyperfactorial_"(", x)
+    fibonacci(n,z) == jbinfunc("W_"Fibonacci_"(", n, z)
+
+    legendreP(n,z) == jbinfunc("W_"LegendreP_"(", n,z)
+    legendreP(n,m,z) == jterfunc("W_"LegendreP_"(", n,m,z)
+    legendreQ(n,z) == jbinfunc("W_"LegendreQ_"(", n,z)
+    legendreQ(n,m,z) == jterfunc("W_"LegendreQ_"(", n,m,z)
+
+    sphericalHarmonicY(l, m, theta, phi) ==
+      jquatfunc("W_"SphericalHarmonicY_"(", l,m,theta,phi)
+    gegenbauerC(n,x) == jbinfunc("W_"GegenbauerC_"(", n,x)
+    gegenbauerC(n,lambda,x) == jterfunc("W_"GegenbauerC_"(",n,lambda,x)
+    chebyshevT(n,x) == jbinfunc("W_"ChebyshevT_"(", n,x)
+    chebyshevU(n,x) == jbinfunc("W_"ChebyshevU_"(", n,x)
+    hermiteH(n,x) == jbinfunc("W_"HermiteH_"(", n,x)
+    laguerreL(n,x) == jbinfunc("W_"LaguerreL_"(", n,x)
+    laguerreL(n,a,x) == jterfunc("W_"LaguerreL_"(", n,a,x)
+    zernikeR(n,m,x) == jterfunc("W_"ZernikeR_"(", n,m,x)
+    jacobiP(n,a,b,x) == jquatfunc("W_"JacobiP_"(", n,a,b,x)
+    factorial(x) == junfunc("W_"Factorial_"(", x)
+    
+    hypergeometric0F1(a,z) == jbinfunc("W_"Hypergeometric0F1_"(", a,z)
+    hypergeometric0F1Regularized(a,z) ==
+      jbinfunc("W_"Hypergeometric0F1Regularized_"(", a,z)
+    hypergeometric1F1(a,b,z) == jterfunc("W_"Hypergeometric1F1_"(", a,b,z)
+    hypergeometric1F1Regularized(a,b,z) ==
+      jterfunc("W_"Hypergeometric1F1Regularized_"(", a,b,z)
+    hypergeometricU(a,b,z) == jterfunc("W_"HypergeometricU_"(", a,b,z)
+    whittakerM(k,m,z) == jterfunc("W_"WhittakerM_"(", k,m,z)
+    whittakerW(k,m,z) == jterfunc("W_"WhittakerW_"(", k,m,z)
+    parabolicCylinderD(v,z) == jbinfunc("W_"ParabolicCylinderD_"(", v, z)
+    coulombF(l,eta,ro) == jterfunc("W_"CoulombF_"(", l, eta, ro)
+    coulombG(l,eta,ro) == jterfunc("W_"CoulombG_"(", l, eta, ro)
+    coulombH1(l,eta,ro) == jterfunc("W_"CoulombH1_"(", l, eta, ro)
+    coulombH2(l,eta,ro) == jterfunc("W_"CoulombH2_"(", l, eta, ro)
+
+    qPochhammer(z,q) == jbinfunc("W_"QPochhammer_"(", z,q)
+    qPochhammer(z,q,n) == jterfunc("W_"QPochhammer_"(", z,q,n)
+    qFactorial(z,q) == jbinfunc("W_"QFactorial_"(", z,q)
+    qBinomial(n,m,q) == jterfunc("W_"QBinomial_"(", n,m,q)
+    qGamma(z,q) == jbinfunc("W_"QGamma_"(", z,q)
+    qPolyGamma(z,q) == jbinfunc("W_"QPolyGamma_"(", z,q)
+    qPolyGamma(n,z,q) == jterfunc("W_"QPolyGamma_"(", n,z,q)
+
+    mathieuC(a,q,z) == jterfunc("W_"MathieuC_"(", a,q,z)
+    mathieuS(b,q,z)== jterfunc("W_"MathieuS_"(", b,q,z)
+    mathieuCPrime(a,q,z) == jterfunc("W_"MathieuCPrime_"(", a,q,z)
+    mathieuSPrime(b,q,z) == jterfunc("W_"MathieuSPrime_"(", b,q,z)
+    mathieuCharacteristicA(r,q) ==
+      jbinfunc("W_"MathieuCharacteristicA_"(", r,q)
+    mathieuCharacteristicB(r,q) ==
+      jbinfunc("W_"MathieuCharacteristicB_"(", r,q)
+    mathieuCharacteristicExponent(a,q) ==
+      jbinfunc("W_"MathieuCharacteristicExponent_"(", a,q)
+
+    unitStep(x) == junfunc("W_"UnitStep_"(", x)
+
+    jacobiAmplitude(u,m) == jbinfunc("W_"JacobiAmplitude_"(", u,m)
+    jacobiSn(u,m) == jbinfunc("W_"JacobiSN_"(", u,m)
+    jacobiCn(u,m) == jbinfunc("W_"JacobiCN_"(", u,m)
+    jacobiDn(u,m) == jbinfunc("W_"JacobiDN_"(", u,m)
+    inverseJacobiSn(v,m) == jbinfunc("W_"InverseJacobiSN_"(", v,m)
+    inverseJacobiCn(v,m) == jbinfunc("W_"InverseJacobiCN_"(", v,m)
+    ellipticTheta(a,u,q) == jterfunc("W_"EllipticTheta_"(", a,u,q)
+    ellipticThetaPrime(a,u,q) == jterfunc("W_"EllipticThetaPrime_"(", a,u,q)
+    siegelTheta(t,s) == jbinfunc("W_"SiegelTheta_"(", t,s)
+    siegelTheta(v,t,s) == jterfunc("W_"SiegelTheta_"(", v,t,s)
+
+    ellipticK(m) == junfunc("W_"EllipticK_"(", m)
+    ellipticF(x,m) == jbinfunc("W_"EllipticF_"(", x,m)
+    ellipticE(m) == junfunc("W_"EllipticE_"(", m)
+    ellipticE(x,m) == jbinfunc("W_"EllipticE_"(", x,m)
+    ellipticPi(n,m) == jbinfunc("W_"EllipticPi_"(", n,m)
+    ellipticPi(n,x,m) == jterfunc("W_"EllipticPi_"(", n,x,m)
+    jacobiZeta(x,m) == jbinfunc("W_"JacobiZeta_"(", x,m)
+
+    dedekindEta(tau) == junfunc("W_"DedekindEta_"(", tau)
+    dirichletEta(z) == junfunc("W_"DirichletEta_"(", z)
+
+    kleinInvariantJ(tau) == junfunc("W_"KleinInvariantJ_"(", tau)
+    modularLambda(tau) == junfunc("W_"ModularLambda_"(", tau)
+
+
+    D(expr : %, sym : Symbol) ==
+      jbinfunc("W_"D_"(", expr, jWSExpr(string(sym)))
+    differentiate(expr : %, args : %) == jbinfunc("W_"D_"(", expr, args)
+    differentiate(expr : %, sym : Symbol) ==
+      jbinfunc("W_"D_"(", expr, jWSExpr(string(sym)))
+    D(expr : %, sym : Symbol, i : NonNegativeInteger) ==
+      arg : % := jlref(concat(["W_`List[", string(sym), ",", string(i),"]_`"]))
+      jbinfunc("W_"D_"(", expr, arg)
+
+    guessGeneratingFunction(l, x) == jbinfunc("W_"FindGeneratingFunction_"(", l, x)
+    guessSequenceFunction(l) == junfunc("W_"FindSequenceFunction_"(", l)
+    guessSequenceFunction(l, x) == jbinfunc("W_"FindSequenceFunction_"(", l, x)
+
+    integrate(expr, range : %) == jbinfunc("W_"Integrate_"(", expr, range)
+    integrate(expr : %, sym : Symbol) ==
+      jbinfunc("W_"Integrate_"(", expr, jWSExpr(string(sym)))
+    integrate(expr, sym, range: Segment(Integer)) ==
+      arg : % := jlref(concat(["W_`List[", string(sym), ",",
+        string(low(range)), ",", string(high(range)),"]_`"]))
+      jbinfunc("W_"Integrate_"(", expr, arg)
+    numericIntegrate(expr, range : %) ==
+      jbinfunc("W_"NIntegrate_"(", expr, range)
+    numericIntegrate(expr, sym, range: Segment(Integer)) ==
+      args : % := jlref(concat(["W_`List[", string(sym), ",",
+        string(low(range)), ",", string(high(range)),"]_`"]))
+      jbinfunc("W_"NIntegrate_"(", expr, args)
+
+    series(expr, range : %) == jbinfunc("W_"Series_"(", expr, range)
+
+    sum(expr, range : %) == jbinfunc("W_"Sum_"(", expr, range)
+    sum(expr, sym, range: Segment(Integer)) ==
+      arg : % := jlref(concat(["W_`List[", string(sym), ",",
+        string(low(range)), ",", string(high(range)),"]_`"]))
+      jbinfunc("W_"Sum_"(", expr, arg)
+    sum(expr, sym : Symbol) == jbinfunc("W_"Sum_"(",
+      expr, jWSExpr(string(sym)))
+    numericSum(expr, range : %) == jbinfunc("W_"NSum_"(",
+      expr, range)
+    numericSum(expr, sym, range: Segment(Integer)) ==
+      arg : % := jlref(concat(["W_`List[", string(sym), ",",
+        string(low(range)), ",", string(high(range)),"]_`"]))
+      jbinfunc("W_"NSum_"(", expr, arg)
+    product(expr, range : %) == jbinfunc("W_"Product_"(", expr, range)
+    product(expr, sym, range: Segment(Integer)) ==
+      arg : % := jlref(concat(["W_`List[", string(sym), ",",
+        string(low(range)), ",", string(high(range)),"]_`"]))
+      jbinfunc("W_"Product_"(", expr, arg)
+    product(expr, sym : Symbol) == jbinfunc("W_"Product_"(",
+      expr, jWSExpr(string(sym)))
+    numericProduct(expr, range : %) == jbinfunc("W_"NProduct_"(", expr, range)
+    numericProduct(expr, sym, range: Segment(Integer)) ==
+      arg : % := jlref(concat(["W_`List[", string(sym), ",",
+        string(low(range)), ",", string(high(range)),"]_`"]))
+      jbinfunc("W_"NProduct_"(", expr, arg)
+
+    minimize(expr, vars : %) == jbinfunc("W_"Minimize_"(", expr, vars)
+    minimize(expr : %, sym : Symbol) ==
+      jbinfunc("W_"Minimize_"(", expr, jWSExpr(string(sym)))
+    minimize(expr, vars : %, dom : %) ==
+      jterfunc("W_"Minimize_"(", expr, vars, dom)
+
+    numericMinimize(expr, vars : %) == jbinfunc("W_"NMinimize_"(", expr, vars)
+    numericMinimize(expr : %, sym : Symbol) ==
+      jbinfunc("W_"NMinimize_"(", expr, jWSExpr(string(sym)))
+    numericMinimize(expr, vars : %, dom :%) ==
+      jterfunc("W_"NMinimize_"(", expr, vars, dom)
+
+    maximize(expr, vars : %) == jbinfunc("W_"Maximize_"(", expr, vars)
+    maximize(expr : %, sym : Symbol) ==
+      jbinfunc("W_"Maximize_"(", expr, jWSExpr(string(sym)))
+    maximize(expr, vars : %, dom : %) ==
+      jterfunc("W_"Maximize_"(", expr, vars, dom)
+    
+    numericMaximize(expr, vars : %) == jbinfunc("W_"NMaximize_"(", expr, vars)
+    numericMaximize(expr : %, sym : Symbol) ==
+      jbinfunc("W_"NMaximize_"(", expr, jWSExpr(string(sym)))
+    numericMaximize(expr, vars : %, dom : %) ==
+      jterfunc("W_"NMaximize_"(", expr, vars, dom)
+
+    limit(expr, params : %) == jbinfunc("W_"Limit_"(", expr, params)
+    minLimit(expr, params : %) == jbinfunc("W_"MinLimit_"(", expr, params)
+    maxLimit(expr, params : %) == jbinfunc("W_"MaxLimit_"(", expr, params)
+
+    solve(eq : Equation(%), vars : %) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jbinfunc("W_"Solve_"(", expr, vars)
+    solve(eq : Equation(%), vars : %, param : %) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jterfunc("W_"Solve_"(", expr, vars, param)
+    solve(expr : %, vars : %) == jbinfunc("W_"Solve_"(", expr, vars)
+    solve(expr:%,vars:%,param:%) == jterfunc("W_"Solve_"(", expr, vars, param)
+    numericSolve(eq : Equation(%), vars : %) ==
+      expr := jWSEqual(lhs eq, rhs eq)  
+      jbinfunc("W_"NSolve_"(", expr, vars)
+    numericSolve(expr : %, vars : %) ==
+      jbinfunc("W_"NSolve_"(", expr, vars)
+    realNumericSolve(eq : Equation(%), vars : %) ==
+      expr := jWSEqual(lhs eq, rhs eq)  
+      jterfunc("W_"NSolve_"(", expr, vars, jWSExpr("Reals"))
+    realNumericSolve(expr : %, vars : %) ==
+      jterfunc("W_"NSolve_"(", expr, vars, jWSExpr("Reals"))
+
+    fourier(expr : %) == junfunc("W_"Fourier_"(", expr)
+    fourier(expr : %, lpos : %) == jbinfunc("W_"Fourier_"(", expr, lpos)
+    fourier(expr : WSL(%)) == junfunc("W_"Fourier_"(", expr)
+    fourier(expr : WSL(%), lpos : WSL(%)) ==
+      jbinfunc("W_"Fourier_"(", expr, lpos)
+    inverseFourier(expr : %) == junfunc("W_"InverseFourier_"(", expr)
+    inverseFourier(expr : %, lpos : %) ==
+      jbinfunc("W_"InverseFourier_"(", expr, lpos)
+    inverseFourier(expr : WSL(%)) ==
+      junfunc("W_"InverseFourier_"(", expr)
+    inverseFourier(expr : WSL(%), lpos : WSL(%)) ==
+      jbinfunc("W_"InverseFourier_"(", expr, lpos)
+
+    derivative(op, n) ==
+      d := string name op
+      expr : String := concat(["Derivative[", toString(n),"][", d,"]"])
+      jWSExpr expr
+    derivative(op, n, var) ==
+      d:= string name op
+      expr : String := concat(["Derivative[",
+        toString(n),"][", d,"][", toString(var),"]"])
+      jWSExpr expr
+    dSolve(expr : %, u : %, var : %) == jterfunc("W_"DSolve_"(", expr, u, var)
+    dSolve(eq : Equation(%), u : %, var : %) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jterfunc("W_"DSolve_"(", expr, u, var)
+    dSolveValue(expr : %, u : %, var : %) ==
+      jterfunc("W_"DSolve_"(", expr, u, var)
+    dSolveValue(eq : Equation(%), u : %, var : %) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jterfunc("W_"DSolve_"(", expr, u, var)
+    numericDSolve(expr : %, u : %, xrange : %) ==
+      jterfunc("W_"NDSolve_"(", expr, u, xrange)
+    numericDSolve(eq : Equation(%), u : %, xrange : %) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jterfunc("W_"NDSolve_"(", expr, u, xrange)
+    numericDSolve(expr : %, u : %, xrange : %, yrange : %) ==
+      jquatfunc("W_"NDSolve_"(", expr, u, xrange, yrange)
+    numericDSolveValue(expr : %, u : %, xrange : %) ==
+      jterfunc("W_"NDSolveValue_"(", expr, u, xrange)
+    numericDSolveValue(eq : Equation(%), u : %, xrange : %) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jterfunc("W_"NDSolveValue_"(", expr, u, xrange)
+    numericDSolveValue(expr : %, u : %, xrange : %, yrange : %) ==
+      jquatfunc("W_"NDSolveValue_"(", expr, u, xrange, yrange)
+
+    residue(expr,param) == jbinfunc("W_"Residue_"(", expr, param)
+    residueSum(expr,param) == jbinfunc("W_"ResidueSum_"(", expr, param)
+    reduce(expr:%, lvars:%) == jbinfunc("W_"Reduce_"(", expr, lvars)
+    reduce(eq : Equation(%),lvars) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jbinfunc("W_"Reduce_"(", expr, lvars)
+    reduce(eq : Equation(%),lvars,dom) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jterfunc("W_"Reduce_"(", expr, lvars, dom)
+    reduce(expr:%, lvars:%, dom : %) ==
+      jterfunc("W_"Reduce_"(", expr, lvars,dom)
+    findInstance(expr:%, lvars:%) ==
+      jbinfunc("W_"FindInstance_"(", expr, lvars)
+    findInstance(eq : Equation(%),lvars) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jbinfunc("W_"FindInstance_"(", expr, lvars)
+    findInstance(eq : Equation(%),lvars,dom) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jterfunc("W_"FindInstance_"(", expr, lvars, dom)
+    findInstance(eq : Equation(%),lvars,dom,n) ==
+      expr := jWSEqual(lhs eq, rhs eq)
+      jquatfunc("W_"FindInstance_"(", expr, lvars, dom, n)
+    findInstance(expr:%, lvars:%, dom : %) ==
+      jterfunc("W_"FindInstance_"(", expr, lvars,dom)
+    findInstance(expr:%, lvars:%, dom : %, n) ==
+      jquatfunc("W_"FindInstance_"(", expr, lvars,dom,n)
+
+    numerator(rexpr)   == junfunc("W_"Numerator_"(", rexpr)
+    denominator(rexpr) == junfunc("W_"Denominator_"(", rexpr)
+    numerDenom(rexpr) ==  junfunc("W_"NumeratorDenominator_"(", rexpr)
+
+    polynomial?(expr, var : %) ==
+      jbinfunc("W_"PolynomialQ_"(", expr, var) = WT
+    polynomial?(expr, vars : WSL(%)) ==
+      jbinfunc("W_"PolynomialQ_"(", expr, vars) = WT
+    polynomialExpression?(expr, var : %) ==
+      jbinfunc("W_"PolynomialExpressionQ_"(", expr, var) = WT
+    polynomialExpression?(expr, vars : WSL(%)) ==
+      jbinfunc("W_"PolynomialExpressionQ_"(", expr, vars) = WT
+    rationalExpression?(expr, var : %) ==
+      jbinfunc("W_"RationalExpressionQ_"(", expr, var) = WT
+    rationalExpression?(expr, vars : WSL(%)) ==
+      jbinfunc("W_"RationalExpressionQ_"(", expr, vars) = WT
+    
+    variables(p) : WSL(%) == junfunc("W_"Variables_"(", p)
+    variables(p) : List(Symbol) ==
+      l : List(Symbol) := []
+      lvars : WSL(%) := junfunc("W_"Variables_"(", p)
+      for i in 1..integer(length(lvars)) repeat
+        l := concat(l, coerce(toString(part(lvars, jWSInt i)))@Symbol)
+      l
+    exponent(p,x) == jbinfunc("W_"Exponent_"(", p, x)
+    exponent(p,x,map) == jterfunc("W_"Exponent_"(", p, x, map)
+    coefficient(p,expr) == jbinfunc("W_"Coefficient_"(",p,expr)
+    coefficient(p,expr,n) == jterfunc("W_"Coefficient_"(",p,expr,n)
+    coefficientList(p,expr) == jbinfunc("W_"CoefficientList_"(",p,expr)
+    coefficientRules(p,expr) == jbinfunc("W_"CoefficientRules_"(",p,expr)
+    monomialList(p) == junfunc("W_"MonomialList_"(", p)
+    coefficientRules(p) == junfunc("W_"CoefficientRules_"(", p)
+    fromCoefficientRules(list, vars) ==
+      jbinfunc("W_"FromCoefficientRules_"(", list, vars)
+
+    polynomialQuotient(p1,p2,var) ==
+      jterfunc("W_"PolynomialQuotient_"(",p1,p2,var)
+    polynomialRemainder(p1,p2,var) ==
+      jterfunc("W_"PolynomialRemainder_"(",p1,p2,var)
+    polynomialQuotientRemainder(p1,p2,var) ==
+      jterfunc("W_"PolynomialQuotientRemainder_"(",p1,p2,var)
+    padeApproximant(expr, param) ==
+      jbinfunc("W_"PadeApproximant_"(",expr,param)
+    symmetricPolynomial(order, vars) ==
+      jbinfunc("W_"SymmetricPolynomial_"(",order,vars)
+    symmetricReduction(p, vars) ==
+      jbinfunc("W_"SymmetricReduction_"(", p, vars)
+    symmetricReduction(p, vars, replnt) ==
+      jterfunc("W_"SymmetricReduction_"(", p, vars, replnt)
+    polynomialGCD(p1,p2) == jbinfunc("W_"PolynomialGCD_"(",p1,p2)
+    polynomialGCD(p1,p2,opt) == jterfunc("W_"PolynomialGCD_"(",p1,p2,opt)
+    polynomialLCM(p1,p2) == jbinfunc("W_"PolynomialLCM_"(",p1,p2)
+    polynomialLCM(p1,p2,opt) == jterfunc("W_"PolynomialLCM_"(",p1,p2,opt)
+    polynomialExtendedGCD(p1,p2,x) ==
+      jterfunc("W_"PolynomialExtendedGCD_"(",p1,p2,x)
+    polynomialMod(p1,modulus) == jbinfunc("W_"PolynomialMod_"(",p1,modulus)
+    resultant(p1,p2,x) == jterfunc("W_"Resultant_"(",p1,p2,x)
+    subResultants(p1,p2,x) == jterfunc("W_"SubResultants_"(",p1,p2,x)
+    discriminant(p1,var) == jbinfunc("W_"Discriminant_"(",p1,var)
+    groebnerBasis(lpoly,lvar) == jbinfunc("W_"GroebnerBasis_"(",lpoly,lvar)
+    groebnerBasis(lpoly,lvar,evar) ==
+      jterfunc("W_"GroebnerBasis_"(",lpoly,lvar,evar)
+    polynomialReduce(poly,lpoly,lvar) ==
+      jterfunc("W_"PolynomialReduce_"(",poly,lpoly,lvar)
+
+    factorPolynomial(p) == junfunc("W_"Factor_"(", p)
+    factor(p) == junfunc("W_"Factor_"(", p)
+    factor(p, opt) == jbinfunc("W_"Factor_"(", p, opt)
+    factorTerms(p) == junfunc("W_"FactorTerms_"(", p)
+    factorTerms(p, var : %) == jbinfunc("W_"FactorTerms_"(", p, var)
+    factorTerms(p, vars : WSL(%)) == jbinfunc("W_"FactorTerms_"(", p, vars)
+    factorTermsList(p) == junfunc("W_"FactorTermsList_"(", p)
+    factorTermsList(p, vars) == jbinfunc("W_"FactorTermsList_"(", p, vars)
+    factorList(p) == junfunc("W_"FactorList_"(", p)
+    factorSquareFree(p) == junfunc("W_"FactorSquareFree_"(", p)
+    factorSquareFreeList(p) == junfunc("W_"FactorSquareFreeList_"(", p)
+    irreducible?(p) == junfunc("W_"IrreduciblePolynomialQ_"(", p) = WT
+    irreducible?(p, param) ==
+      jbinfunc("W_"IrreduciblePolynomialQ_"(", p, param) = WT
+    decompose(p,var) == jbinfunc("W_"Decompose_"(", p, var)
+
+    interpolatingPolynomial(polys,var) ==
+      jbinfunc("W_"InterpolatingPolynomial_"(", polys, var)
+
+    gcd(p1,p2) == jbinfunc("W_"PolynomialGCD_"(", p1, p2)
+    lcm(p1,p2) == jbinfunc("W_"PolynomialLCM_"(", p1, p2)
+
+    minimalPolynomial(expr, var) ==
+      jbinfunc("W_"MinimalPolynomial_"(", expr, var)
+    minimalPolynomial(expr, var, ext) ==
+      jterfunc("W_"MinimalPolynomial_"(", expr, var, ext)
+    findRoot(expr,init) == jbinfunc("W_"FindRoot_"(", expr, init)
+
+    --finiteField(p,d) == jbinfunc("W_"FiniteField_"(", p, d)
+
+    normal(expr) == junfunc("W_"Normal_"(", expr)
+    normal(expr, heads) == jbinfunc("W_"Normal_"(", expr, heads)
+
+    collect(expr, vars : %) == jbinfunc("W_"Collect_"(", expr, vars)
+    collect(expr, vars : WSL(%)) == jbinfunc("W_"Collect_"(", expr, vars)
+    apart(expr) == junfunc("W_"Apart_"(", expr)
+    apart(expr, vars) == jbinfunc("W_"Apart_"(", expr, vars)
+    expandNumerator(expr) == junfunc("W_"ExpandNumerator_"(", expr)
+    expandDenominator(expr) == junfunc("W_"ExpandDenominator_"(", expr)
+    cancel(expr) == junfunc("W_"Cancel_"(", expr)
+    together(expr) == junfunc("W_"Together_"(", expr)
+    distribute(expr) == junfunc("W_"Distribute_"(", expr)
+    distribute(f, g) == jbinfunc("W_"Distribute_"(", f, g)
+    hornerForm(expr, var) == jbinfunc("W_"HornerForm_"(", expr, var)
+
+    simplify(expr) == junfunc("W_"Simplify_"(", expr)
+    simplify(expr, assume) == jbinfunc("W_"Simplify_"(", expr, assume)
+    extendedSimplify(expr) == junfunc("W_"FullSimplify_"(", expr)
+    extendedSimplify(expr, assume) ==
+      jbinfunc("W_"FullSimplify_"(", expr, assume)
+    refine(expr, assume) == jbinfunc("W_"Refine_"(", expr, assume)
+    -- TODO: Not always supported by MathLink
+    assuming(assume, expr) == jbinfunc("W_"Assuming_"(", assume, expr)
+
+    expand(expr) == junfunc("W_"Expand_"(", expr)
+    extendedExpand(expr) == junfunc("W_"ExpandAll_"(", expr)
+    powerExpand(expr) == junfunc("W_"PowerExpand_"(", expr)
+    powerExpand(expr, assum) == jbinfunc("W_"PowerExpand_"(", expr, assum)
+    complexExpand(expr) == junfunc("W_"ComplexExpand_"(", expr)
+    complexExpand(expr, cvars) == jbinfunc("W_"ComplexExpand_"(", expr, cvars)
+    trigExpand(expr) == junfunc("W_"TrigExpand_"(", expr)
+    functionExpand(expr) == junfunc("W_"FunctionExpand_"(", expr)
+    functionExpand(expr, assum) ==
+      jbinfunc("W_"FunctionExpand_"(", expr, assum)
+
+    trigToExp(expr) == junfunc("W_"TrigToExp_"(", expr)
+    expToTrig(expr) == junfunc("W_"ExpToTrig_"(", expr)
+
+    trigFactor(expr) == junfunc("W_"TrigFactor_"(", expr)
+    trigFactorList(expr) == junfunc("W_"TrigFactorList_"(", expr)
+    trigReduce(expr) == junfunc("W_"TrigReduce_"(", expr)
+    rootReduce(expr) == junfunc("W_"RootReduce_"(", expr)
+
+    rationalApproximation(expr) == junfunc("W_"Rationalize_"(", expr)
+    rationalApproximation(expr, dx) == jbinfunc("W_"Rationalize_"(", expr, dx)
+
+    -- TODO: Pure WS version (high accuracy)
+    jlEval(expr, param) ==
+      jlref(concat(["weval(", getind(expr), ",", param, ")"]))
+    jlEval(expr, param1, param2) ==
+      jlref(concat(["weval(", getind(expr), ",", param1 ",", param2, ")"]))
+    jlEval(expr, param1, param2, param3) ==
+      jlref(concat(["weval(", getind(expr), ",",
+        param1 ",", param2, ",", param3, ")"]))
+    
+    eval(expr : %, param : Equation(%)) == replaceAll(expr, jWSRule param)
+
+    length(expr) == junfunc("W_"Length_"(", expr)
+    extract(expr, i) == jbinfunc("W_"Extract_"(", expr, jWSExpr(string(i)))
+    level(expr, level) == jbinfunc("W_"Level_"(", expr, level)
+    level(expr, level, head) ==
+      if head then jterfunc("W_"Level_"", expr, level, jWSExpr "Heads->True(")
+      else jbinfunc("W_"Level_"(", expr, level)
+    lookup(assocs,keys) == jbinfunc("W_"Lookup_"(",assocs,keys)
+    lookup(assocs,keys,def) == jterfunc("W_"Lookup_"(",assocs,keys,def)
+    quantityUnit(val) == junfunc("W_"QuantityUnit_"(", val)
+    quantityMagnitude(val) == junfunc("W_"QuantityMagnitude_"(", val)
+    keys(expr) ==
+      -- TODO
+      (head := jlHead(expr)) ~= WList() and head ~= WRule()
+        => error1("No rule(s) detected in ", expr)
+      junfunc("W_"Keys_"(", expr)
+    values(expr) ==
+      (head := jlHead(expr)) ~= WList() and head ~= WRule()
+        => error1("No rule(s) detected in ", expr)
+      junfunc("W_"Values_"(", expr)
+
+    replace(expr, rule) == jbinfunc("W_"Replace_"(", expr, rule)
+    replace(expr, rule, level) == jterfunc("W_"Replace_"(", expr, rule, level)
+    replacePart(expr, part) == jbinfunc("W_"ReplacePart_"(", expr, part)
+    replaceAt(expr, at, n) == jterfunc("W_"ReplaceAt_"(", expr, at, n)
+    replaceAll(expr, rule) == jbinfunc("W_"ReplaceAll_"(", expr, rule)
+    replaceRepeated(expr, rule) == jbinfunc("W_"ReplaceRepeated_"(", expr, rule)
+    -- HERE: operator form
+    --jWSExpr concat(["ReplaceAll[", toString(rule),"][", toString(expr), "]"])
+    select(expr, form) == jbinfunc("W_"Select_"(", expr, form)
+    select(expr, form, n) == jterfunc("W_"Select_"(", expr, form, n)
+    jlWSPrecision(expr) == junfunc("W_"Precision_"(", expr)
+    jlWSAccuracy(expr) == junfunc("W_"Accuracy_"(", expr)
+    jlWSSetPrecision(expr, n) == jbinfunc("W_"SetPrecision_"(", expr, n)
+    jlWSSetAccuracy(expr, n) == jbinfunc("W_"SetAccuracy_"(", expr, n)
+    jlWSSetOptions(arg1, arg2) == jbinfunc("W_"SetOptions_"(", arg1, arg2)
+    jlDisplay(expr) == junfunc("W_"Format_"(", expr)
+    jlDisplay(expr, form) == jbinfunc("W_"Format_"(", expr, form)
+    jWSData() == jWSExpr "WolframLanguageData[]"
+    jWSData(ents : String) ==
+      junfunc("W_"WolframLanguageData_"(", jWSString(ents))
+    jWSData(ent : String, prop : String) ==
+      jbinfunc("W_"WolframLanguageData_"(", jWSString(ent), jWSString(prop))
+    jWSData(ent : String, prop : String, ann : String) ==
+      jterfunc("W_"WolframLanguageData_"(", jWSString(ent),
+        jWSString(prop), jWSString(ann))
+    jWSData(ents : %) ==
+        junfunc("W_"WolframLanguageData_"(", ents)
+    jWSData(ents : %, prop : %) ==
+      jbinfunc("W_"WolframLanguageData_"(", ents, prop)
+    jWSData(ent : %, prop : %, ann : %) ==
+      jterfunc("W_"WolframLanguageData_"(", ent, prop, ann)
+    jWSAssociation(rules : WSList(%)) ==
+      junfunc("W_"Association_"(", rules)
+    jWSTable(expr, range) == jbinfunc("W_"Table_"(", expr, range)
+    jWSTable(expr, range1, range2) ==
+      jterfunc("W_"Table_"(", expr, range1, range2)
+    jWSRule(lhs, rhs) == jbinfunc("W_"Rule_"(", lhs, rhs)
+    jWSRule(eq) == jbinfunc("W_"Rule_"(", lhs(eq), rhs(eq))
+    jWSEqual(lhs, rhs) == jbinfunc("W_"Equal_"(", lhs, rhs)
+    jWSNotEqual(lhs, rhs) == jbinfunc("W_"Unequal_"(", lhs, rhs)
+    jWSLess(lhs, rhs) == jbinfunc("W_"Less_"(", lhs, rhs)
+    jWSLessEqual(lhs, rhs) == jbinfunc("W_"LessEqual_"(", lhs, rhs)
+    jWSGreater(lhs, rhs) == jbinfunc("W_"Greater_"(", lhs, rhs)
+    jWSGreaterEqual(lhs, rhs) == jbinfunc("W_"GreaterEqual_"(", lhs, rhs)
+    jWSQuantity(u) == junfunc("W_"Quantity_"(", u)
+    jWSQuantity(m,u) == jbinfunc("W_"Quantity_"(", m, u)
+    jWSExpr(i : Integer) == jlref(concat(["WInteger(_"", string(i), "_")"]))
+    jWSExpr(q : Fraction(Integer)) == jWSRational(q)$WSRational pretend %
+    jWSExpr(r : DoubleFloat) == jWSReal(r)$WSReal pretend %
+    jWSExpr(r : JLFloat64) == jWSReal(r)$WSReal pretend %
+    jWSExpr(r : Float) == jWSReal(r)$WSReal pretend %
+    jWSExpr(r : JLFloat) == jWSExpr(string(r))
+    jWSExpr(sym : Symbol) : % == jlref(concat(["weval(W_`", string(sym),  "_`)"]))
+    jWSExpr(str : String) : % == jlref(concat(["weval(W_`", str, "_`)"]))
+    jWSExpr(l : List(%)) : % == coerce(l)
+    toString(expr, form) == string jbinfunc("W_"ToString_"(", expr, form)
+    toExpression(expr) == junfunc("W_"ToExpression_"(", jWSString expr)
+    toExpression(expr, form) == jbinfunc("W_"ToExpression_"(", jWSString(expr), form)
+    toExpression(expr, form, h) == jterfunc("W_"ToExpression_"(", jWSString(expr), form, h)
+    retractIfCan(expr : %) : Union(JLFloat64, "failed") ==
+      jlType(expr) = 'Float64 => jlEvalString(getind(expr))
+      "failed"
+    retractIfCan(expr : %) : Union(DoubleFloat, "failed") ==
+      jlType(expr) = 'Float64 => jlEvalString(getind(expr))@JF64 pretend DoubleFloat
+      "failed"
+    retractIfCan(expr) : Union(Expression(Integer), "failed") == --TODO: weberE etc.
+      str : String := jlEvalString(concat(["replace(_"",
+        toString(expr, jWSExpr "InputForm"),
+        "_", '[' => '(', ']' => ')', _"Pi_"=>_"%pi_", _"ArcS_" => _"as_", _"ArcC_" => _"ac_",",
+        " _"ArcT_" => _"at_" , _"E_" => _"%e_" ,r_"\b[A-Z][a-z]{2}_" => x -> lowercase(x))"]))
+      jlRegexMatch?(str,jlRegex("[0-9]\.|0-9]")) => "failed"
+      strToExprInt(str)
+    retract(expr : %) : Expression(Integer) ==
+      (out := retractIfCan(expr)@Union(Expression(Integer), "failed"))
+        case "failed" =>
+          error(concat("Unable to retract to an Expression(Integer).",
+            " Maybe Expression(Float) should be used."))
+      out
+    retractIfCan(expr : %) : Union(Expression(Float), "failed") == --TODO: weberE etc.
+      str : String := jlEvalString(concat(["replace(_"",
+        toString(expr, jWSExpr "InputForm"),
+        "_", '[' => '(', ']' => ')', _"Pi_" => _"%pi_", _"ArcS_" => _"as_", _"ArcC_" => _"ac_",",
+        " _"ArcT_" => _"at_" , _"E_" => _"%e_", r_"\b[A-Z][a-z]{2}_" => x -> lowercase(x))"]))
+      -- TODO: to be improved `
+      jlRegexMatch?(str, jlRegex("`")) => "failed"
+      strToExprFloat(str)
+    retract(expr : %) : Expression(Float) ==
+      (out := retractIfCan(expr)@Union(Expression(Float), "failed"))
+        case "failed" =>
+          error1("Unable to retract to an Expression(Float): ", expr)
+      out
+    -- TODO: breaks output
+    --string(expr) : String == toString expr
+    --convert(expr) : String == toString expr
+    coerce(sym : Symbol) == jlref(concat(["W_`", string(sym),  "_`"]))
+    coerce(sym : WSSymbol) == sym pretend %
+    coerce(i : Integer) == jlref(concat(["WInteger(_"", string(i), "_")"]))
+    coerce(z : Complex(Integer)) ==
+      jlref(concat(["weval(W_"Complex_"(",
+        getind(coerce(real(z))@WSInteger),",",
+          getind(coerce(imag(z))@WSInteger),"))"]))
+    coerce(q : Fraction(Integer)) == jWSRational(q)$WSRational pretend %
+    coerce(r : Float) == jWSReal(r)$WSReal pretend %
+    coerce(str : String) == jlref(concat(["W_`", str, "_`"]))
+    coerce(l : List(%)) : % ==
+      -- Temporary (and dirty) hack
+      -- TODO : use getind and List
+      lstr := map(obj +-> toString(obj), l)$ListFunctions2(%, String)
+      str : String := "{"
+      for i in 1..(#lstr - 1) repeat
+        str := concat([str, lstr.i, ","])
+      jlref(concat(["W_`", concat([str, lstr.(#lstr) ,"}"]), "_`"]))
+    coerce(expr) : WSInteger ==
+      integer?(expr) => expr pretend WSInteger
+      error "Not an integer"
+    coerce(expr) : WSRational ==
+      integer?(expr) or rational?(expr)=> expr pretend WSRational
+      error "Not a rational number"
+    coerce(eq : Equation(%)) == jWSEqual(lhs(eq), rhs(eq))
+    
+    baseForm(x,n) ==
+      integer? x and integer? n => jbinfunc("W_"BaseForm_"(", x,n)
+      error "baseForm: Integer(s) not used"
+    numberForm(x) ==
+      number? x => junfunc("W_"NumberForm_"(", x)
+      error "numberForm: Not a number"
+    numberForm(x, expr) ==
+      number? x and (jlHead(expr) = WL or integer? expr)
+        => jbinfunc("W_"NumberForm_"(", x,expr)
+      error "numberForm: Bad format(s) of arguments"
+    decimalForm(x) ==
+      number? x => junfunc("W_"DecimalForm_"(", x)
+      error "decimalForm: Not a number"
+    decimalForm(x, expr) ==
+      number? x and (jlHead(expr) = WL or integer? expr)
+        => jbinfunc("W_"DecimalForm_"(", x, expr)
+      error "decimalForm: Bad format(s) of arguments"
+    scientificForm(x) ==
+      number? x => junfunc("W_"ScientificForm_"(", x)
+      error "scientificForm: Not a number"
+    scientificForm(x,n) ==
+      number? x and integer? n => jbinfunc("W_"ScientificForm_"(", x,n)
+      error "scientificForm: Require numbers"
+    engineeringForm(x) ==
+      number? x => junfunc("W_"EngineeringForm_"(", x)
+      error "engineeringForm: Not a number"
+    engineeringForm(x,n) ==
+      number? x and integer? n => jbinfunc("W_"EngineeringForm_"(", x,n)
+      error "engineeringForm: Require numbers"
+    percentForm(x) ==
+      number? x => junfunc("W_"PercentForm_"(", x)
+      error "percentForm: Not a number"
+    percentForm(x,n) ==
+      number? x and integer? n => jbinfunc("W_"PercentForm_"(", x,n)
+      error "percentForm: Require numbers"
+    accountingForm(x) ==
+      number? x => junfunc("W_"AccountingForm_"(", x)
+      error "accountingForm: Not a number"
+    accountingForm(x,n) ==
+      number? x and integer? n => jbinfunc("W_"AccountingForm_"(", x,n)
+      error "accountingForm: Require numbers"
+    matrixForm(expr) == junfunc("W_"MatrixForm_"(", expr)
+    quantityForm(expr, form : %) == jbinfunc("W_"QuantityForm_"(", expr, form)
+    quantityForm(expr, form : WSL(%)) ==
+      jbinfunc("W_"QuantityForm_"(", expr, form)
+    coerce(expr) : OutputForm ==
+      head := jlHead expr
+      head = WS => message(string(expr))
+      (head = WR and machineNumber?(expr)) => coerce(expr pretend WSReal)$WSReal
+      (head = WC and machineNumber?(real expr) and machineNumber?(imag expr)) =>
+        coerce(expr pretend WSComplex)$WSComplex
+      head = WRat => coerce(expr pretend WSRational)$WSRational
+      head = WFormat => message(string(expr))
+      pagew := string(_$LINELENGTH$Lisp pretend Integer - 2)
+      sexpr := toString(expr, jWSExpr concat("PageWidth -> ", pagew))
+      str : String := jlEvalString(concat(["replace(_"", sexpr,
+        "_", '[' => '(', ']' => ')', r_"\b[A-Z][a-z]{2}_" => x -> lowercase(x))"]))
+      l := split(str, newline())
+      #l > 1 => pile(append([""],l) pretend List(OutputForm))
+      message(str)

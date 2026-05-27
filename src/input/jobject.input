@@ -1,0 +1,155 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+)expose JLObjFloat32 JLObjFloat64 JLObjComplexF32 JLObjComplexF64
+)expose JLObjPair JLObjTuple JLObjDict JLVector JLMatrix JLDataFrame
+)expose JLObject JLObjInt64 JLObjUInt64 JLObjBigInt JLObjBool
+)expose JLFloat JLComplexFloat
+
+testsuite "JL Object"
+
+testcase "JLFloat"
+a := identity(10)$JLMatrix(JFLOAT);
+b := map(i+->nrand()$JFLOAT,a);
+testTrue("jlApprox?(inverse(b)*b,a)")
+
+testcase "JLVector indexing"
+v:=conjugates(sqrt(jnanumber(-2)));
+testTrue("(v.2^2=jnanumber(-2))@Boolean")
+testTrue("(qelt(v,2)^2=jnanumber(-2))@Boolean")
+
+testcase "JLObject"
+o1 := jobject("1")
+testEquals("jlType o1", "_"Int64_"")
+o2 := jobject("1.0")
+testEquals("jlType o2", "_"Float64_"")
+o3 := jobject("_"hello_"")
+testEquals("jlType o3", "_"String_"")
+testEquals("string(o3)", "_"hello_"")
+
+testcase "JLObjBool"
+bt := jtrue()
+bf := jfalse()
+testTrue("bt::Boolean")
+testTrue("not (bf::Boolean)")
+testEquals("jlType bt", "_"Bool_"")
+
+testcase "JLObjInt64"
+i64 := jint64(42)
+testEquals("i64", "42")
+testEquals("jlType i64", "_"Int64_"")
+testEquals("i64 + jint64(1)", "jint64(43)")
+testEquals("i64 * 2", "jint64(84)")
+
+testcase "JLObjUInt64"
+ui64 := juint64(10)
+testEquals("jlType ui64", "_"UInt64_"")
+testEquals("ui64 + juint64(5)", "juint64(15)")
+
+testcase "JLObjBigInt"
+bi := jbigint(12345678901234567890)
+testEquals("jlType bi", "_"BigInt_"")
+testEquals("bi + 1", "jbigint(12345678901234567891)")
+
+testcase "JLObjFloat32"
+f32 := jobject("1.5f0") pretend JLObjFloat32
+testEquals("jlType f32", "_"Float32_"")
+testTrue("jlApprox?(f32 * 2, coerce(3.0)$JLObjFloat32)")
+testTrue("jlApprox?(f32 + 0.5, coerce(2.0)$JLObjFloat32)")
+
+testcase "JLObjFloat64"
+f64 := jfloat64(1.5)
+testEquals("jlType f64", "_"Float64_"")
+testTrue("jlApprox?(f64 * 2, jfloat64(3.0))")
+testTrue("jlApprox?(f64 + 0.5, jfloat64(2.0))")
+
+testcase "JLObjComplexF32"
+cf32 := jobject("ComplexF32(1.0 + 2.0im)") pretend JLObjComplexF32
+testEquals("jlType cf32", "_"ComplexF32_"")
+real_part := jlApply("real", cf32 pretend JLObject) pretend JLObjFloat32
+imag_part := jlApply("imag", cf32 pretend JLObject) pretend JLObjFloat32
+testTrue("jlApprox?(real_part, coerce(1.0)$JLObjFloat32)")
+testTrue("jlApprox?(imag_part, coerce(2.0)$JLObjFloat32)")
+
+testcase "JLObjComplexF64"
+cf64 := jobject("ComplexF64(1.0 + 2.0im)") pretend JLObjComplexF64
+testEquals("jlType cf64", "_"ComplexF64_"")
+real_part64 := jlApply("real", cf64 pretend JLObject) pretend JLObjFloat64
+imag_part64 := jlApply("imag", cf64 pretend JLObject) pretend JLObjFloat64
+testTrue("jlApprox?(real_part64, jfloat64(1.0))")
+testTrue("jlApprox?(imag_part64, jfloat64(2.0))")
+
+testcase "JLFloat"
+jf := jfloat(1.5)
+testEquals("jlType jf", "_"BigFloat_"")
+testTrue("jlApprox?(jf * 2, jfloat(3.0))")
+testTrue("jlApprox?(exp(jfloat(0.0)), jfloat(1.0))")
+testTrue("jlApprox?(log(exp(jf)), jf)")
+
+testcase "JLComplexFloat"
+jcf := complex(jfloat(1.0), jfloat(2.0))$JLComplexFloat
+testEquals("jlType jcf", "_"Complex{BigFloat}_"")
+testTrue("jlApprox?(real(jcf), jfloat(1.0))")
+testTrue("jlApprox?(imag(jcf), jfloat(2.0))")
+testTrue("jlApprox?(exp(jcf), exp(real(jcf)) * cis(imag(jcf)))")
+
+testcase "JLObjPair"
+p := jobject("1 => _"a_"") pretend JLObjPair(JLObjInt64, JLObject)
+testEquals("jlType p", "_"Pair{Int64, String}_"")
+testEquals("first(p)", "jint64(1)")
+testEquals("string(last(p))", "_"a_"")
+
+testcase "JLObjTuple"
+t := jtuple("(1, 2.0)")
+testEquals("jlType t", "_"Tuple{Int64, Float64}_"")
+testEquals("t.1", "jobject(_"1_")")
+testEquals("t.2", "jobject(_"2.0_")")
+
+testcase "JLObjDict"
+d := jdict("Dict(_"a_" => 1, _"b_" => 2)")
+testEquals("jlType d", "_"Dict{String, Int64}_"")
+testEquals("d._"a_"", "jobject(_"1_")")
+testEquals("d._"b_"", "jobject(_"2_")")
+setelt!(d, "c", jobject("3"))
+testEquals("d._"c_"", "jobject(_"3_")")
+delete!(d, "c")
+haskey_check := jlApply("haskey", d pretend JLObject, jobject("_"c_""))
+testTrue("not ((haskey_check pretend JLObjBool)::Boolean)")
+
+testcase "JLVector"
+v := vector([1, 2, 3])$JLVector(JLObjInt64)
+testEquals("#v", "3")
+testEquals("v.1", "jint64(1)")
+testEquals("v.3", "jint64(3)")
+v.2 := jint64(42)
+testEquals("v.2", "jint64(42)")
+v2 := vector([1.0, 2.0])$JLVector(JLObjFloat64)
+testEquals("jlType v2", "_"Vector{Float64}_"")
+
+testcase "JLMatrix"
+m := new(2, 2, 0)$JLMatrix(JLObjInt64)
+testEquals("nrows m", "2")
+testEquals("ncols m", "2")
+m(1,1) := jint64(1)
+m(1,2) := jint64(2)
+m(2,1) := jint64(3)
+m(2,2) := jint64(4)
+testEquals("m(2,1)", "jint64(3)")
+tm := transpose(m)
+testEquals("tm(1,2)", "jint64(3)")
+testEquals("tm(2,1)", "jint64(2)")
+
+-- testcase "JLDataFrame"
+-- m_df := new(2, 2, 0.0)$JLMatrix(JLObjFloat64)
+-- m_df(1,1) := jfloat64(1.0)
+-- m_df(1,2) := jfloat64(2.0)
+-- m_df(2,1) := jfloat64(3.0)
+-- m_df(2,2) := jfloat64(4.0)
+-- Use jdframe(matrix) which uses :auto for names (x1, x2)
+-- df := jdframe(m_df)$JLDataFrame
+-- testEquals("jlType df", "_"DataFrame_"")
+-- col_x1 := df.x1
+-- testEquals("jlType col_x1", "_"Vector{Float64}_"")
+-- testEquals("col_x1.1", "jfloat64(1.0)")
+-- testEquals("col_x1.2", "jfloat64(3.0)")
+
+statistics()

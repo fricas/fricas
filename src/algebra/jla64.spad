@@ -1,0 +1,1314 @@
+)abbrev package JF64LA JLF64LinearAlgebra
+++ Linear Algebra functions computed using Julia and its algorithms.
+++ 64 bits version.
+JLF64LinearAlgebra() : Exports == Implementation where
+  JF64     ==> JLFloat64
+  JI64     ==> JLInt64
+  JI64VEC  ==> JLInt64Vector
+  JF64VEC  ==> JLFloat64Vector
+  JF64MAT  ==> JLFloat64Matrix
+  JCF64VEC ==> JLComplexF64Vector
+  JCF64MAT ==> JLComplexF64Matrix
+  NNI      ==> NonNegativeInteger
+  Exports ==> with
+    normalize : JF64VEC -> JF64VEC
+    ++ normalize(v) returns normalized v such that its norm equals 1.
+    normalize! : JF64VEC -> JF64VEC
+    ++ normalize!(v) destructively normalize v such that
+    ++ norm(v) equals 1.
+    normalize : JF64MAT -> JF64MAT
+    ++ normalize(m) returns normalized m such that its norm equals 1.
+    normalize! : JF64MAT -> JF64MAT
+    ++ normalize!(m) destructively normalize m such that
+    ++ its norm equals 1.
+    norm    : JF64VEC -> JF64
+    ++ norm(v) computes the 2-norm of v.
+    norm    : (JF64VEC,JF64) -> JF64
+    ++ norm(v,p) computes the p-norm of v.
+    norm    : JF64MAT -> JF64
+    ++ norm(m) computes the 2-norm of m,
+    ++ also known as the Frobenius norm.
+    norm    : (JF64MAT,JF64) -> JF64
+    ++ norm(m,p) computes the p-norm of m.
+    operatorNorm    : JF64MAT -> JF64
+    ++ operatorNorm(m) computes the operator norm of m
+    ++ induced by the vector 2-norm.
+    operatorNorm    : (JF64MAT,JF64) -> JF64
+    ++ operatorNorm(m,p) computes the operator norm of m
+    ++ induced by the vector p-norm.
+    conditionNumber    : JF64MAT -> JF64
+    ++ conditionNumber(m) computes the condition number of m.
+    conditionNumber    : (JF64MAT,JF64) -> JF64
+    ++ conditionNumber(m, p) computes the p-condition number of m.
+    condSkeel    : JF64MAT -> JF64
+    ++ condSkeel(m) computes the Skeel condition number of m.
+    trace   : JF64MAT -> JF64
+    ++ trace(m) computes the trace of m.
+    rank        : (JF64MAT, JF64) -> NNI
+    ++ rank(m, tol) computes the rank of m. Counts singular value
+    ++ with magnitude greater than tol.
+    rank!        : (JF64MAT, JF64) -> NNI
+    ++ rank!(m, tol) computes the rank of m. Counts singular value
+    ++ with magnitude greater than tol but overwrites m to save
+    ++ memory space.
+    logDeterminant    : JF64MAT -> JF64
+    ++ logDeterminant(m) computes the logarithm of the determinant of m,
+    ++ possibly with more accuracy and avoiding under/overflow.
+    svd : JF64MAT -> Record(U:JF64MAT, sv:JF64VEC, Vt:JF64MAT)
+    ++ svd(m) computes the singular value decomposition SVD of m
+    ++ such that SVD.U * diagonalMatrix(SVD.sv) * SVD.Vt = m.
+    svd! : JF64MAT -> Record(U:JF64MAT, sv:JF64VEC, Vt:JF64MAT)
+    ++ svd!(m) is the same as svd(m) but overwrites m to save
+    ++ memory space.
+    svdvals : JF64MAT -> JF64VEC
+    ++ svdvals(m) returns the singular values of m.
+    svdvals! : JF64MAT -> JF64VEC
+    ++ svdvals!(m) returns the singular values of m but overwrites
+    ++ m to save memory space.
+    eigvals : JF64MAT -> JCF64VEC
+    ++ eigvals(m) returns the eigen values of m.
+    eigvals! : JF64MAT -> JCF64VEC
+    ++ eigvals!(m) returns the eigen values of m but overwrites
+    ++ m to save memory space.
+    eigvecs : JF64MAT -> JCF64MAT
+    ++ eigvecs(m) returns the eigen vectors of m.
+    eigen : JF64MAT -> Record(values:JCF64VEC, vectors:JCF64MAT)
+    ++ eigen(m) computes the spectral decomposition of m.
+    eigen! : JF64MAT -> Record(values:JCF64VEC, vectors:JCF64MAT)
+    ++ eigen!(m) computes the spectral decomposition of m but overwrites
+    ++ m to save memory space.
+    eigenSystem : JF64MAT ->
+        Record(values:JCF64VEC, leftVectors:JF64MAT, rightVectors:JF64MAT)
+    ++ eigenSystem(m) computes the spectral decomposition of m.
+    ++ If the j-th eigenvalue (values) is real, then the left eigenvectors
+    ++ u(j) = column(leftVectors,j), the j-th column of leftVectors.
+    ++ If the j-th and (j+1)-st eigenvalues form a complex
+    ++ conjugate pair, then the left eigenvectors are
+    ++ u(j) = column(leftVectors,j) + %i*column(leftVectors,j+1) and
+    ++ u(j+1) = column(leftVectors,j) - %i*column(leftVectors,j+1).
+    ++ This applies also to rightVectors.
+    eigenSystem! : JF64MAT ->
+        Record(values:JCF64VEC, leftVectors:JF64MAT, rightVectors:JF64MAT)
+    ++ eigenSystem!(m) computes the spectral decomposition of m but overwrites
+    ++ m to save memory space.
+    ++ If the j-th eigenvalue (values) is real, then the left eigenvectors
+    ++ u(j) = column(leftVectors,j), the j-th column of leftVectors.
+    ++ If the j-th and (j+1)-st eigenvalues form a complex
+    ++ conjugate pair, then the left eigenvectors are
+    ++ u(j) = column(leftVectors,j) + %i*column(leftVectors,j+1) and
+    ++ u(j+1) = column(leftVectors,j) - %i*column(leftVectors,j+1).
+    ++ This applies also to rightVectors.
+    solve : (JF64MAT, JF64MAT) -> JF64MAT
+    ++ solve(A,B) solves the matrix equation A*X=B, and returns X.
+    solve! : (JF64MAT, JF64MAT) -> JF64MAT
+    ++ solve!(A,B) solves the matrix equation A*X=B. Overwrites
+    ++ B with matrix X and returns X.
+    lu      : JF64MAT -> Record(LU:JF64MAT,
+                L:JF64MAT, U:JF64MAT, ipiv:JI64VEC)
+    ++ lu(m) computes the LU factorisation of m.
+    lu!     : JF64MAT -> Record(LU:JF64MAT, ipiv:JI64VEC)
+    ++ lu!(m) computes in-place the LU factorisation of m.
+    ++ m is overwritten by its decomposition.
+    luReorder : (JF64MAT, JI64VEC) -> JF64MAT
+    -- TODO
+    ++ luReorder(mat, ipiv) returns a copy of mat reordered
+    ++ using the ipiv pivot indices.
+    luReorder! : (JF64MAT, JI64VEC) -> JF64MAT
+    ++ luReorder!(mat, ipiv) returns mat reordered
+    ++ in-place using the ipiv pivot indices.
+    mpInverse : JF64MAT -> JF64MAT
+    ++ mpInverse(m) returns the Moore-Penrose pseudo inverse of m.
+    sqrt : JF64MAT -> JCF64MAT
+    ++ sqrt(m) returns the principal square root of m.
+    exp : JF64MAT -> JF64MAT
+    ++ exp(m) returns the matrix exponential of m.
+    log : JF64MAT -> JCF64MAT
+    ++ log(m) tries to compute the principal matrix logarithm of m.
+    ++ Otherwise, returns a non principal matrix logarithm of m if possible.
+    triu    : JF64MAT -> JF64MAT
+    ++ triu(m) returns the upper triangular matrix of m.
+    triu!   : JF64MAT -> JF64MAT
+    ++ triu!(m) overwrites m with its upper triangular matrix counterpart.
+    ++ Returns m.
+    tril    : JF64MAT -> JF64MAT
+    ++ tril(m) returns the lower triangular matrix of m.
+    tril!   : JF64MAT -> JF64MAT
+    ++ tril!(m) overwrites m with its lower triangular matrix counterpart.
+    ++ Returns m.
+    jlPeakFlops : () -> JF64
+    ++ jlPeakFlops() returns the peak flop rate
+    ++ using matrix multiplication. You can modify the number of threads
+    ++ used or the BLAS/LAPACK libraries used to see if that fits
+    ++ your needs.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLF64ArrayFunctions
+
+    jlImport("LinearAlgebra.peakflops")
+    jlImport("LinearAlgebra.LAPACK.gesv!")
+    jlImport("LinearAlgebra.LAPACK.geev!")
+
+    jlPeakFlops() == jlEvalString("peakflops()")
+
+    normalize(v : JF64VEC) ==
+      vt := copy(v)
+      jlApplyFunction("normalize!", vt)
+      vt
+    normalize!(v: JF64VEC) == (jlApplyFunction("normalize!", v);v)
+    normalize(m : JF64MAT) ==
+      nr := nrows(m)
+      mt := qnew(nr, ncols(m))$JF64MAT
+      jlApplyFunction!("normalize", jlVector(mt),
+        jlVector(m), nr)
+      mt
+    normalize!(m: JF64MAT) ==
+      jlApplyFunction("normalize!", jlVector(m), nrows(m))
+      m
+
+    norm(v : JF64VEC) == jlApplyFunction("norm", v)
+    norm(v : JF64VEC, p:JF64) == jlApplyFunction("norm", v, p)
+    norm(m : JF64MAT) == jlApplyFunction("norm", jlVector(m),nrows(m))
+    norm(m : JF64MAT, p:JF64) ==
+      jlApplyFunction( "norm", jlVector(m),nrows(m), p)
+    operatorNorm(m : JF64MAT) ==
+      jlApplyFunction("opnorm", jlVector(m), nrows(m))
+    operatorNorm(m : JF64MAT, p:JF64) ==
+      jlApplyFunction("opnorm", jlVector(m), nrows(m), p)
+    conditionNumber(m : JF64MAT) ==
+      jlApplyFunction("cond", jlVector(m), nrows(m))
+    conditionNumber(m : JF64MAT, p:JF64) ==
+      jlApplyFunction("cond", jlVector(m), nrows(m), p)
+    condSkeel(m : JF64MAT) ==
+      jlApplyFunction("condskeel", jlVector(m), nrows(m))
+    trace(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "trace: matrix is not square"
+      jlApplyFunction("tr", jlVector(m), nr)
+
+    rank(m, tol) : NNI == count(x +-> x > tol, svdvals(m))$JF64VEC
+    rank!(m, tol) : NNI == count(x +-> x > tol, svdvals!(m))$JF64VEC
+
+    logDeterminant(m) ==
+      jlApplyFunction("logdet", jlVector(m), nrows(m))
+
+    svd_wrapper : (String, JF64MAT) -> Record(U:JF64MAT, sv:JF64VEC, Vt:JF64MAT)
+    svd_wrapper(func, a) ==
+      u, vt : JF64MAT
+      sv : JF64VEC
+      nr := nrows(a)
+      nc := ncols(a)
+      sv := qnew(min(nr,nc))$JF64VEC
+      if nr < nc then
+        u  := qnew(nr, nr)
+        vt := qnew(nr, nc)
+      else if nr > nc then
+        u  := qnew(nr, nc)
+        vt := qnew(nc, nc)
+      else 
+        u  := qnew(nr, nc)
+        vt := qnew(nr,nc)
+      jl_svd_function(0$NNI, func, jlVector(u), sv, jlVector(vt),
+          jlVector(a), nr)$Lisp
+      [u,sv,vt]
+
+    svd(a) == svd_wrapper("svd", a)
+
+    svd!(a) == svd_wrapper("svd!", a)
+
+    svdvals(a) ==
+      m := nrows(a)
+      n := ncols(a)
+      v := qnew(min(m,n))$JF64VEC
+      jlApplyFunction!("svdvals", v, jlVector(a), m)
+      v
+
+    svdvals!(a) ==
+      m := nrows(a)
+      n := ncols(a)
+      v := qnew(min(m,n))$JF64VEC
+      jlApplyFunction!("svdvals!", v, jlVector(a), m)
+      v
+    
+    eigvals(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvals: matrix is not square"
+      v := qnew(m)$JCF64VEC
+      jlApplyFunction!("eigvals", v, jlVector(a), m)
+      v
+
+    eigvals!(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvals!: matrix is not square"
+      v := qnew(m)$JCF64VEC
+      jlApplyFunction!("eigvals!", v, jlVector(a), m)
+      v
+
+    eigvecs(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvecs: matrix is not square"
+      ret := qnew(m,m)$JCF64MAT
+      jlApplyFunction!("eigvecs", jlVector(ret), jlVector(a), m)
+      ret
+        
+    eigen(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigen: matrix is not square"
+      vecs := qnew(m,m)$JCF64MAT
+      vals := qnew(m)$JCF64VEC
+      jl_eigen_function(0$NNI, "eigen", vals, jlVector(vecs), jlVector(a), m)$Lisp
+      [vals,vecs]
+
+    eigen!(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigen!: matrix is not square"
+      vecs := qnew(m,m)$JCF64MAT
+      vals := qnew(m)$JCF64VEC
+      jl_eigen_function(0$NNI, "eigen!", vals, jlVector(vecs), jlVector(a), m)$Lisp
+      [vals,vecs]
+
+    eigenSystem(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigenSystem: matrix is not square"
+      ca := copy a
+      lvecs := qnew(m,m)$JF64MAT
+      rvecs := qnew(m,m)$JF64MAT
+      vals := qnew(m)$JCF64VEC
+      jl_eigen_system_function(0$NNI, "geev!", vals, jlVector(lvecs),
+        jlVector(rvecs), jlVector(ca), m)$Lisp
+      [vals,lvecs,rvecs]
+
+    eigenSystem!(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigenSystem!: matrix is not square"
+      lvecs := qnew(m,m)$JF64MAT
+      rvecs := qnew(m,m)$JF64MAT
+      vals := qnew(m)$JCF64VEC
+      jl_eigen_system_function(0$NNI, "geev!", vals, jlVector(lvecs),
+        jlVector(rvecs), jlVector(a), m)$Lisp
+      [vals,lvecs,rvecs]
+
+    solve(a,b) ==
+      aa := copy a
+      bb := copy b
+      jlApplyFunction!("gesv!", jlVector(aa), nrows(aa),
+        jlVector(bb), nrows(bb))
+      bb
+
+    solve!(a,b) ==
+      aa := copy a
+      jlApplyFunction!("gesv!", jlVector(aa), nrows(aa),
+        jlVector(b), nrows(b))
+      b
+
+    mpInverse(a) ==
+      mpinv := qnew(ncols(a), nrows(a))$JF64MAT
+      jlApplyFunction!("pinv", jlVector(mpinv),
+        jlVector(a), nrows(a))
+      mpinv
+
+    sqrt(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "sqrt: matrix is not square"
+      ret := qnew(m,m)$JCF64MAT
+      jlApplyFunction!("sqrt", jlVector(ret), jlVector(a), m)
+      ret
+
+    exp(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "exp: matrix is not square"
+      ret := qnew(m,m)
+      jlApplyFunction!("exp", jlVector(ret), jlVector(a), m)
+      ret
+
+    log(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "log: matrix is not square"
+      ret := qnew(m,m)$JCF64MAT
+      jlApplyFunction!("log", jlVector(ret), jlVector(a), m)
+      ret
+
+    -- local
+    ldiv!   : (JF64MAT, JF64MAT) -> JF64MAT
+    rdiv!   : (JF64MAT, JF64MAT) -> JF64MAT
+
+    lu(a) ==
+      m    := nrows(a)
+      n    := ncols(a)
+      mn   := min(m,n)
+      lu   := qnew(m,n)$JF64MAT
+      l    := new(m, mn, 0)$JF64MAT
+      u    := new(mn, n, 0)$JF64MAT
+      ipiv := qnew(mn)$JI64VEC
+      copy!(lu,a)
+      jl_iarray_2dfunction(0$NNI,"lu!", ipiv, jlVector(lu), m)$Lisp            
+      for i in 1 .. m repeat
+        for j in 1 .. n repeat
+          if j < i then
+            setelt!(l, i, j, qelt(lu,i, j))
+          else if j > i then
+            setelt!(u, i, j, qelt(lu, i, j))
+          else
+            setelt!(u, i, j, qelt(lu, i, j))
+            setelt!(l, i, j, 1)
+      [lu, l, u, ipiv]
+
+    lu!(a) ==
+      m := nrows(a)
+      n := ncols(a)
+      ipiv := qnew(min(m,n))$JI64VEC
+      jl_iarray_2dfunction(0$NNI,"lu!", ipiv, jlVector(a), m)$Lisp
+      [a, ipiv]
+    
+    luReorder(mat, ipiv) : JF64MAT == luReorder!(copy(mat), ipiv)
+
+    luReorder!(mat, ipiv) : JF64MAT ==
+      n := #ipiv
+      for i in 1..n repeat swapRows!(mat, i, qelt(ipiv, i) pretend Integer)
+      mat
+
+    ldiv!(a, b) ==
+      c := qnew(nrows(a), ncols(b))
+      jl_2d3function(0$NNI,"ldiv!", jlVector(c), nrows(c),
+        jlVector(a), nrows(a), jlVector(b), nrows(b))$Lisp
+      c
+
+    rdiv!(a, b) ==
+      c := qnew(nrows(a), ncols(b))
+      jl_2d3function(0$NNI,"rdiv!", jlVector(c), nrows(c),
+        jlVector(a), nrows(a), jlVector(b), nrows(b))$Lisp
+      c
+
+    triu(m) ==
+      mm := copy m
+      jlApplyFunction("triu!", jlVector(mm), nrows(mm))
+      mm
+
+    triu!(m) ==
+      jlApplyFunction("triu!", jlVector(m), nrows(m))
+      m
+
+    tril(m) ==
+      mm := copy m
+      jlApplyFunction("tril!", jlVector(mm), nrows(mm))
+      mm
+
+    tril!(m) ==
+      jlApplyFunction("tril!", jlVector(m), nrows(m))
+      m
+
+)abbrev package JCF64LA JLCF64LinearAlgebra
+++ Linear Algebra functions computed using Julia and its algorithms.
+++ 64 bits version.
+JLCF64LinearAlgebra() : Exports == Implementation where
+  JF64     ==> JLFloat64
+  JI64     ==> JLInt64
+  JF64VEC  ==> JLFloat64Vector
+  JF64MAT  ==> JLFloat64Matrix
+  JCF64VEC ==> JLComplexF64Vector
+  JCF64MAT ==> JLComplexF64Matrix
+  NNI      ==> NonNegativeInteger
+  Exports ==> with
+    normalize : JCF64VEC -> JCF64VEC
+    ++ normalize(v) returns normalized v such that its norm equals 1.
+    normalize! : JCF64VEC -> JCF64VEC
+    ++ normalize!(v) destructively normalize v such that
+    ++ norm(v) equals 1.
+    normalize : JCF64MAT -> JCF64MAT
+    ++ normalize(m) returns normalized m such that its norm equals 1.
+    normalize! : JCF64MAT -> JCF64MAT
+    ++ normalize!(m) destructively normalize m such that
+    ++ its norm equals 1.
+    norm    : JCF64VEC -> JF64
+    ++ norm(v) computes the 2-norm of v.
+    norm    : (JCF64VEC,JF64) -> JF64
+    ++ norm(v,p) computes the p-norm of v.
+    norm    : JCF64MAT -> JF64
+    ++ norm(m) computes the 2-norm of m,
+    ++ also known as the Frobenius norm.
+    norm    : (JCF64MAT,JF64) -> JF64
+    ++ norm(m,p) computes the p-norm of m.
+    operatorNorm    : JCF64MAT -> JF64
+    ++ operatorNorm(m) computes the operator norm of m
+    ++ induced by the vector 2-norm.
+    operatorNorm    : (JCF64MAT,JF64) -> JF64
+    ++ operatorNorm(m,p) computes the operator norm of m
+    ++ induced by the vector p-norm.
+    conditionNumber    : JCF64MAT -> JF64
+    ++ conditionNumber(m) computes the condition number of m.
+    conditionNumber    : (JCF64MAT,JF64) -> JF64
+    ++ conditionNumber(m, p) computes the p-condition number of m.
+    condSkeel    : JCF64MAT -> JF64
+    ++ condSkeel(m) computes the Skeel condition number of m.
+    rank        : (JCF64MAT, JF64) -> NNI
+    ++ rank(m, tol) computes rank of m. Counts singular value
+    ++ with magnitude greater than tol.
+    rank!        : (JCF64MAT, JF64) -> NNI
+    ++ rank!(m, tol) computes rank of m. Counts singular value
+    ++ with magnitude greater than tol but overwrites m to save
+    ++ memory space.
+    solve : (JCF64MAT, JCF64MAT) -> JCF64MAT
+    ++ solve(A,B) solves the matrix equation A*X=B, and returns X.
+    solve! : (JCF64MAT, JCF64MAT) -> JCF64MAT
+    ++ solve!(A,B) solves the matrix equation A*X=B. Overwrites
+    ++ B with matrix X and returns X.
+    svd : JCF64MAT -> Record(U:JCF64MAT, sv:JF64VEC, Vt:JCF64MAT)
+    ++ svd(m) computes the singular value decomposition SVD of m
+    ++ such that SVD.U * diagonalMatrix(SVD.sv) * SVD.Vt = m.
+    svd! : JCF64MAT -> Record(U:JCF64MAT, sv:JF64VEC, Vt:JCF64MAT)
+    ++ svd!(m) is the same as svd(m) but overwrites m to save
+    ++ memory space.
+    eigen : JCF64MAT -> Record(values:JCF64VEC, vectors:JCF64MAT)
+    ++ eigen(m) computes the spectral decomposition of m.
+    eigen! : JCF64MAT -> Record(values:JCF64VEC, vectors:JCF64MAT)
+    ++ eigen!(m) computes the spectral decomposition of m but overwrites
+    ++ m to save memory space.
+    eigenSystem : JCF64MAT ->
+        Record(values:JCF64VEC, leftVectors:JCF64MAT, rightVectors:JCF64MAT)
+    ++ eigenSystem(m) computes the spectral decomposition of m.
+    eigenSystem! : JCF64MAT ->
+        Record(values:JCF64VEC, leftVectors:JCF64MAT, rightVectors:JCF64MAT)
+    ++ eigenSystem!(m) computes the spectral decomposition of m but overwrites
+    ++ m to save memory space.
+    svdvals : JCF64MAT -> JF64VEC
+    ++ svdvals(m) returns the singular values of m.
+    svdvals! : JCF64MAT -> JF64VEC
+    ++ svdvals!(m) returns the singular values of m but overwrites
+    ++ m to save memory space.
+    eigvals : JCF64MAT -> JCF64VEC
+    ++ eigvals(m) returns the eigen values of m.
+    eigvals! : JCF64MAT -> JCF64VEC
+    ++ eigvals!(m) returns the eigen values of m but overwrites
+    ++ m to save memory space.
+    eigvecs : JCF64MAT -> JCF64MAT
+    ++ eigvecs(m) returns the eigen vectors of m.
+    mpInverse : JCF64MAT -> JCF64MAT
+    ++ mpInverse(m) returns the Moore-Penrose pseudo inverse of m.
+    sqrt : JCF64MAT -> JCF64MAT
+    ++ sqrt(m) returns the principal square root of m.
+    exp : JCF64MAT -> JCF64MAT
+    ++ exp(m) returns the matrix exponential of m.
+    log : JCF64MAT -> JCF64MAT
+    ++ log(m) tries to compute the principal matrix logarithm of m.
+    ++ Otherwise, returns a non principal matrix logarithm of m if possible.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLF64ArrayFunctions
+
+    jlImport("LinearAlgebra.LAPACK.gesv!")
+    jlImport("LinearAlgebra.LAPACK.geev!")
+
+
+    normalize(v : JCF64VEC) ==
+      vtmp := copy(v)
+      jlApplyFunction("normalize!", vtmp)
+      vtmp
+
+    normalize!(v: JCF64VEC) == (jlApplyFunction("normalize!", v);v)
+
+    normalize(m : JCF64MAT) ==
+      nr := nrows(m)
+      mtmp := qnew(nr, ncols(m))$JCF64MAT
+      jlApplyFunction!("normalize", jlVector(mtmp), jlVector(m), nr)
+      mtmp
+
+    normalize!(m: JCF64MAT) ==
+      jlApplyFunction("normalize!", jlVector(m), nrows(m))
+      m
+
+    norm(v : JCF64VEC) == jlApplyFunction("norm", v)
+    norm(v : JCF64VEC, p:JF64) == jlApplyFunction("norm", v, p)
+    norm(m : JCF64MAT) ==
+      jlApplyFunction("norm", jlVector(m), nrows(m))
+    norm(m : JCF64MAT, p:JF64) ==
+      jlApplyFunction("norm",jlVector(m), nrows(m), p)
+    operatorNorm(m : JCF64MAT) ==
+      jlApplyFunction("opnorm", jlVector(m), nrows(m))
+    operatorNorm(m : JCF64MAT, p:JF64) ==
+      jlApplyFunction("opnorm", jlVector(m), nrows(m), p)
+    conditionNumber(m : JCF64MAT) ==
+      jlApplyFunction("cond", jlVector(m), nrows(m))
+    conditionNumber(m : JCF64MAT, p:JF64) ==
+      jlApplyFunction("cond", jlVector(m), nrows(m), p)
+    condSkeel(m : JCF64MAT) ==
+      jlApplyFunction("condskeel", jlVector(m),nrows(m))
+
+    rank(m, tol) : NNI == count(x +-> x > tol, svdvals(m))$JF64VEC
+    rank!(m, tol): NNI == count(x +-> x > tol, svdvals!(m))$JF64VEC
+
+    solve(a,b) ==
+      aa := copy(a)
+      bb := copy(b)
+      jlApplyFunction!("gesv!", jlVector(aa), nrows(aa),
+        jlVector(bb), nrows(bb))
+      bb
+
+    solve!(a,b) ==
+      aa := copy(a)
+      jlApplyFunction!("gesv!", jlVector(aa), nrows(aa),
+        jlVector(b), nrows(b))
+      b
+
+    mpInverse(a) ==
+      mpinv := qnew(ncols(a), nrows(a))$JCF64MAT
+      jlApplyFunction!("pinv", jlVector(mpinv),
+        jlVector(a), nrows(a))
+      mpinv
+
+    svdvals(a) ==
+      m := nrows(a)
+      n := ncols(a)
+      v := qnew(min(m,n))$JF64VEC
+      jlApplyFunction!("svdvals", v, jlVector(a), m)
+      v
+
+    svdvals!(a) ==
+      m := nrows(a)
+      n := ncols(a)
+      v := qnew(min(m,n))$JF64VEC
+      jlApplyFunction!("svdvals!", v, jlVector(a), m)
+      v
+    
+    eigvals(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvals: matrix is not square"
+      v := qnew(m)$JCF64VEC
+      jlApplyFunction!("eigvals", v, jlVector(a), m)
+      v
+
+    eigvals!(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvals!: matrix is not square"
+      v := qnew(m)$JCF64VEC
+      jlApplyFunction!("eigvals!", v, jlVector(a), m)
+      v
+
+    eigvecs(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "eigvecs: matrix is not square"
+      ret := qnew(m,m)$JCF64MAT
+      jlApplyFunction!("eigvecs", jlVector(ret), jlVector(a), m)
+      ret
+
+    svd_wrapper : (String, JCF64MAT) -> Record(U:JCF64MAT, sv:JF64VEC, Vt:JCF64MAT)
+    svd_wrapper(func, a) ==
+      u, vt : JCF64MAT
+      sv : JF64VEC
+      nr := nrows(a)
+      nc := ncols(a)
+      sv := qnew(min(nr,nc))$JF64VEC
+      if nr < nc then
+        u  := qnew(nr, nr)$JCF64MAT
+        vt := qnew(nr, nc)$JCF64MAT
+      else if nr > nc then
+        u  := qnew(nr, nc)$JCF64MAT
+        vt := qnew(nc, nc)$JCF64MAT
+      else 
+        u  := qnew(nr, nc)$JCF64MAT
+        vt := qnew(nr, nc)$JCF64MAT
+      jl_svd_function(1$NNI, func, jlVector(u), sv, jlVector(vt),
+        jlVector(a), nr)$Lisp
+      [u,sv,vt]
+
+    svd(a) == svd_wrapper("svd", a)
+
+    svd!(a) == svd_wrapper("svd!", a)
+
+    eigen(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigen: matrix is not square"
+      vecs := qnew(m,m)$JCF64MAT
+      vals := qnew(m)$JCF64VEC
+      jl_eigen_function(1$NNI, "eigen", vals, jlVector(vecs),
+        jlVector(a), m)$Lisp
+      [vals,vecs]
+
+    eigen!(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigen!: matrix is not square"
+      vecs := qnew(m,m)$JCF64MAT
+      vals := qnew(m)$JCF64VEC
+      jl_eigen_function(1$NNI, "eigen!", vals, jlVector(vecs),
+        jlVector(a), m)$Lisp
+      [vals,vecs]
+
+    eigenSystem(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigenSystem: matrix is not square"
+      ca := copy a
+      lvecs := qnew(m,m)$JCF64MAT
+      rvecs := qnew(m,m)$JCF64MAT
+      vals := qnew(m)$JCF64VEC
+      jl_eigen_system_function(1$NNI, "geev!", vals, jlVector(lvecs),
+        jlVector(rvecs), jlVector(ca), m)$Lisp
+      [vals,lvecs,rvecs]
+
+    eigenSystem!(a) == 
+      m := nrows(a)
+      m ~= ncols(a) => error "eigenSystem!: matrix is not square"
+      lvecs := qnew(m,m)$JCF64MAT
+      rvecs := qnew(m,m)$JCF64MAT
+      vals := qnew(m)$JCF64VEC
+      jl_eigen_system_function(1$NNI, "geev!", vals, jlVector(lvecs),
+        jlVector(rvecs), jlVector(a), m)$Lisp
+      [vals,lvecs,rvecs]
+
+    sqrt(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "sqrt: matrix is not square"
+      ret := qnew(m,m)$JCF64MAT
+      jlApplyFunction!("sqrt", jlVector(ret), jlVector(a), m)
+      ret
+
+    exp(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "exp: matrix is not square"
+      ret := qnew(m,m)$JCF64MAT
+      jlApplyFunction!("exp", jlVector(ret), jlVector(a), m)
+      ret
+
+    log(a) ==
+      m := nrows(a)
+      m ~= ncols(a) => error "log: matrix is not square"
+      ret := qnew(m,m)$JCF64MAT
+      jlApplyFunction!("log", jlVector(ret), jlVector(a), m)
+      ret
+
+)abbrev package JF64MTF JLF64MatrixTranscendentalFunctions
+++ Matrix transcendental functions computed using Julia and its algorithms.
+++ 64 bits version.
+JLF64MatrixTranscendentalFunctions() : Exports == Implementation where
+  JF64     ==> JLFloat64
+  JI64     ==> JLInt64
+  JF64VEC  ==> JLFloat64Vector
+  JF64MAT  ==> JLFloat64Matrix
+  JCF64VEC ==> JLComplexF64Vector
+  JCF64MAT ==> JLComplexF64Matrix
+  NNI      ==> NonNegativeInteger
+  Exports ==> with
+    sin   : JF64MAT -> JF64MAT
+    ++ sin(m) computes the matrix sine of m.
+    sind  : JF64MAT -> JF64MAT
+    ++ sind(m) computes the matrix sine of m, where m is in degrees.
+    cos   : JF64MAT -> JF64MAT
+    ++ cos(m) computes the matrix cosine of m.
+    cosd  : JF64MAT -> JF64MAT
+    ++ cosd(m) computes the matrix cosine of m, where m is in degrees.
+    tan   : JF64MAT -> JF64MAT
+    ++ tan(m) computes the matrix tangent of m.
+    tand   : JF64MAT -> JF64MAT
+    ++ tand(m) computes the matrix tangent of m, where m is in degrees.
+    sec   : JF64MAT -> JF64MAT
+    ++ sec(m) computes the matrix secant of m.
+    csc   : JF64MAT -> JF64MAT
+    ++ csc(m) computes the matrix cosecant of m.
+    cot   : JF64MAT -> JF64MAT
+    ++ cot(m) computes the matrix cotangent of m.
+    sinh   : JF64MAT -> JF64MAT
+    ++ sinh(m) computes the matrix hyperbolic sine of m.
+    cosh   : JF64MAT -> JF64MAT
+    ++ cosh(m) computes the matrix hyperbolic cosine of m.
+    tanh   : JF64MAT -> JF64MAT
+    ++ tanh(m) computes the matrix hyperbolic tangent of m.
+    sech   : JF64MAT -> JF64MAT
+    ++ sech(m) computes the matrix hyperbolic secant of m.
+    csch   : JF64MAT -> JF64MAT
+    ++ csch(m) computes the matrix hyperbolic cosecant of m.
+    coth   : JF64MAT -> JF64MAT
+    ++ coth(m) computes the matrix hyperbolic cotangent of m.
+    asin   : JF64MAT -> JCF64MAT
+    ++ asin(m) computes the inverse matrix sine of m.
+    asind   : JF64MAT -> JCF64MAT
+    ++ asind(m) computes the inverse matrix sine of m. Output is in degrees.
+    acos   : JF64MAT -> JCF64MAT
+    ++ acos(m) computes the inverse matrix cosine of m.
+    acosd   : JF64MAT -> JCF64MAT
+    ++ acosd(m) computes the inverse matrix cosine of m. Output is in degrees.
+    atan   : JF64MAT -> JCF64MAT
+    ++ atan(m) computes the inverse matrix tangent of m.
+    atand   : JF64MAT -> JCF64MAT
+    ++ atand(m) computes the inverse matrix tangent of m. Output is in degrees.
+    asec   : JF64MAT -> JCF64MAT
+    ++ asec(m) computes the inverse matrix secant of m.
+    asecd   : JF64MAT -> JCF64MAT
+    ++ asecd(m) computes the inverse matrix secant of m. Output is in degrees.
+    acsc   : JF64MAT -> JCF64MAT
+    ++ acsc(m) computes the inverse matrix cosecant of m.
+    acscd   : JF64MAT -> JCF64MAT
+    ++ acscd(m) computes the inverse matrix cosecant of m. Output is in degrees.
+    acot   : JF64MAT -> JCF64MAT
+    ++ acot(m) computes the inverse matrix cotangent of m.
+    acotd   : JF64MAT -> JCF64MAT
+    ++ acotd(m) computes the inverse matrix cotangent of m. Output is in degrees.
+    asinh   : JF64MAT -> JCF64MAT
+    ++ asinh(m) computes the inverse matrix hyperbolic sine of m.
+    acosh   : JF64MAT -> JCF64MAT
+    ++ acosh(m) computes the inverse matrix hyperbolic cosine of m.
+    atanh   : JF64MAT -> JCF64MAT
+    ++ atanh(m) computes the inverse matrix hyperbolic tangent of m.
+    asech   : JF64MAT -> JCF64MAT
+    ++ asech(m) computes the inverse matrix hyperbolic secant of m.
+    acsch   : JF64MAT -> JCF64MAT
+    ++ acsch(m) computes the inverse matrix hyperbolic cosecant of m.
+    acoth   : JF64MAT -> JCF64MAT
+    ++ acoth(m) computes the inverse matrix hyperbolic cotangent of m.
+    cis     : JF64MAT -> JCF64MAT
+    ++ cis(x) returns exp(%i*x) computed efficiently.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLF64ArrayFunctions
+
+    sin(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sin: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sin", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sind(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sind: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sind", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cos(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cos: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cos", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cosd(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cosd: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cosd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tan(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tan: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tan", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tand(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tand: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tand", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sec(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sec: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sec", jlVector(ret), jlVector(m), nr)
+      ret
+
+    csc(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "csc: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("csc", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cot(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cot: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cot", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sinh(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sinh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sinh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cosh(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cosh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cosh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tanh(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tanh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tanh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sech(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sech: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sech", jlVector(ret), jlVector(m), nr)
+      ret
+
+    csch(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "csch: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("csch", jlVector(ret), jlVector(m), nr)
+      ret
+
+    coth(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "coth: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("coth", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asin(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asin: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asin", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asind(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asind: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asind", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acos(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acos: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acos", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acosd(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acosd: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acosd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atan(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atan: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("atan", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atand(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atand: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("atand", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asec(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asec: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asec", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asecd(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asecd: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asecd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acsc(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acsc: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acsc", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acscd(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acscd: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acscd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acot(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acot: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acot", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acotd(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acotd: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acotd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asinh(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asinh: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asinh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acosh(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acosh: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acosh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atanh(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atanh: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("atanh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asech(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asech: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asech", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acsch(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acsch: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acsch", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acoth(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acoth: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acoth", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cis(m : JF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cis: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("cis", jlVector(ret), jlVector(m), nr)
+      ret
+
+)abbrev package JCF64MTF JLComplexF64MatrixTranscendentalFunctions
+++ Complex matrix transcendental functions computed using
+++ Julia and its algorithms. 64 bits version.
+JLComplexF64MatrixTranscendentalFunctions() : Exports == Implementation where
+  JF64     ==> JLFloat64
+  JI64     ==> JLInt64
+  JCF64MAT ==> JLComplexF64Matrix
+  NNI      ==> NonNegativeInteger
+  Exports ==> with
+    sin   : JCF64MAT -> JCF64MAT
+    ++ sin(m) computes the matrix sine of m.
+    sind  : JCF64MAT -> JCF64MAT
+    ++ sind(m) computes the matrix sine of m, where m is in degrees.
+    cos   : JCF64MAT -> JCF64MAT
+    ++ cos(m) computes the matrix cosine of m.
+    cosd  : JCF64MAT -> JCF64MAT
+    ++ cosd(m) computes the matrix cosine of m, where m is in degrees.
+    tan   : JCF64MAT -> JCF64MAT
+    ++ tan(m) computes the matrix tangent of m.
+    tand  : JCF64MAT -> JCF64MAT
+    ++ tand(m) computes the matrix tangent of m, where m is in degrees.
+    sec   : JCF64MAT -> JCF64MAT
+    ++ sec(m) computes the matrix secant of m.
+    csc   : JCF64MAT -> JCF64MAT
+    ++ csc(m) computes the matrix cosecant of m.
+    cot   : JCF64MAT -> JCF64MAT
+    ++ cot(m) computes the matrix cotangent of m.
+    sinh  : JCF64MAT -> JCF64MAT
+    ++ sinh(m) computes the matrix hyperbolic sine of m.
+    cosh  : JCF64MAT -> JCF64MAT
+    ++ cosh(m) computes the matrix hyperbolic cosine of m.
+    tanh  : JCF64MAT -> JCF64MAT
+    ++ tanh(m) computes the matrix hyperbolic tangent of m.
+    sech  : JCF64MAT -> JCF64MAT
+    ++ sech(m) computes the matrix hyperbolic secant of m.
+    csch  : JCF64MAT -> JCF64MAT
+    ++ csch(m) computes the matrix hyperbolic cosecant of m.
+    coth  : JCF64MAT -> JCF64MAT
+    ++ coth(m) computes the matrix hyperbolic cotangent of m.
+    asin  : JCF64MAT -> JCF64MAT
+    ++ asin(m) computes the inverse matrix sine of m.
+    asind : JCF64MAT -> JCF64MAT
+    ++ asind(m) computes the inverse matrix sine of m. Output is in degrees.
+    acos  : JCF64MAT -> JCF64MAT
+    ++ acos(m) computes the inverse matrix cosine of m.
+    acosd : JCF64MAT -> JCF64MAT
+    ++ acosd(m) computes the inverse matrix cosine of m. Output is in degrees.
+    atan  : JCF64MAT -> JCF64MAT
+    ++ atan(m) computes the inverse matrix tangent of m.
+    atand : JCF64MAT -> JCF64MAT
+    ++ atand(m) computes the inverse matrix tangent of m. Output is in degrees.
+    asec  : JCF64MAT -> JCF64MAT
+    ++ asec(m) computes the inverse matrix secant of m.
+    asecd : JCF64MAT -> JCF64MAT
+    ++ asecd(m) computes the inverse matrix secant of m. Output is in degrees.
+    acsc  : JCF64MAT -> JCF64MAT
+    ++ acsc(m) computes the inverse matrix cosecant of m.
+    acscd : JCF64MAT -> JCF64MAT
+    ++ acscd(m) computes the inverse matrix cosecant of m. Output is in degrees.
+    acot  : JCF64MAT -> JCF64MAT
+    ++ acot(m) computes the inverse matrix cotangent of m.
+    acotd : JCF64MAT -> JCF64MAT
+    ++ acotd(m) computes the inverse matrix cotangent of m. Output is in degrees.
+    asinh : JCF64MAT -> JCF64MAT
+    ++ asinh(m) computes the inverse matrix hyperbolic sine of m.
+    acosh : JCF64MAT -> JCF64MAT
+    ++ acosh(m) computes the inverse matrix hyperbolic cosine of m.
+    atanh : JCF64MAT -> JCF64MAT
+    ++ atanh(m) computes the inverse matrix hyperbolic tangent of m.
+    asech : JCF64MAT -> JCF64MAT
+    ++ asech(m) computes the inverse matrix hyperbolic secant of m.
+    acsch : JCF64MAT -> JCF64MAT
+    ++ acsch(m) computes the inverse matrix hyperbolic cosecant of m.
+    acoth : JCF64MAT -> JCF64MAT
+    ++ acoth(m) computes the inverse matrix hyperbolic cotangent of m.
+    cis   : JCF64MAT -> JCF64MAT
+    ++ cis(m) returns exp(%i*m) computed efficiently.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLF64ArrayFunctions
+
+    sin(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sin: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sin", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sind(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sind: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sind", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cos(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cos: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cos", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cosd(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cosd: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cosd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tan(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tan: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tan", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tand(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tand: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tand", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sec(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sec: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sec", jlVector(ret), jlVector(m), nr)
+      ret
+
+    csc(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "csc: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("csc", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cot(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cot: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cot", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sinh(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sinh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sinh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    cosh(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cosh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("cosh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    tanh(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "tanh: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("tanh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    sech(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "sech: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("sech", jlVector(ret), jlVector(m), nr)
+      ret
+
+    csch(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "csch: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("csch", jlVector(ret), jlVector(m), nr)
+      ret
+
+    coth(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "coth: matrix is not square"
+      ret := qnew(nr,nr)
+      jlApplyFunction!("coth", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asin(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asin: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asin", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asind(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asind: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asind", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acos(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acos: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acos", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acosd(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acosd: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acosd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atan(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atan: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("atan", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atand(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atand: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("atand", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asec(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asec: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asec", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asecd(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asecd: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asecd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acsc(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acsc: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acsc", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acscd(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acscd: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acscd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acot(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acot: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acot", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acotd(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acotd: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acotd", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asinh(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asinh: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asinh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acosh(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acosh: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acosh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    atanh(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "atanh: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("atanh", jlVector(ret), jlVector(m), nr)
+      ret
+
+    asech(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "asech: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("asech", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acsch(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acsch: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acsch", jlVector(ret), jlVector(m), nr)
+      ret
+
+    acoth(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "acoth: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("acoth", jlVector(ret), jlVector(m), nr)
+      ret
+    cis(m : JCF64MAT) ==
+      nr := nrows(m)
+      nr ~= ncols(m) => error "cis: matrix is not square"
+      ret := qnew(nr,nr)$JCF64MAT
+      jlApplyFunction!("cis", jlVector(ret), jlVector(m), nr)
+      ret

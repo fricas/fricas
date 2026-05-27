@@ -1,0 +1,105 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+)expose JLObjRational JLObject
+
+testsuite "JL Rational"
+
+testcase "Creation"
+r1 := jrational(1, 2)$JLObjRational
+testEquals("numerator r1", "1")
+testEquals("denominator r1", "2")
+
+r2 := jrational("3//4")$JLObjRational
+testEquals("numerator r2", "3")
+testEquals("denominator r2", "4")
+
+r3 := (5/6)::JLObjRational
+testEquals("numerator r3", "5")
+testEquals("denominator r3", "6")
+
+r4 := "7//8"::JLObjRational
+testEquals("numerator r4", "7")
+testEquals("denominator r4", "8")
+
+testcase "0 and 1"
+rz := 0$JLObjRational
+testTrue("zero? rz")
+ro := 1$JLObjRational
+testTrue("one? ro")
+
+testcase "Rational Arithmetic"
+a := jrational(1, 3)$JLObjRational
+b := jrational(1, 6)$JLObjRational
+-- addition: 1/3 + 1/6 = 1/2
+s := a + b
+testEquals("numerator s", "1")
+testEquals("denominator s", "2")
+-- subtraction: 1/3 - 1/6 = 1/6
+d := a - b
+testEquals("numerator d", "1")
+testEquals("denominator d", "6")
+-- multiplication: 1/3 * 1/6 = 1/18
+m := a * b
+testEquals("numerator m", "1")
+testEquals("denominator m", "18")
+-- division: (1/3) / (1/6) = 2
+q := a / b
+testEquals("numerator q", "2")
+testEquals("denominator q", "1")
+-- negation
+n := -a
+testEquals("numerator n", "-1")
+testEquals("denominator n", "3")
+
+testcase "Arithmetic with Integers"
+r5 := jrational(1, 4)$JLObjRational
+-- addition
+testEquals("numerator(r5 + 1)", "5")
+testEquals("denominator(r5 + 1)", "4")
+testEquals("numerator(2 + r5)", "9")
+testEquals("denominator(2 + r5)", "4")
+-- subtraction
+testEquals("numerator(r5 - 1)", "-3")
+testEquals("denominator(r5 - 1)", "4")
+testEquals("numerator(1 - r5)", "3")
+testEquals("denominator(1 - r5)", "4")
+-- multiplication
+r6 := r5 * 3
+testEquals("numerator r6", "3")
+testEquals("denominator r6", "4")
+testEquals("numerator(2 * r5)", "1")
+testEquals("denominator(2 * r5)", "2")
+-- division
+r7 := r5 / 2
+testEquals("numerator r7", "1")
+testEquals("denominator r7", "8")
+r8 := 1 / r5
+testEquals("numerator r8", "4")
+testEquals("denominator r8", "1")
+
+testcase "Exponentiation"
+r9 := jrational(2, 5)$JLObjRational
+r10 := r9 ^ 2
+testEquals("numerator r10", "4")
+testEquals("denominator r10", "25")
+
+testcase "Coercion from Fraction"
+f := 11/13
+rf := f::JLObjRational
+testEquals("numerator rf", "11")
+testEquals("denominator rf", "13")
+
+testcase "jrational from Fraction"
+f2 := 7/9
+rf2 := jrational(f2)$JLObjRational
+testEquals("numerator rf2", "7")
+testEquals("denominator rf2", "9")
+
+testcase "Large Rationals (BigInt)"
+bigNum := 123456789012345678901234567891
+bigDen := 987654321098765432109876543217
+rLarge := jrational(bigNum, bigDen)$JLObjRational
+testEquals("numerator rLarge", "123456789012345678901234567891")
+testEquals("denominator rLarge", "987654321098765432109876543217")
+
+statistics()

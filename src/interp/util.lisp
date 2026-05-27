@@ -160,7 +160,10 @@ After this function is called the image is clean and can be saved.
 #+:GCL (system:gbc-time 0)
     #+(or :sbcl :clisp :openmcl :lispworks :cmu)
     (if *fricas-load-libspad*
-        (let ((spad-lib (|make_absolute_filename| "/lib/libspad.so")))
+        (let ((spad-lib (|make_absolute_filename| "/lib/libspad.so"))
+                #+:fricas_has_julia
+                (julia-wrapper (|make_absolute_filename| "/lib/julia_wrap.so"))
+                )
             (format t "Checking for foreign routines~%")
             (format t "FRICAS=~S~%" |$spadroot|)
             (format t "spad-lib=~S~%" spad-lib)
@@ -173,6 +176,9 @@ After this function is called the image is clean and can be saved.
                     #+(or :sbcl :openmcl)
                     (fricas-lisp::init-gmp
                         (|make_absolute_filename| "/lib/gmp_wrap.so"))
+                    #+:fricas_has_julia
+                    (if (|fricas_probe_file| julia-wrapper)
+                      (|quiet_load_alien| julia-wrapper))
                     #+(and :clisp :ffi)
                     (progn
                         (eval `(FFI:DEFAULT-FOREIGN-LIBRARY ,spad-lib))

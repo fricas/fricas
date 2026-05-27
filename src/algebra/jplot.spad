@@ -1,0 +1,568 @@
+)abbrev package JPLOT JLPlotFunctions
+++ Author: G. Vanuxem
+++ Date Created: March 2023
+++ Basic Operations: jlPlot, jlSurface
+++ Keywords: plot, surface
+++ Description: low level plotting functions
+++ using the Plots package for Julia.
+JLPlotFunctions() : Exports == Implementation where
+  NNI     ==> NonNegativeInteger
+  JF64    ==> JLFloat64
+  DF      ==> DoubleFloat
+  SEG     ==> Segment Float
+  JF64VEC ==> JLFloat64Vector
+  JF64MAT ==> JLFloat64Matrix
+  Exports ==> with
+    jlSetBackend! : String -> Void
+    ++ jlSetBackend!(backend) sets the backend for plotting.
+    ++ The available backends are "Aqua", "Cairo", "GKS", "gr", "Motif",
+    ++ "GTK", "OpenGL", "PostScript", "SVG", "Wand", "X11".
+    jlClose : Void
+    ++ jlClose() closes all plot windows.
+    jlRange : SEG -> JLFloat64Vector
+    ++ jlRange(range) is a utility function that returns a JLFloat64Vector
+    ++ with 250 points from \spad{low(range)} to \spad{high(range)}.
+    jlRange : (SEG, PositiveInteger) -> JLFloat64Vector
+    ++ jlRange(range, n) is a utility function that returns a
+    ++ JLFloat64Vector with n points from \spad{low(range)}
+    ++ to \spad{high(range)}.
+    jlDensity : JF64VEC -> Void
+    ++ jlDensity(x) draws a line plot of a kernel density estimate of x.
+    jlDensity! : JF64VEC -> Void
+    ++ jlDensity!(x) draws a line plot of a kernel density estimate of x
+    ++ on the existing graph object.
+    jlPlot : (JF64VEC, JF64VEC) -> Void
+    ++ jlPlot(x,y) draws a plot using elements of x and y.
+    jlPlot! : (JF64VEC, JF64VEC) -> Void
+    ++ jlPlot!(x,y) draws a plot using elements of x and y
+    ++ on the existing graph object.
+    jlCurves : (JF64VEC, JF64VEC) -> Void
+    ++ jlCurves(x,y) draws a Bezier plot curve
+    ++ from (x.1,y.1) to (x.end,y.end) with control points (x.2,y.2),...,
+    ++ (x.end-1,y.end-1) and draws it.
+    jlCurves! : (JF64VEC, JF64VEC) -> Void
+    ++ jlCurves!(x,y) draws a Bezier plot curve
+    ++ from (x.1,y.1) to (x.end,y.end) with control points (x.2,y.2),...,
+    ++ (x.end-1,y.end-1) and draws it on the existing graph object.
+    jlBar : (JF64VEC, JF64VEC) -> Void
+    ++ jlBar(x,y) draws a bar plot of y vs x.
+    jlBar! : (JF64VEC, JF64VEC) -> Void
+    ++ jlBar!(x,y) draws a bar plot of y vs x on the existing graph object.
+    jlPlot : (JF64VEC, JF64VEC, JF64VEC) -> Void
+    ++ jlPlot(x,y,z) draws a plot using elements of x, y and z.
+    jlPlot! : (JF64VEC, JF64VEC, JF64VEC) -> Void
+    ++ jlPlot!(x,y,z) draws a plot using elements of x, y and z
+    ++ on the existing graph object.
+    jlWireframe : (JF64VEC, JF64VEC, JF64MAT) -> Void
+    ++ jlWireframe(x,y,mat) draws the wireframe surface of mat.
+    jlWireframe! : (JF64VEC, JF64VEC, JF64MAT) -> Void
+    ++ jlWireframe!(x,y,mat) draws the wireframe surface of mat
+    ++ on the existing graph object.
+    jlSurface : (JF64VEC, JF64VEC, JF64MAT) -> Void
+    ++ jlSurface(x,y,mat) draws the plot surface of mat.
+    jlSurface! : (JF64VEC, JF64VEC, JF64MAT) -> Void
+    ++ jlSurface!(x,y,mat) draws the plot surface of mat
+    ++ on the existing graph object.
+    jlContour : (JF64VEC, JF64VEC, JF64MAT) -> Void
+    ++ jlContour(x,y,mat) draws the contour plot of surface mat.
+    jlContour! : (JF64VEC, JF64VEC, JF64MAT) -> Void
+    ++ jlContour!(x,y,mat) draws the contour plot of surface mat
+    ++ on the existing graph object.
+    jlContourf : (JF64VEC, JF64VEC, JF64MAT) -> Void
+    ++ jlContourf(x,y,mat) draws the contour plot of surface mat.
+    ++ Fill area between contours.
+    jlContourf! : (JF64VEC, JF64VEC, JF64MAT) -> Void
+    ++ jlContourf!(x,y,mat) draws the contour plot of surface mat
+    ++ on the existing graph object. Fill area between contours.
+    jlPlotTitle! : String -> Void
+    ++ jlPlotTitle!(title) draws `title' as plot title in the current plot.
+    ++ For example:
+    ++   jlPlotTitle! "sin(x)"
+    ++ if you have the LaTeXStrings Julia package
+    ++ \example{jlPlotTitle! jlLatex latex sin(x)}
+    ++ For simple expressions title will automatically
+    ++ be enclosed between $. 
+    ++ So use:
+    ++ \example{jlPlotTitle! jlLatex "sin(x)"}
+    ++ For normal text and equations insert dollar signs $ as needed.
+    ++ \example{jlPlotTitle! jlLatex "Plot: $sin(x)$"}
+    jlPlotXlims! : (JF64, JF64) -> Void
+    ++ jlPlotXlims!(x1,x2) sets x plot limits.
+    jlPlotYlims! : (JF64, JF64) -> Void
+    ++ jlPlotYlims!(y1,y2) sets y plot limits.
+    jlPlotZlims! : (JF64, JF64) -> Void
+    ++ jlPlotZlims!(z1,z2) sets z plot limits.
+    jlPlotXlabel! : String -> Void
+    ++ jlPlotXlabel!(str) sets x label.
+    ++ See \spadfunFrom{jlPlotTitle}{JLPlotFunctions} for more
+    ++ informations on the different supported formats.
+    jlPlotYlabel! : String -> Void
+    ++ jlPlotYlabel!(str) sets y label.
+    ++ See \spadfunFrom{jlPlotTitle}{JLPlotFunctions} for more
+    ++ informations on the different supported formats.
+    jlPlotZlabel! : String -> Void
+    ++ jlPlotZlabel!(str) sets z label.
+    ++ See \spadfunFrom{jlPlotTitle}{JLPlotFunctions} for more
+    ++ informations on the different supported formats.
+    
+    -- Should be moved to another package 
+    jlPlot : (DF -> DF, SEG) -> Void
+    ++ jlPlot(f, a..b) draws the graph of \spad{y = f(x)} as x
+    ++ ranges from \spad{min(a, b)} to \spad{max(a, b)}.
+    ++ For example:
+    ++ \example{jlPlot(x+->sinc(x),-15..15)}
+    jlPlot! : (DF -> DF, SEG) -> Void
+    ++ jlPlot!(f, a..b) adds the graph of \spad{y = f(x)} as x
+    ++ ranges from \spad{min(a, b)} to \spad{max(a, b)}
+    ++ to the existing graph object.
+    jlPlot : ((DF, DF) -> DF, SEG, SEG) -> Void
+    ++ jlPlot(f, a..b, c..d) draws the graph of \spad{z = f(x, y)} as x
+    ++ ranges from \spad{min(a, b)} to \spad{max(a, b)} and y
+    ++ ranges from \spad{min(c, d)} to \spad{max(c, d)}
+    jlPlot! : ((DF, DF) -> DF, SEG, SEG) -> Void
+    ++ jlPlot!(f, a..b, c..d) adds the graph of \spad{z = f(x, y)} as x
+    ++ ranges from \spad{min(a, b)} to \spad{max(a, b)} and y
+    ++ ranges from \spad{min(c, d)} to \spad{max(c, d)}
+    ++ on the existing graph object.
+    jlWireframe : ((DF, DF) -> DF, SEG, SEG) -> Void
+    ++ jlWireframe(f, a..b, c..d) draws the wireframe of
+    ++ \spad{y = f(x,y)} as x ranges from \spad{min(a, b)}
+    ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+    ++ to \spad{max(c, d)}.
+    jlWireframe! : ((DF, DF) -> DF, SEG, SEG) -> Void
+    ++ jlWireframe!(f, a..b, c..d) draws add the wireframe
+    ++ of \spad{y = f(x,y)} as x ranges from \spad{min(a, b)}
+    ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+    ++ to \spad{max(c, d)} on the existing graph object.
+    jlSurface : ((DF, DF) -> DF, SEG, SEG) -> Void
+    ++ jlSurface(f, a..b, c..d) draws the surface of \spad{y = f(x,y)} as x
+    ++ ranges from \spad{min(a, b)} to \spad{max(a, b)} and y
+    ++ ranges from \spad{min(c, d)} to \spad{max(c, d)}.
+    jlSurface! : ((DF, DF) -> DF, SEG, SEG) -> Void
+    ++ jlSurface!(f, a..b, c..d) draws the surface
+    ++ of \spad{y = f(x,y)} as x ranges from \spad{min(a, b)}
+    ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+    ++ to \spad{max(c, d)} on the existing graph object.
+    jlContour : ((DF, DF) -> DF, SEG, SEG) -> Void
+    ++ jlContour(f, a..b, c..d) draws the contour plot
+    ++ of \spad{y = f(x,y)} as x ranges from \spad{min(a, b)}
+    ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+    ++ to \spad{max(c, d)}.
+    jlContour! : ((DF, DF) -> DF, SEG, SEG) -> Void
+    ++ jlContour!(f, a..b, c..d) draws the contour plot
+    ++ of \spad{y = f(x,y)} as x ranges from \spad{min(a, b)}
+    ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+    ++ to \spad{max(c, d)} on the existing graph object.
+    jlContourf : ((DF, DF) -> DF, SEG, SEG) -> Void
+    ++ jlContourf(f, a..b, c..d) draws the contour plot
+    ++ of \spad{y = f(x,y)} as x ranges from \spad{min(a, b)}
+    ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+    ++ to \spad{max(c, d)}. Fill area between contours.
+    jlContourf! : ((DF, DF) -> DF, SEG, SEG) -> Void
+    ++ jlContourf!(f, a..b, c..d) draws the contour plot
+    ++ of \spad{y = f(x,y)} as x ranges from \spad{min(a, b)}
+    ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+    ++ to \spad{max(c, d)} on the existing graph object.
+    ++ Fill area between contours.
+    jlSavePlot : String -> Void
+    ++ jlSavePlot(file) save the current plot in file.
+    ++ Supported formats:
+    ++ png (default), PDF, svg and more.
+    ++ See https://docs.juliaplots.org/latest/output/#savefig-/-format 
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    jlInitialize(true)
+
+    pdf(x) ==> x pretend DF
+    POINTS ==> 250
+
+    if not jlUsing("Plots") then
+      error "JLPlotFunctions: the Julia package Plots is not installed"
+
+    if not jlUsing("LaTeXStrings") then
+      jlMessageStyled("LaTeXStrings is not installed in Julia." _
+        " Do not use it (axis, title, etc.).\n",
+          jsym("green")$JLSymbol)$JLStringUtilities
+    --if jlUsing "Gaston" then
+    --  jlEvalString("gaston()")
+    if jlUsing "UnicodePlots" then
+      jlEvalString("unicodeplots()")
+    --if jlUsing("Mackie") and jlUsing("WGLMakie") then
+    --  jlEvalString("WGLMakie.activate!()")
+    -- jlEvalString("plotlyjs()")
+    
+    -- local
+    display() : Void == jlEvalString("gui()")
+
+    jlClose() == jlEvalString("closeall()")
+    jlSetBackend!(backend) == jlEvalString(concat([backend, "()"]))
+    jlSavePlot(file) == jlEvalString(concat(["savefig(_"",file,"_")"]))
+
+    jlRange(seg)  ==
+      xHi := coerce(high(seg))@DF
+      xLo := coerce(low(seg))@DF
+      v := qnew(POINTS)$JLFloat64Vector
+      xLow := coerce(xLo)@JF64
+      xPad := coerce((xHi - xLo)/(POINTS-1))@JF64
+      for i in 1..POINTS repeat
+        qsetelt!(v, i, xLow)
+        xLow := xLow + xPad
+      v
+
+    jlRange(seg, n)  ==
+      xHi := coerce(high(seg))@DF
+      xLo := coerce(low(seg))@DF
+      xPad := coerce((xHi - xLo)/(n-1))@JF64
+      v := qnew(n)$JLFloat64Vector
+      xLow := coerce(xLo)@JF64
+      xPad := coerce((xHi - xLo)/(n-1))@JF64
+      for i in 1..n repeat
+        qsetelt!(v, i, xLow)
+        xLow := xLow + xPad
+      v
+
+    jlDensity(x)    ==
+      jlApply("density", x)
+      display()
+    jlDensity!(x)   ==
+      jlApply("density!", x)
+      display()
+    jlPlot(x,y)     ==
+      jlApply("plot", x, y)
+      display()
+    jlPlot!(x,y)    ==
+      jlApply("plot!", x, y)
+      display()
+    jlPlot(x,y,z)   ==
+      jlApply("plot", x, y, z)
+      display()
+    jlPlot!(x,y,z)  ==
+      jlApply("plot!", x, y, z)
+      display()
+    jlCurves(x,y)   ==
+      jlApply("curves", x, y)
+      display()
+    jlCurves!(x,y)  ==
+      jlApply("curves!", x, y)
+      display()
+    jlBar(x,y) ==
+      jlApply("bar",x, y)
+      display()
+    jlBar!(x,y) ==
+      jlApply("bar!",x, y)
+      display()
+    jlSurface(x,y, mat : JLFloat64Matrix)  ==
+      jl_2v2dfunction("surface",x,y,jlVector(mat), nrows(mat))$Lisp
+      display()
+    jlSurface!(x,y, mat : JLFloat64Matrix)     ==
+      jl_2v2dfunction("surface!",x,y,jlVector(mat), nrows(mat))$Lisp
+      display()
+    jlWireframe(x,y,mat)     ==
+      jl_2v2dfunction("wireframe",x,y,jlVector(mat), nrows(mat))$Lisp
+      display()
+    jlWireframe!(x,y,mat)     ==
+      jl_2v2dfunction("wireframe!",x,y,jlVector(mat), nrows(mat))$Lisp
+      display()
+    jlContour(x,y,mat) ==
+      jl_2v2dfunction("contour",x,y,jlVector(mat), nrows(mat))$Lisp
+      display()
+    jlContour!(x,y,mat) ==
+      jl_2v2dfunction("contour!",x,y,jlVector(mat), nrows(mat))$Lisp
+      display()
+    jlContourf(x,y,mat) ==
+      jl_2v2dfunction("contourf",x,y,jlVector(mat), nrows(mat))$Lisp
+      display()
+    jlContourf!(x,y,mat) ==
+      jl_2v2dfunction("contourf!",x,y,jlVector(mat), nrows(mat))$Lisp
+      display()
+
+    -- Plot attributes
+
+    jlPlotTitle!(title)    ==
+      if first(title) = char "L" and elt(title, 2) = char "_"" then
+        jlEvalString(concat(["display(title!(", title,"))"]))
+      else
+        jlEvalString(concat(["display(title!(_"", title,"_"))"]))
+
+    jlPlotXlims!(x,y)      ==
+      jlApply("xlims!", x, y)
+      display()
+    jlPlotYlims!(x,y)      ==
+      jlApply("ylims!", x, y)
+      display()
+    jlPlotZlims!(x,y)      ==
+      jlApply("zlims!", x, y)
+      display()
+    jlPlotXlabel!(xlabel)  ==
+      if first(xlabel) = char "L" and elt(xlabel, 2) = char "_"" then
+        jlEvalString(concat(["display(xlabel!(", xlabel,"))"]))
+      else
+        jlEvalString(concat(["display(xlabel!(_"", xlabel,"_"))"]))
+    jlPlotYlabel!(ylabel)  ==
+      if first(ylabel) = char "L" and elt(ylabel, 2) = char "_"" then
+        jlEvalString(concat(["display(ylabel!(", ylabel,"))"]))
+      else
+        jlEvalString(concat(["display(ylabel!(_"", ylabel,"_"))"]))
+    jlPlotZlabel!(zlabel)  ==
+      if first(zlabel) = char "L" and elt(zlabel, 2) = char "_"" then
+        jlEvalString(concat(["display(zlabel!(", zlabel,"))"]))
+      else
+        jlEvalString(concat(["display(zlabel!(_"", zlabel,"_"))"]))
+
+    -- FROM HERE: should be in another package
+    -- TODO: factorize
+
+    jlPlot(func : DF -> DF, seg : SEG) ==
+      v  := jlRange(seg)
+      v1 := map(x+->coerce(func(pdf(x))), v)
+      jlPlot(v,v1)
+
+    jlPlot!(func : DF -> DF, seg : SEG) ==
+      v  := jlRange(seg)
+      v1 := map(x+->coerce(func(pdf(x))), v)
+      jlPlot!(v,v1)
+
+    jlPlot(func : ((DF, DF) -> DF), s1 : SEG, s2 : SEG) ==
+      v1 := jlRange(s1)
+      v2 := jlRange(s2)
+      v  := map((x,y)+->coerce(func(pdf(x), pdf(y))), v1, v2)
+      jlPlot(v1, v2, v)
+
+    jlPlot!(func : ((DF, DF) -> DF), s1 : SEG, s2 : SEG) ==
+      v1 := jlRange(s1)
+      v2 := jlRange(s2)
+      v  := map((x,y)+->coerce(func(pdf(x), pdf(y))), v1, v2)
+      jlPlot!(v1, v2, v)
+
+    jlWireframe(func : ((DF, DF) -> DF), s1 : SEG, s2 : SEG) ==
+      v1 := jlRange(s1)
+      v2 := jlRange(s2)
+      height := qnew(POINTS,POINTS)$JF64MAT
+      for i in 1..POINTS repeat
+        for j in 1..POINTS repeat
+          qsetelt!(height, i, j, coerce(func(pdf(qelt(v1,i)), pdf(qelt(v2,j)))))
+      jlWireframe(v1, v2, height)
+
+    jlWireframe!(func : ((DF, DF) -> DF), s1 : SEG, s2 : SEG) ==
+      v1 := jlRange(s1)
+      v2 := jlRange(s2)
+      height := qnew(POINTS,POINTS)$JF64MAT
+      for i in 1..POINTS repeat
+        for j in 1..POINTS repeat
+          qsetelt!(height, i, j, coerce(func(pdf(qelt(v1,i)), pdf(qelt(v2,j)))))
+      jlWireframe!(v1, v2, height)
+
+    jlSurface(func : ((DF, DF) -> DF), s1 : SEG, s2 : SEG) ==
+      v1 := jlRange(s1)
+      v2 := jlRange(s2)
+      height := qnew(POINTS,POINTS)$JF64MAT
+      for i in 1..POINTS repeat
+        for j in 1..POINTS repeat
+          qsetelt!(height, i, j, coerce(func(pdf(qelt(v1,i)), pdf(qelt(v2,j)))))
+      jlSurface(v1, v2, height)
+
+    jlSurface!(func : ((DF, DF) -> DF), s1 : SEG, s2 : SEG) ==
+      v1 := jlRange(s1)
+      v2 := jlRange(s2)
+      height := qnew(POINTS,POINTS)$JF64MAT
+      for i in 1..POINTS repeat
+        for j in 1..POINTS repeat
+          qsetelt!(height, i, j, coerce(func(pdf(qelt(v1,i)), pdf(qelt(v2,j)))))
+      jlSurface!(v1, v2, height)
+
+    jlContour(func : ((DF, DF) -> DF), s1 : SEG, s2 : SEG) ==
+      v1 := jlRange(s1)
+      v2 := jlRange(s2)
+      height := qnew(POINTS,POINTS)$JF64MAT
+      for i in 1..POINTS repeat
+        for j in 1..POINTS repeat
+          qsetelt!(height, i, j, coerce(func(pdf(qelt(v1,i)), pdf(qelt(v2,j)))))
+      jlContour(v1, v2, height)
+
+    jlContour!(func : ((DF, DF) -> DF), s1 : SEG, s2 : SEG) ==
+      v1 := jlRange(s1)
+      v2 := jlRange(s2)
+      height := qnew(POINTS,POINTS)$JF64MAT
+      for i in 1..POINTS repeat
+        for j in 1..POINTS repeat
+          qsetelt!(height, i, j, coerce(func(pdf(qelt(v1,i)), pdf(qelt(v2,j)))))
+      jlContour!(v1, v2, height)
+
+    jlContourf(func : ((DF, DF) -> DF), s1 : SEG, s2 : SEG) ==
+      v1 := jlRange(s1)
+      v2 := jlRange(s2)
+      height := qnew(POINTS,POINTS)$JF64MAT
+      for i in 1..POINTS repeat
+        for j in 1..POINTS repeat
+          qsetelt!(height, i, j, coerce(func(pdf(qelt(v1,i)), pdf(qelt(v2,j)))))
+      jlContourf(v1, v2, height)
+
+    jlContourf!(func : ((DF, DF) -> DF), s1 : SEG, s2 : SEG) ==
+      v1 := jlRange(s1)
+      v2 := jlRange(s2)
+      height := qnew(POINTS,POINTS)$JF64MAT
+      for i in 1..POINTS repeat
+        for j in 1..POINTS repeat
+          qsetelt!(height, i, j, coerce(func(pdf(qelt(v1,i)), pdf(qelt(v2,j)))))
+      jlContourf!(v1, v2, height)
+
+)abbrev package JDRAW JLDrawFunctions
+++ Author: G. Vanuxem
+++ Date Created: March 2023
+++ Basic Operations: jlPlot, jlSurface
+++ Related Constructors: JLPlotFunctions
+++ Keywords: jlPlot, jlSurface
+++ Description: JLDrawFunctions provides
+++ top level functions for drawing graphics of expressions.
+JLDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
+        Exports == Implementation where
+    JF64    ==> JLFloat64
+    DF      ==> DoubleFloat
+    JF64VEC ==> JLFloat64Vector
+    JF64MAT ==> JLFloat64Matrix
+    BIND    ==> SegmentBinding Float
+    Exports ==> with
+
+      --% Two Dimensional plotting functions
+
+      jlPlot : (Ex, BIND) -> Void
+      ++ jlPlot(f(x), x = a..b) draws the graph of \spad{y = f(x)} as x
+      ++ ranges from \spad{min(a, b)} to \spad{max(a, b)}.
+      ++ \spad{f(x)} appears as the title.
+      jlPlot! : (Ex, BIND) -> Void
+      ++ jlPlot!(f(x), x = a..b) adds the graph of \spad{y = f(x)} as x
+      ++ ranges from \spad{min(a, b)} to \spad{max(a, b)}
+      ++ on the existing graphic window. \spad{f(x)} appears
+      ++ as the title.
+
+      --% Three Dimensional plotting functions
+
+      jlPlot : (Ex, BIND, BIND) -> Void
+      ++ jlPlot(f(x, y), x = a..b, y = c..d) draws the graph of
+      ++ \spad{z = f(x, y)} as x ranges from \spad{min(a, b)} to
+      ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+      ++ to \spad{max(c, d)}. \spad{f(x, y)} appears as the title.
+      jlPlot! : (Ex, BIND, BIND) -> Void
+      ++ jlPlot!(f(x, y), x = a..b, y = c..d) adds the graph of
+      ++ \spad{z = f(x, y)} as x ranges from \spad{min(a, b)}
+      ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+      ++ to \spad{max(c, d)} on the existing graph window.
+      ++ \spad{f(x, y)} appears as the title.
+      jlWireframe : (Ex, BIND, BIND) -> Void
+      ++ jlWireframe(f(x, y), x = a..b, y = c..d) draws the wireframe of
+      ++ \spad{z = f(x, y)} as x ranges from \spad{min(a, b)} to
+      ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+      ++ to \spad{max(c, d)}; \spad{f(x, y)} appears as the title.
+      jlWireframe! : (Ex, BIND, BIND) -> Void
+      ++ jlWireframe!(f(x, y), x = a..b, y = c..d) adds the wireframe of
+      ++ \spad{z = f(x, y)} as x ranges from \spad{min(a, b)}
+      ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+      ++ to \spad{max(c, d)} on the existing graph window.
+      ++ \spad{f(x, y)} appears as the title.
+      jlSurface : (Ex, BIND, BIND) -> Void
+      ++ jlSurface(f(x, y), x = a..b, y = c..d) draws the surface of
+      ++ \spad{z = f(x, y)} as x ranges from \spad{min(a, b)} to
+      ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+      ++ to \spad{max(c, d)}. \spad{f(x, y)} appears as the title.
+      jlSurface! : (Ex, BIND, BIND) -> Void
+      ++ jlSurface!(f(x, y), x = a..b, y = c..d) adds the surface of
+      ++ \spad{z = f(x, y)} as x ranges from \spad{min(a, b)}
+      ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+      ++ to \spad{max(c, d)} on the existing graph window.
+      ++ \spad{f(x, y)} appears as the title.
+      jlContour : (Ex, BIND, BIND) -> Void
+      ++ jlContour(f(x, y), x = a..b, y = c..d) draws the surface of
+      ++ \spad{z = f(x, y)} as x ranges from \spad{min(a, b)} to
+      ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+      ++ to \spad{max(c, d)}. \spad{f(x, y)} appears as the title.
+      jlContour! : (Ex, BIND, BIND) -> Void
+      ++ jlContour!(f(x, y), x = a..b, y = c..d) adds the surface of
+      ++ \spad{z = f(x, y)} as x ranges from \spad{min(a, b)}
+      ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+      ++ to \spad{max(c, d)} on the existing graph window.
+      ++ \spad{f(x, y)} appears as the title.
+      jlContourf : (Ex, BIND, BIND) -> Void
+      ++ jlContourf(f(x, y), x = a..b, y = c..d) draws the surface of
+      ++ \spad{z = f(x, y)} as x ranges from \spad{min(a, b)} to
+      ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+      ++ to \spad{max(c, d)}. \spad{f(x, y)} appears as the title.
+      ++ Fills area between contours.
+      jlContourf! : (Ex, BIND, BIND) -> Void
+      ++ jlContourf!(f(x, y), x = a..b, y = c..d) adds the surface of
+      ++ \spad{z = f(x, y)} as x ranges from \spad{min(a, b)}
+      ++ to \spad{max(a, b)} and y ranges from \spad{min(c, d)}
+      ++ to \spad{max(c, d)} on the existing graph window.
+      ++ \spad{f(x, y)} appears as the title.
+      ++ Fills area between contours.
+
+    Implementation ==> add
+      import from JLPlotFunctions
+      import from MakeFloatCompiledFunction(Ex)
+
+      pdf(x)      ==> x pretend DF
+      title(form) ==> unparse(convert(form)@InputForm)$InputForm
+
+      jlPlot(f : Ex, bind : BIND) ==
+        func := makeFloatFunction(f, variable bind)
+        v := jlRange(segment bind)
+        ret := map(x+->coerce(func(pdf(x))),v)
+        jlPlot(v, ret)
+        jlPlotTitle!(title(f))
+
+      jlPlot!(f : Ex, bind : BIND) ==
+        func := makeFloatFunction(f, variable bind)
+        v := jlRange(segment bind)
+        ret := map(x+->coerce(func(pdf(x))),v)
+        jlPlot!(v, ret)
+        jlPlotTitle!(title(f))
+      
+      jlPlot(f : Ex, b1 : BIND, b2 : BIND) ==
+        func := makeFloatFunction(f, variable b1, variable b2)
+        jlPlot(func, segment b1, segment b2)
+        jlPlotTitle!(title(f))
+
+      jlPlot!(f : Ex, b1 : BIND, b2 : BIND) ==
+        func := makeFloatFunction(f, variable b1, variable b2)
+        jlPlot!(func, segment b1, segment b2)
+        jlPlotTitle!(title(f))
+
+      jlWireframe(f : Ex, b1 : BIND, b2 : BIND) ==
+        func := makeFloatFunction(f, variable b1, variable b2)
+        jlWireframe(func, segment b1, segment b2)
+        jlPlotTitle!(title(f))
+
+      jlWireframe!(f : Ex, b1 : BIND, b2 : BIND) ==
+        func := makeFloatFunction(f, variable b1, variable b2)
+        jlWireframe!(func, segment b1, segment b2)
+        jlPlotTitle!(title(f))
+
+      jlSurface(f : Ex, b1 : BIND, b2 : BIND) ==
+        func := makeFloatFunction(f, variable b1, variable b2)
+        jlSurface(func, segment b1, segment b2)
+        jlPlotTitle!(title(f))
+
+      jlSurface!(f : Ex, b1 : BIND, b2 : BIND) ==
+        func := makeFloatFunction(f, variable b1, variable b2)
+        jlSurface!(func, segment b1, segment b2)
+        jlPlotTitle!(title(f))
+
+      jlContour(f : Ex, b1 : BIND, b2 : BIND) ==
+        func := makeFloatFunction(f, variable b1, variable b2)
+        jlContour(func, segment b1, segment b2)
+        jlPlotTitle!(title(f))
+
+      jlContour!(f : Ex, b1 : BIND, b2 : BIND) ==
+        func := makeFloatFunction(f, variable b1, variable b2)
+        jlContour!(func, segment b1, segment b2)
+        jlPlotTitle!(title(f))
+
+      jlContourf(f : Ex, b1 : BIND, b2 : BIND) ==
+        func := makeFloatFunction(f, variable b1, variable b2)
+        jlContourf(func, segment b1, segment b2)
+        jlPlotTitle!(title(f))
+
+      jlContourf!(f : Ex, b1 : BIND, b2 : BIND) ==
+        func := makeFloatFunction(f, variable b1, variable b2)
+        jlContourf!(func, segment b1, segment b2)
+        jlPlotTitle!(title(f))

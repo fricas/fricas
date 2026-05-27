@@ -4,6 +4,11 @@ GMP_WRAP_SO_TARGET = @GMP_WRAP_SO_TARGET@
 GMP_CPPFLAGS = @GMP_CPPFLAGS@
 GMP_LDFLAGS = @GMP_LDFLAGS@
 GMP_LIB = @GMP_LIB@
+JULIA_WRAP_SO_TARGET = @JULIA_WRAP_SO_TARGET@
+JULIA_CPPFLAGS = @JULIA_CPPFLAGS@
+JULIA_LDFLAGS= @JULIA_LDFLAGS@
+JULIA_LIBDIR = @JULIA_LIBDIR@
+JULIA_LIB = @JULIA_LIB@
 lisp_flavor=@fricas_lisp_flavor@
 SOLIB_FLAGS = @SOLIB_FLAGS@
 fricas_c_runtime_extra = @fricas_c_runtime_extra@
@@ -35,6 +40,8 @@ LIBSPAD_SO = $(fricas_target_libdir)/libspad.so
 
 GMP_WRAP_SO = $(fricas_target_libdir)/gmp_wrap.so
 
+JULIA_WRAP_SO = $(fricas_target_libdir)/julia_wrap.so
+
 subdir = src/lib/
 
 .PHONY: all all-lib libspad_so
@@ -44,13 +51,15 @@ subdir = src/lib/
 all: all-ax
 
 all-ax all-lib: stamp
-stamp: libspad.a $(other_objects) $(LIBSPAD_SO_TARGET) $(GMP_WRAP_SO_TARGET)
+stamp: libspad.a $(other_objects) $(LIBSPAD_SO_TARGET) $(GMP_WRAP_SO_TARGET) $(JULIA_WRAP_SO_TARGET)
 	rm -f stamp
 	$(STAMP) stamp
 
 libspad_so: $(LIBSPAD_SO)
 
 gmp_wrap_so: $(GMP_WRAP_SO)
+
+julia_wrap_so: $(JULIA_WRAP_SO)
 
 libspad.a: $(libspad_a_objects)
 	$(AR) ru libspad.a $(libspad_a_objects)
@@ -76,6 +85,10 @@ $(LIBSPAD_SO): $(core_objects)
 $(GMP_WRAP_SO): $(srcdir)/gmp_wrap.c
 	$(CC) $(CFLAGS) $(GMP_CPPFLAGS) -g -fPIC $(GMP_LDFLAGS) $(SOLIB_FLAGS) $< \
 	    $(LDFLAGS) $(GMP_LIB) -o $@
+
+$(JULIA_WRAP_SO): $(srcdir)/julia_wrap.c
+	$(CC) $(JULIA_CPPFLAGS) -g -fPIC $(JULIA_LDFLAGS) $(SOLIB_FLAGS) $< \
+	  $(JULIA_LIB) -o $@
 endif
 
 .PRECIOUS: %.$(OBJEXT)

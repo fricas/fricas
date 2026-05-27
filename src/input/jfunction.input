@@ -1,0 +1,42 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+)expose JLObjFunction JLObject JLObjInt64 JLObjFloat64
+
+testsuite "JL Function"
+
+testcase "Creation and basic application"
+-- From String
+f := jfunction("f(x)=x^2")$JLObjFunction('f)
+res := elt(f, 3$Integer::JLObject)
+testEquals("res", "jobject(_"9_")")
+
+-- From String
+h := jfunction("h(x, y) = x + y")$JLObjFunction('h)
+res3 := elt(h, 5$Integer::JLObject, 7$Integer::JLObject)
+testEquals("res3", "jobject(_"12_")")
+
+testcase "Function of 3 arguments"
+k3 := jfunction("k3(x,y,z) = x*y*z")$JLObjFunction('k3)
+resk3 := elt(k3, 2$Integer::JLObject, 3$Integer::JLObject, 4$Integer::JLObject)
+testEquals("resk3", "jobject(_"24_")")
+
+testcase "From FriCAS function"
+f1(x) == x + 1
+jf1 := jfunction(f1)$JLObjFunction('f1)
+resf1 := elt(jf1, 10$Integer::JLObject)
+testEquals("resf1", "jobject(_"11_")")
+
+testcase "FriCAS function with 2 arguments"
+-- Note: the domain needs a symbol, we use 'f2
+f2(x, y) == x * y + 1
+jf2 := jfunction(f2)$JLObjFunction('f2)
+resf2 := elt(jf2, 3$Integer::JLObject, 4$Integer::JLObject)
+testEquals("resf2", "jobject(_"13_")")
+
+testcase "List of arguments"
+m := jfunction("m(x, y, z) = x + y + z")$JLObjFunction('m)
+args : List JLObject := [1$Integer::JLObject, 2$Integer::JLObject, 3$Integer::JLObject]
+res5 := elt(m, args)
+testEquals("res5", "jobject(_"6_")")
+
+statistics()

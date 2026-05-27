@@ -12,6 +12,8 @@ showuse() {
   echo "The following options are recognized."
   echo "  -clef | -noclef    use Clef (default: -clef)"
   echo "  -clefprog fname    use named program for Clef"
+  echo "  --mcp              start as an MCP (Model Context Protocol) server"
+  echo "  --mcp-port port    start as an MCP server listening on specified port"
   echo "  -eval code         evaluate specified code at start"
   echo "  -go   | -nogo      whether to start system"
   echo "  -gr   | -nogr      use Graphics (default: -gr)"
@@ -116,16 +118,31 @@ if [ "$1" = "-nosman" ] ; then
         RLWRAP=""
     fi
 
-    exec $RLWRAP "$FRICAS/bin/FRICASsys" "$@"
+    # Check if MCP mode is requested — need fd 3 setup
+    nosman_mcp=false
+    for arg in "$@"; do
+        case "$arg" in
+            --mcp|--mcp-port) nosman_mcp=true; break ;;
+        esac
+    done
+
+    if [ "$nosman_mcp" = "true" ] ; then
+        # MCP Mode: save original stdout as fd 3 for JSON output,
+        # then redirect stdout to stderr so the FRICASsys banner
+        # doesn't pollute the JSON-RPC stream.
+        exec 3>&1 1>&2 "$FRICAS/bin/FRICASsys" "$@"
+    else
+        exec $RLWRAP "$FRICAS/bin/FRICASsys" "$@"
+    fi
 
     exit 1
 fi
 
-# Defaults for command-line arguments.
 list=no
 go=yes
 wsname=FRICASsys
-
+mcp_mode=false
+opt_mcp=""
 otheropts=""
 
 had_nogr=false
@@ -137,6 +154,18 @@ while [ "$*" != "" ] ; do
         -h|--help)
             showuse
             exit 0
+            ;;
+        --mcp)
+            mcp_mode=true
+            opt_mcp="--mcp"
+            otheropts="$otheropts --mcp"
+            ;;
+        --mcp-port)
+            if [ "$2" = "" ] ; then needsubopt "$1" ; fi
+            mcp_mode=true
+            opt_mcp="--mcp-port $2"
+            otheropts="$otheropts --mcp-port $2"
+            shift
             ;;
         --version)
             echo "FriCAS $FRICAS_VERSION"
@@ -195,6 +224,9 @@ while [ "$*" != "" ] ; do
                 otheropts="$otheropts -eval $npar"
             fi
             ;;
+        -nosman)
+            # Already handled at top, just consume
+            ;;
         *)
             echo "Unknown option: $1"
             echo
@@ -242,6 +274,13 @@ if [ ! -f $serverws ] ; then
 fi
 
 # 6. Start processes
+
+if [ "$mcp_mode" = "true" ] ; then
+    # MCP Mode: save original stdout as fd 3 for JSON output,
+    # then redirect stdout to stderr so the FRICASsys banner
+    # doesn't pollute the JSON-RPC stream.
+    exec 3>&1 1>&2 "$FRICAS/bin/FRICASsys" $otheropts
+fi
 
 if [ $go = no ] ; then
     echo "Would now execute the following."

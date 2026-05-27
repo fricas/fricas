@@ -1,0 +1,67 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+)expose JLObjFloat32 JLObjFloat64 JLObjComplexF32 JLObjComplexF64
+)expose JLObjPair JLObjTuple JLObjDict JLVector JLMatrix JLDataFrame
+)expose JLObject JLObjInt64 JLObjUInt64 JLObjBigInt JLObjBool
+)expose JLFloat JLComplexFloat
+
+testsuite "JLDataFrame"
+
+testcase "JLDataFrame creation and access"
+m_df := new(2, 2, 0.0)$JLMatrix(JLObjFloat64)
+m_df(1,1) := jfloat64(1.0)
+m_df(1,2) := jfloat64(2.0)
+m_df(2,1) := jfloat64(3.0)
+m_df(2,2) := jfloat64(4.0)
+df := jdframe(m_df)$JLDataFrame
+
+testEquals("jlType df", "_"DataFrame_"")
+col_x1 := df.x1
+testEquals("jlType col_x1", "_"Vector{Float64}_"")
+testEquals("col_x1.1", "jfloat64(1.0)")
+testEquals("col_x1.2", "jfloat64(3.0)")
+
+testcase "JLDataFrame dimensions"
+m_df := new(2, 2, 0.0)$JLMatrix(JLObjFloat64)
+m_df(1,1) := jfloat64(1.0)
+m_df(1,2) := jfloat64(2.0)
+m_df(2,1) := jfloat64(3.0)
+m_df(2,2) := jfloat64(4.0)
+df := jdframe(m_df)$JLDataFrame
+
+testEquals("nrows(df)", "2")
+testEquals("ncols(df)", "2")
+
+testcase "JLDataFrame names"
+m_df := new(2, 2, 0.0)$JLMatrix(JLObjFloat64)
+m_df(1,1) := jfloat64(1.0)
+m_df(1,2) := jfloat64(2.0)
+m_df(2,1) := jfloat64(3.0)
+m_df(2,2) := jfloat64(4.0)
+df := jdframe(m_df)$JLDataFrame
+
+nms := names(df)
+testEquals("nms.1", "_"x1_"")
+testEquals("nms.2", "_"x2_"")
+
+testcase "JLDataFrame head/tail"
+m_df := new(2, 2, 0.0)$JLMatrix(JLObjFloat64)
+m_df(1,1) := jfloat64(1.0)
+m_df(1,2) := jfloat64(2.0)
+m_df(2,1) := jfloat64(3.0)
+m_df(2,2) := jfloat64(4.0)
+df := jdframe(m_df)$JLDataFrame
+
+hdf := head(df, 1)
+testEquals("nrows(hdf)", "1")
+tdf := tail(df, 1)
+testEquals("nrows(tdf)", "1")
+testEquals("tdf.x1.1", "jfloat64(3.0)")
+
+-- Test aliases
+hdf2 := first(df, 1)
+testEquals("nrows(hdf2)", "1")
+tdf2 := last(df, 1)
+testEquals("nrows(tdf2)", "1")
+
+statistics()

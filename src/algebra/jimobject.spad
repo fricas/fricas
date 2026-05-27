@@ -1,0 +1,948 @@
+-- Immutable Julia objects (unsupported from Julia documentation)
+)abbrev domain JOBBOOL JLObjBool
+++ Convenience domain for Julia booleans
+++ Author: G.Vanuxem
+++ Date Created: Aug. 2024
+++ Description:
+++  Convenience domain for Julia booleans, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather for returned value
+++ or function argument for example.
+JLObjBool() : Exports == Implementation where
+  Exports ==> JLObjectType with
+    coerce : % -> Boolean
+    ++ coerce(jbool) coerces the Julia boolean value to a
+    ++ FriCAS Boolean.
+    jtrue : () -> %
+    ++ jtrue() returns the Julia boolean true value.
+    jfalse : () -> %
+    ++ jfalse() returns the Julia boolean false value.
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    coerce(bool) : Boolean ==
+      jl_string_getindex(jlId bool)$Lisp pretend String = "true"
+    jtrue() == jlref("true")
+    jfalse() == jlref("false")
+
+)abbrev domain JOBF32 JLObjFloat32
+++ Convenience domain for Julia Float32
+++ Author: G.Vanuxem
+++ Date Created: Aug. 2024
+++ Description:
+++  Convenience domain for Julia Float32, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather, for returned value
+++ or function argument for example.
+++ Only basic arithmetic operations are supported.
+JLObjFloat32() : Exports == Implementation where
+  Exports ==> Join(OrderedSet, JLObjectRing, Field) with
+    "*" : (%, Integer) -> %
+    ++ x*i is the multiplication of x by an integer.
+    "/" : (%, Integer) -> %
+    ++ x/i is the division of x by an integer.
+    "/" : (Integer, %) -> %
+    ++ i/x is the division of an integer by x.
+    "^" : (%, Fraction(Integer)) -> %
+    ++ x^q is the exponentiation by a rational.
+    jlApprox?: (%, %) -> Boolean
+    ++ jlApprox?(x,y) computes inexact equality comparison
+    ++ with default parameters.
+    ++ Two numbers compare equal if their relative distance
+    ++ or their absolute distance is within tolerance bounds.
+    jlApprox?: (%, %, %) -> Boolean
+    ++ jlApprox?(x,y,atol) computes inexact equality comparison
+    ++ with absolute tolerance atol.
+    ++ Two numbers compare equal if their relative distance
+    ++ or their absolute distance is within tolerance bounds.
+    jlF32CApply : (JLObjDynamicLinker, %) -> %
+    ++ jlF32CApply(func, x) applies the function pointer func to x.
+    ++ For example:
+    ++ \example{libm:= jlDlOpen "libopenlibm"}
+    ++ \example{squareRoot:=jlDlSym(libm,jsym(sqrtf))}
+    ++ \example{jlF32CApply(squareRoot,jfloat32(2))}
+    jlF32CApply : (JLObjDynamicLinker, %, %) -> %
+    ++ jlF32CApply(func, x, y) applies the function pointer func to x and y.
+    ++ For example:
+    ++ \example{libm:= jlDlOpen "libopenlibm"}
+    ++ \example{power:=jlDlSym(libm,jsym(powf))}
+    ++ \example{jlF32CApply(power,jfloat32(2),jfloat32(7))}
+    jlF32CApply : (JLObjDynamicLinker, %, %, %) -> %
+    ++ jlF32CApply(func, x, y, z) applies the function pointer func to x, y and z.
+    cis : % -> JLObjComplexF32
+    ++ cis(x) returns exp(%i*x) computed efficiently.
+    cispi : % -> JLObjComplexF32
+    ++ cispi(x) returns cis(%pi*x) computed efficiently.
+    jnan32 : () -> %
+    ++ jnan32() returns the Julia NaN (Not a Number) object.
+    jinf32 : () -> %
+    ++ jinf32() returns the Julia Infinity object.
+    convert : Float -> %
+    ++ convert(x) returns x as a JLObjFloat32 (truncate it).
+    coerce : DoubleFloat -> %
+    ++ coerce(x) returns x as a JLObjFloat32 (truncate it).
+    ++ Convenience function.
+    coerce : Float -> %
+    ++ coerce(x) returns x as a JLObjFloat32 (truncate it).
+    ++ Convenience function.
+    jfloat32 : Float -> %
+    ++ jfloat32(x) returns x as a JLObjFloat32 (truncate it).
+    jfloat32 : JLFloat32 -> %
+    ++ jfloat32(x) returns x as a JLObjFloat32 (truncate it).
+    jfloat32 : String -> %
+    ++ jfloat32(str) evaluates str in Julia and returns the
+    ++ Julia Float32 object. For example:
+    ++\example{jfloat32("sin(pi)")}
+    ++\example{jfloat32("0.7")}
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    0 == jlref("0.0")
+    1 == jlref("1.0")
+    jnan32() == jlref("NaN32")
+    jinf32() == jlref("Inf32")
+    x < y  == jbinbfunc("<",x,y)
+    x > y  == jbinbfunc(">",x,y)
+    x >= y == jbinbfunc(">=",x,y)
+    x <= y == jbinbfunc("<=",x,y)
+    characteristic() == 0
+    x : % * a : Integer == jlref(concat [getind(x),"*",string(a)])
+    x : Fraction(Integer) * y : % ==
+      jlref(concat ["(",string(numer x), "//" , string(denom(x)) ")*", getind(y)])
+    x : % * y : Fraction(Integer) ==
+      jlref(concat [getind(x), "*(", string(numer(y)),"//", string(denom(y)), ")"])
+    x : % ^ y : Fraction(Integer) ==
+      jlref(concat [getind(x), "^(", string(numer(y)),"//", string(denom(y)), ")"])
+    x : % / y : % == jbinfunc("/",x,y)
+    x : % / i : Integer == jlref(concat [getind(x) , "/", string(i)])
+    i : Integer / x : % == jlref(concat [string(i), "/", getind(x)])
+
+    jlApprox?(x, y) == jbinbfunc("isapprox",x,y)
+    jlApprox?(x, y, atol) ==
+      jlEvalString(concat(["isapprox(", getind(x),
+        ",", getind(y), ", atol=", getind(atol),")"]))@Boolean
+
+    jlF32CApply(func, x) ==
+      jlref(concat ["ccall(", getind(func),
+        ", Float32, (Float32,),", getind(x),")"])
+    jlF32CApply(func, x, y) ==
+      jlref(concat ["ccall(", getind(func),
+        ", Float32, (Float32,Float32),", getind(x), ",", getind(y),")"])
+    jlF32CApply(func, x, y, z) ==
+      jlref(concat ["ccall(", getind(func),
+        ", Float32, (Float32,Float32,Float32),",
+          getind(x), ",", getind(y), ",", getind(z), ")"])
+    cis(x)   == junfunc("cis",x)
+    cispi(x) == junfunc("cispi",x)
+    convert(r: Float) ==
+      tmp := outputSpacing(0)
+      ret := jlref(concat(toString(r),"f0"))
+      outputSpacing(tmp)
+      ret
+    coerce(r : DoubleFloat) == jlref(concat(toString(r),"f0"))
+    coerce(r : Float) == convert(r)
+    jfloat32(r : Float) == convert(r)
+    jfloat32(r : JLFloat32) == jlref(toString(r))
+    jfloat32(str : String) ==
+      ret : % := jlref(str)
+      jlType(ret) ~= 'Float32 => error "jfloat32: not a Julia Float32"
+      ret
+
+)abbrev domain JOBF64 JLObjFloat64
+++ Convenience domain for Julia Float64
+++ Author: G.Vanuxem
+++ Date Created: Aug. 2024
+++ Description:
+++  Convenience domain for Julia Float64, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather, for returned value
+++ or function argument for example.
+++ Only basic arithmetic operations are supported.
+JLObjFloat64() : Exports == Implementation where
+  Exports ==> Join(OrderedSet, JLObjectRing, Field) with
+    "*" : (%, Integer) -> %
+    ++ x*i is the integer multiplication.
+    "/" : (%, Integer) -> %
+    ++ x/i is the division by an integer.
+    "/" : (Integer, %) -> %
+    ++ i/x is the division of an integer by x.
+    "^" : (%, Fraction(Integer)) -> %
+    ++ x^q is the exponentiation by a rational.
+    jlApprox?: (%, %) -> Boolean
+    ++ jlApprox?(x,y) computes inexact equality comparison
+    ++ with default parameters.
+    ++ Two numbers compare equal if their relative distance
+    ++ or their absolute distance is within tolerance bounds.
+    jlApprox?: (%, %, %) -> Boolean
+    ++ jlApprox?(x,y,atol) computes inexact equality comparison
+    ++ with absolute tolerance atol.
+    ++ Two numbers compare equal if their relative distance
+    ++ or their absolute distance is within tolerance bounds.
+    jlF64CApply : (JLObjDynamicLinker, %) -> %
+    ++ jlF64CApply(func, x) applies the function pointer func to x.
+    ++ For example:
+    ++ \example{libm:= jlDlOpen "libopenlibm"}
+    ++ \example{squareRoot:=jlDlSym(libm,jsym(sqrt))}
+    ++ \example{jlF64CApply(squareRoot,jfloat64(2))}
+    jlF64CApply : (JLObjDynamicLinker, %, %) -> %
+    ++ jlF64CApply(func, x, y) applies the function pointer func to x and y.
+    ++ For example:
+    ++ \example{libm:= jlDlOpen "libopenlibm"}
+    ++ \example{power:=jlDlSym(libm,jsym(pow))}
+    ++ \example{jlF64CApply(power,jfloat64(2),jfloat64(7))}
+    jlF64CApply : (JLObjDynamicLinker, %, %, %) -> %
+    ++ jlF64CApply(func, x, y, z) applies the function pointer func to x, y and z.
+    ++ For example with GSL-2.8:
+    ++ \example{gsl:= jlDlOpen "libgsl.so.28"}
+    ++ \example{hypot3:= jlDlSym(gsl,jsym(gsl_hypot3))}
+    ++ \example{jlF64CApply(hypot3,jfloat64(2),jfloat64(7),jfloat64(9.0))}
+    cis : % -> JLObjComplexF64
+    ++ cis(x) returns exp(%i*x) computed efficiently.
+    cispi : % -> JLObjComplexF64
+    ++ cispi(x) returns cis(%pi*x) computed efficiently.
+    convert : Float -> %
+    ++ convert(x) returns x as a JLObjFloat64 (truncate it).
+    coerce : DoubleFloat -> %
+    ++ coerce(x) returns x as a JLObjFloat64.
+    coerce : Float -> %
+    ++ coerce(x) returns x as a JLObjFloat64 (truncate it).
+    ++ Convenience function.
+    jnan64 : () -> %
+    ++ jnan64() returns the Julia NaN (Not a Number) object.
+    jinf64 : () -> %
+    ++ jinf64() returns the Julia Infinity object.
+    jfloat64 : Float -> %
+    ++ jfloat64(x) returns x as a JLObjFloat64 (truncate it).
+    jfloat64 : JLFloat64 -> %
+    ++ jfloat64(x) returns x as a JLObjFloat64 i.e. returns
+    ++ a 64 bits float in the memory area of Julia from
+    ++ the memory area of the underlying Common Lisp implementation.
+    jfloat64 : String -> %
+    ++ jfloat64(str) evaluates str in Julia and returns the
+    ++ Julia Float64 object. For example:
+    ++\example{jfloat64("sin(pi)")}
+    ++\example{jfloat64("0.7")}
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    0 == jlref("0.0")
+    1 == jlref("1.0")
+    jnan64() == jlref("NaN64")
+    jinf64() == jlref("Inf64")
+    x < y  == jbinbfunc("<",x,y)
+    x > y  == jbinbfunc(">",x,y)
+    x >= y == jbinbfunc(">=",x,y)
+    x <= y == jbinbfunc("<=",x,y)
+    characteristic() == 0
+    x : % * a : Integer == jlref(concat [getind(x),"*",string(a)])
+    x : Fraction(Integer) * y : % ==
+      jlref(concat ["(",string(numer x), "//" , string(denom(x)) ")*", getind(y)])
+    x : % * y : Fraction(Integer) ==
+      jlref(concat [getind(x), "*(", string(numer(y)),"//", string(denom(y)), ")"])
+    x : % ^ y : Fraction(Integer) ==
+      jlref(concat [getind(x), "^(", string(numer(y)),"//", string(denom(y)), ")"])
+    x : % / y : % == jbinfunc("/",x,y)
+    x : % / i : Integer == jlref(concat [getind(x) , "/", string(i)])
+    i : Integer / x : % == jlref(concat [string(i), "/", getind(x)])
+
+    jlApprox?(x, y) == jbinbfunc("isapprox",x,y)
+    jlApprox?(x, y, atol) ==
+      jlEvalString(concat(["isapprox(", getind(x),
+        ",", getind(y), ", atol=", getind(atol),")"]))@Boolean
+
+    jlF64CApply(func, x) ==
+      jlref(concat ["ccall(", getind(func),
+        ", Float64, (Float64,),", getind(x),")"])
+    jlF64CApply(func, x, y) ==
+      jlref(concat ["ccall(", getind(func),
+        ", Float64, (Float64,Float64),", getind(x), ",", getind(y),")"])
+    jlF64CApply(func, x, y, z) ==
+      jlref(concat ["ccall(", getind(func),
+        ", Float64, (Float64,Float64,Float64),",
+          getind(x), ",", getind(y), ",", getind(z), ")"])
+    cis(x)   == junfunc("cis",x)
+    cispi(x) == junfunc("cispi",x)
+    convert(r: Float) ==
+      tmp := outputSpacing(0)
+      ret := jlref(toString(r))
+      outputSpacing(tmp)
+      ret
+    coerce(r : DoubleFloat) == jlref(toString(r))
+    coerce(r : Float) == convert(r)
+    jfloat64(r : Float) == convert(r)
+    jfloat64(r : JLFloat64) == jlref(toString(r))
+    jfloat64(str : String) ==
+      ret : % := jlref(str)
+      jlType(ret) ~= 'Float64 => error "jfloat64: not a Julia Float64"
+      ret
+
+)abbrev domain JOBCF32 JLObjComplexF32
+++ Convenience domain for Julia ComplexF32
+++ Author: G.Vanuxem
+++ Date Created: Aug. 2024
+++ Description:
+++  Convenience domain for Julia ComplexF32, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather for returned value
+++ or function argument for example.
+++ Only basic arithmetic operations are supported.
+JLObjComplexF32() : Exports == Implementation where
+  Exports ==> Join(JLObjectRing, Field) with
+    "*" : (%, Integer) -> %
+    ++ x*i is the integer multiplication.
+    "/" : (%, Integer) -> %
+    ++ x/i is the division by an integer.
+    "/" : (Integer, %) -> %
+    ++ i/x is the division of an integer by x.
+    jlApply : (String, %) -> %
+    ++ jlApply(func, x) applies the function func with x as parameter.
+    jlApply : (String, %, %) -> %
+    ++ jlApply(func, x, y) applies the function func to x and y.
+    jlApply : (String, %, %, %) -> %
+    ++ jlApply(func, x, y, z) applies the function func to x,
+    ++ y and z.
+    cis : % -> %
+    ++ cis(x) returns exp(%i*x) computed efficiently.
+    cispi : % -> %
+    ++ cispi(x) returns cis(%pi*x) computed efficiently.
+    jcfloat32 : String -> %
+    ++ jcfloat32(str) evaluates str in Julia and returns the Julia
+    ++ Complex{Float32} object.
+    ++ For example:
+    ++ \example{jcfloat32 "cos(2pi)im"}
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func, a, b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    0 == jlref("0.0+0im")
+    1 == jlref("1.0+0im")
+
+    x : % * a : Integer == jlref(concat [getind(x),"*",string(a)])
+    x : Fraction(Integer) * y : % ==
+      jlref(concat ["(",string(numer x), "//" , string(denom(x)) ")*", getind(y)])
+    x : % * y : Fraction(Integer) ==
+      jlref(concat [getind(x), "*(", string(numer(y)),"//", string(denom(y)), ")"])
+    x :% / y : % == jbinfunc("/",x,y)
+    x : % / i : Integer == jlref(concat [getind(x) , "/", string(i)])
+    i : Integer / x : % == jlref(concat [string(i), "/", getind(x)])
+    cis(x)   == junfunc("cis",x)
+    cispi(x) == junfunc("cispi",x)
+    jcfloat32(str) ==
+      ret : % := jlref(str)
+      jlType(ret) ~= 'ComplexF32 => error "jcfloat32: not a Julia ComplexF32"
+      ret
+
+)abbrev domain JOBCF64 JLObjComplexF64
+++ Convenience domain for Julia ComplexF64
+++ Author: G.Vanuxem
+++ Date Created: Aug. 2024
+++ Description:
+++  Convenience domain for Julia ComplexF64, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather for returned value
+++ or function argument for example.
+++ Only basic arithmetic operations are supported.
+JLObjComplexF64() : Exports == Implementation where
+  Exports ==> Join(JLObjectRing, Field) with
+    "*" : (%, Integer) -> %
+    ++ x*i is the multiplication by an integer.
+    "/" : (%, Integer) -> %
+    ++ x/i is the division by an integer.
+    "/" : (Integer, %) -> %
+    ++ i/x is the division of an integer by c.
+    jlApply : (String, %) -> %
+    ++ jlApply(func, x) applies the function func with x as parameter.
+    jlApply : (String, %, %) -> %
+    ++ jlApply(func, x, y) applies the function func to x and y.
+    jlApply : (String, %, %, %) -> %
+    ++ jlApply(func, x, y, z) applies the function func to x,
+    ++ y and z.
+    cis : % -> %
+    ++ cis(x) returns exp(%i*x) computed efficiently.
+    cispi : % -> %
+    ++ cispi(x) returns cis(%pi*x) computed efficiently.
+    jcfloat64 : String -> %
+    ++ jcfloat64(str) evaluates str in Julia and returns the Julia
+    ++ Complex{Float64} object.
+    ++ For example:
+    ++ \example{jcfloat64 "cos(2pi)im"}
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func, a, b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    0 == jlref("0.0+0im")
+    1 == jlref("1.0+0im")
+
+    x : % * a : Integer == jlref(concat [getind(x),"*",string(a)])
+    x : Fraction(Integer) * y : % ==
+      jlref(concat ["(",string(numer x), "//" , string(denom(x)) ")*", getind(y)])
+    x : % * y : Fraction(Integer) ==
+      jlref(concat [getind(x), "*(", string(numer(y)),"//", string(denom(y)), ")"])
+    x :% / y : % == jbinfunc("/",x,y)
+    x : % / i : Integer == jlref(concat [getind(x) , "/", string(i)])
+    i : Integer / x : % == jlref(concat [string(i), "/", getind(x)])
+    cis(x)   == junfunc("cis",x)
+    cispi(x) == junfunc("cispi",x)
+    jcfloat64(str) ==
+      ret : % := jlref(str)
+      jlType(ret) ~= 'ComplexF64 => error "jcfloat64: not a Julia ComplexF64"
+      ret
+
+)abbrev domain JOBUI64 JLObjUInt64
+++ Convenience domain for Julia UInt64 (64 bits unsigned int)
+++ Author: G.Vanuxem
+++ Date Created: November 2025
+++ Description:
+++  Convenience domain for Julia UInt64, 64 bits unsigned integers,
+++ objects that are used within Julia, and not directly by the
+++ underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather for returned value
+++ or function argument for example. Only basic arithmetic operations
+++ are supported. By default the hexadecimal notation is used.
+++ Use the juliaUI64Print to change it to false if the integer
+++ representation is required. Note that operations defined here
+++ check overflow imposing a performance penalty.
+JLObjUInt64() : Exports == Implementation where
+  parsei    ==> PARSE_-INTEGER$Lisp
+  Exports ==> Join(OrderedSet, JLObjectRing, CommutativeRing,
+        EuclideanDomain, OrderedIntegralDomain) with
+    coerce : % -> NonNegativeInteger
+    ++ coerce(i) coerces i to a NonNegativeInteger.
+    coerce : NonNegativeInteger -> %
+    ++ coerce(z : NonNegativeInteger) returns z as a JLObjUInt64.
+    juliaUI64Print : Boolean -> Boolean
+    ++ juliaUI64Print(bool) set the output mode. If set to false, use
+    ++ the FriCAS output mode. Otherwise use the Julia one, in
+    ++ hexadecimal notation (default).
+    juint64 : NonNegativeInteger -> %
+    ++ juint64(i) returns i as a JLObjUInt64.
+    juint64 : Integer -> %
+    ++ juint64(i) returns i as a JLObjUInt64 if possible.
+    juint64 : String -> %
+    ++ juint64(str) returns the Julia UInt64 from the str command.
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    jlInitialize(true)
+    jlUsing("Base.Checked")
+    Rep := SExpression
+    jprint := true
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    juliaUI64Print(b) ==
+      oldjprint := jprint
+      jprint := b
+      oldjprint
+
+    0 == jlref("UInt64(0)")
+    1 == jlref("UInt64(1)")
+    x < y  == jbinbfunc("<",x,y)
+    x > y  == jbinbfunc(">",x,y)
+    x >= y == jbinbfunc(">=",x,y)
+    x <= y == jbinbfunc("<=",x,y)
+    - x == junfunc("checked_neg",x)
+    x - y == jbinfunc("checked_sub",x,y)
+    x + y == jbinfunc("checked_add",x,y)
+    x * y == jbinfunc("checked_mul",x,y)
+    x rem y == jbinfunc("checked_rem",x,y)
+    x quo y == jbinfunc("checked_div",x,y)
+    x ^ y == jbinfunc("checked_pow", x, y)
+    x ^ y : PositiveInteger ==
+      jlref(concat["checked_pow(", getind(x),",", string(y),")"])
+    x ^ y : NonNegativeInteger ==
+      jlref(concat["checked_pow(", getind(x),",", string(y),")"])
+    abs(x) == junfunc("checked_abs",x)
+    characteristic() == 0
+    euclideanSize(x) ==
+      x = 0 => error "euclideanSize called on zero"
+      x < 0 => (- (parsei(string x) pretend Integer))::NonNegativeInteger
+      parsei(string x)
+    divide(a,b) ==
+      ret : JLObjTuple := jbinfunc("divrem",a,b)
+      [ret.1 pretend %, ret.2 pretend %]
+    coerce(i) : NonNegativeInteger == parsei(string(i))
+    coerce(z : Integer) ==
+      a := jlref(concat(["UInt64(",string(z),")"]))
+      a < 0 => error "coerce$JLObjUInt64: negative number"
+      a
+    coerce(z : NonNegativeInteger) == jlref(concat(["UInt64(",string(z),")"]))
+    juint64(z : NonNegativeInteger) == jlref(concat(["UInt64(",string(z),")"]))
+    juint64(z : Integer) == jlref(concat(["UInt64(",string(z),")"]))
+    juint64(str : String) == jlref(concat(["UInt64(",str,")"]))
+    coerce(z) : OutputForm ==
+      jprint => coerce(z pretend JLObject)
+      message(string(z))
+
+)abbrev domain JOBI64 JLObjInt64
+++ Convenience domain for Julia Int64
+++ Author: G.Vanuxem
+++ Date Created: Aug. 2024
+++ Description:
+++  Convenience domain for Julia Int64, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather for returned value
+++ or function argument for example. Only basic arithmetic operations
+++ are supported.
+JLObjInt64() : Exports == Implementation where
+  parsei    ==> PARSE_-INTEGER$Lisp
+  Exports ==> Join(OrderedSet, JLObjectRing, CommutativeRing,
+        EuclideanDomain, OrderedIntegralDomain) with
+    coerce : % -> Integer
+    ++ coerce(i) coerces i to an Integer.
+    jint64 : Integer -> %
+    ++ jint64(i) returns i as a JLObjInt64.
+    jint64 : String -> %
+    ++ jint64(str) returns the Julia Int64 from the str command.
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    jlInitialize(true)
+    Rep := SExpression
+
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    0 == jlref("0")
+    1 == jlref("1")
+    x < y  == jbinbfunc("<",x,y)
+    x > y  == jbinbfunc(">",x,y)
+    x >= y == jbinbfunc(">=",x,y)
+    x <= y == jbinbfunc("<=",x,y)
+    characteristic() == 0
+    euclideanSize(x) ==
+      x = 0 => error "euclideanSize called on zero"
+      x < 0 => (- (parsei(string x) pretend Integer))::NonNegativeInteger
+      parsei(string x)
+    divide(a,b) ==
+      ret : JLObjTuple := jbinfunc("divrem",a,b)
+      [ret.1 pretend %, ret.2 pretend %]
+    coerce(i) : Integer == parsei(string(i))
+    coerce(z : Integer) == jlref(string z)
+    jint64(z : Integer) ==
+      a := jlref(string z)
+      jlType(a) = 'Int64 => a
+      error "jint64: not a Julia Int64"
+    jint64(str : String) ==
+      a := jlref(str)
+      jlType(a) = 'Int64 => a
+      error "jint64: not a Julia Int64"
+
+)abbrev domain JOBRAT JLObjRational
+++ Convenience domain for Julia Rational.
+++ Author: G.Vanuxem
+++ Date Created: February 2026
+++ Description:
+++  Convenience domain for Julia Rationals, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather for returned value
+++ or function argument for example.
+JLObjRational() : Exports == Implementation where
+  Exports ==> Join(OrderedSet, JLObjectRing, DivisionRing) with
+    "+" : (%, Integer) -> %
+    ++ x+i is the addition with an integer.
+    "+" : (Integer, %) -> %
+    ++ i+x is the addition of an integer and a rational.
+    "-" : (%, Integer) -> %
+    ++ x-i is the subtraction of an integer.
+    "-" : (Integer, %) -> %
+    ++ i-x is the subtraction of a rational from an integer.
+    "*" : (%, Integer) -> %
+    ++ x*i is the integer multiplication.
+    "*" : (Integer, %) -> %
+    ++ i*x is the integer multiplication.
+    "/" : (%, Integer) -> %
+    ++ x/i is the division by an integer.
+    "/" : (Integer, %) -> %
+    ++ i/x is the division of an integer by x.
+    "^" : (%, Integer) -> %
+    ++ x^i is the integer exponentiation.
+    "/" : (%, %) -> %
+    ++ x/y is the division of x by y.
+    coerce : JLObject -> %
+    ++ coerce(a) returns a Julia Rational from the JLObject a.
+    numerator : % -> Integer
+    ++ numerator(p) returns the numerator of the rational p.
+    denominator : % -> Integer
+    ++ denominator(p) returns the denominator of the rational p.
+    coerce : Fraction(Integer) -> %
+    ++ coerce(p) returns a Julia Rational from the Fraction p.
+    coerce : String -> %
+    ++ coerce(str) returns a Julia Rational from the str command.
+    jrational : (Integer, Integer) -> %
+    ++ jrational(num, den) returns the Julia Rational from the num and den.
+    jrational : Fraction(Integer) -> %
+    ++ jrational(p) returns a Julia Rational from the Fraction p.
+    jrational : String -> %
+    ++ jrational(str) returns the Julia Rational from the str command.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLStringUtilities
+
+    parsei    ==> PARSE_-INTEGER$Lisp
+    jlInitialize(true)
+    Rep := SExpression
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+    junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
+    jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
+    jbinbfunc(op,a,b) ==>
+      jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
+
+    0 == jlref("zero(Rational{BigInt})")
+    1 == jlref("one(Rational{BigInt})")
+    x < y  == jbinbfunc("<",x,y)
+    x > y  == jbinbfunc(">",x,y)
+    x >= y == jbinbfunc(">=",x,y)
+    x <= y == jbinbfunc("<=",x,y)
+    characteristic() == 0
+
+    x + y == jbinfunc("+", x, y)
+    x - y == jbinfunc("-", x, y)
+    - x   == junfunc("-", x)
+    x * y == jbinfunc("*", x, y)
+    x / y == jbinfunc("//", x, y)
+    inv(x) == jlref(concat ["inv(", getind(x), ")"])
+    recip(x) == jlref(concat ["inv(", getind(x), ")"])
+    x ^ i : Integer == jlref(concat [getind(x), "^", string(i)])
+
+    x : % + a : Integer == jlref(concat [getind(x),"+",string(a)])
+    a : Integer + x : % == jlref(concat [string(a),"+",getind(x)])
+    x : % - a : Integer == jlref(concat [getind(x),"-",string(a)])
+    a : Integer - x : % == jlref(concat [string(a),"-",getind(x)])
+    x : % * a : Integer == jlref(concat [getind(x),"*",string(a)])
+    a : Integer * x : % == jlref(concat [string(a),"*",getind(x)])
+    x : % / i : Integer == jlref(concat [getind(x) , "//", string(i)])
+    i : Integer / x : % == jlref(concat [string(i), "//", getind(x)])
+
+    numerator(p : %) : Integer ==
+      parsei(string(jlref(concat ["numerator(", getind(p), ")"])))
+    denominator(p : %) : Integer ==
+      parsei(string(jlref(concat ["denominator(", getind(p), ")"])))
+    coerce(a : JLObject) : % == a pretend %
+    coerce(p : Fraction(Integer)) : % ==
+      jlref(concat ["(BigInt(", string(numer p), ") // BigInt(",
+        string(denom p), "))"])
+    coerce(str : String) : % ==
+      s : String := jlRegexReplace(str, jlRegex "//", jlString "/")
+      jlref(concat ["Rational{BigInt}(", jlRegexReplace(s, jlRegex "/", jlString "//"), ")"])
+    jrational(num : Integer, den : Integer) : % ==
+      jlref(concat ["(BigInt(", string(num), ") // BigInt(",
+        string(den), "))"])
+    jrational(p : Fraction(Integer)) : % ==
+      jlref(concat ["(BigInt(", string(numer p), ") // BigInt(",
+        string(denom p), "))"])
+    jrational(str : String) : % ==
+      s : String := jlRegexReplace(str, jlRegex "//", jlString "/")
+      jlref(concat ["Rational{BigInt}(", jlRegexReplace(s, jlRegex "/", jlString "//"), ")"])
+
+)abbrev domain JOBPAIR JLObjPair
+++ Convenience domain for Julia Pair.
+++ Author: G.Vanuxem
+++ Date Created: December 2024
+++ Description:
+++  Convenience domain for Julia Pairs, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather for returned value
+++ or function argument for example.
+JLObjPair(F : JLObjectType, L : JLObjectType)
+    : Exports == Implementation where
+  Exports ==> JLObjectAggregate() with
+    first : % -> F
+    ++ first(pair) returns the first element of pair.
+    last : % -> L
+    ++ last(pair) returns the last element of pair.
+    jpair : String -> %
+    ++ jpair(str) returns a Julia Pair
+    ++ from the evaluation of the Julia command str.
+    ++ For example:
+    ++ \example{jpair("_"a_"=>7")$JLObjPair(JLObject,JLObjInt64)}
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    jlInitialize(true)
+
+    Rep := SExpression
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+
+    first(pair) : F == jlref(concat [getind(pair), "[1]" ])$F
+    last(pair) : L == jlref(concat [getind(pair), "[2]" ])$L
+    jpair(str : String) == jlref str
+
+)abbrev domain JOBTPLE JLObjTuple
+++ Convenience domain for Julia Tuple.
+++ Author: G.Vanuxem
+++ Date Created: Aug. 2024
+++ Description:
+++  Convenience domain for Julia Tuples, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather for returned value
+++ or function argument for example.
+JLObjTuple() : Exports == Implementation where
+  Exports ==> JLObjectAggregate() with
+    jtuple : List(Any) -> %
+    ++ jtuple(lst) returns a Julia Tuple from the List lst.
+    ++ lst must be compatible with 1D format.
+    jtuple : String -> %
+    ++ jtuple(str) returns a Julia Tuple
+    ++ from the evaluation of the Julia command str.
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    jlInitialize(true)
+    Rep := SExpression
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+
+    #tuple == jlEvalString(concat(["length(", getind(tuple), ")"]))
+    jtuple(l : List(Any)) ==
+      res := jlref(concat ["Tuple(",
+        first lines formatExpression(l::OutputForm)$Format1D,")"])
+      not (jlEvalString(concat ["isa(", getind(res), ", Tuple)"])) =>
+        error "jtuple: not a Julia Tuple"
+      res
+    jtuple(str : String) ==
+      res := jlref str
+      not (jlEvalString(concat ["isa(", getind(res), ", Tuple)"])) =>
+        error "jtuple: not a Julia Tuple"
+      res
+
+)abbrev domain JOBNTPL JLObjNamedTuple
+++ Convenience domain for Julia Named Tuple.
+++ Author: G.Vanuxem
+++ Date Created: Aug. 2024
+++ Description:
+++  Convenience domain for Julia Named Tuples, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ It is not meant to be used directly, but rather for returned value
+++ or function argument for example.
+JLObjNamedTuple() : Exports == Implementation where
+  Exports ==> JLObjectAggregate() with
+    jntuple : Tuple(Any) -> %
+    ++ jntuple(lst) returns a Julia Named Tuple from the List lst.
+    ++ lst must be compatible with 1D format.
+    jnamedtuple : String -> %
+    ++ jnamedtuple(str) returns a Julia Named Tuple
+    ++ from the evaluation of the Julia command str.
+    ++ To avoid bad function selection in the interpreter
+    ++ we rename jntuple to jnamedtuple.
+  Implementation ==> add
+    import from JLUtilityFunctions
+
+    jlInitialize(true)
+    Rep := SExpression
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+
+    #tuple == jlEvalString(concat(["length(", getind(tuple), ")"]))
+    jntuple(l : Tuple(Any)) ==
+      res := jlref(concat ["NamedTuple(",
+        first lines formatExpression(l::OutputForm)$Format1D,")"])
+      not (jlEvalString(concat ["isa(", getind(res), ", NamedTuple)"]))
+        => error "jntuple: not a Julia NamedTuple"
+      res
+    jnamedtuple(str : String) : % ==
+      res := jlref(str)
+      not (jlEvalString(concat ["isa(", getind(res), ", NamedTuple)"]))
+        => error "jnamedtuple: not a Julia NamedTuple"
+      res
+
+)abbrev domain JOBANFUN JLObjAnonymousFunction
+++ Convenience domain for Julia Anonymous Function.
+++ Author: G.Vanuxem
+++ Date Created: Feb. 2026
+++ Description:
+++  Convenience domain for Julia Anonymous Functions, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+JLObjAnonymousFunction() : Exports == Implementation where
+  Exports ==> JLObjectType with
+    elt : (%, JLObject) -> JLObject
+    ++ elt(jaf, arg) returns result of applying the Julia Anonymous Function
+    ++ jaf to the argument arg. Use it as: `jaf(arg)`.
+    elt : (%, JLObject, JLObject) -> JLObject
+    ++ elt(jaf, arg1, arg2) returns result of applying the Julia Anonymous
+    ++ Function jaf to the arguments arg1 and arg2. Use it as:
+    ++ `jaf(arg1, arg2)`.
+    elt : (%, JLObject, JLObject, JLObject) -> JLObject
+    ++ elt(jaf, arg1, arg2, arg3) returns result of applying the Julia Anonymous
+    ++ Function jaf to the arguments arg1, arg2 and arg3. Use it as:
+    ++ `jaf(arg1, arg2, arg3)`.
+    elt : (%, List(JLObject)) -> JLObject
+    ++ elt(jaf, args) returns result of applying the Julia Anonymous Function
+    ++ jaf to the arguments in the list args. Use it as: `jaf(args)`.
+    coerce : AnonymousFunction -> %
+    ++ coerce(af) returns a Julia Anonymous Function from the AnonymousFunction
+    ++ af must be compatible with 1D format.
+    jafunction : AnonymousFunction -> %
+    ++ jafunction(af) returns a Julia Anonymous Function from the AnonymousFunction
+    ++ af must be compatible with 1D format.
+    ++ \example{f:=jafunction(x +-> sqrt sqrt(x^2))}
+    ++ \example{f(jfloat64 2.0)}
+    ++ \example{jlType %}
+    jafunction : String -> %
+    ++ jafunction(str) returns a Julia Anonymous Function
+    ++ from the evaluation of the Julia command str.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLStringUtilities
+
+    jlInitialize(true)
+    Rep  := SExpression
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+
+    elt(jaf : %, arg : JLObject) : JLObject ==
+      jlref(concat [getind(jaf), "(", getind(arg), ")"])
+    elt(jaf : %, arg1 : JLObject, arg2 : JLObject) : JLObject ==
+      jlref(concat [getind(jaf), "(", getind(arg1), ", ", getind(arg2), ")"])
+    elt(jaf : %, arg1 : JLObject, arg2 : JLObject, arg3 : JLObject) : JLObject ==
+      jlref(concat [getind(jaf), "(", getind(arg1), ", ", getind(arg2), ", ", getind(arg3), ")"])
+    elt(jaf : %, args : List(JLObject)) : JLObject ==
+      empty? args => jlref(concat [getind(jaf), "()"])
+      jargs : String := getind(first args)
+      for a in rest args repeat
+        jargs := concat [jargs, ", ", getind(a)]
+      jlref(concat [getind(jaf), "(", jargs, ")"])
+
+    coerce(af : AnonymousFunction) : % == jafunction(af)
+    jafunction(af : AnonymousFunction) : % ==
+      p: String := first(lines formatExpression(af::OutputForm)$Format1D)
+      ret : String := jlEvalString(concat(["replace(_"", p,
+        "_", _"+->_" => _"->_", _"/_" => _"//_", _"%i_" => _"im_")"]))
+      afunc := jlref(ret)
+      not (jlEvalString(concat ["isa(", getind(afunc), ", Function)"])) =>
+        error "jafunction: not a Julia Function"
+      afunc
+    jafunction(str : String) : % ==
+      afunc := jlref(str)
+      not (jlEvalString(concat ["isa(", getind(afunc), ", Function)"])) =>
+        error "jafunction: not a Julia Function"
+      afunc
+    coerce(jaf : %) : OutputForm ==
+      ret : List String := jl_stringify_wrapped_index("show",
+        "_"text/plain_"", jlId(jaf))$Lisp
+      more?(elt(ret,1), _$LINELENGTH$Lisp)
+        => pile(append(["" pretend OutputForm], ret pretend List OutputForm))
+      vconcat(ret pretend List OutputForm)
+
+)abbrev domain JOBFUNC JLObjFunction
+++ Convenience domain for Julia Functions.
+++ Author: G.Vanuxem
+++ Date Created: Feb. 2026
+++ Description:
+++  Convenience domain for Julia Functions, objects that are used
+++ within Julia, and not directly by the underlying FriCAS Common Lisp.
+++ Note: Temporary implementation since I do not have a good way to coerce
+++ FriCAS functions in Julia. Use anonymous functions instead, or the string
+++ version. For example: `f:=jfunction("f(x)=x+1")` and then `f(1)`.
+JLObjFunction(f : Symbol) : Exports == Implementation where
+  Exports ==> Join(JLObjectType, ConvertibleTo InputForm) with
+    elt  : (%, JLObject) -> JLObject
+    ++ elt(jfunction, arg) returns result of applying the Julia Function
+    ++ jfunction to the argument arg. Use it as: `jfunction(arg)`.
+    elt : (%, JLObject, JLObject) -> JLObject
+    ++ elt(jfunction, arg1, arg2) returns result of applying the Julia Function
+    ++ jfunction to the arguments arg1 and arg2. Use it as: `jfunction(arg1, arg2)`.
+    elt : (%, JLObject, JLObject, JLObject) -> JLObject
+    ++ elt(jfunction, arg1, arg2, arg3) returns result of applying the Julia Function
+    ++ jfunction to the arguments arg1, arg2 and arg3. Use it as:
+    ++ `jfunction(arg1, arg2, arg3)`.
+    elt : (%, List(JLObject)) -> JLObject
+    ++ elt(jfunction, args) returns result of applying the Julia Function
+    ++ jfunction to the arguments in the list args.
+    coerce : FunctionCalled(f) -> %
+    ++ coerce(func) returns a Julia Function from the FriCASfunction func.
+    ++ func must be compatible with 1D format.
+    jfunction : FunctionCalled(f) -> %
+    ++ jfunction(func) returns a Julia Function from the FriCAS function func.
+    ++ func must be compatible with 1D format.
+    ++ \example{f(x)==sin(x)}
+    ++ In FriCAS:
+    ++ f(0.7)
+    ++ In Julia:
+    ++ \example{ff:=jfunction(f)}
+    ++ \example{ff(jfloat 0.7)}
+    jfunction : String -> %
+    ++ jfunction(str) returns a Julia Function from the String str.
+    ++ str must be a valid Julia Function definition.
+  Implementation ==> add
+    import from JLUtilityFunctions
+    import from JLStringUtilities
+
+    jlInitialize(true)
+    Rep := SExpression
+    getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
+
+    elt(jfunction, arg : JLObject) : JLObject ==
+      jlref(concat [getind(jfunction), "(", getind(arg), ")"])
+    elt(jfunction, arg1 : JLObject, arg2 : JLObject) : JLObject ==
+      jlref(concat [getind(jfunction), "(", getind(arg1), ", ", getind(arg2), ")"])
+    elt(jfunction, arg1 : JLObject, arg2 : JLObject, arg3 : JLObject) : JLObject ==
+      jlref(concat [getind(jfunction), "(", getind(arg1), ", ", getind(arg2), ", ", getind(arg3), ")"])
+    elt(jfunction : %, args : List(JLObject)) : JLObject ==
+      empty? args => jlref(concat [getind(jfunction), "()"])
+      jargs : String := getind(first args)
+      for a in rest args repeat
+        jargs := concat [jargs, ", ", getind(a)]
+      jlref(concat [getind(jfunction), "(", jargs, ")"])
+
+    coerce(af : FunctionCalled(f)) : % == jfunction(af)
+    jfunction(af : FunctionCalled(f)) : % ==
+      p: String := first(lines formatExpression(af::OutputForm)$Format1D)
+      ret : String := jlEvalString(concat(["replace(_"", p,
+        "_", _"==_" => _"=_", _"/_" => _"//_", _"%i_" => _"im_")"]))
+      afunc := jlref(ret)
+      not (jlEvalString(concat ["isa(", getind(afunc), ", Function)"])) =>
+        error "jfunction: not a Julia Function"
+      afunc
+    jfunction(str : String) : % ==
+      afunc := jlref(str)
+      not (jlEvalString(concat ["isa(", getind(afunc), ", Function)"])) =>
+        error "jfunction: not a Julia Function"
+      afunc
+    coerce(jfun : %) : OutputForm ==
+      ret : List String := jl_stringify_wrapped_index("show",
+        "_"text/plain_"", jlId(jfun))$Lisp
+      more?(elt(ret,1), _$LINELENGTH$Lisp)
+        => pile(append(["" pretend OutputForm], ret pretend List OutputForm))
+      vconcat(ret pretend List OutputForm)
