@@ -1205,6 +1205,14 @@ coerceIntCommute(obj,target) ==
     NIL
   NIL
 
+-- The only test is:
+--
+-- n : Complex(?)
+-- n := x/y+%i
+--
+-- 'x/y+%i' gets type 'Fraction(Polynomial(Complex(Integer)))', on
+-- left hand side interpreter invents 'Complex(Fraction(Polynomial(Integer)))'
+-- and we need 'coerceIntPermute' to transform right hand side to the left.
 coerceIntPermute(object,t2) ==
   t2 in '((Integer) (OutputForm)) => NIL
   t1 := objMode object
