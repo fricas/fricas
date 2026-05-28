@@ -1,0 +1,50 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+)expose JLObjR JLObject JLObjInt64 JLObjFloat64 JLObjBool JLObjBigInt
+
+testsuite "JLObjR"
+
+testcase "jr and coerce"
+r1 := jr "1.2"
+testEquals("string(jlType r1)", "_"RObject{RealSxp}_"")
+r1i := jr "1L"
+testEquals("string(jlType r1i)", "_"RObject{IntSxp}_"")
+
+r2 := jr "c(1.1, 2.3, 3.2)"
+testEquals("string(jlType r2)", "_"RObject{RealSxp}_"")
+
+testcase "jlRApply"
+r2 := jr "c(1.1, 2.3, 3.2)"
+-- sum(c(1.1, 2.3, 3.2)) = 6.6
+rs := jlRApply("sum", r2)
+testTrue("jlApprox?(jlRCopy(rs) pretend JLObjFloat64, jfloat64(6.6))")
+
+-- Multi-argument apply: sum(1.1, 2.3) = 3.4
+r1 := jr "1.1"
+r3 := jr "2.3"
+rs2 := jlRApply("sum", r1, r3)
+testTrue("jlApprox?(jlRCopy(rs2) pretend JLObjFloat64, jfloat64(3.4))")
+
+testcase "jr from JLObject"
+-- Convert a FriCAS/Julia object to R object
+jo := jint64(10)
+ro := jr(jo)
+testEquals("string(jlType ro)", "_"RObject{IntSxp}_"")
+
+testcase "jlRConvert"
+r2 := jr "c(1.1, 2.3, 3.2)"
+-- Convert R vector to Julia Vector{Float64}
+jv := jlRConvert("Vector{Float64}", r2)
+testEquals("string(jlType jv)", "_"Vector{Float64}_"")
+
+testcase "jlRLibrary"
+-- Load 'stats' library
+jlRLibrary "stats"
+-- This should work silently
+
+testcase "jlRPrint"
+r2 := jr "c(1.1, 2.3, 3.2)"
+-- This prints to stdout, we just verify it doesn't crash
+jlRPrint r2
+
+statistics()

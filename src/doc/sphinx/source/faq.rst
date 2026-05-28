@@ -11,16 +11,16 @@ FriCAS FAQ
 General Questions
 -----------------
 
-What is FriCAS?
-^^^^^^^^^^^^^^^
+1. What is FriCAS?
+^^^^^^^^^^^^^^^^^^
 
 FriCAS is an advanced computer algebra system. Its capabilities range
 from calculus (integration and differentiation) to abstract algebra.
 It can plot functions and has an integrated help system.
 
 
-What is the relation between FriCAS and Axiom?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2. What is the relation between FriCAS and Axiom?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 FriCAS forked from Axiom in 2007. FriCAS seeks different development
 methodology and after fork removed several unused parts (without
@@ -33,8 +33,8 @@ See also
 `FriCAS advantages <https://wiki.fricas.org/FriCASAdvantages>`_
 
 
-What does the FriCAS name mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3. What does the FriCAS name mean?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The prefix *Fri* is a deliberate misspelling of Free -- FriCAS sounds
 like Free CAS.
@@ -44,11 +44,11 @@ similar to FriCAS) denotes generally tasty food (dainty); the French
 word "fricassee" and the German "Frikassee" name a particular food.
 
 
-Where can I find online information about FriCAS?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+4. Where can I find online information about FriCAS?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The main entrance point to documentation about FriCAS is
-http://fricas.github.io.
+https://fricas.github.io.
 
 The mailing list
 https://groups.google.com/group/fricas-devel?hl=en
@@ -56,34 +56,34 @@ is intended both for users and developers.
 Please sign up before posting a message.
 
 
-Where can I find documentation?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+5. Where can I find documentation?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The main source of information about FriCAS is the "Axiom book" by
 Jenks and Sutor in its adaptation for FriCAS. FriCAS continues to
 update that contents of that book along with its development and calls
 it |PACKAGE_BOOK|. Its content is shown by the integrated HyperDoc
 help system. You can also access the book in .pdf form at
-http://fricas.github.io/book.pdf.
+https://fricas.github.io/book.pdf.
 An older version is available in in .xhtml form at
-http://wiki.fricas.org/JenksSutorInXhtml.
+https://wiki.fricas.org/JenksSutorInXhtml.
 
 
-Where should I report bugs?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+6. Where should I report bugs?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 FriCAS moved to GitHub in March 2020. Issues should be reported to
 https://github.com/fricas/fricas/issues.
 
 The older bugtrackers at
-`SourceForge <http://sourceforge.net/tracker/?atid=972421&group_id=200168>`_
+`SourceForge <https://sourceforge.net/tracker/?atid=972421&group_id=200168>`_
 and
-the `FriCAS wiki <`http://wiki.fricas.org/IssueTracker>`_
+the `FriCAS wiki <`https://wiki.fricas.org/IssueTracker>`_
 should not be used anymore.
 
 
-How can one use FriCAS in a pipe or in batch mode?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+7. How can one use FriCAS in a pipe or in batch mode?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Currently trying to run plain ``fricas`` command in a pipe hangs
 (this is a bug, but fix requires substantial change).
@@ -104,8 +104,8 @@ Note: Similarly to the command line, pipe mode requires each function
 to be defined in a single line.
 
 
-How to find where an exported function is implemented?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+8. How to find where an exported function is implemented?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In Hyperdoc 'Browse' window enter the constructor name or its
 abbreviation and click on 'Constructors'. In the resulting form
@@ -130,8 +130,8 @@ domain in which the function is implemented. In the above case
 ``NonAssociativeSemiRng``.
 
 
-Clef does not work.  Is there an alternative?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+9. Clef does not work.  Is there an alternative?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you have GNU Readline and ``rlwrap`` installed, the ``-rl`` option
 will use GNU Readline editing, tab completion, and history, i.e. call
@@ -140,8 +140,8 @@ FriCAS like this::
   fricas -rl
 
 
-Default HyperDoc window is too small.  How to enlarge it?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+10. Default HyperDoc window is too small.  How to enlarge it?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Put the lines like below in file called ``~/.Xresources``.
 ::
@@ -181,8 +181,8 @@ Of course, you might want to choose other fonts that are available on
 your computer. Use ``xfontsel`` to find out.
 
 
-Why does FriCAS behave differently after loading new code?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+11. Why does FriCAS behave differently after loading new code?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When FriCAS loads new code, current variables become invalid.
 This happens when you use
@@ -198,6 +198,64 @@ or automatically when you compile a file via
 You have to load and compile code before you start your computation.
 
 
+12. Is there exception handling in FriCAS?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can use a construction like
+::
+
+   foo() ==
+       l := bits()$Float;
+       try
+            -- set new precision
+            bits(128)
+            -- do your work
+        finally
+            bits(l)
+
+to temporarily set the floating poing precision and have it reset
+after the computation even if the computation (your work) results in
+an error.
+
+
+13. Can I run a function under a time constraint?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Checkout the
+`TimeoutPackage <https://fricas.github.io/api/TimeoutPackage.html>`_.
+
+
+14. How can I compile fspace.spad?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The file ``fspace.spad`` needs a special bootstrap sequence:
+::
+
+   )boot $bootStrapMode := true
+   )compile fspace.spad
+   )boot $bootStrapMode := false
+   )compile fspace.spad
+
+When developing similar changes you need to recompile all things which
+depend on the change and which you want to use, directly or
+indirectly.
+
+Full build takes care of bootstrapping and recompiles everything, so
+after that things works in expected way.
+
+
+15. Are there things in FriCAS that do not work properly?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Yes, there are certainly, a number of them. We list here a few.
+
+* Functions that have types as their parameters work in in the
+  compiler, but not in the interpreter.
+
+  See
+  https://groups.google.com/d/msgid/fricas-devel/aUgPGQyo6_coDs5q%40fricas.org.
+
+
 
 Old Axiom FAQ
 -------------
@@ -205,8 +263,8 @@ Old Axiom FAQ
 This list has been slightly adapted to match the new name FriCAS.
 
 
-The fricas command fails.
-^^^^^^^^^^^^^^^^^^^^^^^^^
+1. The fricas command fails.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is likely one of two problems.
 
@@ -230,8 +288,8 @@ variable set appropriately) can be done by calling
    fricas -nosman
 
 
-How can I create and access Lisp functions from FriCAS?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2. How can I create and access Lisp functions from FriCAS?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 SExpression is the domain that handles raw lisp objects.
 It is possible to create SExpression elements directly.
@@ -277,8 +335,8 @@ able to achieve almost everything you need.
 **Use Lisp only when you cannot achieve your goal otherwise!**
 
 
-How can I see what the interpreter is trying to do?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3. How can I see what the interpreter is trying to do?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The command
 ::
@@ -298,8 +356,8 @@ and you can view database calls with
    )boot $miss := true
 
 
-How can I record console output?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+4. How can I record console output?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Use ``)spool``.
 ::
@@ -314,8 +372,8 @@ starts sending output to the file called ``filename`` and
 stops sending output to the file.
 
 
-Graphics doesn't work or sman fails to start?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+5. Graphics doesn't work or sman fails to start?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 First try running ``sman`` as
 ::
@@ -326,8 +384,8 @@ If graphics still doesn't work or sman fails to start then look at the
 error messages.
 
 
-What is the purpose of the domain HACKPI?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+6. What is the purpose of the domain HACKPI?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 HACKPI is a hack provided for the benefit of the FriCAS interpreter.
 As a mathematical type, it is the simple transcendental extension
@@ -348,8 +406,8 @@ constants, but it occurs frequently enough in school examples
 non-interactive environment (library), HACKPI would not exist.
 
 
-Why do .fricas.input defined functions fail in fricas?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+7. Why do .fricas.input defined functions fail in fricas?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You write this in your ``.fricas.input`` file:
 ::
@@ -414,8 +472,8 @@ frames. (See the ``)frame`` command in the appendix of the
 |PACKAGE_BOOK|).
 
 
-How can I debug algebra code?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+8. How can I debug algebra code?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 FriCAS contains some powerful commands to help with testing and
 debugging library modules written in Spad and also the FriCAS system
@@ -587,8 +645,8 @@ Also See: ``)boot``, ``)lisp`` , and ``)ltrace``. Please refer to the
 FriCAS Book section "FriCAS System Commands" for more detailed information.
 
 
-How can I access lisp code from the FriCAS command line?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+9. How can I access lisp code from the FriCAS command line?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To run a lisp command from the command line use )lisp:
 ::
@@ -631,62 +689,3 @@ the BOOT package. To restart FriCAS type
    BOOT> (|runspad|)
 
 Note: for ECL you need to type ``(in-package "BOOT")`` before ``(|runspad|)``.
-
-
-Is there exception handling in FriCAS?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-You can use a construction like
-::
-
-   foo() ==
-       l := bits()$Float;
-       try
-            -- set new precision
-            bits(128)
-            -- do your work
-        finally
-            bits(l)
-
-to temporarily set the floating poing precision and have it reset
-after the computation even if the computation (your work) results in
-an error.
-
-
-Can I run a function under a time constraint?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Checkout the
-`TimeoutPackage <http://fricas.github.io/api/TimeoutPackage.html>`_.
-
-
-How can I compile fspace.spad?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The file ``fspace.spad`` needs a special bootstrap sequence:
-::
-
-   )boot $bootStrapMode := true
-   )compile fspace.spad
-   )boot $bootStrapMode := false
-   )compile fspace.spad
-
-When developing similar changes you need to recompile all things which
-depend on the change and which you want to use, directly or
-indirectly.
-
-Full build takes care of bootstrapping and recompiles everything, so
-after that things works in expected way.
-
-
-
-Are there things in FriCAS that do not work properly?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Yes, there are certainly, a number of them. We list here a few.
-
-* Functions that have types as their parameters work in in the
-  compiler, but not in the interpreter.
-
-  See
-  https://groups.google.com/d/msgid/fricas-devel/aUgPGQyo6_coDs5q%40fricas.org.

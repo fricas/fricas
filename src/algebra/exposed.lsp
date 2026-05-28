@@ -183,6 +183,7 @@
   (|JLObjNamedTuple| . JOBNTPL)
   (|JLObjPair| . JOBPAIR)
   (|JLObjPy| . JOBPY)
+  (|JLObjR| . JOBPR)
   (|JLObjRational| . JOBRAT)
   (|JLObjTuple| . JOBTPLE)
   (|JLPlotFunctions| . JPLOT)

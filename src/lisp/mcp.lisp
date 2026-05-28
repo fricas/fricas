@@ -298,7 +298,7 @@
              ;; Echo code to terminal REPL
              (format *error-output* "~A~%" expr)
              (finish-output *error-output*)
-             (let ((output (evaluate-expr expr)))
+             (let ((output (evaluate-expr expr t)))
                ;; Echo result to terminal REPL
                (when (and output (not (string= output "")))
                  (format *error-output* "~A~%" output)
@@ -320,17 +320,24 @@
            (entity-type (gethash "type" params)))
        (if (or (not entity-name) (not entity-type))
            (send-error id -32602 "Missing name or type parameter")
-           (let* ((fricas-func (if (string= entity-type "constructor")
-                                   "constructorDocumentation"
-                                   "operationDocumentation"))
-                  (cmd (format nil "~A(\"~A\")$SpadDoc" fricas-func entity-name))
-                  (output (capture-fricas-output cmd)))
-             (let ((result (make-hash-table :test 'equal))
-                   (content (make-hash-table :test 'equal)))
-               (setf (gethash "type" content) "text")
-               (setf (gethash "text" content) (clean-fricas-doc-output output))
-               (setf (gethash "content" result) (list content))
-               (send-result id result))))))
+           (if (suppressed-number-p entity-name)
+               (let ((result (make-hash-table :test 'equal))
+                     (content (make-hash-table :test 'equal)))
+                 (setf (gethash "type" content) "text")
+                 (setf (gethash "text" content) "")
+                 (setf (gethash "content" result) (list content))
+                 (send-result id result))
+               (let* ((fricas-func (if (string= entity-type "constructor")
+                                       "constructorDocumentation"
+                                       "operationDocumentation"))
+                      (cmd (format nil "~A(\"~A\")$SpadDoc" fricas-func entity-name))
+                      (output (capture-fricas-output cmd)))
+                 (let ((result (make-hash-table :test 'equal))
+                       (content (make-hash-table :test 'equal)))
+                   (setf (gethash "type" content) "text")
+                   (setf (gethash "text" content) (clean-fricas-doc-output output))
+                   (setf (gethash "content" result) (list content))
+                   (send-result id result)))))))
     ((string= name "list-constructors")
      (let ((pattern (gethash "pattern" params)))
        (if (not pattern)
@@ -355,7 +362,7 @@
           ;; Always echo code to terminal REPL
           (format *error-output* "~A~%" code)
           (finish-output *error-output*)
-          (let ((output (evaluate-expr code)))
+          (let ((output (evaluate-expr code t)))
             ;; Always echo result to terminal REPL
             (when (and output (not (string= output "")))
               (format *error-output* "~A~%" output)
@@ -372,19 +379,54 @@
         (result (make-hash-table :test 'equal)))
     (if (not word)
         (send-error id -32602 "Missing word parameter")
-        (let* ((fricas-func (if (equal entity-type "constructor")
-                                "constructorDocumentation"
-                                "operationDocumentation"))
-               (cmd (format nil "~A(\"~A\")$SpadDoc" fricas-func word))
-               (output (capture-fricas-output cmd)))
-          (setf (gethash "result" result) (clean-fricas-doc-output output))
-          (send-result id (gethash "result" result))))))
+        (if (suppressed-number-p word)
+            (progn
+              (setf (gethash "result" result) "")
+              (send-result id ""))
+            (let* ((fricas-func (if (equal entity-type "constructor")
+                                    "constructorDocumentation"
+                                    "operationDocumentation"))
+                   (cmd (format nil "~A(\"~A\")$SpadDoc" fricas-func word))
+                   (output (capture-fricas-output cmd)))
+              (setf (gethash "result" result) (clean-fricas-doc-output output))
+              (send-result id (gethash "result" result)))))))
 
 (defun handle-repl-get-doc-at (id params)
   (let ((word (gethash "word" params)))
     (if (not word)
         (send-error id -32602 "Missing word parameter")
         (handle-repl-get-doc-from-word id params))))
+
+(defun suppressed-number-p (s)
+  "Return T if S is a FriCAS numeric literal that should not have documentation.
+   Excludes '0' and '1' which are allowed."
+  (let* ((len (length s))
+         (start 0))
+    (when (zerop len) (return-from suppressed-number-p nil))
+    ;; Handle optional minus
+    (when (char= (char s 0) #\-)
+      (setf start 1)
+      (when (= len 1) (return-from suppressed-number-p nil)))
+    (let ((body (subseq s start)))
+      ;; Allow "0" and "1" exactly (as decimal integers without minus)
+      (when (and (= start 0) (or (string= body "0") (string= body "1")))
+        (return-from suppressed-number-p nil))
+      ;; Decimal integer
+      (when (every #'digit-char-p body) (return-from suppressed-number-p t))
+      ;; Radix: \d+r[0-9a-zA-Z]+
+      (let ((r-pos (position #\r body)))
+        (when (and r-pos (> r-pos 0) (< r-pos (1- (length body))))
+          (when (and (every #'digit-char-p (subseq body 0 r-pos))
+                     (every (lambda (c) (or (digit-char-p c) (alpha-char-p c))) (subseq body (1+ r-pos))))
+            (return-from suppressed-number-p t))))
+      ;; Float: contains dot or exponent
+      (let ((has-dot (find #\. body))
+            (has-exp (or (find #\e body) (find #\E body))))
+        (when (or has-dot has-exp)
+          (let ((first (char body 0)))
+            (when (or (digit-char-p first) (char= first #\.))
+              (return-from suppressed-number-p t))))))
+    nil))
 
 (defun fricas-split-lines (string)
   (let ((lines nil)
@@ -499,7 +541,7 @@
             statements))
     (nreverse statements)))
 
-(defun evaluate-expr (expr)
+(defun evaluate-expr (expr &optional eq-num-p)
   "Evaluate FriCAS input, handling multi-line code blocks correctly.
    Single-line or system-command input is passed directly to capture-fricas-output.
    Multi-line input is split into individual statements; each is evaluated
@@ -510,14 +552,14 @@
         (let* ((stmts (split-fricas-statements clean))
                (parts
                  (loop for stmt in stmts
-                       for result = (capture-fricas-output stmt)
+                       for result = (capture-fricas-output stmt eq-num-p)
                        when (and result (not (string= result "")))
                          collect result)))
           (format nil "~{~A~^~%~}" parts))
         ;; Single line: fast path
-        (capture-fricas-output clean))))
+        (capture-fricas-output clean eq-num-p))))
 
-(defun capture-fricas-output (expr)
+(defun capture-fricas-output (expr &optional eq-num-p)
   (let ((out-str (make-string-output-stream))
         (boot-pkg (find-package "BOOT")))
     (flet ((do-eval ()
@@ -549,7 +591,9 @@
                              (*package* boot-pkg))
                          (let ((res (catch 'boot::|top_level|
                                       (catch 'boot::SPAD_READER
-                                        (boot::|parseAndEvalToString| expr)))))
+                                        (if eq-num-p
+                                            (boot::|parseAndEvalToStringEqNum| expr)
+                                            (boot::|parseAndEvalToString| expr))))))
                            (let ((extra (get-output-stream-string out-str))
                                  (res-str (cond
                                             ((null res) "")

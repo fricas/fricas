@@ -106,6 +106,8 @@ $InitialCommandSynonymAlist := [
        ["fortran",   :'"set output fortran"],
        ["h",         :'"help"],
        ["hd",        :'"system hypertex &"],
+       ["ju",        :'"julia"],
+       ["jud",        :'"juliad"],
        ["kclam",     :'"boot clearClams ( )"],
        ["killcaches",:'"boot clearConstructorCaches()"],
        ["prompt",    :'"set message prompt"],

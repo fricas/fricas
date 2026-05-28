@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jlFriCAS Documentation</title>
+    <meta name="description"
+        content="jlFriCAS: A high-performance interface connecting FriCAS with Julia, Nemo, and Wolfram Language.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-fricas.min.js"></script>
+    <style>
+        :root {
+            --bg-deep: #020617;
+            --bg-slate: #0f172a;
+            --accent: #60a5fa;
+            --accent-glow: rgba(96, 165, 250, 0.3);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-deep);
+            color: #f1f5f9;
+            overflow-x: auto;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .prose h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #60a5fa, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .prose h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: #93c5fd;
+            border-bottom: 1px solid rgba(96, 165, 250, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        .prose h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            color: #bfdbfe;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .prose p {
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: #94a3b8;
+        }
+
+
+        .prose ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1.25rem;
+            color: #cbd5e1;
+        }
+
+        .prose ol {
+            list-style-type: decimal;
+            margin-left: 1.5rem;
+            margin-bottom: 1.25rem;
+            color: #cbd5e1;
+        }
+
+        .prose li {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .prose th {
+            background: rgba(255, 255, 255, 0.03);
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            color: #60a5fa;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .prose td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: top;
+            color: #94a3b8;
+        }
+
+        .prose tr:hover td {
+            background: rgba(96, 165, 250, 0.02);
+            color: #f1f5f9;
+        }
+
+        .prose a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .prose a:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        .prose code {
+            font-family: 'JetBrains Mono', monospace;
+            background: #1e293b;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.375rem;
+            font-size: 0.875em;
+            color: #e2e8f0;
+        }
+
+        .prose pre {
+            background: #0f172a !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        .prose pre::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, #60a5fa, #818cf8);
+        }
+
+        .sidebar-link {
+            transition: all 0.2s;
+            border-left: 2px solid transparent;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-left-color: var(--accent);
+            padding-left: 1.5rem;
+            color: white;
+        }
+
+        .sidebar-link.active {
+            background: rgba(96, 165, 250, 0.15);
+            border-left-color: var(--accent);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #94a3b8;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+
+        pre:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .search-box {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+
+        .search-box:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+            outline: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-deep);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .prose hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+            margin: 2rem 0;
+        }
+
+        /* Responsive Table Support */
+        .prose table {
+            display: block;
+            max-width: 100%;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Flexbox Fix for long code blocks */
+        main {
+            min-width: 0;
+        }
+
+        body {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col lg:flex-row min-h-screen">
+
+    <!-- Mobile Header (Only visible on small screens) -->
+    <header class="lg:hidden glass sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
+        <div class="flex flex-col">
+            <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                jlFriCAS</h1>
+            <p class="text-slate-500 text-[10px] uppercase tracking-widest font-semibold">Docs</p>
+        </div>
+        <a href="#" class="text-blue-400 text-sm font-semibold hover:text-blue-300 transition-colors">Home</a>
+    </header>
+
+    <!-- Sidebar (Hidden on mobile, visible on lg screens) -->
+    <aside class="glass w-80 fixed inset-y-0 left-0 z-50 hidden lg:flex flex-col overflow-hidden">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                jlFriCAS</h1>
+            <p class="text-slate-500 text-xs mt-1 uppercase tracking-widest font-semibold">Documentation Portal</p>
+        </div>
+
+        <div class="px-6 mb-4">
+            <input type="text" id="search" placeholder="Search constructors..."
+                class="search-box w-full px-4 py-2 rounded-lg text-sm text-slate-300">
+        </div>
+
+        <nav id="sidebar-nav" class="flex-1 overflow-y-auto px-2 pb-8">
+            <!-- Navigation items will be injected here -->
+            <div class="flex items-center justify-center h-20 text-slate-500">
+                <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+                Loading...
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content (Adjusted margins for mobile) -->
+    <main class="flex-1 relative min-h-screen lg:ml-80">
+        <div id="content-container" class="max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-16 prose">
+            <!-- Documentation content will be injected here -->
+            <div class="animate-pulse space-y-8">
+                <div class="h-12 bg-slate-800 rounded-lg w-3/4"></div>
+                <div class="space-y-3">
+                    <div class="h-4 bg-slate-800 rounded w-full"></div>
+                    <div class="h-4 bg-slate-800 rounded w-full"></div>
+                    <div class="h-4 bg-slate-800 rounded w-5/6"></div>
+                </div>
+                <div class="h-64 bg-slate-800 rounded-xl w-full"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer
+            class="max-w-4xl mx-auto px-6 md:px-12 py-8 border-t border-slate-800 text-slate-500 text-sm flex flex-col md:flex-row justify-between gap-4">
+            <span>jlFriCAS Project Documentation</span>
+            <a href="https://github.com/gvanuxem/jlfricas" target="_blank" class="hover:text-sky-400">GitHub
+                Repository</a>
+        </footer>
+    </main>
+
+    <script>
+        // --- Documentation Engine ---
+        const GITHUB_BASE = "https://github.com/gvanuxem/jlfricas/blob/master/";
+        const BASE_PATH = ""; // Path to the docs folder relative to index.html
+
+        marked.setOptions({
+            highlight: function (code, lang) {
+                if (Prism.languages[lang]) {
+                    return Prism.highlight(code, Prism.languages[lang], lang);
+                }
+                return code;
+            }
+        });
+
+        async function loadContent(path) {
+            const container = document.getElementById('content-container');
+            container.innerHTML = '<div class="animate-pulse space-y-8"><div class="h-12 bg-slate-800 rounded-lg w-3/4"></div><div class="space-y-3"><div class="h-4 bg-slate-800 rounded w-full"></div><div class="h-4 bg-slate-800 rounded w-full"></div><div class="h-4 bg-slate-800 rounded w-5/6"></div></div></div>';
+
+            try {
+                const response = await fetch(path);
+                if (!response.ok) throw new Error('File not found');
+                let markdown = await response.text();
+
+                // Fix relative links in markdown
+                markdown = markdown.replace(/\[([^\]]+)\]\((?!https?:\/\/)([^)]+)\.md\)/g, (m, text, file) => {
+                    let targetPath = file;
+                    if (path.includes('/')) {
+                        const currentDir = path.substring(0, path.lastIndexOf('/'));
+                        if (targetPath.startsWith('../')) {
+                            targetPath = targetPath.substring(3);
+                        } else {
+                            targetPath = currentDir + '/' + targetPath;
+                        }
+                    }
+                    return `[${text}](#${targetPath})`;
+                });
+
+                container.innerHTML = marked.parse(markdown);
+
+                // Add copy buttons to pre blocks
+                container.querySelectorAll('pre').forEach(block => {
+                    const btn = document.createElement('button');
+                    btn.className = 'copy-btn';
+                    btn.textContent = 'Copy';
+                    btn.onclick = () => {
+                        const code = block.querySelector('code').innerText;
+                        navigator.clipboard.writeText(code);
+                        btn.textContent = 'Copied!';
+                        setTimeout(() => btn.textContent = 'Copy', 2000);
+                    };
+                    block.appendChild(btn);
+                });
+
+                Prism.highlightAllUnder(container);
+                window.scrollTo(0, 0);
+            } catch (err) {
+                container.innerHTML = `<div class="bg-red-900/20 border border-red-500/50 p-8 rounded-xl text-red-200">
+                    <h2 class="text-xl font-bold mb-2">Error Loading Content</h2>
+                    <p>${err.message}</p>
+                    <a href="#" class="mt-4 inline-block text-blue-400 hover:underline">Back to Home</a>
+                </div>`;
+            }
+        }
+
+        async function init() {
+            // Load sidebar from index.md
+            const nav = document.getElementById('sidebar-nav');
+            const searchInput = document.getElementById('search');
+
+            try {
+                const response = await fetch('index.md');
+                const markdown = await response.text();
+
+                // Extract constructor links
+                const links = [];
+                const linkRegex = /\[([^\]]+)\]\(constructors\/([^\)]+)\)/g;
+                let match;
+                while ((match = linkRegex.exec(markdown)) !== null) {
+                    links.push({ text: match[1], file: match[2].replace('.md', '') });
+                }
+
+                function renderSidebar(filter = '') {
+                    const filteredLinks = links.filter(l => l.text.toLowerCase().includes(filter.toLowerCase()));
+
+                    // Group links by prefix (optional, but good for large lists)
+                    nav.innerHTML = '<a href="#" class="sidebar-link block px-6 py-2 rounded-md text-sm text-slate-400">Introduction</a>';
+
+                    const groups = {};
+                    filteredLinks.forEach(link => {
+                        const prefix = link.text.substring(0, 2).toUpperCase();
+                        if (!groups[prefix]) groups[prefix] = [];
+                        groups[prefix].push(link);
+                    });
+
+                    Object.entries(groups).sort().forEach(([prefix, groupLinks]) => {
+                        const groupHeader = document.createElement('div');
+                        groupHeader.className = 'px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-widest';
+                        groupHeader.textContent = prefix;
+                        nav.appendChild(groupHeader);
+
+                        groupLinks.forEach(link => {
+                            const a = document.createElement('a');
+                            a.href = `#constructors/${link.file}`;
+                            a.className = 'sidebar-link block px-6 py-2 rounded-md text-sm text-slate-400';
+                            a.textContent = link.text;
+                            a.id = `nav-${link.file}`;
+                            nav.appendChild(a);
+                        });
+                    });
+
+                    updateActiveLink();
+                }
+
+                searchInput.oninput = (e) => renderSidebar(e.target.value);
+                renderSidebar();
+
+                // Routing
+                const handleRoute = () => {
+                    const hash = window.location.hash.substring(1);
+                    if (hash) {
+                        loadContent(`${hash}.md`);
+                    } else {
+                        loadContent('index.md');
+                    }
+                    updateActiveLink();
+                };
+
+                window.onhashchange = handleRoute;
+                handleRoute();
+
+            } catch (err) {
+                nav.innerHTML = `<div class="p-6 text-red-500 text-xs">Failed to load sidebar.</div>`;
+            }
+        }
+
+        function updateActiveLink() {
+            const hash = window.location.hash.substring(1).replace('constructors/', '');
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+            const active = document.getElementById(`nav-${hash}`);
+            if (active) active.classList.add('active');
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

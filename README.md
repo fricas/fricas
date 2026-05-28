@@ -11,13 +11,13 @@ system (CAS).
 
 In this work-in-progress repository, a C wrapper using libjulia is embedded in [FriCAS](https://fricas.github.io/) to call [Julia](https://julialang.org) optimized numerical routines such as **BLAS** and **LAPACK**, and more generally to manipulate Julia objects from within FriCAS.
 
-The build process supports Clozure CL (x86-64) and SBCL (x86-64 and arm64). For SBCL, only Julia 1.10.0, Julia 1.11.* and higher are supported, see [Caveats](#caveat-sbcl). It must not be considered production-ready. An overview of what is added to FriCAS is available [here](https://gvanuxem.github.io/jlfricas.documentation/search.html?q=Julia). [Binary snapshots](https://github.com/gvanuxem/jlfricas/releases) are available.
+The build process supports Clozure CL (x86-64) and SBCL (x86-64 and arm64). For SBCL, only Julia 1.10.0, Julia 1.11.* and higher are supported, see [Caveats](#caveat-sbcl). It must not be considered production-ready. An overview of what is added to FriCAS is available [here](https://gvanuxem.github.io/jlfricas/). [Binary snapshots](https://github.com/gvanuxem/jlfricas/releases) are available.
 
-A [MCP server](https://github.com/gvanuxem/jlfricas/blob/master/doc/MCP_SERVER_DESIGN.md) is also available in jlFriCAS on Linux, supporting both SBCL and Clozure CL. [Here](https://github.com/gvanuxem/jlfricas/blob/master/examples/Solving_Polynomial.md) is an example of a session. At configure time use the option <code>--enable-mcp</code>
+A [MCP server](https://github.com/gvanuxem/jlfricas/blob/master/docs/MCP_SERVER_DESIGN.md) is also available in jlFriCAS on Linux, supporting both SBCL and Clozure CL. [Here](https://github.com/gvanuxem/jlfricas/blob/master/examples/Solving_Polynomial.md) is an example of a session. At configure time use the option <code>--enable-mcp</code>
 
 The MCP server is also used by [fricas-vscode](https://github.com/gvanuxem/fricas-vscode) (the Julia interface is not necessary nor the use of a LLM). The Yason Common Lisp library is necessary. For Clozure CL, install it with quicklisp for example. With SBCL on Debian based systems, `sudo apt install cl-yason` should do the trick, it will be used automatically through ASDF.
 
-[A general source of information](https://gvanuxem.github.io/jlfricas.documentation/) can also be found in HTML format.
+A full source of information can also be found in [HTML format](https://gvanuxem.github.io/jlfricas.documentation/).
 Take into account that this is absolutely not the official documentation even though it is highly based on the official FriCAS web site which can be built from the FriCAS source code (thanks to Ralf Hemmecke and Kurt Pagani for their amazing work).
 
 
@@ -63,6 +63,7 @@ To build FriCAS with Julia support, the <code>julia</code> executable needs to b
   - [Latexify](https://github.com/korsbo/Latexify.jl)
   - [LaTeXStrings](https://github.com/JuliaStrings/LaTeXStrings.jl)
   - [DataFrames](https://dataframes.juliadata.org/stable/) and [Statistics](https://juliastats.org/Statistics.jl/dev/) (needed for tests)
+  - [RCall](https://juliainterop.github.io/RCall.jl/stable/) (install packages in Julia, example R"install.packages('boot')")
 
 As of now with Clozure CL [queues](https://github.com/oconnore/queues) is required. Use installed [quicklisp](https://www.quicklisp.org/beta/) with `queues` installed and at configure time use the `--with-quicklisp` option, see the `quicklisp` documentation for how to install it. Another possibility, easier, is to use [roswell](https://roswell.github.io/) with added `ccl-bin` and `queues`.
 

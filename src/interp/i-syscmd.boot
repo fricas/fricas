@@ -105,7 +105,7 @@ $noParseCommands := ['boot, 'copyright, 'credits, 'fin, 'lisp, 'piles,
 
 $tokenCommands := ['abbreviations, 'cd, 'clear, 'close, 'compile,
     'depends, 'display, 'edit, 'frame, 'help, 'history, 'input, _
-    'library, 'ltrace, 'nopiles, 'read, 'set, 'spool, 'undo,
+    'library, 'ltrace, 'nopiles, 'read, 'set, 'spool, 'undo, _
     'what, 'with]
 
 --% Top level system command
@@ -3012,7 +3012,7 @@ ltrace l == trace l
 
 --% )mcp
 
--- Internal function
+-- Internal functions
 mcp() == mcpStatus()
 
 -- TODO: rework
