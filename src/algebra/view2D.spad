@@ -284,12 +284,19 @@ GraphImage () : Exports == Implementation where
         error "You are trying to draw over an existing graph"
       transform := coord(graf.optionsField, cartesian$COORDSYS
                         )$DrawOptionFunctions0
-      graf.llPoints := putColorInfo(graf.llPoints, graf.pointColors)
       if empty?(ranges graf) then  -- figure out best ranges for points
         graf.rangesField := calcRanges(graf.llPoints)  --::V SEG SF
       graf.rangesField := roundRanges(graf.rangesField)
       if empty?(units graf) then  -- figure out best ranges for points
         graf.unitsField := figureUnits(graf.rangesField)  --::V SEG SF
+      pll : LLP := []
+      for aList in graf.llPoints repeat
+          pl : L(P) := []
+          for p in aList repeat
+              pl := cons(transform(p), pl)
+          pll := cons(reverse!(pl), pll)
+      pll := reverse!(pll)
+      pll := putColorInfo(pll, graf.pointColors)
       say(
         "   Graph data being transmitted to the viewport manager..."
                   )$DisplayPackage
@@ -303,14 +310,13 @@ GraphImage () : Exports == Implementation where
       sendSF(VIEW, first (graf.unitsField))
       sendSF(VIEW, second (graf.unitsField))
       sendI(VIEW, s)    -- how many lists of points are being sent
-      for aList in graf.llPoints for pColor in graf.pointColors
+      for aList in pll for pColor in graf.pointColors
             for lColor in graf.lineColors for s in graf.pointSizes repeat
         sendI(VIEW, #aList)   -- how many points in this list
         for p in aList repeat
-          aPoint := transform p
-          sendSF(VIEW, xCoord aPoint)
-          sendSF(VIEW, yCoord aPoint)
-          sendSF(VIEW, hue(p)$PP)  -- ?use aPoint as well...?
+          sendSF(VIEW, xCoord(p))
+          sendSF(VIEW, yCoord(p))
+          sendSF(VIEW, hue(p)$PP)
           sendSF(VIEW, shade(p)$PP)
         hueShade := hue hue pColor + shade pColor * numberOfHues()
         sendI(VIEW, hueShade)
@@ -356,13 +362,7 @@ GraphImage () : Exports == Implementation where
     makeGraphImage(llp, lpc, llc, lps, opts) ==
       graf := graph(ranges(opts, []))
       graf.optionsField := opts
-      graf := plotLists(graf, llp, lpc, llc, lps)
-      transform := coord(graf.optionsField, cartesian$COORDSYS
-                        )$DrawOptionFunctions0
-      for aList in graf.llPoints repeat
-        for p in aList repeat
-          aPoint := transform p
-      graf
+      plotLists(graf, llp, lpc, llc, lps)
 
     component (graf : %, ListOfPoints : L(P), PointColor : PAL,
                LineColor : PAL, PointSize : PI) ==
