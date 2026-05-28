@@ -11,5 +11,118 @@
                 "FRICAS_ALGEBRA_DIR": "/usr/local/lib/fricas/target/x86_64-linux-gnu/src/algebra/"
             }
         }
+    },
+    "_comments": {
+        "overview": "jlFriCAS MCP server (protocol version 2024-11-05). Supports stdio and socket transports.",
+        "transports": {
+            "stdio": {
+                "description": "Standard MCP stdio transport (newline-delimited JSON). Use --mcp flag.",
+                "args": [
+                    "-nosman",
+                    "--mcp"
+                ]
+            },
+            "lsp": {
+                "description": "LSP-style Content-Length framing over stdio. Set FRICAS_LANGUAGESERVER=1 or add --lsp flag.",
+                "args": [
+                    "-nosman",
+                    "--mcp",
+                    "--lsp"
+                ],
+                "env_alt": {
+                    "FRICAS_LANGUAGESERVER": "1"
+                }
+            },
+            "socket_tcp": {
+                "description": "TCP socket transport (Content-Length framing, LSP-compatible). Use --mcp-port <port>.",
+                "args": [
+                    "-nosman",
+                    "--mcp-port",
+                    "7070"
+                ]
+            },
+            "socket_unix": {
+                "description": "Unix domain socket transport. Pass a file path to --mcp-port.",
+                "args": [
+                    "-nosman",
+                    "--mcp-port",
+                    "/tmp/fricas-mcp.sock"
+                ]
+            }
+        },
+        "tools": {
+            "evaluate": {
+                "description": "Evaluate a FriCAS/SPAD mathematical expression.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "expression": {
+                            "type": "string",
+                            "description": "The mathematical expression to evaluate. Multi-line input is split into individual statements and evaluated in sequence."
+                        },
+                        "format": {
+                            "type": "string",
+                            "description": "Output format: 'text' (default) or 'markdown' (wraps output in a ```fricas code block).",
+                            "enum": [
+                                "text",
+                                "markdown"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "expression"
+                    ]
+                }
+            },
+            "get-documentation": {
+                "description": "Get documentation for a FriCAS constructor (Domain, Category, Package) or operation via SpadDoc.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the constructor or operation (e.g., 'Integer', 'atan', 'JLFloat64')."
+                        },
+                        "type": {
+                            "type": "string",
+                            "description": "The type of the entity.",
+                            "enum": [
+                                "constructor",
+                                "operation"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "type"
+                    ]
+                }
+            },
+            "list-constructors": {
+                "description": "List FriCAS constructors (categories, domains, packages) matching a pattern via SpadDoc.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "pattern": {
+                            "type": "string",
+                            "description": "The pattern to search for (e.g., 'AbelianMonoid' or 'Int*' or 'JL*')."
+                        }
+                    },
+                    "required": [
+                        "pattern"
+                    ]
+                }
+            }
+        },
+        "resources": {
+            "description": "Plot outputs are exposed as resources with URIs of the form plot://N (1-indexed, most recent last). MIME types include 'image/svg+xml' (text) and 'image/png' (blob).",
+            "example_uri": "plot://1"
+        },
+        "notifications": {
+            "display": "Sent by the server when a plot or display output is produced. Payload: { kind: <mimeType>, data: <content> }.",
+            "repl/starteval": "Sent before evaluating an expression.",
+            "repl/finisheval": "Sent after evaluating an expression."
+        },
+        "installation": "Copy this file to ~/.gemini/config/mcp_config.json (or the equivalent MCP client config location). Adjust the 'command' and 'env' paths to match your FriCAS installation."
     }
 }
