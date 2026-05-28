@@ -579,12 +579,12 @@ putFlag(flag,value) ==
 
 get(x, prop, e) == get1(x, prop, e)
 
-get0(x,prop,e) ==
+get0(x, prop, e) ==
   not(atom(x)) => get0(QCAR(x), prop, e)
   (pl := getProplist(x, e)) => QLASSQ(prop, pl)
   nil
 
-get1(x,prop,e) ==
+get1(x, prop, e) ==
     --this is the old get
   negHash := nil
   null atom x => get(QCAR x,prop,e)
@@ -601,7 +601,7 @@ get1(x,prop,e) ==
     SAY ["get1", x, prop, ress and true]
   ress
 
-get2(x,prop,e) ==
+get2(x, prop, e) ==
   prop="modemap" and constructor? x =>
     (u := getConstructorModemap(x)) => [u]
     nil
@@ -621,10 +621,9 @@ rempropI(x,prop) ==
     $InteractiveFrame:= remprop(id,prop,$InteractiveFrame)
 
 remprop(x,prop,e) ==
-  u:= assoc(prop,pl:= getProplist(x,e)) =>
-    e:= addBinding(x,DELASC(first u,pl),e)
+    u := assoc(prop, pl := getProplist(x, e)) =>
+        e := addBinding(x, DELLASOS(first(u), pl), e)
     e
-  e
 
 fastSearchCurrentEnv(x,currentEnv) ==
   u := QLASSQ(x, first currentEnv) => u

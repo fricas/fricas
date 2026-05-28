@@ -42,17 +42,6 @@ compAtomWithModemap(x, m, e, v) ==
         compMapCond(x, md, [], fnsel, e) =>
             res := trans_delta(genDeltaEntry([x, :map], e), target, e)
         v1 := cons(map, v1)
-    res => res
-    v1 := NREVERSE(v1)
-    -- now try inexact
-    while not res for map in v1 repeat
-        mr := resolve(target, m)
-        not(mr) => "iterate"
-        not coerceable(mr, m, e) => "iterate"
-        [[md, mr], :fnsel] := map
-        if compMapCond(x, md, [], fnsel, e) then
-            res := trans_delta(genDeltaEntry([x, :map], e), target, e)
-            res := convert(res, m)
     res
 
 trans_delta(fn, target, e) ==

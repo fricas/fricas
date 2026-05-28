@@ -47,7 +47,7 @@ DROP(n, l) ==
 
 TAKE(n, l) ==
     n >= 0 => [x for x in l for i in 1..n]
-    DROP(#l + n, l)
+    BREAK()
 
 displaySemanticErrors() ==
   n:= #($semanticErrorStack:= REMDUP $semanticErrorStack)
@@ -114,14 +114,8 @@ unErrorRef s == unStackWarning ['%b,s,'%d,'"has no value"]
 --% ENVIRONMENT FUNCTIONS
 
 consProplistOf(var,proplist,prop,val) ==
-  semchkProplist(var, proplist, prop)
-  $InteractiveMode and (u:= assoc(prop,proplist)) =>
-    RPLACD(u,val)
-    proplist
-  [[prop,:val],:proplist]
-
-warnLiteral x ==
-    stackWarning(['%b,x,'%d, '"is BOTH a variable and a literal"])
+    $InteractiveMode => BREAK()
+    [[prop,:val],:proplist]
 
 intersectionEnvironment(e,e') ==
   ce:= makeCommonEnvironment(e,e')
