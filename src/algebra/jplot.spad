@@ -13,12 +13,12 @@ JLPlotFunctions() : Exports == Implementation where
   JF64VEC ==> JLFloat64Vector
   JF64MAT ==> JLFloat64Matrix
   Exports ==> with
-    jlSetBackend! : String -> Void
-    ++ jlSetBackend!(backend) sets the backend for plotting.
-    ++ The available backends are "Aqua", "Cairo", "GKS", "gr", "Motif",
-    ++ "GTK", "OpenGL", "PostScript", "SVG", "Wand", "X11".
-    jlClose : Void
-    ++ jlClose() closes all plot windows.
+    jlSetPlotsBackend! : String -> Void
+    ++ jlSetPlotsBackend!(backend) sets the backend for plotting.
+    ++ The available backends are "gr", gaston", "plotly", "plotlyjs",
+    ++ "pythonplot", "pgfplotsx", "unicodeplots" and "inspectdr".
+    jlClosePlots : Void
+    ++ jlClosePlots() closes all plot windows.
     jlRange : SEG -> JLFloat64Vector
     ++ jlRange(range) is a utility function that returns a JLFloat64Vector
     ++ with 250 points from \spad{low(range)} to \spad{high(range)}.
@@ -186,8 +186,8 @@ JLPlotFunctions() : Exports == Implementation where
           jsym("green")$JLSymbol)$JLStringUtilities
     --if jlUsing "Gaston" then
     --  jlEvalString("gaston()")
-    if jlUsing "UnicodePlots" then
-      jlEvalString("unicodeplots()")
+    --if jlUsing "UnicodePlots" then
+    --  jlEvalString("unicodeplots()")
     --if jlUsing("Mackie") and jlUsing("WGLMakie") then
     --  jlEvalString("WGLMakie.activate!()")
     -- jlEvalString("plotlyjs()")
@@ -195,8 +195,8 @@ JLPlotFunctions() : Exports == Implementation where
     -- local
     display() : Void == jlEvalString("gui()")
 
-    jlClose() == jlEvalString("closeall()")
-    jlSetBackend!(backend) == jlEvalString(concat([backend, "()"]))
+    jlClosePlots() == jlEvalString("closeall()")
+    jlSetPlotsBackend!(backend) == jlEvalString(concat([backend, "()"]))
     jlSavePlot(file) == jlEvalString(concat(["savefig(_"",file,"_")"]))
 
     jlRange(seg)  ==
