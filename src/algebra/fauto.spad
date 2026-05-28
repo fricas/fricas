@@ -1,0 +1,443 @@
+)abbrev domain FAUTON MatchingAutomatonNode
+++ Author: Waldek Hebisch
+++ Description: This domains provides node of nondetermistic
+++ finite automaton.
+MatchingAutomatonNode() : Exports == Implementation where
+    U ==> Union(%, "none")
+    Exports ==> with
+        wild? : % -> Boolean
+          ++ wild?(n) is true if and olny if n is a wildcard node,
+          ++ that is matches all characters.
+        char : % -> Character
+          ++ char(n) returns character c such that n matches c.
+        next : (%, Character) -> U
+          ++ next(n, c) returns next node of n if n matches c,
+          ++ otherwise returns "none".
+        next : % -> U
+          ++ next(n) returns the next node of n.
+        alt : % -> U
+          ++ alt(n) returns alternative node to n.
+        gen : % -> Integer
+          ++ gen(n) retrurns generation number of n.
+        set_gen! : (%, Integer) -> Integer
+          ++ set_gen!(n, k) sets generation number of n to k and
+          ++ returns previous generation of n.
+          ++ Generation number is needed by the matching algorithm.
+        new : (Boolean, Character, Boolean) -> %
+          ++ new(wild?, char, accepting) creates new node n.  If wild?
+          ++ is true the n is a wildcared node, that is matches any
+          ++ character, otherewise n maches only char.  n is accepting
+          ++ node if and only accepting is true.
+          ++ Next and alt fields of n are "none".
+        set_next! : (%, %) -> Void
+          ++ set_next!(n, n1) sets next field of n to n1.
+        set_alt! : (%, %) -> Void
+          ++ set_alt(n, n1) sets alt field of n to n1.
+        accepting? : % -> Boolean
+          ++ accepting?(n) returns true if and only if n is an
+          ++ accepting node.
+
+    Implementation == add
+
+        n_Rec := Record(wild : Boolean, char : Character, next : U,
+                        alt : U,   gen : Integer, accepting : Boolean)
+
+        new(wild? : Boolean, char : Character, accepting : Boolean) : % ==
+            r := [wild?, char, "none"::U, "none"::U, 0, accepting]$n_Rec
+            r pretend %
+
+        wild?(n : %) : Boolean ==
+            r := n pretend n_Rec
+            r.wild
+
+        accepting?(n : %) : Boolean ==
+            r := n pretend n_Rec
+            r.accepting
+
+        char(n : %) : Character ==
+            r := n pretend n_Rec
+            r.char
+
+        next(n : %) : U ==
+            r := n pretend n_Rec
+            r.next
+
+        next(n : %, c : Character) : U ==
+            r := n pretend n_Rec
+            r.wild or c = r.char => r.next
+            "none"
+
+        alt(n : %) : U ==
+            r := n pretend n_Rec
+            r.alt
+
+        gen(n : %) : Integer ==
+            r := n pretend n_Rec
+            r.gen
+
+        set_gen!(n : %, k : Integer) : Integer ==
+            r := n pretend n_Rec
+            res := r.gen
+            r.gen := k
+            res
+
+        set_next!(n : %, n1 : %) : Void ==
+            r := n pretend n_Rec
+            r.next := n1::U
+
+        set_alt!(n : %, n1 : %) : Void ==
+            r := n pretend n_Rec
+            r.alt := n1::U
+
+)abbrev domain BMATAUT BasicMatchingAutomaton
+++ Author: Waldek Hebisch
+++ References:
+++  K. Thompson, Regular expression search algorithm,
+++  Communications of the ACM 11(6) (June 1968), pp. 419–422.
+++ Description: This domain implements nondeterministic finite
+++ automaton using Thompson algorithm for matching.  Currently
+++ only supports creation of very simple automaton, but
+++ representation and matching algorithm supports general
+++ nondeterministic finite automaton.
+BasicMatchingAutomaton : with
+    do_match : (%, String) -> Boolean
+      ++ do_match(a, s) returns true if and only if a matches s.
+    make_automaton : (List(String), Boolean, Boolean) -> %
+      ++ make_automaton(ls, pre_wild, post_wild) builds automaton
+      ++ matching pattern consisting of alternating strings and
+      ++ stars, where strings are taken from ls, star match any
+      ++ sequence of character.  If pre_wild it true, then there
+      ++ is star at the start of the pattern, otherwise pattern
+      ++ starts with the first string of ls.  If post_wild it true,
+      ++ then there is star at the end of the pattern, otherwise
+      ++ pattern ends with the last string of ls.
+  == add
+
+    Rep := Record(start : MatchingAutomatonNode,
+                  states : PrimitiveArray(MatchingAutomatonNode))
+
+    do_match1(str : String, s0 : MatchingAutomatonNode) : Boolean ==
+        sl : List(MatchingAutomatonNode) := [s0]
+        nsl : List(MatchingAutomatonNode) := []
+        for i in 1..#str repeat
+            c := qelt(str, i)
+            for s in sl repeat
+                repeat
+                    su := next(s, c)
+                    if su case MatchingAutomatonNode then
+                        s1 := su::MatchingAutomatonNode
+                        if not(set_gen!(s1, i) = i) then
+                            nsl := cons(s1, nsl)
+                    su := alt(s)
+                    su case "none" => break
+                    s := su::MatchingAutomatonNode
+            sl := nsl
+            empty?(sl) => break
+            nsl := []
+        for s in sl repeat
+            if accepting?(s) then
+                return true
+        false
+
+    do_match(a : %, str : String) : Boolean ==
+        ra := a::Rep
+        sv := ra.states
+        for i in 0..(#sv - 1) repeat
+            set_gen!(sv(i), 0)
+        do_match1(str, ra.start)
+
+    make_automaton(pat : List(String), pre_wild : Boolean,
+                   post_wild : Boolean) : % ==
+        empty?(pat) => error "empty pattern"
+        sl := []$List(MatchingAutomatonNode)
+        prev : MatchingAutomatonNode
+        start : MatchingAutomatonNode
+        for p1 in pat repeat
+            if pre_wild then
+                n := new(true, char(" "), false)
+                set_next!(n, n)
+                if empty?(sl) then
+                    start := n
+                else
+                    set_next!(prev, n)
+                sl := cons(n, sl)
+                prev := n
+            empty?(p1) => error "empty string in pattern"
+            c := p1(1)
+            n := new(false, c, false)
+            if empty?(sl) then
+                start := n
+            sl := cons(n, sl)
+            if pre_wild then
+                set_alt!(prev, n)
+            prev := n
+            pre_wild := true
+            for i in 2..#p1 repeat
+                c := p1(i)
+                n := new(false, c, false)
+                sl := cons(n, sl)
+                set_next!(prev, n)
+                prev := n
+        n := new(true, char(" "), true)
+        sl := cons(n, sl)
+        set_next!(prev, n)
+        if post_wild then
+            set_next!(n, n)
+        sv := construct(sl)$PrimitiveArray(MatchingAutomatonNode)
+        ra := [start, sv]$Rep
+
+)abbrev domain LMATAUT LogicalMatchingAutomaton
+++ Author: Waldek Hebisch
+++ Description: This domains provides boolean combination of nondeterministic
+++ finite automatons.
+LogicalMatchingAutomaton : with
+    do_match : (%, String) -> Boolean
+      ++ do_match(a, s) returns true if and only if a matches s.
+    convert : BasicMatchingAutomaton -> %
+      ++ convert(a) creates automaton matching if and only if a matches.
+    make_and : List(%) -> %
+      ++ make_and(la) creates automaton matching if and only if all
+      ++ a in la match.
+    make_or : List(%) -> %
+      ++ make_or(la) creates automaton matching if and only if any
+      ++ a in la matches.
+    make_not : % -> %
+      ++ make_not(a) creates automaton matching if and only a does not
+      ++ match.
+  == add
+
+    o_R ==> Record(op : Symbol, al : List(%))
+
+    U ==> Union(o_R, BasicMatchingAutomaton)
+
+    Rep := U
+
+    convert(ba : BasicMatchingAutomaton) : % == ba
+
+    make_and(al : List(%)) : % ==
+        ['and, al]$o_R::Rep
+
+    make_or(al : List(%)) : % ==
+        ['or, al]$o_R::Rep
+
+    make_not(a : %) : % ==
+        ['not, [a]]$o_R::Rep
+
+    do_match(a : %, s : String) : Boolean ==
+        ar := a::Rep::U
+        ar case BasicMatchingAutomaton =>
+            do_match(ar::BasicMatchingAutomaton,s)
+        r := ar::o_R
+        r.op = 'and =>
+            for a1 in r.al repeat
+                if not(do_match(a1, s)) then return false
+            true
+        r.op = 'or =>
+            for a1 in r.al repeat
+                if do_match(a1, s) then return true
+            false
+        r.op = 'not =>
+            not(#(r.al) = 1) => error "do_match: wrong representation"
+            not(do_match(first(r.al), s))
+        error "do_match: wrong representation"
+
+)abbrev package LREGMAT LogicalRegularExpressionMatch
+++ Author: Waldek Hebisch
+++ Description: This package converts HyperDoc patterns to matching
+++ automaton.
+LogicalRegularExpressionMatch : with
+    parse_pattern : (String, Boolean
+                    ) -> Union(LogicalMatchingAutomaton, "failed")
+      ++ parse_pattern(s, downcase) parses s and returns corresponding
+      ++ matching automaton.  It returns "failed" in case of syntax
+      ++ error.  If downcase is true then all literal characters in
+      ++ s are converted to lower case, otherwise case is retained.
+  == add
+
+    BRI ==> BrowserInformation
+    s_R := Record(str : String, pos : Integer)
+    t_R := Record(sym : Symbol, priority : Integer)
+    U := Union(t_R, String)
+
+    import Character
+
+    char_dot := char(".")
+    char_lpar := char("(")
+    char_rpar := char(")")
+    char_space := char(" ")
+    char_star := char("*")
+    char_under := char("__")
+
+    eos_tok := ['eos, 0]$t_R
+    lpar_tok := ['lpar, 10]$t_R
+    rpar_tok := ['rpar, 1]$t_R
+    star_tok := ["star"::Symbol, 8]$t_R
+    and_tok := ["and"::Symbol, 5]$t_R
+    or_tok := ["or"::Symbol, 4]$t_R
+    not_tok := ["not"::Symbol, 6]$t_R
+
+    get_token(st : s_R) : U ==
+        s := st.str
+        n := #s
+        i := st.pos
+        n < i => eos_tok
+        c := s(i)
+        i := i + 1
+        while not(n < i) and c = char_space repeat
+            c := s(i)
+            i := i + 1
+        c = char_space and n < i =>
+            st.pos := i
+            eos_tok
+        st.pos := i
+        c = char_star => star_tok
+        c = char_lpar => lpar_tok
+        c = char_rpar => rpar_tok
+        has_escape := false
+        cl := [c];
+        if c = char_under then
+            has_escape := true
+            cl := []
+        no_escape := not(has_escape)
+        repeat
+            i > n => break
+            c := s(i)
+            i := i + 1
+            has_escape =>
+                if not(c = char_lpar or c = char_rpar or c = char_space
+                       or c = char_star or c = char_under or empty?(cl)) then
+                    cl := cons(char_under, cl)
+                cl := cons(c, cl)
+                has_escape := false
+            c = char_under =>
+                no_escape := false
+                has_escape := true
+            c = char_lpar or c = char_rpar or c = char_space or c = char_star =>
+                i := i - 1
+                break
+            cl := cons(c, cl)
+        st.pos := i
+        if has_escape then
+            no_escape := false
+            cl := cons(char_under, cl)
+        s1 := construct(reverse!(cl))$String
+        no_escape and s1 = "and" => and_tok
+        no_escape and s1 = "or" => or_tok
+        no_escape and s1 = "not" => not_tok
+        s1
+
+    U2 := Union(t_R, String, LogicalMatchingAutomaton)
+
+    reduce_stack(stack : List(U2), sym : Symbol, priority : Integer
+                ) : Union(List(U2), "failed") ==
+        -- print(message("reduce_stack")$OutputForm)$OutputForm
+        -- print(stack::OutputForm)$OutputForm
+        -- print(sym::OutputForm)$OutputForm
+        -- print(priority::OutputForm)$OutputForm
+        empty?(stack) =>
+            sym = 'not => stack
+            "failed"
+        topu := first(stack)
+        stack := rest(stack)
+        not(topu case LogicalMatchingAutomaton) => return "failed"
+        top := topu::LogicalMatchingAutomaton
+        repeat
+            empty?(stack) =>
+                sym = 'rpar => return "failed"
+                return [top::U2]
+            o_stack := stack
+            opu := first(stack)
+            stack := rest(stack)
+            not(opu case t_R) => return "failed"
+            op := opu::t_R
+            op.sym = 'lpar =>
+                sym = 'rpar => return cons(top::U2, stack)
+                return cons(top::U2, o_stack)
+            op.sym = 'not =>
+                top := make_not(top)
+            op.priority < priority =>
+                return cons(top::U2, o_stack)
+            empty?(stack) => return "failed"
+            t0u := first(stack)
+            stack := rest(stack)
+            not(t0u case LogicalMatchingAutomaton) => return "failed"
+            t0 := t0u::LogicalMatchingAutomaton
+            top :=
+                op.sym = 'and => make_and([t0, top])
+                op.sym = 'or => make_or([t0, top])
+                error "unhandled operator in pattern"
+
+    parse_pattern(s, downcase) ==
+        st := [s, 1]$s_R
+        stack : List(U2) := []
+        string_priority := 9
+        stack_priority := 0
+        repeat
+            t := get_token(st)
+            -- print(t::OutputForm)$OutputForm
+            t case String =>
+                stack_priority := string_priority
+                s1 := t::String
+                if downcase then
+                    s1 := downcase(s1)$BRI
+                stack := cons(s1::U2, stack)
+            tr := t::t_R
+            tr.sym = 'star =>
+                stack_priority := string_priority
+                stack := cons(tr::U2, stack)
+            if stack_priority = string_priority then
+                empty?(stack) => return "failed"
+                top := first(stack)
+                stack := rest(stack)
+                post_wild := not(top case String)
+                if post_wild then
+                    not(top case t_R) => return "failed"
+                    not((top::t_R).sym = 'star) => return "failed"
+                    empty?(stack) => return "failed"
+                    top := first(stack)
+                    stack := rest(stack)
+                sl : List(String) := []
+                need_star := false
+                repeat
+                    need_star =>
+                        not(top case t_R) =>
+                            stack := cons(top, stack)
+                            break
+                        not((top::t_R).sym = 'star) =>
+                            stack := cons(top, stack)
+                            break
+                        need_star := false
+                        empty?(stack) => break
+                        top := first(stack)
+                        stack := rest(stack)
+                        iterate
+                    not(top case String) =>
+                        stack := cons(top, stack)
+                        break
+                    sl := cons(top::String, sl)
+                    need_star := true
+                    empty?(stack) => break
+                    top := first(stack)
+                    stack := rest(stack)
+                empty?(sl) => return "failed"
+                ba := make_automaton(sl, not(need_star), post_wild
+                                    )$BasicMatchingAutomaton
+                stack := cons(convert(ba)$LogicalMatchingAutomaton,
+                              stack)
+                stack_priority := 0
+            tr.sym = 'lpar =>
+                stack := cons(tr::U2, stack)
+            tr.sym = 'eos => break
+            stacku := reduce_stack(stack, tr.sym, tr.priority)
+            stacku case "failed" => return "failed"
+            stack := stacku::List(U2)
+            tr.sym = 'rpar => iterate
+            stack := cons(tr::U2, stacku::List(U2))
+        stacku := reduce_stack(stack, 'eos, 0)
+        stacku case "failed" => "failed"
+        stack := stacku::List(U2)
+        not(#stack = 1) => "failed"
+        top := first(stack)
+        not(top case LogicalMatchingAutomaton) => "failed"
+        top::LogicalMatchingAutomaton
+
