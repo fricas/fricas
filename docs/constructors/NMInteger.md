@@ -1,6 +1,6 @@
 # NMInteger
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L64)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NINT.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -105,13 +105,13 @@ This domain allows the manipulation of Nemo integers using the Nemo Julia packag
 
 ## Operations added
 
-### `abs2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L81)\]
+### `abs2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NINT.spad#L18)\]
 
 abs2(x) returns the squared absolute value of x.
 
 - **Signature**: `(%)->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L91)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NINT.spad#L28)\]
 
 coerce(i) coerces i to a NMInteger.
 
@@ -125,31 +125,31 @@ coerce(ni) to a JLInt64 if possible.
 
 - **Signature**: `(%)->JLInt64`
 
-### `convert` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L89)\]
+### `convert` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NINT.spad#L26)\]
 
 convert(i) converts i.
 
 - **Signature**: `(%)->JLObjBigInt`
 
-### `inverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L97)\]
+### `inverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NINT.spad#L34)\]
 
 inverse(x) returns the inverse of x.
 
 - **Signature**: `(%)->NMFraction(NMInteger)`
 
-### `jninteger` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L99)\]
+### `jninteger` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NINT.spad#L36)\]
 
 jninteger(i) returns i as an NMInteger.
 
 - **Signature**: `(Integer)->%`
 
-### `probablePrime?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L83)\]
+### `probablePrime?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NINT.spad#L20)\]
 
 probablePrime?(n) checks whether or not n is a probable prime using a Baillie-PSW probable prime test with parameters chosen by Selfridge’s method. See https://flintlib.org/.
 
 - **Signature**: `(%)->Boolean`
 
-### `random` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L87)\]
+### `random` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NINT.spad#L24)\]
 
 random(seg) returns a random Nemo integer in the range seg.
 

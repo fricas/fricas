@@ -1,6 +1,6 @@
 # JLMachineType
 
-> **Kind**: Category &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L12)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Category &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMTYPE.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 

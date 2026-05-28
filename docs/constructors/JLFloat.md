@@ -1,6 +1,6 @@
 # JLFloat
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L770)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -131,25 +131,25 @@ JLFloat implements arbitrary precision floating point arithmetic using Julia Big
 
 ## Operations added
 
-### `atan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L882)\]
+### `atan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L113)\]
 
 atan(x, y) computes the inverse tangent of x/y.
 
 - **Signature**: `(%,%)->%`
 
-### `cis` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L871)\]
+### `cis` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L102)\]
 
 cis(x) returns exp(%i*x) computed efficiently.
 
 - **Signature**: `(%)->JLComplexFloat`
 
-### `cispi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L873)\]
+### `cispi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L104)\]
 
 cispi(x) returns cis(%pi*x) computed efficiently.
 
 - **Signature**: `(%)->JLComplexFloat`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L890)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L121)\]
 
 coerce(x) coerces x to JLFLoat.
 
@@ -159,55 +159,55 @@ coerce(x) coerces x to a JLFloat. convenience function.
 
 - **Signature**: `(JLFloat64)->%`
 
-### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L867)\]
+### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L98)\]
 
 exp() returns the JLFloat ℯ (%e or exp(1)).
 
 - **Signature**: `()->%`
 
-### `exp1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L869)\]
+### `exp1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L100)\]
 
 exp1() returns the JLFloat ℯ (%e or exp(1)).
 
 - **Signature**: `()->%`
 
-### `exp10` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L859)\]
+### `exp10` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L90)\]
 
 exp10(x) computes the base 10 exponential of x.
 
 - **Signature**: `(%)->%`
 
-### `exp2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L857)\]
+### `exp2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L88)\]
 
 exp2(x) computes the base 2 exponential of x.
 
 - **Signature**: `(%)->%`
 
-### `expm1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L854)\]
+### `expm1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L85)\]
 
 expm1(x) computes accurately ℯ^x-1. It avoids the loss of precision involved in the direct evaluation of exp(x)-1 for small values of x.
 
 - **Signature**: `(%)->%`
 
-### `exprand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L880)\]
+### `exprand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L111)\]
 
 exprand() returns an exponentially distributed random number.
 
 - **Signature**: `()->%`
 
-### `finite?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L804)\]
+### `finite?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L35)\]
 
 finite?(x) tests whether or not x is finite.
 
 - **Signature**: `(%)->Boolean`
 
-### `integer?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L806)\]
+### `integer?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L37)\]
 
 integer?(x) tests whether or not x is an integer.
 
 - **Signature**: `(%)->Boolean`
 
-### `jfloat` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L895)\]
+### `jfloat` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L126)\]
 
 jfloat(x) returns x as a JFLoat.
 
@@ -235,13 +235,13 @@ sqrt(jfloat(2.0 )^2+7.0^2+9.^2)
 
 - **Signature**: `(String)->%`
 
-### `jinf` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L792)\]
+### `jinf` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L23)\]
 
 jinf() returns the Julia Infinity object.
 
 - **Signature**: `()->%`
 
-### `jlApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L812)\]
+### `jlApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L43)\]
 
 jlApply(func, x) applies the function func with x as parameter.
 
@@ -255,7 +255,7 @@ jlApply(func, x, y, z) applies the function func to x, y and z.
 
 - **Signature**: `(String,%,%,%)->%`
 
-### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L794)\]
+### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L25)\]
 
 jlApprox?(x,y) computes inexact equality comparison with default parameters. Two numbers compare equal if their relative distance or their absolute distance is within tolerance bounds.
 
@@ -265,7 +265,7 @@ jlApprox?(x,y,atol) computes inexact equality comparison with absolute tolerance
 
 - **Signature**: `(%,%,%)->Boolean`
 
-### `jlMPFRApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L819)\]
+### `jlMPFRApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L50)\]
 
 jlMPFRApply(func, x) applies the function pointer func to x. It is expected that the C function modifies the first parameters for the returned value (provided by FriCAS and returned here) and and as a last parameter, the rounding mode. See MPFR. Uses Julia rounding mode, default to nearest. 
 
@@ -351,37 +351,37 @@ jlDlClose(mpfr)
 
 - **Signature**: `(JLObject,%,%,%)->%`
 
-### `jnan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L790)\]
+### `jnan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L21)\]
 
 jnan() returns the Julia NaN (Not a Number) object.
 
 - **Signature**: `()->%`
 
-### `log10` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L865)\]
+### `log10` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L96)\]
 
 log10(x) computes the base 10 logarithm of x.
 
 - **Signature**: `(%)->%`
 
-### `log1p` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L861)\]
+### `log1p` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L92)\]
 
 log1p(x) computes accurately log(1+x)
 
 - **Signature**: `(%)->%`
 
-### `log2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L863)\]
+### `log2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L94)\]
 
 log2(x) computes the base 2 logarithm of x.
 
 - **Signature**: `(%)->%`
 
-### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L878)\]
+### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L109)\]
 
 nrand() returns an normally distributed random number.
 
 - **Signature**: `()->%`
 
-### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L808)\]
+### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L39)\]
 
 precision(x, p) returns a copy of x with precision p.
 
@@ -391,7 +391,7 @@ precision(x) returns the precision of x.
 
 - **Signature**: `(%)->PositiveInteger`
 
-### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L875)\]
+### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JFLOAT.spad#L106)\]
 
 urand01() returns an uniformly distributed random number contained in [0,1].
 

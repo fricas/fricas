@@ -1,12 +1,12 @@
 # NMPadicInteger
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L223)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NPADICZ.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
 Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i), where the a[i] lie in 0, 1,..., (p - 1) using the Nemo Julia package.
 
-**NMPadicInteger(p: Integer) is a domain constructor**  
+**NMPadicInteger(p: NMInteger) is a domain constructor**  
 **Abbreviation for NMPadicInteger is NPADICZ**  
 **This constructor is exposed in this frame.**
 
@@ -83,15 +83,15 @@ Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i)
 
 ## Operations added
 
-### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L304)\]
+### `O`
 
 - **Signature**: `()->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L298)\]
+### `coerce`
 
 - **Signature**: `(NMInteger)->%`
 
-### `jnpadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L300)\]
+### `jnpadic`
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
@@ -100,23 +100,23 @@ Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i)
 
 - **Signature**: `(%)->NMFraction(NMInteger)`
 
-### `liftZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L290)\]
+### `liftZ`
 
 - **Signature**: `(%)->NMInteger`
 
-### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L309)\]
+### `precision`
 
 - **Signature**: `(%)->Integer`
 
-### `prime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L306)\]
+### `prime`
 
 - **Signature**: `(%)->Integer`
 
-### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L292)\]
+### `teichmuller`
 
 - **Signature**: `(%)->%`
 
-### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L288)\]
+### `valuation`
 
 - **Signature**: `(%)->%`
 ---

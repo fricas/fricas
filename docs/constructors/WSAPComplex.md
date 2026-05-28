@@ -1,6 +1,6 @@
 # WSAPComplex
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1427)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L1)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
 
 ## Description
 
@@ -217,13 +217,13 @@ Julia Wolfram Symbolic arbitrary precision complex numbers using Wolfram Symboli
 
 ## Operations added
 
-### `atan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1456)\]
+### `atan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L30)\]
 
 atan(z1,z2) computes the arc tangent of z2/z1.
 
 - **Signature**: `(%,%)->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1465)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L39)\]
 
 coerce(gi) coerces gi. Convenience function.
 
@@ -237,31 +237,31 @@ coerce(int): coerces int. Convenience function.
 
 - **Signature**: `(WSInteger)->%`
 
-### `complex` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1471)\]
+### `complex` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L45)\]
 
 complex(re, im) returns the complex number from real part re and imaginary part im.
 
 - **Signature**: `(WSAPReal(prec),WSAPReal(prec))->%`
 
-### `erf` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1458)\]
+### `erf` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L32)\]
 
 erf(z) computes the error function of z.
 
 - **Signature**: `(%,%)->%`
 
-### `erfc` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1460)\]
+### `erfc` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L34)\]
 
 erfc(z) returns the complementary error function of z.
 
 - **Signature**: `(%)->%`
 
-### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1448)\]
+### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L22)\]
 
 exp() returns the WSAPReal ℯ (%e or exp(1)).
 
 - **Signature**: `()->%`
 
-### `jWSComplex` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1474)\]
+### `jWSComplex` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L48)\]
 
 jWSComplex(re) constructs a WSComplex with real part re.
 
@@ -271,37 +271,37 @@ jWSComplex(re, im) constructs a WSComplex from real part re and imaginary part i
 
 - **Signature**: `(WSAPReal(prec),WSAPReal(prec))->%`
 
-### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1443)\]
+### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L17)\]
 
 jlApprox?(x,y) computes inexact equality comparison with WS default parameters (Equal).
 
 - **Signature**: `(%,%)->Boolean`
 
-### `log10` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1454)\]
+### `log10` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L28)\]
 
 log10(z) computes the logarithm of z in base 10.
 
 - **Signature**: `(%)->%`
 
-### `log2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1452)\]
+### `log2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L26)\]
 
 log2(z) computes the logarithm of z in base 2.
 
 - **Signature**: `(%)->%`
 
-### `sinc` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1450)\]
+### `sinc` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L24)\]
 
 sinc(z) computes the unnormalized sinc of z, sin(z)/z and 0 if z = 0.
 
 - **Signature**: `(%)->%`
 
-### `toString` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1462)\]
+### `toString` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L36)\]
 
 toString(expr, form) returns the string representation of expr with WS language format form.
 
 - **Signature**: `(%,WSExpression)->String`
 
-### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L1441)\]
+### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSAPCPX.spad#L15)\]
 
 urand01() returns a unit square random complex number.
 

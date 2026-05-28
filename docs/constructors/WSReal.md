@@ -1,6 +1,6 @@
 # WSReal
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L502)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L1)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
 
 ## Description
 
@@ -135,13 +135,13 @@ Julia Wolfram Symbolic real numbers using the MathLink Julia package.
 
 ## Operations added
 
-### `atan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L533)\]
+### `atan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L32)\]
 
 atan(x,y) computes the arc tangent of y/x.
 
 - **Signature**: `(%,%)->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L545)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L44)\]
 
 coerce(x) converts x to a WSReal.
 
@@ -166,31 +166,31 @@ coerce(r) coerces r to a JLFloat64.
 
 - **Signature**: `(%)->JLFloat64`
 
-### `erf` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L535)\]
+### `erf` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L34)\]
 
 erf(x) computes the error function of x.
 
 - **Signature**: `(%,%)->%`
 
-### `erfc` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L537)\]
+### `erfc` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L36)\]
 
 erfc(x) computes the complementary error function of x.
 
 - **Signature**: `(%)->%`
 
-### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L525)\]
+### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L24)\]
 
 exp() returns the WSAPReal ℯ (%e or exp(1)).
 
 - **Signature**: `()->%`
 
-### `integerPart` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L520)\]
+### `integerPart` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L19)\]
 
 integerPart(x) returns the integer part of x.
 
 - **Signature**: `(%)->WSInteger`
 
-### `jWSReal` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L561)\]
+### `jWSReal` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L60)\]
 
 jWSReal(z) coerces z to a WSReal.
 
@@ -206,25 +206,25 @@ jWSReal(str) constructs str as a WSReal.
 
 - **Signature**: `(String)->%`
 
-### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L522)\]
+### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L21)\]
 
 jlApprox?(x,y) computes inexact equality comparison with WS default parameters (Equal).
 
 - **Signature**: `(%,%)->Boolean`
 
-### `log10` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L531)\]
+### `log10` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L30)\]
 
 log10(x) computes the logarithm of x in base 10.
 
 - **Signature**: `(%)->%`
 
-### `log2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L529)\]
+### `log2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L28)\]
 
 log2(x) computes the logarithm of x in base 2.
 
 - **Signature**: `(%)->%`
 
-### `rationalApproximation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L539)\]
+### `rationalApproximation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L38)\]
 
 rationalApproximation(x) tries to find a rational approximation of x. Error if x can not be retracted.
 
@@ -234,13 +234,13 @@ rationalApproximation(x, dx) returns a rational approximation of x within tolera
 
 - **Signature**: `(%,%)->WSRational`
 
-### `sinc` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L527)\]
+### `sinc` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L26)\]
 
 sinc(x) computes the unnormalized sinc of x, sin(x)/x.
 
 - **Signature**: `(%)->%`
 
-### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L518)\]
+### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSREAL.spad#L17)\]
 
 urand01() returns a uniformly distributed random number in the range 0..1.
 

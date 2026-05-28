@@ -1,6 +1,6 @@
 # WSVector
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L242)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSVEC.spad#L1)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
 
 ## Description
 
@@ -134,25 +134,25 @@ Julia Wolfram Symbolic vectors using the MathLink Julia package.
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L282)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSVEC.spad#L41)\]
 
 coerce(v) coerces inplace v to a WS matrix.
 
 - **Signature**: `(%)->WSMatrix(E)`
 
-### `cross` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L271)\]
+### `cross` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSVEC.spad#L30)\]
 
 cross(v1,v2) computes the vector cross product of v1 and v2.
 
 - **Signature**: `(%,%)->%`
 
-### `dot` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L267)\]
+### `dot` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSVEC.spad#L26)\]
 
 dot(v1, v2) is the dot product of v1 and v2.
 
 - **Signature**: `(%,%)->E`
 
-### `jWSVector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L284)\]
+### `jWSVector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSVEC.spad#L43)\]
 
 jWSVector(list) constructs list as a WSVector.
 
@@ -162,19 +162,19 @@ jWSVector(str) constructs str as a WSVector. str must be in the WS language (lis
 
 - **Signature**: `(String)->%`
 
-### `norm` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L269)\]
+### `norm` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSVEC.spad#L28)\]
 
 norm(v) computes the norm of the vector v.
 
 - **Signature**: `(%)->E`
 
-### `transpose` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L273)\]
+### `transpose` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSVEC.spad#L32)\]
 
 transpose(v) transposes v. For esoteric purpose, and if you know what you are doing. There is only one type of vector in the Wolfram language. Should not be used, and for normal purpose, does nothing.
 
 - **Signature**: `(%)->%`
 
-### `vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L277)\]
+### `vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSVEC.spad#L36)\]
 
 vector(list) returns list as a vector. Inplace coercion. 
 

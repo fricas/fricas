@@ -1,6 +1,6 @@
 # NMMultivariateLaurentPolynomial
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1425)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 

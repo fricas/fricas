@@ -1,6 +1,6 @@
 # NMCommutativeRing
 
-> **Kind**: Category &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L48)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Category &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NCRING.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 

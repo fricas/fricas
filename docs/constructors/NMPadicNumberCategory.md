@@ -6,7 +6,7 @@
 
 This category provides representations of the p-adic numbers using the Nemo Julia package.
 
-**NMPadicNumberCategory(p: Integer) is a category constructor**  
+**NMPadicNumberCategory(R: NMCommutativeRing) is a category constructor**  
 **Abbreviation for NMPadicNumberCategory is NPADICC**  
 **This constructor is not exposed in this frame.**
 
@@ -74,43 +74,43 @@ This category provides representations of the p-adic numbers using the Nemo Juli
 
 ## Operations added
 
-### `approximate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L35)\]
+### `approximate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L34)\]
 
 approximate(x, n) returns an integer y such that y = x (mod p^n) when n is positive, and 0 otherwise.
 
 - **Signature**: `(%,Integer)->Integer`
 
-### `complete` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L27)\]
+### `complete` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L26)\]
 
 complete(x) forces the computation of all digits.
 
 - **Signature**: `(%)->%`
 
-### `extend` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L25)\]
+### `extend` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L24)\]
 
 extend(x, n) forces the computation of digits up to order n.
 
 - **Signature**: `(%,Integer)->%`
 
-### `moduloP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L31)\]
+### `moduloP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L30)\]
 
 modulo(x) returns a, where x = a + b p.
 
 - **Signature**: `(%)->Integer`
 
-### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L29)\]
+### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L28)\]
 
 modulus() returns the value of p.
 
 - **Signature**: `()->Integer`
 
-### `order` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L22)\]
+### `order` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L21)\]
 
 order(x) returns the exponent of the highest power of p dividing x.
 
 - **Signature**: `(%)->NonNegativeInteger`
 
-### `quotientByP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L33)\]
+### `quotientByP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L32)\]
 
 quotientByP(x) returns b, where x = a + b p.
 

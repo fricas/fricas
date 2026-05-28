@@ -1,6 +1,6 @@
 # JLVectorFunctions2
 
-> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1571)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR2.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -22,7 +22,7 @@ This package provides operations which all take as arguments Julia vectors of el
 
 ## Operations added
 
-### `map` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1599)\]
+### `map` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR2.spad#L29)\]
 
 map(f, v) applies the function f to every element of the vector v producing a new vector containing the values.
 
@@ -32,13 +32,13 @@ map(f, v) applies the function f to every element of the vector v producing a ne
 
 - **Signature**: `((A)->Union(B,"failed"),JLVector(A))->Union(JLVector(B),"failed")`
 
-### `reduce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1596)\]
+### `reduce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR2.spad#L26)\]
 
 reduce(func, vec, ident) combines the elements in vec using the binary function func. Argument ident is returned if vec is empty.
 
 - **Signature**: `((A,B)->B,JLVector(A),B)->B`
 
-### `scan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1591)\]
+### `scan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR2.spad#L21)\]
 
 scan(func, vec, ident) creates a new vector whose elements are the result of applying reduce to the binary function func, increasing initial subsequences of the vector vec, and the element ident.
 

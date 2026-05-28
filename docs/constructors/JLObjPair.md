@@ -1,6 +1,6 @@
 # JLObjPair
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L682)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBPAIR.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -42,13 +42,13 @@ Convenience domain for Julia Pairs, objects that are used within Julia, and not 
 
 ## Operations added
 
-### `first` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L694)\]
+### `first` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBPAIR.spad#L13)\]
 
 first(pair) returns the first element of pair.
 
 - **Signature**: `(%)->F`
 
-### `jpair` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L698)\]
+### `jpair` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBPAIR.spad#L17)\]
 
 jpair(str) returns a Julia Pair from the evaluation of the Julia command str. For example:
 
@@ -59,7 +59,7 @@ jpair("_" a_"=>7")$JLObjPair(JLObject,JLObjInt64)
 
 - **Signature**: `(String)->%`
 
-### `last` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L696)\]
+### `last` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBPAIR.spad#L15)\]
 
 last(pair) returns the last element of pair.
 

@@ -1,12 +1,12 @@
 # NMPadicRational
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L425)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NPADICR.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
 This is a domain for Qp.
 
-**NMPadicRational(p: Integer) is a domain constructor**  
+**NMPadicRational(p: NMInteger) is a domain constructor**  
 **Abbreviation for NMPadicRational is NPADICR**  
 **This constructor is exposed in this frame.**
 
@@ -58,12 +58,12 @@ This is a domain for Qp.
  leftPower : (%, PositiveInteger) -> %                  leftPower : (%, NonNegativeInteger) -> %
  leftRecip : % -> Union(%,"failed")                     liftZ : % -> NMInteger
  log : % -> %                                           missing? : % -> Boolean
- modulus : () -> Integer                                mutable? : % -> Boolean
+ modulus : () -> NMInteger                              mutable? : % -> Boolean
  nothing? : % -> Boolean                                nthRoot : (%, Integer) -> %
  numer : % -> NMExtendedPadicInteger(p,64)              numerator : % -> %
  one? : % -> Boolean                                    opposite? : (%, %) -> Boolean
  plenaryPower : (%, PositiveInteger) -> %               precision : % -> Integer
- prime : % -> Integer                                   prime? : % -> Boolean
+ prime : % -> NMInteger                                 prime? : % -> Boolean
  ?quo? : (%, %) -> %                                    recip : % -> Union(%,"failed")
  ?rem? : (%, %) -> %                                    retract : % -> NMExtendedPadicInteger(p,64)
  rightPower : (%, PositiveInteger) -> %                 rightPower : (%, NonNegativeInteger) -> %
@@ -181,7 +181,7 @@ This is a domain for Qp.
 
 ### `modulus`
 
-- **Signature**: `()->Integer`
+- **Signature**: `()->NMInteger`
 
 ### `precision`
 
@@ -189,7 +189,7 @@ This is a domain for Qp.
 
 ### `prime`
 
-- **Signature**: `(%)->Integer`
+- **Signature**: `(%)->NMInteger`
 
 ### `teichmuller`
 

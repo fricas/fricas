@@ -1,6 +1,6 @@
 # NMIntegerMod
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L559)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NZMOD.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -61,14 +61,14 @@ This domain allows the manipulation of Nemo integer mod n elements using the Nem
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L578)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NZMOD.spad#L20)\]
 
 coerce(i) coerces i.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-### `jnzmod` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L582)\]
+### `jnzmod` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NZMOD.spad#L24)\]
 
 jnzmod(i) returns i as a NMIntegerMod.
 

@@ -1,6 +1,6 @@
 # JLObjBool
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L2)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBBOOL.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -37,19 +37,19 @@ Convenience domain for Julia booleans, objects that are used within Julia, and n
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L13)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBBOOL.spad#L12)\]
 
 coerce(jbool) coerces the Julia boolean value to a FriCAS Boolean.
 
 - **Signature**: `(%)->Boolean`
 
-### `jfalse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L18)\]
+### `jfalse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBBOOL.spad#L17)\]
 
 jfalse() returns the Julia boolean false value.
 
 - **Signature**: `()->%`
 
-### `jtrue` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L16)\]
+### `jtrue` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBBOOL.spad#L15)\]
 
 jtrue() returns the Julia boolean true value.
 

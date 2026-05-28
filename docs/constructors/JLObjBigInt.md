@@ -1,6 +1,6 @@
 # JLObjBigInt
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L332)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBBINT.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -74,7 +74,7 @@ Convenience domain for Julia BigInt, objects that are used within Julia, and not
 
 ## Operations added
 
-### `jbigint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L360)\]
+### `jbigint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBBINT.spad#L29)\]
 
 jbigint(z) converts z to a Julia BigInt.
 
@@ -89,7 +89,7 @@ jbigint "BigInt(1234567890)"
 
 - **Signature**: `(String)->%`
 
-### `jlBICApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L348)\]
+### `jlBICApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBBINT.spad#L17)\]
 
 jlBICApply(func,x) applies the function pointer func to x. It is expected that the C function modifies the first parameters for the returned value (provided by FriCAS and returned here).
 

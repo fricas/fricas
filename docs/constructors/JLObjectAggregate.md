@@ -1,6 +1,6 @@
 # JLObjectAggregate
 
-> **Kind**: Category &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L173)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Category &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBAGG.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -41,7 +41,7 @@ Category for arbitrary Julia aggregates.
 
 ## Operations added
 
-### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L180)\]
+### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBAGG.spad#L8)\]
 
 elt(obj, ind) returns the element at index ind of obj. It can be used, for example, with a Tuple or a Vector.
 
@@ -56,7 +56,7 @@ ret := jlApply("svd", jobject("r and(4,4)")); ret.U
 
 - **Signature**: `(%,JLSymbol)->JLObject`
 
-### `qelt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L184)\]
+### `qelt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBAGG.spad#L12)\]
 
 qelt(obj, ind) returns the element at index ind of obj. It can be used, for example, with a Tuple or a Vector.
 

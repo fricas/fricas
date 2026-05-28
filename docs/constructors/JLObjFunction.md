@@ -1,6 +1,6 @@
 # JLObjFunction
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L868)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBFUNC.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -39,13 +39,13 @@ Convenience domain for Julia Functions, objects that are used within Julia, and 
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L893)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBFUNC.spad#L26)\]
 
 coerce(func) returns a Julia Function from the FriCASfunction func. func must be compatible with 1D format.
 
 - **Signature**: `(FunctionCalled(f))->%`
 
-### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L880)\]
+### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBFUNC.spad#L13)\]
 
 elt(jfunction, arg) returns result of applying the Julia Function jfunction to the argument arg. Use it as: `jfunction(arg)`.
 
@@ -63,7 +63,7 @@ elt(jfunction, args) returns result of applying the Julia Function jfunction to 
 
 - **Signature**: `(%,List(JLObject))->JLObject`
 
-### `jfunction` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L896)\]
+### `jfunction` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBFUNC.spad#L29)\]
 
 jfunction(func) returns a Julia Function from the FriCAS function func. func must be compatible with 1D format. 
 

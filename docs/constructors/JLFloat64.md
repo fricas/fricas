@@ -1,6 +1,6 @@
 # JLFloat64
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L415)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -112,7 +112,7 @@ JLFloat64 implements 64 bits floating point arithmetic using Julia Float64 type.
 
 ## Operations added
 
-### `jf64` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L437)\]
+### `jf64` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64.spad#L23)\]
 
 jf64(x) coerces x to a Julia Float64.
 

@@ -1,12 +1,12 @@
 # NMExtendedPadicInteger
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L43)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L42)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
 This domain implements Zp, the p-adic completion of the integers using the Nemo Julia package.
 
-**NMExtendedPadicInteger(p: Integer,prec: Integer) is a domain constructor**  
+**NMExtendedPadicInteger(p: NMInteger,prec: Integer) is a domain constructor**  
 **Abbreviation for NMExtendedPadicInteger is NXPADICZ**  
 **This constructor is exposed in this frame.**
 
@@ -83,56 +83,56 @@ This domain implements Zp, the p-adic completion of the integers using the Nemo 
 
 ## Operations added
 
-### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L105)\]
+### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L103)\]
 
 O() returns the default Big-oh from domain parameters.
 
 - **Signature**: `()->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L99)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L97)\]
 
 coerce(x) returns x as the p-adic completion of the Nemo Integer.
 
 - **Signature**: `(NMInteger)->%`
 
-### `jnpadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L101)\]
+### `jnpadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L99)\]
 
 jnpadic(x) returns x as the p-adic completion of the Nemo Integer.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-### `liftQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L94)\]
+### `liftQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L92)\]
 
 liftQ(x) lift x to a Nemo Fraction Nemo Integer.
 
 - **Signature**: `(%)->NMFraction(NMInteger)`
 
-### `liftZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L92)\]
+### `liftZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L90)\]
 
 liftZ(x) lift x to a Nemo Integer.
 
 - **Signature**: `(%)->NMInteger`
 
-### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L110)\]
+### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L108)\]
 
 precision(x) returns the precision used for x.
 
 - **Signature**: `(%)->Integer`
 
-### `prime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L107)\]
+### `prime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L105)\]
 
 prime(x) returns the modulus used for x. Convenience function.
 
 - **Signature**: `(%)->Integer`
 
-### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L96)\]
+### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L94)\]
 
 teichmuller(x) computes the Teichmuller lift of x. The valuation of x must be non negative.
 
 - **Signature**: `(%)->%`
 
-### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L90)\]
+### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L88)\]
 
 valuation(x) is the valuation of x.
 

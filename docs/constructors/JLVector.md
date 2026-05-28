@@ -1,6 +1,6 @@
 # JLVector
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1442)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -123,51 +123,51 @@ This domain provides a JLVector type for JLObjectType. Minimum index is 1.
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1480)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR.spad#L39)\]
 
 coerce(x): convenience function.
 
 - **Signature**: `(JLComplexF64Vector)->JLVector(JLObjComplexF64)`
 - **Signature**: `(JLFloat64Vector)->JLVector(JLObjFloat64)`
 
-### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1452)\]
+### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR.spad#L11)\]
 
 elt(v,n) returns the element in v from the index n.
 
 - **Signature**: `(%,PositiveInteger)->R`
 
-### `exprand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1469)\]
+### `exprand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR.spad#L28)\]
 
 exprand(n) returns a JLVector of size n with exponentially distributed random numbers.
 
 - **Signature**: `(PositiveInteger)->JLVector(JLFloat)`
 
-### `jvector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1484)\]
+### `jvector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR.spad#L43)\]
 
 jvector(str) evaluates the string str and returns the generated vector. No checks are done at the FriCAS level.
 
 - **Signature**: `(String)->%`
 
-### `kroneckerProduct` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1459)\]
+### `kroneckerProduct` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR.spad#L18)\]
 
 kroneckerProduct(v1,v2) returns the kronecker product of v1 and v2.
 
 - **Signature**: `(%,%)->%`
 
-### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1466)\]
+### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR.spad#L25)\]
 
 nrand(n) returns a JLVector of size n with normally distributed random numbers.
 
 - **Signature**: `(PositiveInteger)->JLVector(JLComplexFloat)`
 - **Signature**: `(PositiveInteger)->JLVector(JLFloat)`
 
-### `qelt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1454)\]
+### `qelt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR.spad#L13)\]
 
 qelt(v,n) returns the element in v from the index n. No checks are done at the FriCAS level, only at the Julia level
 
 - **Signature**: `(%,PositiveInteger)->R`
 
-### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1463)\]
+### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR.spad#L22)\]
 
 urand01(n) returns a JLVector of size n with uniformly distributed random numbers contained in the unit disk.
 
@@ -177,7 +177,7 @@ urand01(n) returns a JLVector of size n with uniformly distributed random number
 
 - **Signature**: `(PositiveInteger)->JLVector(JLFloat)`
 
-### `vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1450)\]
+### `vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JVECTOR.spad#L9)\]
 
 vector(l) converts the list l to a vector.
 

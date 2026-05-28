@@ -1,6 +1,6 @@
 # JLComplexF64SquareMatrix
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L1039)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF64SMA.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -132,19 +132,19 @@ This domain provides a fast Julia Float64 square matrix type with no bound check
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L1050)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF64SMA.spad#L12)\]
 
 coerce(m) coerces m to JLComplexF64Matrix
 
 - **Signature**: `(%)->JLComplexF64Matrix`
 
-### `qcoerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L1047)\]
+### `qcoerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF64SMA.spad#L9)\]
 
 qcoerce(m) coerces m to JLComplexF64SquareMatrix trusting that m is square.
 
 - **Signature**: `(JLComplexF64Matrix)->%`
 
-### `squareMatrix` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L1052)\]
+### `squareMatrix` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF64SMA.spad#L14)\]
 
 squareMatrix(m) returns a copy of m as a JLComplexF64SquareMatrix.
 

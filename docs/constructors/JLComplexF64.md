@@ -1,6 +1,6 @@
 # JLComplexF64
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L613)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF64.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -116,7 +116,7 @@ JLComplexF64 implements complex 64 bits floating point arithmetic. Only basic ar
 
 ## Operations added
 
-### `jcf64` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L628)\]
+### `jcf64` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF64.spad#L16)\]
 
 jcf64(r) coerces r as a JLComplexF64 with the real part r.
 
@@ -126,7 +126,7 @@ jcf64(r,i) returns a JLComplexF64 with real part r and imaginary part i.
 
 - **Signature**: `(JLFloat64,JLFloat64)->%`
 
-### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L623)\]
+### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF64.spad#L11)\]
 
 jlApprox?(x,y) computes inexact equality comparison with default parameters. Two numbers compare equal if their relative distance or their absolute distance is within tolerance bounds. Applied component-wise.
 

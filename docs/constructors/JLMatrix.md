@@ -1,6 +1,6 @@
 # JLMatrix
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1618)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -147,7 +147,7 @@ This domain provides a generic Julia matrix type stored in Julia with no bound c
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1737)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L120)\]
 
 coerce(x): convenience function.
 
@@ -160,13 +160,13 @@ coerce(m) coerces a copy of m to a Matrix(R).
 
 - **Signature**: `(%)->Matrix(R)`
 
-### `diagonalMatrix` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1735)\]
+### `diagonalMatrix` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L118)\]
 
 diagonalMatrix(v) returns a diagonal matrix with elements of v.
 
 - **Signature**: `(JLVector(R))->%`
 
-### `eigenSpaces` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1651)\]
+### `eigenSpaces` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L34)\]
 
 eigenSpace(mat, side) returns a Julia Dict containing the :left or :right side of the eigen space of mat associated to the eigenvalue key. 
 
@@ -196,7 +196,7 @@ eigenSpaces(jlNMRing()$NAN, a, "left")
 
 - **Signature**: `(String,%,JLSymbol)->JLObjDict`
 
-### `eigenvalues` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1656)\]
+### `eigenvalues` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L39)\]
 
 eigenvalues(mat) returns a Julia vector containing the eigenvalues of mat. 
 
@@ -226,7 +226,7 @@ eigenvalues(jlNMRing()$NCF, a)
 
 - **Signature**: `(String,%)->JLVector(JLObject)`
 
-### `eigenvaluesWithMultiplicities` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1660)\]
+### `eigenvaluesWithMultiplicities` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L43)\]
 
 eigenvaluesWithMultiplicities(mat) returns a Julia vector containing Julia tuples of the eigenvalues and their multiplicities. The tuples are of internal type (%, JLObjInt64). 
 
@@ -256,7 +256,7 @@ eigenvaluesWithMultiplicities(jlNMR ing()$NCF, a)
 
 - **Signature**: `(String,%)->JLVector(JLObjTuple)`
 
-### `exprand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1708)\]
+### `exprand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L91)\]
 
 exprand(m,n) returns a JLMatrix of size (m,n) with exponentially distributed random numbers.
 
@@ -272,7 +272,7 @@ svd := jlApply("svd", mat)
 
 - **Signature**: `(PositiveInteger,PositiveInteger)->JLMatrix(JLFloat)`
 
-### `factorize` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1747)\]
+### `factorize` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L130)\]
 
 factorize(m) factorizes m using a suited matrix factorization for m. For a symmetric matrix the Bunch-Kaufmanfactorization will be chosen whereas for generic matrices, a LU or a QR factorization will be used.
 
@@ -281,43 +281,43 @@ factorize(m) factorizes m using a suited matrix factorization for m. For a symme
 - **Signature**: `(JLMatrix(JLObjFloat32))->JLObject`
 - **Signature**: `(JLMatrix(JLObjFloat64))->JLObject`
 
-### `identity` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1733)\]
+### `identity` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L116)\]
 
 identity(n) returns a n by n identity matrix.
 
 - **Signature**: `(NonNegativeInteger)->%`
 
-### `inverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1727)\]
+### `inverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L110)\]
 
 inverse(m) returns inverse matrix. Throws a Julia error if m is not invertible.
 
 - **Signature**: `(%)->%`
 
-### `invertIfCan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1684)\]
+### `invertIfCan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L67)\]
 
 invertIfCan(m) returns the inverse of the matrix m. If the matrix is not invertible, "failed" is returned. Error: if the matrix is not square.
 
 - **Signature**: `(%)->Union(%,"failed")`
 
-### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1689)\]
+### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L72)\]
 
 jlApprox?(A,B) computes component-wise inexact equality with default parameters. Two numbers compare equal iftheir relative distance or their absolute distance is within tolerance bounds.
 
 - **Signature**: `(%,%)->Boolean`
 
-### `jmatrix` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1763)\]
+### `jmatrix` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L146)\]
 
 jmatrix(str) evaluates the string str and returns the generated matrix. No checks are done at the FriCAS level.
 
 - **Signature**: `(String)->%`
 
-### `new` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1639)\]
+### `new` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L22)\]
 
 new(m, n, x) creates a matrix of size m by n with all elements x.
 
 - **Signature**: `(NonNegativeInteger,NonNegativeInteger,R)->%`
 
-### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1702)\]
+### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L85)\]
 
 nrand(m,n) returns a JLMatrix of size (m,n) with normally distributed random numbers.
 
@@ -357,27 +357,27 @@ cho l.L * chol.U
 
 - **Signature**: `(PositiveInteger,PositiveInteger)->JLMatrix(JLFloat)`
 
-### `radicalEigenvalues` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1643)\]
+### `radicalEigenvalues` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L26)\]
 
 radicalEigenvalues(mat) returns a Julia vector containing the eigenvalues of mat.
 
 - **Signature**: `(%)->JLVector(NMAlgebraicNumber)`
 - **Signature**: `(%)->JLVector(NMAlgebraicNumber)`
 
-### `radicalEigenvaluesWithMultiplicities` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1646)\]
+### `radicalEigenvaluesWithMultiplicities` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L29)\]
 
 radicalEigenvaluesWithMultiplicities(mat) returns a Julia vector containing Julia tuples of the eigenvalues and their multiplicities. The tuples are of internal type (NMAlgebraicNumber, JLObjInt64).
 
 - **Signature**: `(%)->JLVector(JLObjTuple)`
 - **Signature**: `(%)->JLVector(JLObjTuple)`
 
-### `trace` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1730)\]
+### `trace` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L113)\]
 
 trace(m) returns the trace of square matrix m. Julia error if m is not square.
 
 - **Signature**: `(%)->R`
 
-### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1696)\]
+### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMATRIX.spad#L79)\]
 
 urand01(m,n) returns a JLMatrix of size (m,n) with uniformly distributed random number contained in the unit disk. 
 

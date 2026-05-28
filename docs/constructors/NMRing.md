@@ -1,6 +1,6 @@
 # NMRing
 
-> **Kind**: Category &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L13)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Category &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NRING.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -52,25 +52,25 @@ Parent category of Nemo ring domains.
 
 ## Operations added
 
-### `equal?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L24)\]
+### `equal?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NRING.spad#L12)\]
 
 equal?(x,y) checks whether or not x and y are equal.
 
 - **Signature**: `(%,%)->Boolean`
 
-### `exact?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L20)\]
+### `exact?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NRING.spad#L8)\]
 
 exact?(x) checks whether or not x is exact.
 
 - **Signature**: `(%)->Boolean`
 
-### `exactDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L26)\]
+### `exactDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NRING.spad#L14)\]
 
 exactDivide(x,y) returns the exact division of x by y. Throws a Julia error if it is not an exact division.
 
 - **Signature**: `(%,%)->%`
 
-### `jlNMRing` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L30)\]
+### `jlNMRing` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NRING.spad#L18)\]
 
 jlNMRing(x) returns the FriCAS Nemo ring type of x used in Julia. For example:
 
@@ -81,7 +81,7 @@ jlNMRing()$NMPadicInt eger(17)
 
 - **Signature**: `()->String`
 
-### `unit?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L22)\]
+### `unit?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NRING.spad#L10)\]
 
 unit?(x) checks whether or not x is a unit, i.e. invertible.
 

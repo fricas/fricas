@@ -1,6 +1,6 @@
 # JLMachineFloat
 
-> **Kind**: Category &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L38)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Category &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -98,49 +98,49 @@ Parent category of Julia machine float domains implemented in Common Lisp.
 
 ## Operations added
 
-### `atan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L89)\]
+### `atan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L52)\]
 
 atan(x, y) computes the inverse tangent of x/y.
 
 - **Signature**: `(%,%)->%`
 
-### `catalan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L95)\]
+### `catalan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L58)\]
 
 catalan() returns the Catalan's constant.
 
 - **Signature**: `()->%`
 
-### `eulerGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L93)\]
+### `eulerGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L56)\]
 
 eulerGamma() returns the Euler's constant gamma (γ).
 
 - **Signature**: `()->%`
 
-### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L91)\]
+### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L54)\]
 
 exp() returns the JLFloat64 ℯ (%e or exp(1)).
 
 - **Signature**: `()->%`
 
-### `expm1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L81)\]
+### `expm1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L44)\]
 
 expm1(x) computes accurately e^x-1.
 
 - **Signature**: `(%)->%`
 
-### `exprand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L78)\]
+### `exprand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L41)\]
 
 exprand() returns a random number from the exponential distribution with scale 1.
 
 - **Signature**: `()->%`
 
-### `goldenRatio` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L97)\]
+### `goldenRatio` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L60)\]
 
 goldenRatio() returns the golden ratio.
 
 - **Signature**: `()->%`
 
-### `jlApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L52)\]
+### `jlApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L15)\]
 
 jlApply(func, x) applies func to argument x.
 
@@ -154,13 +154,13 @@ jlApply(func, x, y, z) applies func to arguments x, y and z.
 
 - **Signature**: `(String,%,%,%)->%`
 
-### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L47)\]
+### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L10)\]
 
 jlApprox?(x,y) computes inexact equality comparison with default parameters. Two numbers compare equal if their relative distance or their absolute distance is within tolerance bounds.
 
 - **Signature**: `(%,%)->Boolean`
 
-### `jlCApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L58)\]
+### `jlCApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L21)\]
 
 jlCApply(lib, func, x) applies the C function func from the library lib to argument x. For example:
 
@@ -189,43 +189,43 @@ jlCApply("libgsl",jsym(gsl_hypot3),jf64(2.0), jf64(7.0),jf64(9.0))
 
 - **Signature**: `(String,JLSymbol,%,%,%)->%`
 
-### `log10` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L85)\]
+### `log10` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L48)\]
 
 log10(x) computes the base 10 logarithm of x.
 
 - **Signature**: `(%)->%`
 
-### `log2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L83)\]
+### `log2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L46)\]
 
 log2(x) computes the base 2 logarithm of x.
 
 - **Signature**: `(%)->%`
 
-### `nan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L99)\]
+### `nan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L62)\]
 
 nan() returns the Julia Float64 NaN (not a number) constant.
 
 - **Signature**: `()->%`
 
-### `negativeInfinity` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L104)\]
+### `negativeInfinity` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L67)\]
 
 negativeInfinity() returns the Julia Float64 negative infinity constant.
 
 - **Signature**: `()->%`
 
-### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L76)\]
+### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L39)\]
 
 nrand() returns a normally distributed random number.
 
 - **Signature**: `()->%`
 
-### `positiveInfinity` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L101)\]
+### `positiveInfinity` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L64)\]
 
 positiveInfinity() returns the Julia Float64 positive infinity constant.
 
 - **Signature**: `()->%`
 
-### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/julia.spad#L73)\]
+### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JMFLOAT.spad#L36)\]
 
 urand01() returns a uniformly distributed random number contained in [0,1].
 

@@ -1,6 +1,6 @@
 # WSList
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L207)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSLIST.spad#L1)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
 
 ## Description
 
@@ -60,13 +60,13 @@ Julia Wolfram Symbolic lists using the MathLink Julia package.
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L217)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSLIST.spad#L11)\]
 
 coerce(l) coerces l to a FriCAS List.
 
 - **Signature**: `(%)->List(E)`
 
-### `jWSList` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsagg.spad#L219)\]
+### `jWSList` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSLIST.spad#L13)\]
 
 jWSList(list) constructs list as a WSList.
 

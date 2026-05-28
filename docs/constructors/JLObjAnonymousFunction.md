@@ -1,6 +1,6 @@
 # JLObjAnonymousFunction
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L791)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBANFUN.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -39,13 +39,13 @@ Convenience domain for Julia Anonymous Functions, objects that are used within J
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L814)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBANFUN.spad#L24)\]
 
 coerce(af) returns a Julia Anonymous Function from the AnonymousFunction af must be compatible with 1D format.
 
 - **Signature**: `(AnonymousFunction)->%`
 
-### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L800)\]
+### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBANFUN.spad#L10)\]
 
 elt(jaf, arg) returns result of applying the Julia Anonymous Function jaf to the argument arg. Use it as: `jaf(arg)`.
 
@@ -63,7 +63,7 @@ elt(jaf, args) returns result of applying the Julia Anonymous Function jaf to th
 
 - **Signature**: `(%,List(JLObject))->JLObject`
 
-### `jafunction` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L817)\]
+### `jafunction` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBANFUN.spad#L27)\]
 
 jafunction(af) returns a Julia Anonymous Function from the AnonymousFunction af must be compatible with 1D format. 
 

@@ -1,6 +1,6 @@
 # JLFloat64Vector
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L71)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -84,31 +84,31 @@ This domain provides a fast JLFloat64 vector type with no bound checking on elt'
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L83)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L13)\]
 
 coerce(v) coerces a copy of v to a DoubleFloatVector.
 
 - **Signature**: `(%)->DoubleFloatVector`
 
-### `coerce!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L85)\]
+### `coerce!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L15)\]
 
 coerce!(v) coerces v to a DoubleFloatVector.
 
 - **Signature**: `(%)->DoubleFloatVector`
 
-### `copy!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L91)\]
+### `copy!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L21)\]
 
 copy!(b,a) efficiently copies a to b. No checks are performed on array dimensions.
 
 - **Signature**: `(%,%)->%`
 
-### `exprand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L124)\]
+### `exprand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L54)\]
 
 exprand(n) returns a Julia vector of size n with random elements from the exponential distribution with scale1.
 
 - **Signature**: `(PositiveInteger)->%`
 
-### `jlApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L94)\]
+### `jlApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L24)\]
 
 jlApply(func, v) applies func to argument v and returns a JLFloat64Vector.
 
@@ -134,49 +134,49 @@ jlApply(func, v1, v2, v3) applies func to arguments v1, v2 and v3.
 
 - **Signature**: `(String,%,%,%)->Void`
 
-### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L110)\]
+### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L40)\]
 
 jlApprox?(x,y) computes inexact equality comparison with default parameters. Two numbers compare equal if their relative distance or their absolute distance is within tolerance bounds. Applied component-wise.
 
 - **Signature**: `(%,%)->Boolean`
 
-### `jlDisplay` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L127)\]
+### `jlDisplay` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L57)\]
 
 jlDisplay(v) pretty prints v (à la Julia).
 
 - **Signature**: `(%)->Void`
 
-### `juliaVPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L129)\]
+### `juliaVPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L59)\]
 
 juliaVPrint(b) defines whether or not FriCAS uses the printing version of Julia for vectors instead of its OutputForm version. Returns previous value. By default it is the Julia version.
 
 - **Signature**: `(Boolean)->Boolean`
 
-### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L121)\]
+### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L51)\]
 
 nrand(n) returns a Julia vector of size n with random elements from the normal distribution with mean=0 and standard deviation=1.
 
 - **Signature**: `(PositiveInteger)->%`
 
-### `qnew` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L89)\]
+### `qnew` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L19)\]
 
 qnew(n) returns an uninitialized vector of dimension n.
 
 - **Signature**: `(NonNegativeInteger)->%`
 
-### `urand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L115)\]
+### `urand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L45)\]
 
 urand(n, x) returns a uniform(0..x) Julia vector of size n. Use the underlying Common Lisp random number generator so jlSeed! will not affect it.
 
 - **Signature**: `(PositiveInteger,JLFloat64)->%`
 
-### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L119)\]
+### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L49)\]
 
 urand01(n) returns a uniform(0..1) Julia vector of size n.
 
 - **Signature**: `(PositiveInteger)->%`
 
-### `vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray64.spad#L87)\]
+### `vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF64VEC.spad#L17)\]
 
 vector(l) converts the list l to a vector.
 

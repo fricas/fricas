@@ -1,6 +1,6 @@
 # NMFiniteField
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L792)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -138,38 +138,38 @@ This domain allows the manipulation of Nemo Galois field of p^n elements using t
 
 ## Operations added
 
-### `absolute?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L813)\]
+### `absolute?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L22)\]
 
 absolute?(x) checks whether or not x is the base field is a prime field.
 
 - **Signature**: `()->Boolean`
 
-### `absoluteNorm` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L822)\]
+### `absoluteNorm` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L31)\]
 
 absoluteNorm(x) returns the absolute norm of x.
 
 - **Signature**: `(%)->NMPrimeField(p)`
 
-### `absoluteTrace` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L818)\]
+### `absoluteTrace` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L27)\]
 
 absoluteTrace(x) returns the absolute trace of x.
 
 - **Signature**: `(%)->NMPrimeField(p)`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L835)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L44)\]
 
 coerce(i) coerces i.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-### `generator?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L810)\]
+### `generator?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L19)\]
 
 generator?(x) checks whether or not x is a generator of the finite field.
 
 - **Signature**: `(%)->Boolean`
 
-### `jnff` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L839)\]
+### `jnff` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L48)\]
 
 jnff(i) returns i as a NMFiniteField element.
 
@@ -179,31 +179,31 @@ jnff(i) returns i, a NMInteger, as a NMFiniteField element.
 
 - **Signature**: `(NMInteger)->%`
 
-### `norm` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L820)\]
+### `norm` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L29)\]
 
 norm(x) returns the norm of x.
 
 - **Signature**: `(%)->NMPrimeField(p)`
 
-### `order` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L824)\]
+### `order` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L33)\]
 
 order() returns the order of the finite field.
 
 - **Signature**: `()->NonNegativeInteger`
 
-### `rank` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L826)\]
+### `rank` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L35)\]
 
 rank() returns the degree of the extension.
 
 - **Signature**: `()->PositiveInteger`
 
-### `sqrt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L832)\]
+### `sqrt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L41)\]
 
 sqrt(x) returns a square root of x. Throws a Julia error if there is no square root and returns 0.
 
 - **Signature**: `(%)->%`
 
-### `trace` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L816)\]
+### `trace` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFF.spad#L25)\]
 
 trace(x) returns the trace of x.
 

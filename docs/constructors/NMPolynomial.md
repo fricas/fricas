@@ -1,6 +1,6 @@
 # NMPolynomial
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L973)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NPOLY.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -159,47 +159,47 @@ This type is a basic representation of generic sparse distributed multivariable 
 
 ## Operations added
 
-### `coefficients` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1088)\]
+### `coefficients`
 
 - **Signature**: `(%)->JLVector(R)`
 
-### `constant?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1036)\]
+### `constant?`
 
 - **Signature**: `(%)->Boolean`
 
-### `constantCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1098)\]
+### `constantCoefficient`
 
 - **Signature**: `(%)->R`
 
-### `degree` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1084)\]
+### `degree`
 
 - **Signature**: `(%,PositiveInteger)->NonNegativeInteger`
 
-### `exactDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1069)\]
+### `exactDivide`
 
 - **Signature**: `(%,%)->%`
 
-### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1082)\]
+### `factor`
 
 - **Signature**: `(%)->NMFactored(%)`
 
-### `internalOrdering` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1100)\]
+### `internalOrdering`
 
 - **Signature**: `()->JLObject`
 
-### `length` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1086)\]
+### `length`
 
 - **Signature**: `(%)->NonNegativeInteger`
 
-### `monomial?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1038)\]
+### `monomial?`
 
 - **Signature**: `(%)->Boolean`
 
-### `monomialRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1040)\]
+### `monomialRecursive?`
 
 - **Signature**: `(%)->Boolean`
 
-### `monomials` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1090)\]
+### `monomials`
 
 - **Signature**: `(%)->JLVector(%)`
 
@@ -207,31 +207,31 @@ This type is a basic representation of generic sparse distributed multivariable 
 
 - **Signature**: `(Boolean)->Boolean`
 
-### `primitiveMonomials` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1093)\]
+### `primitiveMonomials`
 
 - **Signature**: `(%)->JLVector(%)`
 
-### `square?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1050)\]
+### `square?`
 
 - **Signature**: `(%)->Boolean`
 
-### `term?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1043)\]
+### `term?`
 
 - **Signature**: `(%)->Boolean`
 
-### `termRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1045)\]
+### `termRecursive?`
 
 - **Signature**: `(%)->Boolean`
 
-### `trailingCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1096)\]
+### `trailingCoefficient`
 
 - **Signature**: `(%)->R`
 
-### `univariate?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1048)\]
+### `univariate?`
 
 - **Signature**: `(%)->Boolean`
 
-### `vectorOfTerms` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1103)\]
+### `vectorOfTerms`
 
 - **Signature**: `(%)->JLVector(%)`
 ---

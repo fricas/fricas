@@ -1,6 +1,6 @@
 # JLFloat32VectorFunctions2
 
-> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L170)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF32VEC2.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -23,7 +23,7 @@ This package provides operations which all take as arguments JLFloat32Vector and
 
 ## Operations added
 
-### `map` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L203)\]
+### `map` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF32VEC2.spad#L34)\]
 
 map(f, v) applies the function f to every element of the vector v producing a new vector containing the values.
 
@@ -33,13 +33,13 @@ map(f, v) applies the function f to every element of the vector v producing a ne
 
 - **Signature**: `((JLFloat32)->Union(JLFloat32,"failed"),JLFloat32Vector)->Union(JLFloat32Vector,"failed")`
 
-### `reduce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L200)\]
+### `reduce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF32VEC2.spad#L31)\]
 
 reduce(func, vec, ident) combines the elements in vec using the binary function func. Argument ident is returned if vec is empty.
 
 - **Signature**: `((JLFloat32,JLFloat32)->JLFloat32,JLFloat32Vector,JLFloat32)->JLFloat32`
 
-### `scan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L195)\]
+### `scan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF32VEC2.spad#L26)\]
 
 scan(func, vec, ident) creates a new vector whose elements are the result of applying reduce to the binary function func, increasing initial subsequences of the vector vec, and the element ident.
 

@@ -1,6 +1,6 @@
 # JLObjDict
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L415)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBDICT.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -47,7 +47,7 @@ Convenience domain for Julia Dictionaries, objects that are used within Julia, a
 
 ## Operations added
 
-### `delete!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L455)\]
+### `delete!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBDICT.spad#L41)\]
 
 delete!(dict, key) deletes the mapping corresponding to the the key of dict.
 
@@ -55,7 +55,7 @@ delete!(dict, key) deletes the mapping corresponding to the the key of dict.
 - **Signature**: `(%,JLObject)->JLObject`
 - **Signature**: `(%,JLSymbol)->JLObject`
 
-### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L426)\]
+### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBDICT.spad#L12)\]
 
 elt(dict, key) returns the value associated to the key of dict.
 
@@ -69,7 +69,7 @@ elt(dict, sym) returns the value associated to the key sym of dict.
 
 - **Signature**: `(%,JLSymbol)->JLObject`
 
-### `jdict` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L464)\]
+### `jdict` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBDICT.spad#L50)\]
 
 jdict(str) returns a Julia Dict from the Julia command str. For example: 
 
@@ -80,7 +80,7 @@ jdict("Dict([(_"A_", 1), (_ "B_", 2)])")."B"
 
 - **Signature**: `(String)->%`
 
-### `qelt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L428)\]
+### `qelt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBDICT.spad#L14)\]
 
 qelt(dict, key) returns the value associated to the key of dict. No checks are done regarding the existence of the key at the FriCAS level. Returns the Julia missing value if the key does not exist.
 
@@ -94,7 +94,7 @@ qelt(dict, sym) returns the value associated to the key sym of dict. No checks a
 
 - **Signature**: `(%,JLSymbol)->JLObject`
 
-### `setelt!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L446)\]
+### `setelt!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBDICT.spad#L32)\]
 
 setelt!(dict, key, val) sets the val to the key of dict. If the key does not exist it will be created.
 
