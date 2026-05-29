@@ -183,11 +183,9 @@ htGlossSearch(htPage,junk) ==  htGloss htpLabelInputString(htPage,'filter)
 htSetVars() ==
   $path := nil
   $lastTree := nil
-  if 0 ~= LASTATOM $setOptions then htMarkTree($setOptions,0)
   htShowSetTree($setOptions)
 
 htShowSetTree(setTree) ==
-  $path := TAKE(- LASTATOM setTree,$path)
   page := htInitPage(mkSetTitle(),nil)
   htpSetProperty(page, 'setTree, setTree)
   links := nil
@@ -244,7 +242,7 @@ listOfStrings2String u ==
 
 htShowSetPage(htPage, branch) ==
   setTree := htpProperty(htPage, 'setTree)
-  $path := [branch, :TAKE(- LASTATOM(setTree), $path)]
+  $path := [branch]
   setData := assoc(branch, setTree)
   null setData =>
     systemError('"No Set Data")
@@ -488,11 +486,6 @@ htMakePathKey path ==
       null b => a
       fn(STRCONC(a,'".",PNAME first b),rest b)
 
-htMarkTree(tree,n) ==
-  RPLACD(LASTNODE(tree), n)
-  for branch in tree repeat
-    branch.3 = 'TREE => htMarkTree(branch.5,n + 1)
-
 htSetHistory htPage ==
   msg := '"when the history facility is on (yes), results of computations are saved in memory"
   data := ['history,msg,'history,'LITERALS,'$HiFiAccess,'(on off yes no)]
@@ -543,7 +536,7 @@ htSetOutputPage3(page) ==
     htKill(page, val)
 
 htSetCache(htPage) ==
-  $path := '(functions cache)
+  $path := '(cache functions)
   htPage := htInitPage(mkSetTitle(),nil)
   $valueList := nil
   htMakePage '(
