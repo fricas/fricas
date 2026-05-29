@@ -376,7 +376,7 @@ htMakeDoneButton(message, func) ==
   if message = '"Continue" then
     bchtMakeButton('"\lispdownlink", "\ContinueBitmap", func)
   else
-    bchtMakeButton('"\lispdownlink",CONCAT('"\box{", message, '"}"), func)
+    bchtMakeButton('"\lispdownlink",CONCAT('"\fbox{", message, '"}"), func)
   bcHt '"} "
 
 htProcessDoneButton [label , func] ==
@@ -387,7 +387,7 @@ htProcessDoneButton [label , func] ==
   else if label = '"Push to enter names" then
     htMakeButton('"\lispdownlink",'"\ControlBitmap{ClickToSet}", func)
   else
-    htMakeButton('"\lispdownlink", CONCAT('"\box{", label, '"}"), func)
+    htMakeButton('"\lispdownlink", CONCAT('"\fbox{", label, '"}"), func)
 
   iht '"} "
 
@@ -406,7 +406,7 @@ bchtMakeButton(htCommand, message, func) ==
 htProcessDoitButton [label, command, func] ==
   fun := mkCurryFun(func, [command])
   iht '"\newline\vspace{1}\centerline{"
-  htMakeButton('"\lispcommand", CONCAT('"\box{", label, '"}"), fun)
+  htMakeButton('"\lispcommand", CONCAT('"\fbox{", label, '"}"), fun)
   iht '"} "
   iht '"\vspace{2}{Select \  \UpButton{} \  to go back one page.}"
   iht '"\newline{Select \  \ExitButton{QuitPage} \  to remove this window.}"
@@ -416,7 +416,7 @@ htMakeDoitButton(label, command) ==
   if label = '"Do It" then
     bcHt '"\newline\vspace{1}\centerline{\lispcommand{\DoItBitmap}{(|doDoitButton| "
   else
-    bcHt ['"\newline\vspace{1}\centerline{\lispcommand{\box{", label,
+    bcHt ['"\newline\vspace{1}\centerline{\lispcommand{\fbox{", label,
        '"}}{(|doDoitButton| "]
   bcHt htpName $curPage
   bcHt ['" _"", htEscapeString command, '"_""]
