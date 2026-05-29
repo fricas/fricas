@@ -351,14 +351,7 @@ augProplist(proplist,prop,val) ==
 
 augProplistOf(var,prop,val,e) ==
   proplist:= getProplist(var,e)
-  semchkProplist(var, proplist, prop)
   augProplist(proplist,prop,val)
-
-semchkProplist(x, proplist, prop) ==
-  prop="isLiteral" =>
-    LASSOC("value",proplist) or LASSOC("mode",proplist) => warnLiteral x
-  MEMQ(prop,'(mode value)) =>
-    LASSOC("isLiteral",proplist) => warnLiteral x
 
 DEFPARAMETER($envHashTable, nil)
 

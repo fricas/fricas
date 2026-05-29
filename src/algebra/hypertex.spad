@@ -620,6 +620,7 @@ ErrorIndicator : Join(RetractableTo(List(String)),
 ++ constructors and operations.
 BrowserInformation : Exports == Implementation where
   SE ==> SExpression
+  LMA ==> LogicalMatchingAutomaton
   SY ==> Symbol
   Con_form ==> SE
   Cond_rec ==> Record(form : SE, condition : SE)
@@ -750,16 +751,16 @@ BrowserInformation : Exports == Implementation where
      search_opl : (String, Op_lst) -> Op_res
        ++ search_opl(n, ol) gives list of operations from ol with
        ++ names matching n.
-     convert_pattern : String -> Union(SE, Err_ind)
+     convert_pattern : String -> Union(LMA, Err_ind)
        ++ convert_pattern(n) converts search pattern n to an internal
        ++ form used by \spad{do_match}.
-     do_match : (SE, String) -> Boolean
+     do_match : (LMA, String) -> Boolean
        ++ do_match(p, s) returns true if and only if s matches to
        ++ pattern p.
-     filter_ops : (SE, Op_lst) -> Op_lst
+     filter_ops : (LMA, Op_lst) -> Op_lst
        ++ filter_ops(p, ol) gives list of operations from ol with
        ++ names matching p.
-     filter_symbols : (SE, List(SY)) -> List(SY)
+     filter_symbols : (LMA, List(SY)) -> List(SY)
        ++ filter_symbols(p, sl) gives list of symbols from sl with
        ++ names matching p.
      ops_from_exports : () -> Op_lst
@@ -857,16 +858,15 @@ BrowserInformation : Exports == Implementation where
         list?(se) and (l := destruct(se); not(empty?(l)) and
             (e1 := first(l); e1 = convert('error)))
 
-    convert_pattern(pat : String) : Union(SE, Err_ind) ==
-        pc : SE := pmTransFilter(pat)$Lisp
-        is_error?(pc) => cdr(pc) pretend Err_ind
-        pc
+    convert_pattern(pat : String) : Union(LMA, Err_ind) ==
+        pu := parse_pattern(pat, true)$LogicalRegularExpressionMatch
+        pu case "failed" => (["Invalid pattern"]$List(String))::Err_ind
+        pu::LMA
 
-    do_match(pat : SE, s : String) : Boolean ==
-        res1 : SExpression := superMatch?(pat, downcase(s))$Lisp
-        not(null?(res1))
+    do_match(pat : LMA, s : String) : Boolean ==
+        do_match(pat, downcase(s))$LogicalMatchingAutomaton
 
-    filter_ops(pat : SE, opl : Op_lst ) : Op_lst ==
+    filter_ops(pat : LMA, opl : Op_lst ) : Op_lst ==
         res := []$Op_lst
         for opr in opl repeat
             if do_match(pat, string(opr.name)) then
@@ -1501,7 +1501,7 @@ BrowserInformation : Exports == Implementation where
         opl := reverse!(opl)
         [cnl, opl]
 
-    filter_symbols(pc : SE, sl : List(SY)) : List(SY) ==
+    filter_symbols(pc : LMA, sl : List(SY)) : List(SY) ==
         res := []$List(SY)
         for sy in sl repeat
             if do_match(pc, string(sy)) then
@@ -1581,24 +1581,16 @@ BrowserInformation : Exports == Implementation where
         not(STRINGP(first(res1))$Lisp) => rest(res1) pretend Err_ind
         expand_op_lines(res1 pretend List(String))
 
-    add_stars(pc : SE) : SE ==
-        string?(pc) =>
-            pat1 := string(pc)
-            pre : String :=
-                pat1(1) = char_star => ""
-                "*"
-            post : String :=
-                pat1(#pat1) = char_star => ""
-                "*"
-            convert(concat([pre, pat1, post]))
-        list?(pc) =>
-            op := car(pc)
-            args := destruct(cdr(pc))
-            args := [add_stars(arg) for arg in args]
-            convert(cons(op, args))
-        error "add_stars: unimplemented"
+    add_stars(pat1 : String) : String ==
+        pre : String :=
+            pat1(1) = char_star => ""
+            "*"
+        post : String :=
+            pat1(#pat1) = char_star => ""
+            "*"
+        concat([pre, pat1, post])
 
-    search_ops_doc(pc : SE) : Op_lst ==
+    search_ops_doc(pc : LMA) : Op_lst ==
         if not(all_ops_initialized) then
             all_ops := ops_from_exports()
             all_ops_initialized := true
@@ -1610,7 +1602,7 @@ BrowserInformation : Exports == Implementation where
                     res := cons([name, sd], res)
         group_funs(reverse!(res))
 
-    search_con_doc(pc : SE) : Split_rec ==
+    search_con_doc(pc : LMA) : Split_rec ==
         cnl := [cn for cn in all_con_names() | not(default_name?(cn))]
         res1 : List(SY) := []
         for cn in cnl repeat
@@ -1620,9 +1612,10 @@ BrowserInformation : Exports == Implementation where
         split_constructors(sort(res1))
 
     search_documentation(pat : String) : Gen_res ==
+        pat := add_stars(pat)
         pcu := convert_pattern(pat)
         pcu case Err_ind => pcu@Err_ind
-        pc := add_stars(pcu)
+        pc := pcu::LMA
         cl := search_con_doc(pc)
         opl := search_ops_doc(pc)
         [cl, opl]$Gen_rec

@@ -1,0 +1,42 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "fauto"
+
+testcase "simple matches"
+
+)expose LogicalRegularExpressionMatch
+
+a := parse_pattern("rest", false);
+testTrue("do_match(a, _"rest_")")
+testTrue("not(do_match(a, _"Rest_"))")
+testTrue("not(do_match(a, _"res_"))")
+testTrue("not(do_match(a, _"restate_"))")
+
+a := parse_pattern("*Matrix*", true);
+testTrue("not(do_match(a, _"Matrix_"))")
+testTrue("do_match(a, _"matrix(Integer)->matrix(Integer)_")")
+testTrue("do_match(a, _"matrix_")")
+testTrue("do_match(a, _"a matrix function_")")
+
+a := parse_pattern("Matrix*Matrix*", false);
+testTrue("not(do_match(a, _"Matrix_"))")
+testTrue("do_match(a, _"MatrixMatrix_")")
+testTrue("do_match(a, _"Matrix(Integer)->Matrix(Integer)_")")
+
+a := parse_pattern("a*l or b*d", true);
+testTrue("do_match(a, _"arl_")")
+testTrue("do_match(a, _"brd_")")
+testTrue("not(do_match(a, _"brl_"))")
+testTrue("not(do_match(a, _"ard_"))")
+
+testcase "browser search"
+
+testEquals("#search_operations(_"search_constructors_")$BrowserInformation",
+           "1")
+
+testTrue("1 < #search_operations(_"_and_")$BrowserInformation")
+ss := "__*"
+testEquals("#search_operations(ss)$BrowserInformation", "1")
+
+statistics()

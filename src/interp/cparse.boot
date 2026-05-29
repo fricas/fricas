@@ -40,6 +40,7 @@ DEFVAR($stack)
 DEFVAR($stok)
 DEFVAR($ttok)
 
+-- This is the only entry point to the interpreter parser
 npParse stream ==
     $inputStream:local := stream
     $stack:local       :=nil

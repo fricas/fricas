@@ -211,14 +211,20 @@ Database(S) : Exports == Implementation where
       ++ fullDisplay(db, start, end ) prints full details of entries in the range
       ++ \spad{start..end} in \spad{db}.
   Implementation == List S add
+    LMA ==> LogicalMatchingAutomaton
     s : Symbol
     Rep := List S
     coerce(u : List S) : % == u@%
     elt(data : %, s : Symbol) == [x.s for x in data] :: DataList(String)
+
     elt(data : %, eq : QueryEquation) ==
-      field := variable eq
-      val := value eq
-      [x for x in data | stringMatches?(val, x.field)$Lisp]
+        field := variable eq
+        val := value eq
+        pu := parse_pattern(val, false)$LogicalRegularExpressionMatch
+        pu case "failed" => error "Invalid pattern"
+        pat := pu::LMA
+        [x for x in data | do_match(pat, x.field)$LMA]
+
     x+y==removeDuplicates! merge(x, y)
     x - y == mergeDifference(x::Rep, y::Rep)$MergeThing(S)
     coerce(data) : OutputForm == (#data):: OutputForm
