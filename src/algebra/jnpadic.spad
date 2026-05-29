@@ -28,7 +28,7 @@ NMPadicNumberCategory(R : NMCommutativeRing) : Category == Definition where
     modulus : () -> I
       ++ \spad{modulus()} returns the value of p.
     moduloP : % -> I
-      ++ \spad{modulo(x)} returns a, where \spad{x = a + b p}.
+      ++ \spad{moduloP(x)} returns a, where \spad{x = a + b p}.
     quotientByP : % -> %
       ++ \spad{quotientByP(x)} returns b, where \spad{x = a + b p}.
     approximate : (%, I) -> I
@@ -124,12 +124,12 @@ NMExtendedPadicInteger(p : NMInteger, prec : Integer) :
     not prime?(p) => error "p must be a prime number"
     
     -- Set up the field
-    EXPADICZP := concat(["PADICZ", string(p), "p",string(prec)])
-    jlEvalString(concat([EXPADICZP, "=padic_field(ZZ(", string(p), "), precision=", string(prec),")"]))
+    EXPADICZP := concat(["PADICZ", string(p), "p", string(prec)])
+    jlEvalString(concat([EXPADICZP, "=padic_field(", getind(p), ", precision=", string(prec),")"]))
     jlNMRing() == EXPADICZP
     EXPADICZPP := concat(EXPADICZP,"(")
     jlObject() == jlEvalString(concat(["string(", EXPADICZP,")"]))
-    O() == jlref(concat(["O(",EXPADICZP,",ZZ(", string(p),")^",string(prec),")"]))
+    O() == jlref(concat(["O(", EXPADICZP,",", getind(p),"^",string(prec),")"]))
 
     unit?(a) == junbfunc("is_unit", a)
     one?(a) == junbfunc("isone", a)
@@ -245,7 +245,7 @@ NMPadicInteger(p : NMInteger) == NMExtendedPadicInteger(p, 64)
 ++ Examples:
 ++ References:
 ++ Description: This is a domain for Qp.
-NMExtendedPadicRational(p,deg,prec) : Exports == Implementation where
+NMExtendedPadicRational(p, deg, prec) : Exports == Implementation where
   p     : NMInteger
   deg   : Integer
   prec  : Integer
@@ -324,12 +324,12 @@ NMExtendedPadicRational(p,deg,prec) : Exports == Implementation where
     
     -- Set up the field
     PADICQ := concat(["PADICQ", string(p), "p",string(prec)])
-    jlEvalString(concat([PADICQ, ",_=qadic_field(ZZ(", string(p), "),", string(deg),
+    jlEvalString(concat([PADICQ, ",_=qadic_field(", getind(p), ",", string(deg),
       ",precision=", string(prec),")"]))
     jlNMRing() == PADICQ
     PADICQP := concat(PADICQ,"(")
     jlObject() == jlEvalString(concat(["string(", PADICQ,")"]))
-    O() == jlref(concat(["O(",PADICQ,",ZZ(", string(p),")^",string(prec),")"]))
+    O() == jlref(concat(["O(",PADICQ,",", getind(p),"^",string(prec),")"]))
   
     unit?(a) == junbfunc("is_unit", a)
     one?(a) == junbfunc("isone", a)
