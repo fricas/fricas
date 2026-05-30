@@ -800,3 +800,32 @@ satTypeDownLink(s,code) ==
 
 mkButtonBox n == STRCONC('"\buttonbox{", STRINGIMAGE n, '"}")
 
+form2Fence form ==
+  -- body of dbMkEvalable
+  [op, :.] := form
+  kind := get_database(op, 'CONSTRUCTORKIND)
+  kind = 'category => form2Fence1 form
+  form2Fence1 mkEvalable form
+
+form2Fence1 x ==
+  x is [op,:argl] =>
+    op = 'QUOTE => ['"(QUOTE ",:form2FenceQuote first argl,'")"]
+    ['"(", FORMAT(NIL, '"|~a|", op),:"append"/[form2Fence1 y for y in argl],'")"]
+  x = "%" => ["%"]
+  IDENTP x => [FORMAT(NIL, '"|~a|", x)]
+  ['"  ", x]
+
+form2FenceQuote x ==
+  NUMBERP x => [STRINGIMAGE x]
+  SYMBOLP x => [FORMAT(NIL, '"|~a|", x)]
+  atom    x => ['"??"]
+  ['"(",:form2FenceQuote first x,:form2FenceQuoteTail rest x]
+
+form2FenceQuoteTail x ==
+  null x => ['")"]
+  atom x => ['" . ",:form2FenceQuote x,'")"]
+  ['" ",:form2FenceQuote first x,:form2FenceQuoteTail rest x]
+
+form2StringList u ==
+  atom (r := form2String u) => [r]
+  r

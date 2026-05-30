@@ -44,64 +44,77 @@ dbNonEmptyPattern pattern ==
   #pattern > 0 => pattern
   '"*"
 
-htSystemVariables() == main where
-  main ==
+htSystemVariables() ==
     not $fullScreenSysVars => htSetVars()
     classlevel := $UserLevel
     $levels : local := '(compiler development interpreter)
     $heading  : local := nil
     while classlevel ~= first $levels repeat $levels := rest $levels
-    table := NREVERSE fn($setOptions,nil,true)
-    htInitPage('"System Variables",nil)
-    htSay '"\beginmenu"
+    table := NREVERSE(hsv_fn($setOptions, nil, true))
+    page := htInitPage('"System Variables", nil)
+    ht_add_string(page, '"\beginmenu")
     lastHeading := nil
     for [heading,name,message,.,key,variable,options,func] in table repeat
-      htSay('"\newline\item ")
-      if heading = lastHeading then htSay '"\tab{8}" else
-        htSayList([heading, '"\tab{8}"])
-        lastHeading := heading
-      htSayList(['"{\em ", name, "}\tab{22}", message])
-      htSay('"\tab{80}")
+      ht_add_string(page, '"\newline\item ")
+      if heading = lastHeading then ht_add_string(page, '"\tab{8}") else
+          ht_add_strings(page, [PNAME(heading), '"\tab{8}"])
+          lastHeading := heading
+      ht_add_strings(page, ['"{\em ", PNAME(name), "}\tab{22}", message])
+      ht_add_string(page, '"\tab{80}")
       key = 'FUNCTION =>
-         null options => htMakePage [['bcLinks,['"reset",'"",func]]]
+         null options => ht_add_to_page(page,
+                                     [['bcLinks, ['"reset", '"", func]]])
          [msg,class,var,valuesOrFunction,:.] := first options  --skip first message
-         functionTail(name,class,var,valuesOrFunction)
+         functionTail(page, name, class, var, valuesOrFunction)
          for option in rest options repeat
            option is ['break,:.] => 'skip
            [msg,class,var,valuesOrFunction,:.] := option
-           htSayList(['"\newline\tab{22}", msg,'"\tab{80}"])
-           functionTail(name,class,var,valuesOrFunction)
+           ht_add_strings(page, ['"\newline\tab{22}", msg,'"\tab{80}"])
+           functionTail(page, name, class, var, valuesOrFunction)
       val := eval variable
-      displayOptions(name,key,variable,val,options)
-    htSay '"\endmenu"
-    htShowPage()
-  functionTail(name,class,var,valuesOrFunction) ==
+      displayOptions(page, name, key, variable, val, options)
+    ht_add_string(page, '"\endmenu")
+    htShowPage1(page)
+
+functionTail(page, name, class, var, valuesOrFunction) ==
     val := eval var
     atom valuesOrFunction =>
-      htMakePage '((domainConditions (isDomain STR (String))))
-      htMakePage [['bcLinks,['"reset",'"",'htSetSystemVariableKind,[var,name,nil]]]]
-      htMakePage [['bcStrings,[30,STRINGIMAGE val,name,valuesOrFunction]]]
-    displayOptions(name,class,var,val,valuesOrFunction)
-  displayOptions(name,class,variable,val,options) ==
+        ht_add_to_page(page, '((domainConditions (isDomain STR (String)))))
+        ht_add_to_page(page, [['bcLinks,
+            ['"reset", '"", 'htSetSystemVariableKind, [var, name, nil]]]])
+        ht_add_to_page(page, [['bcStrings,
+            [30, STRINGIMAGE(val), name, valuesOrFunction]]])
+    displayOptions(page, name, class, var, val, valuesOrFunction)
+
+displayOptions(page, name, class, variable, val, options) ==
     class = 'INTEGER =>
-      htMakePage [['bcLispLinks,[[['text,options.0,'"-",options.1 or '""]],'"",'htSetSystemVariableKind,[variable,name,'PARSE_-INTEGER]]]]
-      htMakePage '((domainConditions (isDomain INT (Integer))))
-      htMakePage  [['bcStrings,[5,STRINGIMAGE val,name,'INT]]]
+        opt1_str :=
+            options.1 => STRINGIMAGE(options.1)
+            ""
+        ht_add_to_page(page, [['bcLispLinks,
+            [STRCONC(STRINGIMAGE(options.0), '"-", opt1_str), '"",
+             'htSetSystemVariableKind, [variable, name, 'PARSE_-INTEGER]]]])
+        ht_add_to_page(page, '((domainConditions (isDomain INT (Integer)))))
+        ht_add_to_page(page, [['bcStrings, [5, STRINGIMAGE(val), name, 'INT]]])
     class = 'STRING =>
-      htSayList ['"{\em ", val, '"}\space{1}"]
+        ht_add_strings(page, ['"{\em ", val, '"}\space{1}"])
     for x in options repeat
       val = x or val = true and x = 'on or null val and x = 'off =>
-        htSayList ['"{\em ", x, '"}\space{1}"]
-      htMakePage [['bcLispLinks,[x,'" ",'htSetSystemVariable,[variable,x]]]]
-  fn(t,al,firstTime) ==
-    atom t => al
-    if firstTime then $heading := opOf first t
-    fn(rest t,gn(first t,al),firstTime)
-  gn(t,al) ==
+            ht_add_strings(page, ['"{\em ", STRINGIMAGE(x), '"}\space{1}"])
+      ht_add_to_page(page, [['bcLispLinks,
+                    [x, '" ", 'htSetSystemVariable, [variable, x]]]])
+
+hsv_fn(lt, al, firstTime) ==
+    for t in lt repeat
+        if firstTime then $heading := opOf(t)
+        al := hsv_gn(t, al)
+    al
+
+hsv_gn(t, al) ==
     [.,.,class,key,.,options,:.] := t
     not MEMQ(class,$levels) => al
     key = 'LITERALS or key = 'INTEGER or key = 'STRING => [[$heading,:t],:al]
-    key = 'TREE => fn(options,al,false)
+    key = 'TREE => hsv_fn(options, al, false)
     key = 'FUNCTION => [[$heading,:t],:al]
     systemError key
 
@@ -198,19 +211,22 @@ htShowSetTree(setTree) ==
   maxWidth1 := MAX(9,maxWidth1)
   maxWidth2 := MAX(41,maxWidth2)
   tabset1 := STRINGIMAGE (maxWidth1)
-  tabset2 := STRINGIMAGE (maxWidth2 + maxWidth1 - 1)
-  htSayList(['"\tab{2}\newline Variable\tab{",
+  tabset2 := STRINGIMAGE (maxWidth2 + maxWidth1 + 1)
+  ht_add_strings(page, ['"\tab{2}\newline Variable\tab{",
     STRINGIMAGE (maxWidth1 + quotient_INT(maxWidth2, 3)),
      '"}Description\tab{",STRINGIMAGE(maxWidth2 + maxWidth1 + 2),
       '"}Value\newline\beginitems "])
   for setData in REVERSE okList repeat
-      htSay '"\item"
+      ht_add_string(page, '"\item")
       label := STRCONC('"\menuitemstyle{",setData.setName,'"}")
-      links := [label,[['text,'"\tab{",tabset1,'"}",setData.setLabel,'"\tab{",tabset2,'"}{\em ",htShowSetTreeValue setData,'"}"]],
+      vv := htShowSetTreeValue(setData)
+      if vv = '"" then
+          vv := '"????"
+      links := [label,[['text,'"\tab{",tabset1,'"}",setData.setLabel,'"\tab{",tabset2,'"}{\em ", vv, '"}"]],
                 'htShowSetPage, setData.setName]
-      htMakePage [['bcLispLinks, links,'options,'(indent . 0)]]
-  htSay '"\enditems"
-  htShowPage()
+      ht_add_to_page(page, [['bcLispLinks, links, 'options, '(indent . 0)]])
+  ht_add_string(page, '"\enditems")
+  htShowPage1(page)
 
 htShowCount s == --# discounting {\em .. }
   m := #s
@@ -266,15 +282,20 @@ htSetLiterals(htPage,name,message,variable,values,functionToCall) ==
   htpSetProperty(page, 'variable, variable)
   htSetLiterals2(page, name, message, EVAL(variable), values, functionToCall)
 
+ht_set_description(page, name, message) ==
+    ht_add_strings(page, ['"\centerline{Set {\em ", PNAME(name),
+                          '"}}\newline"])
+    ht_add_strings(page, ['"{\em Description: } ", message,
+                          '"\newline\vspace{1} "])
+
 htSetLiterals2(page, name, message, cval, values, functionToCall) ==
-  bcHt ['"\centerline{Set {\em ", name, '"}}\newline"]
-  bcHt ['"{\em Description: } ", message, '"\newline\vspace{1} "]
-  bcHt '"Select one of the following: \newline\tab{3} "
+  ht_set_description(page, name, message)
+  ht_add_string(page, '"Select one of the following: \newline\tab{3} ")
   links := [[STRCONC('"",STRINGIMAGE opt), '"\newline\tab{3}", functionToCall, opt] for opt in values]
-  htMakePage [['bcLispLinks, :links]]
+  ht_add_to_page(page, [['bcLispLinks, :links]])
   bcHt ['"\indent{0}\newline\vspace{1} The current setting is: {\em ",
         translateTrueFalse2YesNo(cval), '"} "]
-  htShowPage()
+  htShowPage1(page)
 
 htSetLiteral(htPage, val) ==
   htInitPage('"Set Command", nil)
@@ -284,31 +305,22 @@ htSetLiteral(htPage, val) ==
 htShowIntegerPage(htPage, setData) ==
   page := htInitPage(mkSetTitle(), htpPropertyList htPage)
   htpSetProperty(page, 'variable, setData.setVar)
-  bcHt ['"\centerline{Set {\em ", setData.setName, '"}}\newline"]
-  message := setData.setLabel
-  bcHt ['"{\em Description: } ", message, '"\newline\vspace{1} "]
+  ht_set_description(page, setData.setName, setData.setLabel)
   [$htInitial,$htFinal] := setData.setLeaf
   if $htFinal = $htInitial + 1 then
-      bcHt '"Enter the integer {\em "
-      bcHt stringize $htInitial
-      bcHt '"} or {\em "
-      bcHt stringize $htFinal
-      bcHt '"}:"
+      ht_add_strings(page, ['"Enter the integer {\em ", stringize($htInitial),
+                            '"} or {\em ", stringize($htFinal), '"}:"])
   else if null $htFinal then
-      bcHt '"Enter an integer greater than {\em "
-      bcHt stringize ($htInitial - 1)
-      bcHt '"}:"
+      ht_add_strings(page, ['"Enter an integer greater than {\em ",
+                            stringize($htInitial - 1), '"}:"])
   else
-      bcHt '"Enter an integer between {\em "
-      bcHt stringize $htInitial
-      bcHt '"} and {\em "
-      bcHt stringize $htFinal
-      bcHt '"}:"
-  htMakePage [
+      ht_add_strings(page, ['"Enter an integer between {\em ",
+         stringize($htInitial), '"} and {\em ", stringize($htFinal), '"}:"])
+  ht_add_to_page(page, [
     '(domainConditions (Satisfies S chkRange)),
-      ['bcStrings,[5,eval setData.setVar,'value,'S]]]
-  htSetvarDoneButton('"Select to Set Value",'htSetInteger)
-  htShowPage()
+      ['bcStrings, [5, eval(setData.setVar), 'value, 'S]]])
+  htMakeDoneButton('"Select to Set Value", 'htSetInteger)
+  htShowPage1(page)
 
 htSetInteger(htPage) ==
   htInitPage(mkSetTitle(), nil)
@@ -339,26 +351,14 @@ htShowFunctionPageContinued(htPage) ==
 htShowFunctionPageContinued2(htPage, setData, cval, checker, phrase,
                              fun_to_call) ==
   page := htInitPage(mkSetTitle(), htpPropertyList htPage)
-  bcHt ['"\centerline{Set {\em ", setData.setName, '"}}\newline"]
-  bcHt ['"{\em Description: } ", setData.setLabel, '"\newline\vspace{1} "]
-  htMakePage
+  ht_set_description(page, setData.setName, setData.setLabel)
+  ht_add_to_page(page,
     [ ['domainConditions, ['Satisfies,'S,checker]],
       ['text,:phrase],
         ['inputStrings,
-          [ '"", '"", 60, cval, 'value, 'S]]]
-  htSetvarDoneButton('"Select To Set Value", fun_to_call)
-  htShowPage()
-
-htSetvarDoneButton(message, func) ==
-  bcHt '"\newline\vspace{1}\centerline{"
-
-  if message = '"Select to Set Value" or message = '"Select to Set Values"  then
-    bchtMakeButton('"\lisplink",'"\ControlBitmap{ClickToSet}", func)
-  else
-    bchtMakeButton('"\lisplink",CONCAT('"\fbox{", message, '"}"), func)
-
-  bcHt '"} "
-
+          [ '"", '"", 60, cval, 'value, 'S]]])
+  htMakeDoneButton('"Select To Set Value", fun_to_call)
+  htShowPage1(page)
 
 htFunctionSetLiteral(htPage, val) ==
   htInitPage('"Set Command", nil)
@@ -384,31 +384,29 @@ htSetFunCommandContinue(htPage,value) ==
   htKill(htPage,value)
 
 htKill(htPage,value) ==
-  htInitPage('"System Command", nil)
+  page := htInitPage('"System Command", nil)
   string := STRCONC('"{\em )set ",listOfStrings2String [value,:$path],'"}")
-  htMakePage [
+  ht_add_to_page(page, [
      '(text
         "{Here is the FriCAS system command you could have issued:}"
             "\vspace{2}\newline\centerline{\tt"),
-      ['text,:string]]
-  htMakePage '((text . "}\vspace{1}\newline\rm"))
-  htSay '"\vspace{2}{Select \  \UpButton{} \  to go back.}"
-  htSay '"\newline{Select \  \ExitButton{QuitPage} \  to remove this window.}"
-  htProcessDoitButton ['"Press to Remove Page",'"",'htDoNothing]
-  htShowPage()
+      ['text,:string]])
+  ht_add_to_page(page, '((text . "}\vspace{1}\newline\rm")))
+  ht_add_string(page, '"\vspace{2}{Select \  \UpButton{} \  to go back.}")
+  ht_add_string(page,
+      '"\newline{Select \  \ExitButton{QuitPage} \  to remove this window.}")
+  htShowPage1(page)
 
 htSetNotAvailable(htPage,whatToType) ==
-  page := htInitPage('"Unavailable Set Command", htpPropertyList htPage)
-  htInitPage('"Unavailable System Command", nil)
+  page := htInitPage('"Unavailable system command", nil)
   string := STRCONC('"{\em ",whatToType,'"}")
-  htMakePage [
+  ht_add_to_page(page, [
      '(text "\vspace{1}\newline"
         "{Sorry, but this system command is not available through HyperDoc. Please directly issue this command in a FriCAS window for more information:}"
             "\vspace{2}\newline\centerline{\tt"),
-      ['text,:string]]
-  htMakePage '((text . "}\vspace{1}\newline"))
-  htProcessDoitButton ['"Press to Remove Page",'"",'htDoNothing]
-  htShowPage()
+      ['text,:string]])
+  ht_add_to_page(page, '((text . "}\vspace{1}\newline")))
+  htShowPage1(page)
 
 htDoNothing(htPage,command) == nil
 
@@ -537,9 +535,9 @@ htSetOutputPage3(page) ==
 
 htSetCache(htPage) ==
   $path := '(cache functions)
-  htPage := htInitPage(mkSetTitle(),nil)
+  page := htInitPage(mkSetTitle(), nil)
   $valueList := nil
-  htMakePage '(
+  ht_add_to_page(page, '(
    (text
     "Use this system command to cause the FriCAS interpreter to `remember' "
     "past values of interpreter functions. "
@@ -559,8 +557,8 @@ htSetCache(htPage) ==
       "\vspace{1}\newline "
       "Enter {\em all} or a list of names (separate names by blanks):")
    (inputStrings ("" "" 60 "all" names S))
-   (doneButton "Push to enter names" htCacheAddChoice))
-  htShowPage()
+   (doneButton "Push to enter names" htCacheAddChoice)))
+  htShowPage1(page)
 
 htCacheAddChoice htPage ==
   names := bcString2WordList htpLabelInputString(htPage,'names)
@@ -569,7 +567,7 @@ htCacheAddChoice htPage ==
   null rest names => htCacheOne names
   page := htInitPage(mkSetTitle(),nil)
   htpSetProperty(page,'names,names)
-  htMakePage '(
+  ht_add_to_page(page, '(
     (domainConditions (Satisfies ALLPI chkAllPositiveInteger))
     (text
       "For each function, enter below a {\em cache length}, a positive integer. "
@@ -579,13 +577,13 @@ htCacheAddChoice htPage ==
       "To cache all past values, "
       "enter {\em all}."
       "\vspace{1}\newline "
-      "For each function name, enter {\em all} or a positive integer:"))
-  for i in 1.. for name in names repeat htMakePage [
+      "For each function name, enter {\em all} or a positive integer:")))
+  for i in 1.. for name in names repeat ht_add_to_page(page, [
       ['inputStrings,
-        [STRCONC('"Function {\em ",name,'"} will cache"),
-          '"values",5,10,htMakeLabel('"c",i),'ALLPI]]]
-  htSetvarDoneButton('"Select to Set Values",'htCacheSet)
-  htShowPage()
+        [STRCONC('"Function {\em ", name, '"} will cache"),
+          '"values", 5, 10, htMakeLabel('"c", i), 'ALLPI]]])
+  htMakeDoneButton('"Select to Set Values", 'htCacheSet)
+  htShowPage1(page)
 
 htMakeLabel(prefix,i) == INTERN STRCONC(prefix,stringize i)
 
@@ -598,36 +596,34 @@ htCacheSet htPage ==
   if (n := LASSOC('all,$cacheAlist)) then
     $cacheCount := n
     $cacheAlist := deleteAssoc('all,$cacheAlist)
-  htInitPage('"Cache Summary",nil)
-  bcHt '"In general, interpreter functions "
-  bcHt
-    $cacheCount = 0 => '"will {\em not} be cached."
-    bcHt '"cache "
-    htAllOrNum $cacheCount
-    '"} values."
-  bcHt '"\vspace{1}\newline "
+  page := htInitPage('"Cache Summary", nil)
+  ht_add_string(page, '"In general, interpreter functions ")
+  if $cacheCount = 0 then
+      ht_add_string(page, '"will {\em not} be cached.")
+  else
+      ht_add_string(page, '"cache ");
+      htAllOrNum(page, $cacheCount);
+      ht_add_string(page, '"} values.")
+  ht_add_string(page, '"\vspace{1}\newline ")
   if $cacheAlist then
---    bcHt '" However, \indent{3}"
-    for [name,:val] in $cacheAlist | val ~= $cacheCount repeat
-      bcHt '"\newline function {\em "
-      bcHt stringize name
-      bcHt '"} will cache "
-      htAllOrNum val
-      bcHt '"} values"
-  htProcessDoitButton ['"Press to Remove Page",'"",'htDoNothing]
-  htShowPage()
+      for [name, :val] in $cacheAlist | val ~= $cacheCount repeat
+          ht_add_strings(page, ['"\newline function {\em ", stringize(name),
+                                '"} will cache "])
+          htAllOrNum(page, val)
+          ht_add_string(page, '"} values")
+  htShowPage1(page)
 
-htAllOrNum(val) ==
+htAllOrNum(page, val) ==
     str :=
         val = 'all => '"{\em all"
         val = 0 => '"{\em no"
         STRCONC('"the last {\em ",stringize val)
-    bcHt(str)
+    ht_add_string(page, str)
 
 htCacheOne names ==
   page := htInitPage(mkSetTitle(),nil)
   htpSetProperty(page,'names,names)
-  htMakePage '(
+  ht_add_to_page(page, '(
     (domainConditions (Satisfies ALLPI chkAllPositiveInteger))
     (text
       "Enter below a {\em cache length}, a positive integer. "
@@ -637,6 +633,6 @@ htCacheOne names ==
       "\vspace{1}\newline ")
     (inputStrings
       ("Enter {\em all} or a positive integer:"
-       "" 5 10 c1 ALLPI)))
-  htSetvarDoneButton('"Select to Set Value",'htCacheSet)
-  htShowPage()
+       "" 5 10 c1 ALLPI))))
+  htMakeDoneButton('"Select to Set Value", 'htCacheSet)
+  htShowPage1(page)
