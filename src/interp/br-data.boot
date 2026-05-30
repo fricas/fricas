@@ -47,6 +47,152 @@ dbInfovec(name) ==
     loadLibIfNotLoaded(name)
     u := GET(name, 'infovec) => u
 
+extractHasArgs(pred) ==
+    x := find(pred) or return nil where find(x) ==
+        x is [op, :argl] =>
+            op = 'hasArgs => x
+            MEMQ(op, '(AND OR NOT)) => or/[find(y) for y in argl]
+            nil
+        nil
+    [rest(x), :simpBool(substitute('T, x, pred))]
+
+augmentHasArgs(alist,conform) ==
+    conname := opOf(conform)
+    args := IFCDR(conform) or return alist
+    n := #args
+    [[name, :pred] for [name, :p] in alist] where pred ==
+         extractHasArgs(p) is [a,:b] => p
+         quickAnd(p, ['hasArgs,
+                      :TAKE(n, IFCDR(getConstructorForm(opOf(name))))])
+
+evalDomainOpPred(dom, pred, preds) ==
+    u := convert_pred(dom, pred)
+    eval_pred(dom, u, preds)
+
+convert_pred(dom, pred) ==
+    pred = 'T => true
+    pred is [op, :argl] =>
+        op = 'AND or op = 'OR => [op, :[convert_pred(dom, x) for x in argl]]
+        op = 'NOT => ['NOT, convert_pred(dom, first(argl))]
+        op = 'has =>
+            [arg, p] := argl
+            ['HasCategory, arg, convert_cat_arg(p)]
+        systemError '"unknown predicate form"
+    systemError([])
+
+convert_cat_arg(p) ==
+    SYMBOLP(p) and member(p, $FormalMapVariableList) => ["devaluate", p]
+    ATOM(p) or #p = 1 => MKQ(p)
+    ['LIST, MKQ(first(p)), :[convert_cat_arg(x) for x in rest p]]
+
+eval_pred(dom, pred, preds) ==
+    pred = 'T => true
+    k := POSN1(pred, preds) => testBitVector(dom.3, k + 1)
+    eval_pred1(dom, pred, preds)
+
+eval_pred1(dom, pred, preds) ==
+    pred is [op,:argl] =>
+        op = 'AND => "and"/[eval_pred(dom, x, preds) for x in argl]
+        op = 'OR  => "or"/[eval_pred(dom, x, preds) for x in argl]
+        op = 'NOT => not eval_pred(dom, first(argl), preds)
+        nil
+    systemError '"unknown atomic predicate form"
+
+kFormatSlotDomain1(x, infovec) ==
+              fn(formatSlotDomain1(x, infovec)) where fn(x) ==
+    ATOM(x) => x
+    (op := first(x)) = '_% => '_%
+    op = 'local => CADR(x)
+    op = ":" => [":", CADR(x), fn(CADDR(x))]
+    MEMQ(op, $Primitives) or constructor?(op) =>
+        [fn(y) for y in x]
+    INTEGERP(op) => op
+    op = 'QUOTE and ATOM(CADR(x)) => CADR(x)
+    x
+
+dbSearchOrder(conform, domname, domain) == --domain = nil or set to live domain
+    conform := domname or conform
+    name := opOf(conform)
+    infovec := dbInfovec(name) or return nil  --exit for categories
+    u := infovec.3
+    predvec :=
+        domain => domain.3
+        get_database(name, 'PREDICATES)
+    catpredvec := first(u)
+    catinfo := CADR(u)
+    catvec := CADDR(u)
+    catforms := [[pakform, :pred] for i in 0..MAXINDEX(catvec) | test ] where
+        test ==
+            p := SUBLISLIS(rest(conform), $FormalMapVariableList,
+                           kTestPred(catpredvec.i, domain, predvec))
+            if domain then p := EVAL(p)
+            pred := simpCatPredicate(p)
+            if domname and CONTAINED('%, pred) then
+                pred := SUBST(domname, '%, pred)
+            (pak := catinfo.i) and pred   --only those with default packages
+        pakform ==
+            -- in case it has been instantiated
+            pak and not(IDENTP(pak)) => devaluate(pak)
+            catform := kFormatSlotDomain1(catvec.i, infovec)
+            res := dbSubConform(rest(conform), [pak, "%", :rest(catform)])
+            domname => SUBST(domname, '%, res)
+            res
+    [:dbAddChain(conform), :catforms]
+
+kisValidType(typeForm) ==
+    $ProcessInteractiveValue: fluid := true
+    $noEvalTypeMsg: fluid := true
+    $printTimeIfTrue : local := false
+    $printStorageIfTrue : local := false
+    $BreakMode : local := 'throw_reader
+    CATCH('SPAD_READER, CATCH('top_level, processInteractive(typeForm, nil)))
+        is [[h, :.], :t] and member(h, '(Type Category)) => t
+    false
+
+parseNoMacroFromString(s) ==
+    s := next(function ncloopParse,
+              next(function lineoftoks, incString(s)))
+    StreamNull(s) => nil
+    pf2Sex(first(rest(first(s))))
+
+mkConform(kind, name, argString) ==
+    kind ~= '"default package" =>
+        form := STRCONC(name, argString)
+        parse := parseNoMacroFromString(form)
+        null(parse) =>
+            sayBrightlyNT '"Won't parse: "
+            pp(form)
+            systemError('"Keywords in argument list?")
+        ATOM(parse) => [parse]
+        parse
+    -- & case
+    [INTERN(name), :rest(ncParseFromString(STRCONC(char('d), argString)))]
+
+kTestPred(n, dom, preds) ==
+    n = 0 => true
+    dom => testBitVector(preds, n)
+    simpHasPred(preds.(n - 1))
+
+dbAddChainDomain(conform) ==
+    [name, :args] := conform
+    infovec := dbInfovec(name) or return nil  --exit for categories
+    template := infovec.0
+    null(form := template.5) => nil
+    dbSubConform(args, kFormatSlotDomain1(devaluate(form), infovec))
+
+dbSubConform(args, u) ==
+    ATOM(u) =>
+        (n := position(u,$FormalMapVariableList)) >= 0 => args.n
+        u
+    u is ['local, y] => dbSubConform(args, y)
+    [dbSubConform(args,x) for x in u]
+
+dbAddChain(conform) ==
+    u := dbAddChainDomain(conform) =>
+        ATOM(u) => nil
+        [[u, :true], :dbAddChain(u)]
+    nil
+
 --============================================================================
 --              Build Library Database (libdb.text,...)
 --============================================================================
@@ -661,3 +807,73 @@ buildDefaultPackageNamesHT() ==
 
 $defaultPackageNamesHT := buildDefaultPackageNamesHT()
 
+ --------------- Data for Union, Mapping, and Record -----------------
+
+MAKEPROP('Record, 'documentation, '(
+  (_=  (((Boolean) _% _%)
+   "\spad{r = s} tests for equality of two records \spad{r} and \spad{s}"))
+  (coerce (((OutputForm) _%)
+   "\spad{coerce(r)} returns an representation of \spad{r} as an output form")
+         ((_% (List (Any)))
+   "\spad{coerce(u)}, where \spad{u} is the list \spad{[x,y]} for \spad{x} of type \spad{A} and \spad{y} of type \spad{B}, returns the record \spad{[a:x,b:y]}"))
+  (construct ((_% A B)
+   "\spad{construct(x, y)} returns the record \spad{[a:x,b:y]}"))
+  (elt ((A % "a")
+   "\spad{r . a} returns the value stored in record \spad{r} under selector \spad{a}.")
+      ((B % "b")
+   "\spad{r . b} returns the value stored in record \spad{r} under selector \spad{b}."))
+  (setelt_! ((A % "a" A)
+   "\spad{r . a := x} destructively replaces the value stored in record \spad{r} under selector \spad{a} by the value of \spad{x}. Error: if \spad{r} has not been previously assigned a value.")
+         ((B % "b" B)
+   "\spad{r . b := y} destructively replaces the value stored in record \spad{r} under selector \spad{b} by the value of \spad{y}. Error: if \spad{r} has not been previously assigned a value."))
+   ))
+
+MAKEPROP('UntaggedUnion, 'documentation, '(
+  (_=  (((Boolean) % %)
+    "\spad{u = v} tests if two objects of the union are equal, that is, u and v are hold objects of same branch which are equal."))
+  (case (((Boolean) % A)
+    "\spad{u case A} tests if \spad{u} is of the type \spad{A} branch of the union.")
+        (((Boolean) % B)
+    "\spad{u case B} tests if \spad{u} is of the \spad{B} branch of the union."))
+  (coerce ((A %)
+    "\spad{coerce(u)} returns \spad{x} of type \spad{A} if \spad{x} is of the \spad{A} branch of the union. Error: if \spad{u} is of the \spad{B} branch of the union.")
+          ((B %)
+    "\spad{coerce(u)} returns \spad{x} of type \spad{B} if \spad{x} is of the \spad{B} branch of the union. Error: if \spad{u} is of the \spad{A} branch of the union.")
+          ((% A)
+    "\spad{coerce(x)}, where \spad{x} has type \spad{A}, returns \spad{x} as a union type.")
+          ((% B)
+    "\spad{coerce(y)}, where \spad{y} has type \spad{B}, returns \spad{y} as a union type."))
+  ))
+
+MAKEPROP('Union, 'documentation, '(
+  (_=  (((Boolean) % %)
+    "\spad{u = v} tests if two objects of the union are equal, that is, \spad{u} and \spad{v} are objects of same branch which are equal."))
+  (case (((Boolean) % "a")
+    "\spad{u case a} tests if \spad{u} is of branch \spad{a} of the union.")
+                (((Boolean) % "b")
+    "\spad{u case b} tests if \spad{u} is of branch \spad{b} of the union."))
+  (coerce ((A %)
+    "\spad{coerce(u)} returns \spad{x} of type \spad{A} if \spad{x} is of branch \spad{a} of the union. Error: if \spad{u} is of branch \spad{b} of the union.")
+          ((B %)
+    "\spad{coerce(u)} returns \spad{x} of type \spad{B} if \spad{x} is of branch \spad{b} branch of the union. Error: if \spad{u} is of the \spad{a} branch of the union.")
+          ((% A)
+    "\spad{coerce(x)}, where \spad{x} has type \spad{A}, returns \spad{x} as a union type.")
+          ((% B)
+    "\spad{coerce(y)}, where \spad{y} has type \spad{B}, returns \spad{y} as a union type."))
+  ))
+
+MAKEPROP('Mapping, 'documentation, '(
+  (_=  (((Boolean) % %)
+    "\spad{u = v} tests if mapping objects are equal."))
+   ))
+
+MAKEPROP('Enumeration, 'documentation, '(
+  (_= (((Boolean) _% _%)
+    "\spad{e = f} tests for equality of two enumerations \spad{e} and \spad{f}"))
+  (_^_= (((Boolean) _% _%)
+    "\spad{e ~= f} tests that two enumerations \spad{e} and \spad{f} are nont equal"))
+  (coerce (((OutputForm) _%)
+     "\spad{coerce(e)} returns a representation of enumeration \spad{r} as an output form")
+          ((_% (Symbol))
+     "\spad{coerce(s)} converts a symbol \spad{s} into an enumeration which has \spad{s} as a member symbol"))
+  ))
