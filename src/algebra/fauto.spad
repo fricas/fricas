@@ -148,7 +148,13 @@ BasicMatchingAutomaton : with
 
     make_automaton(pat : List(String), pre_wild : Boolean,
                    post_wild : Boolean) : % ==
-        empty?(pat) => error "empty pattern"
+        empty?(pat) =>
+            pre_wild or post_wild =>
+                n := new(true, char(" "), true)$MatchingAutomatonNode
+                set_next!(n, n)
+                sv := construct([n])$PrimitiveArray(MatchingAutomatonNode)
+                ra := [n, sv]$Rep
+            error "empty pattern"
         sl := []$List(MatchingAutomatonNode)
         prev : MatchingAutomatonNode
         start : MatchingAutomatonNode
@@ -368,6 +374,9 @@ LogicalRegularExpressionMatch : with
                 error "unhandled operator in pattern"
 
     parse_pattern(s, downcase) ==
+        s = "*" =>
+            ba := make_automaton([], true, false)$BasicMatchingAutomaton
+            convert(ba)$LogicalMatchingAutomaton
         st := [s, 1]$s_R
         stack : List(U2) := []
         string_priority := 9

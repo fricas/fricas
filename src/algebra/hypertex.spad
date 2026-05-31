@@ -728,6 +728,10 @@ BrowserInformation : Exports == Implementation where
      search_operations : String -> Op_res
        ++ search_operations(n) searches for operations with name
        ++ matching n.
+     search_operations : ((String, Sig_doc) -> Boolean) -> Op_lst
+       ++ search_operations(f) searches for operations such that f(n, s)
+       ++ is true where n is name of operation and s gives other info
+       ++ about operation.
      search_documentation : String -> Gen_res
        ++ search_documentation(n) searches for constructors and
        ++ operations with documentation string matching n.
@@ -1364,6 +1368,21 @@ BrowserInformation : Exports == Implementation where
             all_ops := ops_from_exports()
             all_ops_initialized := true
         search_opl(pat, all_ops)
+
+    search_operations(f : (String, Sig_doc) -> Boolean) : Op_lst ==
+        res := []$Op_lst
+        if not(all_ops_initialized) then
+            all_ops := ops_from_exports()
+            all_ops_initialized := true
+        for opr in all_ops repeat
+            res1 := []$List(Sig_doc)
+            n1 := string(opr.name)
+            for sd in opr.sdl repeat
+                if f(n1, sd) then
+                    res1 := cons(sd, res1)
+            if not(empty?(res1)) then
+                res := cons([opr.name, reverse!(res1)], res)
+        reverse!(res)
 
     string_to_integer(s : String) : Union(Integer, "failed") ==
         res : SExpression := string2Integer(s)$Lisp
