@@ -290,6 +290,7 @@ get_tex_stream() == get_lisp_stream($tex_out_rec.$stream_off)
 get_formatted_stream() == get_lisp_stream($formatted_out_rec.$stream_off)
 
 get_out_rec(branch) ==
+    branch = 'algebra => $algebra_out_rec
     branch = 'fortran => $fortran_out_rec
     branch = 'mathml => $mathml_out_rec
     branch = 'texmacs => $texmacs_out_rec
