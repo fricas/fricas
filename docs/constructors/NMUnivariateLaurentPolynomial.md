@@ -1,6 +1,6 @@
 # NMUnivariateLaurentPolynomial
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L351)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L358)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -209,67 +209,67 @@ Univariate laurent polynomial domain using the AbstractAlgebra Julia package Aut
 
 ## Operations added
 
-### `coefficients` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L427)\]
+### `coefficients` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L434)\]
 
 coefficients(p, seg) returns the coefficients from the exponent range seg.
 
 - **Signature**: `(%,Segment(Integer))->JLVector(R)`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L443)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L450)\]
 
 coerce(x) converts the variable x to a Nemo univariate polynomial.
 
 - **Signature**: `(Variable(x))->%`
 
-### `constantCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L425)\]
+### `constantCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L432)\]
 
 constantCoefficient(p) returns the constant of p.
 
 - **Signature**: `(%)->R`
 
-### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L413)\]
+### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L420)\]
 
 factor(p) returns the factorization of p using the NMFactored domain.
 
 - **Signature**: `(%)->NMFactored(%)`
 
-### `jnulp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L410)\]
+### `jnulp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L417)\]
 
 jnulp(p) converts the univariate polynomial p to a Nemo univariate polynomial.
 
 - **Signature**: `(UnivariatePolynomial(x,R))->%`
 
-### `minimumDegree` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L421)\]
+### `minimumDegree` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L428)\]
 
 minimumDegree(p) returns the minimal exponent of p.
 
 - **Signature**: `(%)->Integer`
 
-### `monomial?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L374)\]
+### `monomial?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L381)\]
 
 monomial?(p) checks whether or not p is a monomial.
 
 - **Signature**: `(%)->Boolean`
 
-### `monomialRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L376)\]
+### `monomialRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L383)\]
 
 monomialRecursive?(p) checks whether or not p is monomial recursively (all scalar types).
 
 - **Signature**: `(%)->Boolean`
 
-### `mullow` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L433)\]
+### `mullow` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L440)\]
 
 mullow(p1,p2,n) is the truncated multiplication of p1 and p2 by n.
 
 - **Signature**: `(%,%,NonNegativeInteger)->%`
 
-### `nemoULPPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L445)\]
+### `nemoULPPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L452)\]
 
 nemoULPPrint(bool) set the output mode. If set to false, use the FriCAS output mode if possible. Otherwise use the Nemo one (default).
 
 - **Signature**: `(Boolean)->Boolean`
 
-### `reverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L435)\]
+### `reverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L442)\]
 
 reverse the coefficients of p (the leading becomes the trailing) and normalise the resulting polynomial.
 
@@ -279,25 +279,25 @@ reverse the coefficients of p (the leading becomes the trailing) and normalise t
 
 - **Signature**: `(%,NonNegativeInteger)->%`
 
-### `termRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L381)\]
+### `termRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L388)\]
 
 termRecursive?(p) checks whether or not p as one term, recursively (all scalar types).
 
 - **Signature**: `(%)->Boolean`
 
-### `trailingCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L423)\]
+### `trailingCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L430)\]
 
 trailingCoefficient(p) returns the trailing coefficient of p.
 
 - **Signature**: `(%)->R`
 
-### `truncate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L430)\]
+### `truncate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L437)\]
 
 truncate(p, n) returns p truncated to n terms. It's the remainder of the division by x^n.
 
 - **Signature**: `(%,NonNegativeInteger)->%`
 
-### `unit` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L416)\]
+### `unit` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L423)\]
 
 unit(p) returns unit from the factorization of p.
 

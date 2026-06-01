@@ -229,14 +229,15 @@ These domains wrap the [Nemo.jl](https://nemocas.github.io/Nemo.jl/stable/) libr
 | [NMRealBall](constructors/NMRealBall.md) | Real ball arithmetic |
 | [NMRealField](constructors/NMRealField.md) | Real field |
 
-#### Domains — p-adic Numbers
+#### Domains — p-adic and q-adic Numbers
 
 | Constructor | Description |
 |-------------|-------------|
-| [NMPadicInteger](constructors/NMPadicInteger.md) | p-adic integers |
-| [NMPadicRational](constructors/NMPadicRational.md) | p-adic rationals |
-| [NMExtendedPadicInteger](constructors/NMExtendedPadicInteger.md) | Extended p-adic integers |
-| [NMExtendedPadicRational](constructors/NMExtendedPadicRational.md) | Extended p-adic rationals |
+| [NMExtendedPadic](constructors/NMExtendedPadic.md) | p-adic completion of the integers |
+| [NMPadic](constructors/NMPadic.md) | p-adic numbers (fixed precision) |
+| [NMExtendedQadic](constructors/NMExtendedQadic.md) | q-adic completion field |
+| [NMQadic](constructors/NMQadic.md) | q-adic numbers (fixed precision) |
+| [NMExtendedQadicField](constructors/NMExtendedQadicField.md) | q-adic completion field using polynomial |
 
 #### Domains — Polynomials and Series
 

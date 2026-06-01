@@ -66,11 +66,11 @@ NM_CATEGORIES = [
 
 NM_DOMAINS = [
     "NMAcbField", "NMAlgebraicNumber", "NMArbField", "NMComplexBall",
-    "NMComplexField", "NMExactCalciumField", "NMExtendedPadicInteger",
-    "NMExtendedPadicRational", "NMFactored", "NMFiniteField",
-    "NMFraction", "NMInteger", "NMIntegerMod",
+    "NMComplexField", "NMExactCalciumField", "NMExtendedPadic",
+    "NMExtendedQadic", "NMExtendedQadicField", "NMFactored",
+    "NMFiniteField", "NMFraction", "NMInteger", "NMIntegerMod",
     "NMMultivariateLaurentPolynomial", "NMMultivariatePolynomial",
-    "NMPadicInteger", "NMPadicRational", "NMPolynomial", "NMPrimeField",
+    "NMPadic", "NMPolynomial", "NMPrimeField", "NMQadic",
     "NMRealBall", "NMRealField", "NMUnivariateLaurentPolynomial",
     "NMUnivariateLaurentSeries", "NMUnivariatePolynomial",
     "NMUnivariatePowerSeries", "NMUnivariatePuiseuxSeries",

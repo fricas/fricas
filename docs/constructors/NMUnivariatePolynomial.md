@@ -1,6 +1,6 @@
 # NMUnivariatePolynomial
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L9)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -277,37 +277,37 @@ p*(p + 1);
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L141)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L148)\]
 
 coerce(x) converts the variable x to a Nemo univariate polynomial.
 
 - **Signature**: `(Variable(x))->%`
 
-### `compose` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L108)\]
+### `compose` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L115)\]
 
 compose(p, q) returns the composition p(q(x)).
 
 - **Signature**: `(%,%)->%`
 
-### `constant?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L31)\]
+### `constant?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L38)\]
 
 constant?(p) checks whether or not p is a constant polynomial.
 
 - **Signature**: `(%)->Boolean`
 
-### `constantCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L118)\]
+### `constantCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L125)\]
 
 constantCoefficient(p) returns the constant of p.
 
 - **Signature**: `(%)->R`
 
-### `cosMinimalPolynomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L67)\]
+### `cosMinimalPolynomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L74)\]
 
 cosMinimalPolynomial(n,p) returns the minimal polynomial of 2*cos(2*π/n).
 
 - **Signature**: `(NonNegativeInteger,%)->%`
 
-### `cyclotomicPolynomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L56)\]
+### `cyclotomicPolynomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L63)\]
 
 cyclotomicPolynomial(n,p) returns the n-th cyclotomic polynomial Φn. For example:
 
@@ -323,80 +323,80 @@ cyclotomicPolynomial(15,x)
 
 - **Signature**: `(NonNegativeInteger,%)->%`
 
-### `divide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L92)\]
+### `divide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L99)\]
 
 divide(p,q) returns a record (quotient, remainder) of the the Euclidean division of p by q.
 
 - **Signature**: `(%,%)->Record(quotient:%,remainder:%)`
 
-### `etaQExp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L73)\]
+### `etaQExp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L80)\]
 
 q^(1/24)) raised to the power r, (q^(−1/24)*η(q))^r. etaQExp(r,n,p) returns the q-expansion to length n of the Dedekind eta function (without the leading factor
 
 - **Signature**: `(Integer,PositiveInteger,%)->%`
 
-### `exactDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L100)\]
+### `exactDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L107)\]
 
 exactDivide(p,q) divides p by q if the division is exact.
 
 - **Signature**: `(%,%)->%`
 
-### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L110)\]
+### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L117)\]
 
 factor(p) returns the factorization of p using the NMFactored domain.
 
 - **Signature**: `(%)->NMFactored(%)`
 
-### `jnup` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L105)\]
+### `jnup` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L112)\]
 
 jnup(p) converts the univariate polynomial p to a Nemo univariate polynomial.
 
 - **Signature**: `(UnivariatePolynomial(x,R))->%`
 
-### `length` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L113)\]
+### `length` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L120)\]
 
 length(p) returns the number of coefficients in its dense representation. It includes zero coefficients.
 
 - **Signature**: `(%)->NonNegativeInteger`
 
-### `minimalPolynomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L49)\]
+### `minimalPolynomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L56)\]
 
 minimalPolynomial(algn) returns the minimal polynomial of algn. Convenience function.
 
 - **Signature**: `(NMAlgebraicNumber)->%`
 - **Signature**: `(NMAlgebraicNumber)->%`
 
-### `monic?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L43)\]
+### `monic?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L50)\]
 
 monic?(p) checks whether or not p monic.
 
 - **Signature**: `(%)->Boolean`
 
-### `monomial?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L33)\]
+### `monomial?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L40)\]
 
 monomial?(p) checks whether or not p is a monomial.
 
 - **Signature**: `(%)->Boolean`
 
-### `monomialRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L35)\]
+### `monomialRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L42)\]
 
 monomialRecursive?(p) checks whether or not p is monomial recursively (all scalar types).
 
 - **Signature**: `(%)->Boolean`
 
-### `mullow` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L123)\]
+### `mullow` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L130)\]
 
 mullow(p1,p2,n) is the truncated multiplication of p1 and p2 by n.
 
 - **Signature**: `(%,%,NonNegativeInteger)->%`
 
-### `pseudoDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L102)\]
+### `pseudoDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L109)\]
 
 pseudoDivide(p1,p2) returns pseudo-quotient and pseudo-remainder of the pseudo-division of p1 by p2.
 
 - **Signature**: `(%,%)->Record(quotient:%,remainder:%)`
 
-### `reverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L125)\]
+### `reverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L132)\]
 
 reverse the coefficients of p (the leading becomes the trailing) and normalise the resulting polynomial.
 
@@ -406,44 +406,44 @@ reverse the coefficients of p (the leading becomes the trailing) and normalise t
 
 - **Signature**: `(%,NonNegativeInteger)->%`
 
-### `roots` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L52)\]
+### `roots` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L59)\]
 
 roots(p) returns the roots of p. Convenience function.
 
 - **Signature**: `(%)->JLVector(NMAlgebraicNumber)`
 - **Signature**: `(%)->JLVector(NMAlgebraicNumber)`
 
-### `shiftLeft` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L133)\]
+### `shiftLeft` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L140)\]
 
 shiftLeft(p) shifts p left.
 
 - **Signature**: `(%,NonNegativeInteger)->%`
 
-### `shiftLeft!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L137)\]
+### `shiftLeft!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L144)\]
 
 shiftLeft(p) left shift p.
 
 - **Signature**: `(%,NonNegativeInteger)->%`
 
-### `shiftRight` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L135)\]
+### `shiftRight` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L142)\]
 
 shiftRight(p) shifts p right.
 
 - **Signature**: `(%,NonNegativeInteger)->%`
 
-### `shiftRight!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L139)\]
+### `shiftRight!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L146)\]
 
 shiftRight(p) right shift p.
 
 - **Signature**: `(%,NonNegativeInteger)->%`
 
-### `square?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L45)\]
+### `square?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L52)\]
 
 square?(p) checks whether or not p is a perfect square.
 
 - **Signature**: `(%)->Boolean`
 
-### `swinnertonDyerPolynomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L62)\]
+### `swinnertonDyerPolynomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L69)\]
 
 swinnertonDyerPolynomial(n, p) returns the Swinnerton-Dyer polynomial Sn. 
 
@@ -456,31 +456,31 @@ Examp le: swinnertonDyerPolynomial(4,x)
 
 - **Signature**: `(NonNegativeInteger,%)->%`
 
-### `term?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L38)\]
+### `term?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L45)\]
 
 term?(p) checks whether or not p is a one term polynomial.
 
 - **Signature**: `(%)->Boolean`
 
-### `termRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L40)\]
+### `termRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L47)\]
 
 termRecursive?(p) checks whether or not p as one term, recursively (all scalar types).
 
 - **Signature**: `(%)->Boolean`
 
-### `thetaQExp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L70)\]
+### `thetaQExp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L77)\]
 
 thetaQExp(r,n,p) returns the q-expansion to length n of the Jacobi theta function raised to the power r, ϑ(q)^r.
 
 - **Signature**: `(Integer,PositiveInteger,%)->%`
 
-### `trailingCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L116)\]
+### `trailingCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L123)\]
 
 trailingCoefficient(p) returns the trailing coefficient of p.
 
 - **Signature**: `(%)->R`
 
-### `truncate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L120)\]
+### `truncate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L127)\]
 
 truncate(p, n) returns p truncated to n terms. It's the remainder of the division by x^n.
 

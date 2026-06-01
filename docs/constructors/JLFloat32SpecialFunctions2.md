@@ -274,6 +274,12 @@ expintx(x) computes scaled exponential integral function
 
 - **Signature**: `(JLFloat32)->JLFloat32`
 
+### `gamma_inc_inv` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jf32sf2.spad#L38)\]
+
+gamma_inc_inv(a,p,q) computes inverse of incomplete gamma function ratio P(a,x) and Q(a,x) (i.e evaluates x given P(a,x)=p and Q(a,x)=q)
+
+- **Signature**: `(JLFloat32,JLFloat32,JLFloat32)->JLFloat32`
+
 ### `hankelH1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jf32sf2.spad#L128)\]
 
 hankelH1(nu,z) computes besselh(nu, 1, z)

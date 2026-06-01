@@ -1,13 +1,13 @@
-# NMPadicInteger
+# NMExtendedPadic
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NPADICZ.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
-Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i), where the a[i] lie in 0, 1,..., (p - 1) using the Nemo Julia package.
+This domain implements Zp, the p-adic completion of the integers using the Nemo Julia package.
 
-**NMPadicInteger(p: NMInteger) is a domain constructor**  
-**Abbreviation for NMPadicInteger is NPADICZ**  
+**NMExtendedPadic(p: NMInteger,prec: Integer) is a domain constructor**  
+**Abbreviation for NMExtendedPadic is NXPADIC**  
 **This constructor is exposed in this frame.**
 
 ## Signatures
@@ -33,11 +33,10 @@ Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i)
  coerce : NMInteger -> %                                coerce : % -> %
  coerce : Integer -> %                                  coerce : % -> JLObject
  coerce : % -> OutputForm                               commutator : (%, %) -> %
- complete : % -> %                                      convert : % -> String
- equal? : (%, %) -> Boolean                             euclideanSize : % -> NonNegativeInteger
- exact? : % -> Boolean                                  exactDivide : (%, %) -> %
- exp : % -> %                                           ?exquo? : (%, %) -> Union(%,"failed")
- extend : (%, Integer) -> %                             gcd : (%, %) -> %
+ convert : % -> String                                  equal? : (%, %) -> Boolean
+ euclideanSize : % -> NonNegativeInteger                exact? : % -> Boolean
+ exactDivide : (%, %) -> %                              exp : % -> %
+ ?exquo? : (%, %) -> Union(%,"failed")                  gcd : (%, %) -> %
  gcd : List(%) -> %                                     jlAbout : % -> Void
  jlApply : (String, %, %, %, %, %) -> JLObject          jlApply : (String, %, %, %, %) -> JLObject
  jlApply : (String, %, %, %) -> JLObject                jlApply : (String, %, %) -> JLObject
@@ -83,40 +82,58 @@ Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i)
 
 ## Operations added
 
-### `O`
+### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L62)\]
+
+O() returns the default Big-oh from domain parameters.
 
 - **Signature**: `()->%`
 
-### `coerce`
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L56)\]
+
+coerce(x) returns x as the p-adic completion of the Nemo Integer.
 
 - **Signature**: `(NMInteger)->%`
 
-### `jnpadic`
+### `jnpadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L58)\]
+
+jnpadic(x) returns x as the p-adic completion of the Nemo Integer.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-### `liftQ`
+### `liftQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L51)\]
+
+liftQ(x) lift x to a Nemo Fraction Nemo Integer.
 
 - **Signature**: `(%)->NMFraction(NMInteger)`
 
-### `liftZ`
+### `liftZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L49)\]
+
+liftZ(x) lift x to a Nemo Integer.
 
 - **Signature**: `(%)->NMInteger`
 
-### `precision`
+### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L67)\]
+
+precision(x) returns the precision used for x.
 
 - **Signature**: `(%)->Integer`
 
-### `prime`
+### `prime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L64)\]
+
+prime(x) returns the modulus used for x. Convenience function.
 
 - **Signature**: `(%)->Integer`
 
-### `teichmuller`
+### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L53)\]
+
+teichmuller(x) computes the Teichmuller lift of x. The valuation of x must be non negative.
 
 - **Signature**: `(%)->%`
 
-### `valuation`
+### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L47)\]
+
+valuation(x) is the valuation of x.
 
 - **Signature**: `(%)->%`
 ---
