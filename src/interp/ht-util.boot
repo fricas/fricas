@@ -371,7 +371,7 @@ pvarsOfPattern pattern ==
   NULL LISTP pattern => nil
   [pvar for pvar in rest pattern | pvar in $PatternVariableList]
 
-htMakeDoneButton(message, func) ==
+htMakeDoneButton(page, message, func) ==
   bcHt '"\newline\vspace{1}\centerline{"
   if message = '"Continue" then
     bchtMakeButton('"\lispdownlink", "\ContinueBitmap", func)
@@ -411,7 +411,7 @@ htProcessDoitButton [label, command, func] ==
   iht '"\vspace{2}{Select \  \UpButton{} \  to go back one page.}"
   iht '"\newline{Select \  \ExitButton{QuitPage} \  to remove this window.}"
 
-htMakeDoitButton(label, command) ==
+htMakeDoitButton(page, label, command) ==
   -- use bitmap button if just plain old "Do It"
   if label = '"Do It" then
     bcHt '"\newline\vspace{1}\centerline{\lispcommand{\DoItBitmap}{(|doDoitButton| "
@@ -513,7 +513,7 @@ bcGen command ==
         "{Here is the FriCAS command you could have issued to compute this result:}"
             "\vspace{2}\newline "),
       ['text,:string]])
-  htMakeDoitButton('"Do It", command)
+  htMakeDoitButton(page, '"Do It", command)
   htShowPage1(page)
 
 bcString2WordList s == fn(s,0,MAXINDEX s) where
