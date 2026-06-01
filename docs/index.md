@@ -20,7 +20,7 @@ All of this is handled transparently at the Lisp level by the `JLUtilityFunction
 
 ### 2. High-level `JLObjectType` Interface
 
-Defined in [jobject.spad](../src/algebra/jobject.spad), this interface manages Julia objects as opaque *reference handles* (`JLObject`) inside FriCAS.
+Defined in [jobject.spad](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad), this interface manages Julia objects as opaque *reference handles* (`JLObject`) inside FriCAS.
 
 - Julia objects are stored in an indexed dictionary inside Julia; FriCAS holds the integer key.
 - Any Julia value — functions, DataFrames, Nemo rings, Wolfram expressions — can be manipulated uniformly from FriCAS Spad code.
