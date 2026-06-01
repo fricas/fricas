@@ -172,7 +172,7 @@ parseExit [a,:b] ==
   b =>
     null INTEGERP a =>
             bright_warn(['"first arg ", a, '" for exit must be integer"])
-            ['exit, 1, a])
+            ['exit, 1, a]
     ['exit,a,:b]
   ['exit,1,a]
 
