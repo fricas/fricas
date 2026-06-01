@@ -180,7 +180,7 @@ trace1(l, options) ==
   l is ["?"] => _?t()
   traceList:= [transTraceItem x for x in l] or return nil
   for x in traceList repeat $optionAlist:=
-    ADDASSOC(x, options, $optionAlist)
+      assoc_add(x, options, $optionAlist)
   optionList:= getTraceOptions(options)
   if (domainList := LASSOC("of", optionList)) then
       LASSOC("ops", optionList) => throw_msg("S2IT0004",
@@ -452,7 +452,7 @@ untrace2(X, options) ==
                      "%d", '"not traced"])
     $trace_names := remove_equal(X, $trace_names)
     $mathTraceList := REMOVE((STRINGP(X) => INTERN(X); X), $mathTraceList)
-    $letAssoc := DELASC(X, $letAssoc)
+    $letAssoc := assoc_del(X, $letAssoc)
     Y := (IS_GENVAR(X) => devaluate(EVAL(X)); X)
     $timer_list := remove_equal(STRINGIMAGE(Y), $timer_list)
     SET(INTERN(STRCONC(Y, ",TIMER")), 0)
@@ -482,8 +482,8 @@ getTraceOptions options ==
 saveMapSig(funNames) ==
   for name in funNames repeat
     map:= rassoc(name,$mapSubNameAlist) =>
-      $tracedMapSignatures:= ADDASSOC(name,getMapSig(map,name),
-        $tracedMapSignatures)
+            $tracedMapSignatures := assoc_add(name, getMapSig(map, name),
+                                              $tracedMapSignatures)
 
 getMapSig(mapName,subName) ==
   lmms := getI(mapName, 'localModemap) =>
@@ -1003,7 +1003,7 @@ spadUntrace(domain,options) ==
       rplac(first domain.n, bpiPointer)
       rplac(CDDDR pair, nil)
       if assoc(key := BPINAME bpiPointer, $letAssoc) then
-                $letAssoc := DELASC(key, $letAssoc)
+                $letAssoc := assoc_del(key, $letAssoc)
   newSigSlotNumberAlist:= [x for x in sigSlotNumberAlist | CDDDR x]
   newSigSlotNumberAlist => rplac(rest pair, newSigSlotNumberAlist)
   $trace_names := DELASC(domain, $trace_names)
@@ -1331,7 +1331,7 @@ monitor_xx($monitor_args, funct, opts, old_depth, old_depth_alist) ==
     $break_condition : local := BREAKCONDITION
     $monitor_caller : local := rassocSub(WHOCALLED(6), $mapSubNameAlist)
     NOT(STRINGP TRACECODE) =>
-        MOAN('"set TRACECODE to \'1911\' and restart")
+        bright_warn(['"set TRACECODE to \'1911\' and restart"])
     C := char_to_digit(TRACECODE.0)
     V := char_to_digit(TRACECODE.1)
     A := char_to_digit(TRACECODE.2)

@@ -622,7 +622,7 @@ rempropI(x,prop) ==
 
 remprop(x,prop,e) ==
     u := assoc(prop, pl := getProplist(x, e)) =>
-        e := addBinding(x, DELLASOS(first(u), pl), e)
+        e := addBinding(x, assoc_del(first(u), pl), e)
     e
 
 fastSearchCurrentEnv(x,currentEnv) ==

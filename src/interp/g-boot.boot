@@ -121,8 +121,8 @@ COMP_1(x) ==
 
 COMP_2(args, comp370_apply) ==
     [name, [type, argl, :bodyl], :junk] := args
-    junk => MOAN (FORMAT(nil, '"******pren error in (~S (~S ...) ...)",_
-                         name, type))
+    junk => bright_warn([FORMAT(nil, '"******pren error in (~S (~S ...) ...)",
+                                name, type)])
     type is "SLAM" => BREAK()
     type is 'domain_functor =>
         compHash(name, argl, bodyl, "$ConstructorCache", 'domainEqualList)

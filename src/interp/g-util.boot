@@ -345,8 +345,8 @@ augProplist(proplist,prop,val) ==
   while (proplist is [[ =prop,:.],:proplist']) repeat proplist:= proplist'
   val=(u:= LASSOC(prop,proplist)) => proplist
   null val =>
-    null u => proplist
-    DELLASOS(prop,proplist)
+        null(u) => proplist
+        assoc_del(prop, proplist)
   [[prop,:val],:proplist]
 
 augProplistOf(var,prop,val,e) ==

@@ -295,10 +295,43 @@ known_Lisp_equalty?(d) ==
     null(f) => nil
     GET(BPINAME(CAR(f)), 'SPADreplace)
 
+DELASC(k, l) == [e for e in l | ATOM(e) or not(first(e) = k)]
+
+assoc_del(k, l) == [e for e in l | not(first(e) = k)]
+
+assoc_add(k, d, l) == cons([k, :d], assoc_del(k, l))
+
+ASSOCLEFT(l) == [CAR(e) for e in l]
+
+ASSOCRIGHT(l) == [CDR(e) for e in l]
+
+LASSOC(k, l) ==
+    res := nil
+    found := false
+    for e in l while not(found) repeat
+        if CAR(e) = k then
+            res := CDR(e)
+            found := true
+    res
+
+rassoc(k, l) ==
+    res := nil
+    found := false
+    for e in l while not(found) repeat
+        if CDR(e) = k then
+            res := CAR(e)
+            found := true
+    res
+
+QLASSQ(p, al) == CDR(ASSQ(p, al))
+
 hashable(d) ==
     (p := known_Lisp_equalty?(d)) = 'EQ or p = 'EQL or p = 'EQUAL
 
 read_line(st) == READ_-LINE(st, nil, nil)
+
+bright_warn(m) ==
+    sayBrightly(["%l", '"===> ", m, "%l"])
 
 COT(x) == COS(x)/SIN(x)
 
