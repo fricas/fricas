@@ -4,9 +4,60 @@
 
 ## Description
 
-Nemo factored objects.NMFactored(R: Join(NMRing,IntegralDomain)) is a domain constructor Abbreviation for NMFactored is NFR This constructor is exposed in this frame. ------------------------------------------------ Operations ------------------------------------------------
+Nemo factored objects.
 
-?=? : (%, %) -> Boolean                                coerce : % -> JLObjectcoerce : % -> OutputForm                               convert : % -> Stringfactor : R -> Factored(R)                              factor : R -> % factorSquareFree : R -> Factored(R)                    factorSquareFree : R -> %jlAbout : % -> Void                                    jlApply : (String, %, %, %, %, %) -> JLObjectjlApply : (String, %, %, %, %) -> JLObject             jlApply : (String, %, %, %) -> JLObjectjlApply : (String, %, %) -> JLObject                   jlApply : (String, %) -> JLObjectjlDisplay : % -> Void                                  jlDump : JLObject -> VoidjlFieldNames : % -> JLObject                           jlGetField : (%, JLSymbol) -> JLObjectjlGetJuliaIndex : % -> String                          jlGetProperty : (%, JLSymbol) -> JLObjectjlId : % -> JLInt64                                    jlObject : () -> StringjlPropertyNames : % -> JLObject                        jlRef : % -> SExpressionjlText : (%, String) -> List(String)                   jlType : % -> Symbol jlimref : String -> %                                  jlref : String -> % latex : % -> String                                    missing? : % -> Booleanmutable? : % -> Boolean                                nothing? : % -> Booleanstring : % -> String                                   unit : % -> R ?~=? : (%, %) -> Boolean
+**NMFactored(R: Join(NMRing,IntegralDomain)) is a domain constructor**  
+**Abbreviation for NMFactored is NFR**  
+**This constructor is exposed in this frame.**
 
+## Signatures
+
+```fricas
+--- Operations ---
+
+ ?=? : (%, %) -> Boolean                                coerce : % -> JLObject
+ coerce : % -> OutputForm                               convert : % -> String
+ factor : R -> Factored(R)                              factor : R -> %
+ factorSquareFree : R -> Factored(R)                    factorSquareFree : R -> %
+ jlAbout : % -> Void                                    jlApply : (String, %, %, %, %, %) -> JLObject
+ jlApply : (String, %, %, %, %) -> JLObject             jlApply : (String, %, %, %) -> JLObject
+ jlApply : (String, %, %) -> JLObject                   jlApply : (String, %) -> JLObject
+ jlDisplay : % -> Void                                  jlDump : JLObject -> Void
+ jlFieldNames : % -> JLObject                           jlGetField : (%, JLSymbol) -> JLObject
+ jlGetJuliaIndex : % -> String                          jlGetProperty : (%, JLSymbol) -> JLObject
+ jlId : % -> JLInt64                                    jlObject : () -> String
+ jlPropertyNames : % -> JLObject                        jlRef : % -> SExpression
+ jlText : (%, String) -> List(String)                   jlType : % -> Symbol
+ jlimref : String -> %                                  jlref : String -> %
+ latex : % -> String                                    missing? : % -> Boolean
+ mutable? : % -> Boolean                                nothing? : % -> Boolean
+ string : % -> String                                   unit : % -> R
+ ?~=? : (%, %) -> Boolean
+```
+
+## Operations added
+
+### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFR.spad#L15)\]
+
+factor(intd) returns the factorization of intd.
+
+- **Signature**: `(R)->%`
+
+factor(intd) returns the factorization of intd. Currently its printed OutputForm can be difficult to "interpret". Use factorList(factor(intd)@Factored(%)) to have a more understandable representation.
+
+- **Signature**: `(R)->Factored(R)`
+
+### `factorSquareFree` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFR.spad#L24)\]
+
+factorSquareFree(intd) returns the factorization of intd.
+
+- **Signature**: `(R)->%`
+- **Signature**: `(R)->Factored(R)`
+
+### `unit` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFR.spad#L28)\]
+
+unit(fr) returns the unit part of the factorization.
+
+- **Signature**: `(%)->R`
 ---
 [Back to Index](../index.md)

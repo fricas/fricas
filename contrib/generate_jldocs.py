@@ -347,7 +347,7 @@ def fetch_constructor_doc(name: str) -> dict:
 
     # Split description from )show block
     show_marker_re = re.compile(
-        r"(?m)^\s*" + re.escape(name) + r"(?:\([^)]*\))?\s+is a\s+(domain|category|package)"
+        r"(?m)^\s*" + re.escape(name) + r"(?:\([^\n]*\))?\s+is a\s+(domain|category|package)"
     )
     m = show_marker_re.search(body)
     if m:
