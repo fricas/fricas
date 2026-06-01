@@ -2,10 +2,6 @@
 
 **jlFriCAS** is a high-performance interface connecting [FriCAS](http://fricas.github.io) to [Julia](https://julialang.org), enabling seamless numerical computing, [Nemo](https://nemocas.github.io/Nemo.jl/stable/) algebraic power, and, optionally, integrate some [Wolfram®](https://www.wolfram.com/) capabilities. Generic Julia interfaces to [Python®](https://www.python.org) and [R](https://www.r-project.org/) via [PyCall](https://github.com/JuliaPy/PyCall.jl) and [RCall](https://github.com/JuliaInterop/RCall.jl) are provided as well.
 
-> **Trademark notice**  
-> Wolfram is a registered trademark of Wolfram Research, Inc.  
-> Python is a registered trademark of the Python Software Foundation.
-
 ---
 
 ## The Two Interfaces of jlFriCAS
@@ -54,17 +50,17 @@ A <code>)show JuliaF64LinearAlgebra</code> will show you some operations
 and signatures for 64bit arrays. Julia uses internally the hardware
 optimized OpenBlas library which historically comes from the Goto BLAS
 library (autotuned at startup contrary to Atlas which used to tune
-the library a build time depending on your processor). This library can
+the library at build time depending on your processor). This library can
 be changed at run time, for example on an Intel processor you can use
 the Julia package [MKL](https://github.com/JuliaLinearAlgebra/MKL.jl)
-(called Intel oneAPI as of now) with <code>jlUsing "MKL"</code>.
+(called Intel® oneAPI) with <code>jlUsing "MKL"</code>.
 
 The second interface implements a simple CL class, **jlref**, where every
 object used in Julia is referenced by an object of this class. The
 actual data — such as arrays, for example, but practically everything in
 Julia — resides in the Julia process (multithreaded).
 
-For details on the [Model Context Protocol](https://modelcontextprotocol.io) server (stdio and socket modes) that can be used by AI models or [fricas-vscode](https://github.com/gvanuxem/fricas-vscode), see:
+A MCP server in Common Lisp is also added. For details on the [Model Context Protocol](https://modelcontextprotocol.io) server (stdio and socket modes) that can be used by AI models or [fricas-vscode](https://github.com/gvanuxem/fricas-vscode), see:
 
 - [MCP Server Design](MCP_SERVER_DESIGN.md)
 ---
@@ -296,3 +292,10 @@ These domains provide access to the [Wolfram Language](https://www.wolfram.com/l
 |-------------|-------------|
 | [WSNumericalSpecialFunctions](constructors/WSNumericalSpecialFunctions.md) | Numerical special functions via Wolfram |
 | [WSUtilityFunctions](constructors/WSUtilityFunctions.md) | Wolfram utility helpers |
+
+---
+
+> **Trademark notice**  
+> Wolfram is a registered trademark of Wolfram Research, Inc.  
+> Python is a registered trademark of the Python Software Foundation.  
+> Intel is a registered trademark of Intel Corporation.  
