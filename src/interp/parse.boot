@@ -171,7 +171,8 @@ parseExit [a,:b] ==
   b:= parseTran b
   b =>
     null INTEGERP a =>
-      (MOAN('"first arg ",a,'" for exit must be integer"); ['exit,1,a])
+            bright_warn(['"first arg ", a, '" for exit must be integer"])
+            ['exit, 1, a])
     ['exit,a,:b]
   ['exit,1,a]
 

@@ -159,50 +159,6 @@
 
 ; 15.6 Association Lists
 
-(defun DELASC (u v) "Returns a copy of a-list V in which any pair with key U is deleted."
-   (cond ((atom v) nil)
-         ((or (atom (car v))(not (equal u (caar v))))
-          (cons (car v) (DELASC u (cdr v))))
-         ((cdr v))))
-
-(DEFUN ADDASSOC (X Y L)
-  "Put the association list pair (X . Y) into L, erasing any previous association for X"
-  (COND ((ATOM L) (CONS (CONS X Y) L))
-        ((EQUAL X (CAAR L)) (CONS (CONS X Y) (CDR L)))
-        ((CONS (CAR L) (ADDASSOC X Y (CDR L))))))
-
-(DEFUN DELLASOS (U V)
-  "Remove any association pair (U . X) from list V."
-  (COND ((ATOM V) NIL)
-        ((EQUAL U (CAAR V)) (CDR V))
-        ((CONS (CAR V) (DELLASOS U (CDR V))))))
-
-(DEFUN ASSOCLEFT (X)
-  "Returns all the keys of association list X."
-  (if (ATOM X) X (mapcar #'car x)))
-
-(DEFUN ASSOCRIGHT (X)
-  "Returns all the datums of association list X."
-  (if (ATOM X) X (mapcar #'cdr x)))
-
-(DEFUN LASSOC (X Y)
-  "Return the datum associated with key X in association list Y."
-  (PROG ()
-     A  (COND ((ATOM Y) (RETURN NIL))
-              ((EQUAL (CAAR Y) X) (RETURN (CDAR Y))) )
-        (SETQ Y (CDR Y))
-        (GO A)))
-
-(DEFUN |rassoc| (X Y)
-  "Return the datum associated with key X in association list Y."
-  (PROG ()
-     A  (COND ((ATOM Y) (RETURN NIL))
-              ((EQUAL (CDAR Y) X) (RETURN (CAAR Y))) )
-        (SETQ Y (CDR Y))
-        (GO A)))
-
-(defun QLASSQ (p a-list) (cdr (assq p a-list)))
-
 ;;; Operations on Association Sets (AS)
 
 (defun AS_INSERT (A B L)
@@ -238,12 +194,6 @@
   (if (ATOM X)
       (if (NULL X) NIL (progn (PRINC " . ") (MESSAGEPRINT-1 X)))
       (progn (PRINC " ") (MESSAGEPRINT-1 (CAR X)) (MESSAGEPRINT-2 (CDR X)))))
-
-; 24 ERRORS
-
-; 24.2 Specialized Error-Signalling Forms and Macros
-
-(defun MOAN (&rest x) (|sayBrightly| `(|%l| "===> " ,@X |%l|)))
 
 ; 25 MISCELLANEOUS FEATURES
 

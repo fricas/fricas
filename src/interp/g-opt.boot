@@ -202,7 +202,7 @@ optSpecialCall(x,y,n) ==
 compileTimeBindingOf u ==
   NULL(name:= BPINAME u)  => system_error("S2OO0001",
       '"Irregular slot entry: %1s", [u])
-  name="Undef" => MOAN '"optimiser found unknown function"
+  name = "Undef" => bright_warn(['"optimiser found unknown function"])
   name
 
 optMkRecord ["mkRecord",:u] ==

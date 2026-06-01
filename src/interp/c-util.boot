@@ -138,15 +138,16 @@ deltaContour([il1, :el],[il2, :el']) ==
   res0 := []
   for l in dl repeat
       res0 := APPEND(l, res0)
-  res := eliminateDuplicatePropertyLists res0 where
-    eliminateDuplicatePropertyLists contour ==
-      contour is [[x,:.],:contour'] =>
+  eliminateDuplicatePropertyLists(res0)
+
+eliminateDuplicatePropertyLists(contour) ==
+    contour is [[x,:.],:contour'] =>
         LASSOC(x,contour') =>
                                --save some CONSing if possible
-          [first contour,:DELLASOS(x,eliminateDuplicatePropertyLists contour')]
-        [first contour,:eliminateDuplicatePropertyLists contour']
-      nil
-  res
+            [first(contour), :assoc_del(x,
+                eliminateDuplicatePropertyLists(contour'))]
+        [first(contour), :eliminateDuplicatePropertyLists(contour')]
+    nil
 
 intersectionContour(c, c', ce) ==
   $var: local := nil
