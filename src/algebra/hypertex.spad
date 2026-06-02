@@ -2019,3 +2019,2904 @@ HyperdocUtilities() : Exports == Implementation where
             res1 := con_args_to_strings(name, lc, elc, true, [string(name)])
             reverse!(res1)
 
+)abbrev package HDTOP HyperdocTopPage
+HyperdocTopPage() : Exports == Implementation where
+    Exports ==> with
+        do_search : (String, Symbol, String) -> Void
+          ++ do_search(pat, tag, ds) performs search for pat.  tag
+          ++ decides where to search.  ds is description which is
+          ++ used in headers and messages.
+        do_page_fun1 : (HyperdocPage, Symbol, SExpression) -> Void
+          ++ do_page_fun1(p, tag, d) performs operation specified
+          ++ by tag on behalf of page p using data d.
+        do_gen_fun1 : (Symbol, SExpression) -> Void
+          ++ do_gen_fun1(tag, d) performs operation specified
+          ++ by tag using data d.
+    Implementation ==> add
+
+        import HyperdocUtilities
+
+        char_lpar := char("(")$Character
+        char_rbrace := char("}")$Character
+        char_space := char(" ")$Character
+        char_star := char("*")$Character
+        char_tick := char("`")$Character
+        char_s := char("s")$Character
+        char_y := char("y")$Character
+
+        get_db_info(x, y) ==> get_database(x, y)$Lisp
+
+        BRI ==> BrowserInformation
+
+        Err_ind ==> ErrorIndicator
+
+        SE ==> SExpression
+        LMA ==> LogicalMatchingAutomaton
+        SY ==> Symbol
+        Con_from ==> SE
+        Cond_rec ==> Record(form : SE, condition : SE)
+        Cond_con_lst ==> List(Cond_rec)
+
+        Sig_doc ==> Record(signature : SE, condition : SE, origin : SE,
+                     documentation : String)
+        Op_rec ==> Record(name : SY, sdl : List(Sig_doc))
+        Op_lst ==> List(Op_rec)
+        Grp_rec ==> Record(grp_tag : SE, ops : Op_lst)
+        Grp_lst ==> List(Grp_rec)
+
+        Split_rec ==> Record(categories : List(SY), domains : List(SY),
+                             packages : List(SY))
+        Gen_rec ==> Record(con_info : Split_rec, op_info : Op_lst)
+
+        Gen_res ==> Union(Gen_rec, Err_ind)
+
+        Save_rec ==> Record(cur : Gen_rec, save : Gen_rec)
+
+        Con_res ==> Union(Split_rec, Err_ind)
+
+        exposed_only? : Boolean := false
+
+        max_browse_count : Integer := 10
+        max_description_count : Integer := 4
+
+        is_symbol? : (SE, SY) -> Boolean
+
+        get_doc_list(page : HyperdocPage) : Save_rec ==
+            get_property(page, 'docSearchAlist) pretend Save_rec
+
+        set_doc_list(page : HyperdocPage, lst : Save_rec) : Void ==
+            set_property(page, 'docSearchAlist, lst pretend SE)
+
+        get_reg_list(page : HyperdocPage) : Union(Save_rec, "failed") ==
+            get_property(page, 'regSearchAlist)
+                pretend Union(Save_rec, "failed")
+
+        set_reg_list(page : HyperdocPage, lst : Union(Save_rec, "failed")
+                    ) : Void ==
+            set_property(page, 'regSearchAlist, lst pretend SE)
+
+        get_con_lst(page : HyperdocPage) : Cond_con_lst ==
+            get_property(page, 'cAlist) pretend Cond_con_lst
+
+        set_con_lst(page : HyperdocPage, lst : Cond_con_lst) : Void ==
+            set_property(page, 'cAlist, lst pretend SE)
+
+        get_op_lst(page : HyperdocPage) : Op_lst ==
+            get_property(page, 'opAlist) pretend Op_lst
+
+        set_op_lst(page : HyperdocPage, lst : Op_lst) : Void ==
+            set_property(page, 'opAlist, lst pretend SE)
+
+        get_ops_grd(page : HyperdocPage) : Grp_lst ==
+            get_property(page, 'ops_grd) pretend Grp_lst
+
+        set_ops_grd(page : HyperdocPage, lst : Grp_lst) : Void ==
+            set_property(page, 'ops_grd, lst pretend SE)
+
+        copy_property_list(l : HyperdocAssociationList
+                          ) : HyperdocAssociationList ==
+            res : HyperdocAssociationList := empty()
+            while not(empty?(l)) repeat
+                r1 := copy(first(l))
+                l := rest(l)
+                res := cons(r1, res)
+            reverse!(res)
+
+        add_list_to(page : HyperdocPage, ls : List(String)) : Void ==
+            for s in ls repeat
+                add_to_description(page, s)
+
+        do_change_indent(page : HyperdocPage, n : Integer,
+                         plus2? : Boolean) : Void ==
+            sl : List(String) :=
+                n > 0 =>
+                    plus2? => ["\indent{", convert(n + 2), "}\tab{-2}"]
+                    ["\indent{", convert(n), "}\tab{0}"]
+                ["\indent{0}\newline{}"]
+            add_list_to(page, sl)
+
+        change_indent_plus2(page : HyperdocPage, n : Integer) : Void ==
+            do_change_indent(page, n, true)
+
+        change_indent(page : HyperdocPage, n : Integer) : Void ==
+            do_change_indent(page, n, false)
+
+        add_title(page : HyperdocPage, title : List(String)) : Void ==
+            te : List(SE) :=
+                [convert("\begin{page}{"), convert(name(page)),
+                 convert("}{")]
+            add_to(page, te)
+            add_list_to(page, title)
+            add_to_description(page, "} ")
+
+        downlink(s : String) : Void ==
+            page := new(empty())$HyperdocPage
+            add_title(page, ["Downlink page"])
+            add_list_to(page, ["\replacepage{", s, "}"])
+            show(page)
+
+        error_page2(title : String, d3 : List(String)) : Void ==
+            page := new(empty())$HyperdocPage
+            add_title(page, [title])
+            add_to_description(page, "\beginscroll ")
+            add_to_description(page, "\vspace{1}\newline ")
+            for de in d3 repeat
+                add_to_description(page, de)
+            add_to_description(page, "\endscroll")
+            show(page)
+
+        error_page(data : Err_ind): Void ==
+            ds : List(String) := retract(data)
+            error_page2(first(ds), rest(ds))
+
+        star_error() : Void ==
+            sd : List(String) := [
+                  "\vspace{3}\centerline{{\em *} is not a valid"
+                      " search string for a general search}"
+                    "\centerline{\em {it would match everything!}}"]
+            error_page2("Error", sd)
+
+        is_builtin?(pat : String) : Union(String, "failed") ==
+            pat := downcase(pat)$BRI
+            pat = "enumeration" => ("DomainEnumeration"::String)
+            pat = "mapping" => ("DomainMapping"::String)
+            pat = "record" => ("DomainRecord"::String)
+            pat = "union" => ("DomainUnion"::String)
+            "failed"
+
+        add_op_link0 : (HyperdocPage, SY, String, SY, SE
+                       ) -> Void
+
+        emit_query(page : HyperdocPage, text : List(String), fun : SY
+                  ) : Void ==
+            add_to_description(page, "\vspace{1}\centerline{")
+            for t1 in text repeat
+                add_to_description(page, t1)
+            add_to_description(page, "}\centerline{")
+            add_op_link0(page, 'bcLispLinks, "\fbox{Yes}", fun, convert('yes))
+            add_to_description(page, "\space{4}\downlink{\fbox{No}}{UpPage}")
+            add_to_description(page, "}")
+
+        escape_if_needed : String -> String
+
+        empty_result(kind : String, pat : String, expose : String
+                    ) : Void ==
+            page := new(empty())$HyperdocPage
+            title : List(String) := ["No ", kind, " found"]
+            add_title(page, title)
+            add_to_description(page, "\beginscroll ")
+            l : List(String) := [
+                "\vspace{1}\newline\centerline{There is no ", expose,
+                  kind, " matching pattern}\newline\centerline{{\em "]
+            for s in l repeat
+                add_to_description(page, s)
+            add_to_description(page, escape_if_needed(pat))
+            add_to_description(page, "}}")
+            add_to_description(page, "\endscroll ")
+            show(page)
+
+        trim_pattern(pat : String) : String ==
+            pat := trim(pat, char_space)
+            pat = "" => "*"
+            pat
+
+        start_table(page : HyperdocPage) : Void ==
+            add_to_description(page, "\table{")
+
+        end_table(page : HyperdocPage) : Void ==
+            add_to_description(page, "}")
+
+        get_count_str(cnt : Integer) : String ==
+            cnt = 0 => "No "
+            concat(convert(cnt)@String, " ")
+
+        plural_form(s : String) : String ==
+            n := #s
+            s(n) = char_y => concat(s(1..(n - 1)), "ies")
+            s(n) = char_s => concat(s(1..(n - 1)), "es")
+            concat(s, "s")
+
+        menu_button : String := "\menuitemstyle{}"
+
+        add_op_link0(page : HyperdocPage, link : SY, label : String,
+                     fun : SY, arg : SE) : Void ==
+            l0 : List(SE) := [convert(label), convert(""), convert(fun), arg]
+            l : List(SE) := [convert(link), convert(l0)]
+            add_to(page, [convert(l)])
+
+        add_con_link1(page : HyperdocPage, link : SY, label : String,
+                      op : SY) : Void ==
+            add_op_link0(page, link, label, 'dbShowCons, convert(op))
+
+        add_op_link1(page : HyperdocPage, link : SY, label : String,
+                     op : SY) : Void ==
+            add_op_link0(page, link, label, 'dbShowOps, convert(op))
+
+        add_con_link(page : HyperdocPage, label : String, op : SY
+                   ) : Void ==
+            add_con_link1(page, 'bcLispLinks, label, op)
+
+        add_op_link(page : HyperdocPage, label : String, op : SY
+                   ) : Void ==
+            add_op_link1(page, 'bcLispLinks, label, op)
+
+        add_to_op_menu(page : HyperdocPage, inactive? : Boolean,
+                       last: Boolean, label : String, op : SY) : Void ==
+            if inactive? then
+                add_list_to(page, ["{\em ", label, "}"])
+            else
+                add_op_link(page, label, op)
+            if not(last) then
+                add_to_description(page, "}{")
+
+        operations_menu(page : HyperdocPage, branch : SY,
+                        exposedOnlyIfTrue : Boolean) : Void ==
+            set_property(page, 'exclusion, convert(branch))
+            con_form := destruct(get_property(page, 'conform))
+            op_lst := get_op_lst(page)
+            empty? : Boolean := empty?(op_lst)
+            one? : Boolean := empty? or (#op_lst = 1 and
+                                         #first(op_lst).sdl = 1)
+            implementation? := not(null?(get_property(page, 'domname)))
+            star? := empty?(con_form)
+            start_table(page)
+            add_to_description(page, "{")
+            add_to_op_menu(page, one? or branch = 'conditions, false,
+                           "Conditions", 'conditions)
+            add_to_op_menu(page, empty? or branch = 'documentation, false,
+                           "Descriptions", 'documentation)
+            if one? then
+                add_to_description(page, "{\em Filter}")
+            else
+                f_arg : List(SE) := [convert('dbShowOps), convert('filter)]
+                add_op_link0(page, 'bcLinks, "Filter", 'htFilterPage,
+                             convert(f_arg))
+            add_to_description(page, "}{")
+            add_to_op_menu(page, one? or branch = 'names, false,
+                           "Names", 'names)
+            add_to_op_menu(page, not(implementation?) or
+                                 branch = 'implementation, false,
+                           "Implementations", 'implementation)
+            add_to_op_menu(page, one? or branch = 'origins, false,
+                           "Origins", 'origins)
+            -- FIXME: also test for presence of parameters
+            add_to_op_menu(page, one? or branch = 'parameters, false,
+                           "Parameters", 'parameters)
+            add_to_op_menu(page, one? or branch = 'signatures, true,
+                           "Signatures", 'signatures)
+            add_to_description(page, "}")
+            if star? or (empty? and exposedOnlyIfTrue) then
+                add_to_description(page, "{")
+                if exposedOnlyIfTrue then
+                    add_op_link1(page, 'bcLinks, "Unexposed Also",
+                                  'exposureOff)
+                else
+                    add_op_link1(page, 'bcLinks, "Exposed Only", 'exposureOn)
+                add_to_description(page, "}")
+            end_table(page)
+
+        add_to_con_menu(page : HyperdocPage, inactive? : Boolean,
+                        last : Boolean, label : String, op : SY) : Void ==
+            if inactive? then
+                add_list_to(page, ["{\em ", label, "}"])
+            else
+                add_con_link(page, label, op)
+            if not(last) then
+                add_to_description(page, "}{")
+
+        constructors_menu(page : HyperdocPage, kind : SY,
+                          branch : SY) : Void ==
+            set_property(page, 'exclusion, convert(branch))
+            con_lst := destruct(get_property(page, 'cAlist))
+            empty? : Boolean := empty?(con_lst)
+            one? : Boolean := empty? or empty?(rest(con_lst))
+            start_table(page)
+            add_to_description(page, "{")
+            add_to_con_menu(page, one? or branch = 'abbrs, false,
+                            "Abbreviations", 'abbrs)
+            -- FIXME: handle all true case
+            add_to_con_menu(page, one? or branch = 'conditions or
+                                  null?(get_property(page, 'conform)),
+                            false, "Conditions", 'conditions)
+            add_to_con_menu(page, empty? or branch = 'documentation, false,
+                            "Descriptions", 'documentation)
+            -- FIXME: handle case of one name
+            if one? then
+                add_to_description(page, "{\em Filter}")
+            else
+                f_arg : List(SE) := [convert('dbShowCons), convert('filter)]
+                add_op_link0(page, 'bcLinks, "Filter", 'htFilterPage,
+                             convert(f_arg))
+            add_to_description(page, "}{")
+            add_to_con_menu(page, one? or branch = 'kinds or
+                                  kind ~= 'constructor, false,
+                            "Kinds", 'kinds)
+            add_to_con_menu(page, one? or branch = 'names, false,
+                            "Names", 'names)
+            -- FIXME: handle case of no parameters
+            add_to_con_menu(page, one? or branch = 'parameters, false,
+                            "Parameters", 'parameters)
+            if exposed_only? then
+                add_con_link1(page, 'bcLinks, "Unexposed Also", 'exposureOff)
+            else
+                add_con_link1(page, 'bcLinks, "Exposed Only", 'exposureOn)
+            add_to_description(page, "}")
+            end_table(page)
+
+        exp_con?(c : SE) : Boolean ==
+            exposed_constructor?(symbol(first(destruct(c))))$BRI
+
+        mk_fake_sig(s : SY) : SE ==
+            sl : List(SE) := [convert(s)]
+            cl : List(SE) := [convert('CATEGORY), convert('domain)]
+            convert([convert(cl), convert(sl), convert(sl)])
+
+        escape_if_needed(s : String) : String ==
+            -- Minimal, but only this caused trouble
+            s = "#" => "\#"
+            s = "/\" => "/\\"
+            s = "\/" => "\\/"
+            s
+
+        emit_constructor : (HyperdocPage, SE) -> Void
+
+        parser_op?(op : SE, kind : SY) : Boolean ==
+            not(symbol?(op)) => false
+            res : SE := GET(op, kind)$Lisp
+            not(null?(res))
+
+        is_niladic?(op : SE) : Boolean ==
+            not(symbol?(op)) => false
+            s1 := symbol(op)
+            s1 = "0"::SY or s1 = "1"::SY => true
+            res : SE := get_db_info(s1, 'NILADIC)
+            not(null?(res))
+
+        emit_star : HyperdocPage -> Void
+
+        arg_to_string(x : SE) : String ==
+            symbol?(x) => string(symbol(x))
+            PRETTYPRINT(x)$Lisp
+            error "arg_to_string: unexpected form of argument"
+
+        add_op_link2(page : HyperdocPage, label : String, arg : SE
+                    ) : Void ==
+            null?(arg) => add_to_description(page, label)
+            add_op_link0(page, 'bcLinks, label, 'dbShowOps, arg)
+
+        display_op_sig(page : HyperdocPage, op : SE,
+                   args : List(SE), n : Integer,
+                   pred : SE, lnk : SE,
+                   unexposed? : Boolean) : Void ==
+            arg1 : String :=
+                n > 1 => arg_to_string(first(args))
+                ""
+            ops : String := string(symbol(op))
+            ops := escape_if_needed(ops)
+            n = 2 and parser_op?(op, 'Nud) =>
+                add_op_link2(page, ops, lnk)
+                add_list_to(page, [" {\em ", arg1, "}"])
+            n = 3 and parser_op?(op, 'Led) =>
+                add_list_to(page, [" {\em ", arg1, "}"])
+                add_op_link2(page, ops, lnk)
+                add_list_to(page, [" {\em ", arg_to_string(args(2)), "}"])
+            if unexposed? then
+                emit_star(page)
+            add_op_link2(page, ops, lnk)
+            eq(pred, convert('ASCONST)) or is_niladic?(op) => void()
+            add_to_description(page, "(")
+            first_time : Boolean := true
+            for arg in args repeat
+                if not(first_time) then
+                    add_to_description(page, ",")
+                first_time := false
+                add_list_to(page,["{\em ", arg_to_string(arg), "}"])
+            add_to_description(page, ")")
+
+        finish_constructor(page : HyperdocPage, conname : SY) : Void ==
+            abbr : SE :=
+                get_db_info(conname, 'ABBREVIATION)
+            if not(null?(abbr)) then
+                abr_s := string(symbol(abbr))
+                add_to_description(page, "\tab{2}{\em Abbreviation:}")
+                change_indent(page, 15)
+                add_to_description(page, abr_s)
+                change_indent(page, -15)
+                add_to_description(page, "\newline{}")
+            sf_e : SE := get_db_info(conname, 'SOURCEFILE)
+            if not(null?(sf_e)) then
+                sf := string(sf_e)
+                bsf : String := drop_directory_part(sf)$Lisp
+                add_to_description(page, "\tab{2}{\em Source File:}")
+                change_indent(page, 15)
+                sl : List(String) := ["\unixcommand{", bsf, "}{",
+                    "\$FRICAS/lib/SPADEDIT ", sf, " ", string(conname),
+                      "}"]
+                add_list_to(page, sl)
+                change_indent(page, -15)
+
+        display_doc(page : HyperdocPage, doc : String) : Void ==
+            add_to_description(page, "\newline\tab{2}{\em Description:}")
+            change_indent(page, 15)
+            s1 : String := SUBSTITUTE(_$charNewline$Lisp,
+                                      _$charFauxNewline$Lisp, doc)$Lisp
+            add_to_description(page, s1)
+            change_indent(page, -15)
+
+        emit_predicate(page : HyperdocPage, p : SE, form : SE) : Void ==
+            ls := predicate_to_strings(p, true, [])
+            add_list_to(page, reverse!(ls))
+
+        emit_category_exports(page: HyperdocPage, vals : List(SE)
+                             ) : Void ==
+            add_to_description(page, ":")
+            for val in vals repeat
+                add_to_description(page, "\newline{}")
+                vl := destruct(val)
+                op := symbol(first(vl))
+                vl := rest(vl)
+                op = 'SIGNATURE =>
+                     ope := first(vl)
+                     op2 :=
+                          symbol?(ope) => symbol(ope)
+                          integer?(ope) =>
+                              k := integer(ope)
+                              k = 0 => "0"::SY
+                              k = 1 => "1"::SY
+                              error "emit_category_exports: unexpected integer"
+                          error "emit_category_exports: unexpected operator"
+                     add_to_description(page, escape_if_needed(string(op2)))
+                     add_to_description(page, " : ")
+                     vl := cons(convert('Mapping), destruct(vl(2)))
+                     emit_constructor(page, convert(vl))
+                op = 'IF =>
+                     error "emit_category_exports: found IF"
+                error "emit_category_exports: unexpected construct"
+
+        emit_value(page : HyperdocPage, val : SE, generalSearch? : Boolean,
+                   ret? : Boolean, conargs : List(SE),
+                   conkind : SE, conlength : Integer, signature : SE
+                  ) : Void ==
+            null?(val) =>
+                error "emit_value: null value"
+            val = convert('%) =>
+                add_to_description(page, "an element of domain \%")
+            symbol?(val) =>
+                op := symbol(val)
+                add_to_description(page, "an element of domain ")
+                if constructor_name?(op)$BRI then
+                    emit_constructor(page, convert([val]))
+                else
+                    add_to_description(page, escape_if_needed(string(op)))
+                -- print(val::OutputForm)$OutputForm
+                -- error "emit_value: symbol not a constructor name"
+            list?(val) =>
+                vl := destruct(val)
+                op := symbol(first(vl))
+                vl := rest(vl)
+                op = 'Mapping =>
+                    -- target := vl(2)
+                    -- source := rest(vl, 2)
+                    -- add_to_description(page, a function from ")
+                    add_to_description(page, "a function with signature ")
+                    emit_constructor(page, val)
+                op = 'Category =>
+                    empty?(vl) =>
+                        add_to_description(page, "a category")
+                    error "emit_value: Category with arguments!"
+                op = 'Join =>
+                    r := last(vl)
+                    has_exports? := not(null?(r)) and list?(r) and
+                        is_symbol?(car(r), 'CATEGORY)
+                    -- cat_cnt : Integer :=
+                    --    has_exports? => #vl - 1
+                    --    #vl
+                    -- add_to_description(page, (cat_cnt < 2 => category
+                    -- has_exports? and not(ret?) =>
+                    --    error "emit_value: argument with exports"
+                    if has_exports? then
+                        vl := first(vl, qcoerce(#vl - 1))
+                    add_to_description(page, "a domain of ")
+                    cw : String := (#vl > 1 => "categories "; "category")
+                    add_to_description(page, cw)
+                    first := true
+                    for v in vl repeat
+                        if not(first) then add_to_description(page, ", ")
+                        first := false
+                        emit_constructor(page, v)
+                    if has_exports? then
+                        add_to_description(page, " and with explicit exports")
+                        if not(ret?) then
+                            emit_category_exports(page, rest(destruct(r), 2))
+                constructor_name?(op)$BRI =>
+                    kind := constructor_kind(op)$BRI
+                    iw : String :=
+                        kind = 'category => "a domain of category "
+                        "an element of domain "
+                    add_to_description(page, iw)
+                    emit_constructor(page, val)
+                member?(op, ['Enumeration, 'Record, 'Union]) =>
+                    add_to_description(page, "an element of domain ")
+                    emit_constructor(page, val)
+                op = 'CATEGORY =>
+                    op2 := symbol(first(vl))
+                    add_to_description(page, "a ")
+                    if op2 = 'domain or op2 = 'package then
+                         add_to_description(page, string(op2))
+                    else
+                         error "emit_value: CATEGORY of strange kind"
+                    add_to_description(page, " with explicit exports")
+                    not(ret?) =>
+                        -- print(val::OutputForm)$OutputForm
+                        emit_category_exports(page, rest(vl))
+                    -- error "emit_value: CATEGORY as an argument"
+                print(val::OutputForm)$OutputForm
+                error "emit_value: op not a constructor"
+            string?(val) =>
+                add_to_description(page, "an element of domain ")
+                emit_constructor(page, val)
+            print(val::OutputForm)$OutputForm
+            error "emit_value: not a list"
+
+        skip_blanks(k : Integer, s : String) : Integer ==
+            l := #s
+            while k < l and s(k + 1) = char_space repeat k := k + 1
+            k
+
+        prefix_match(l : Integer, pref : String, s : String) : Boolean ==
+            k := #pref
+            #s < k + l => false
+            for i in 1..k repeat
+                if s(i + l) ~= pref(i) then return false
+            true
+
+        op_args_from_doc(op : SY, n : Integer, doc : String
+                        ) : Union(List(SY), "failed") ==
+            n = 0 => []
+            -- print(message("op_args_from_doc")$OutputForm)$OutputForm
+            -- print(op::OutputForm)$OutputForm
+            -- print(n::OutputForm)$OutputForm
+            -- print(doc::OutputForm)$OutputForm
+            pref : String := "\spad{"
+            not(prefix_match(0, pref, doc)) => "failed"
+            -- print(message("prefix_match OK")$OutputForm)$OutputForm
+            k := #pref
+            l := #doc
+            m := position(char_rbrace, doc)
+            m < 1 => "failed"
+            -- print(doc((k + 1)..(m - 1))::OutputForm)$OutputForm
+            pf := parse(doc((k + 1)..(m - 1)))$InputForm pretend SE
+            -- print(pf::OutputForm)$OutputForm
+            null?(pf) or not(list?(pf)) => "failed"
+            pfl := destruct(pf)
+            #pfl ~= n + 1 or not(every?(symbol?, pfl)) or
+                symbol(first(pfl)) ~= op => "failed"
+            rest(pfl) pretend List(SY)
+
+        ias_Rec ==> Record(np : Integer, ep: Integer, fp : Integer,
+                           dp : Integer)
+
+        classify_argument(t1 : SE) : SY ==
+            list?(t1) =>
+                tl := destruct(t1)
+                op := first(tl)
+                is_symbol?(op, "Integer"::SY) => 'num
+                is_symbol?(op, "Mapping"::SY) => 'fun
+                kind : SY :=
+                    symbol?(op) => get_db_info(op, 'CONSTRUCTORKIND)
+                    'domain
+                kind = 'category => 'dom
+                'elem
+            'elem
+
+        sym_from_string(k : Integer, ns : String) : SY ==
+            n := #ns
+            qr := divide(k, n)
+            q := qr.quotient
+            ss :=
+                s0 := construct([ns(qr.remainder + 1)])$String
+                q > 0 => concat(s0, convert(q)@String)
+                s0
+            ss::SY
+
+        invent_argument_name(t1 : SE, state : ias_Rec) : SY ==
+            -- print(message("invent_argument_name")$OutputForm)$OutputForm
+            -- print(t1::OutputForm)$OutputForm
+            kind : SY := classify_argument(t1)
+            kind = 'dom =>
+                res := sym_from_string(state.dp, "RSDETABCMNPQUVW")
+                state.dp := state.dp + 1
+                res
+            kind = 'num =>
+                res := sym_from_string(state.np, "ijklmn")
+                state.np := state.np + 1
+                res
+            kind = 'fun =>
+                res := sym_from_string(state.fp, "fghdeFGH")
+                state.fp := state.fp + 1
+                res
+            res := sym_from_string(state.ep, "xyzuvw")
+            state.ep := state.ep + 1
+            res
+
+        invent_argument_names(sig : List(SE)) : List(SY) ==
+            state := [0, 0, 0, 0]$ias_Rec
+            [invent_argument_name(t1, state) for t1 in rest(sig)]
+
+        operation_arguments(op : SY, sig : SE, doc : String) : List(SY) ==
+            #sig = 1 => []
+            au := op_args_from_doc(op, #sig - 1, doc)
+            au case List(SY) => au
+            invent_argument_names(destruct(sig))
+
+        fix_T(s : SE) : SE ==
+            is_symbol?(s, "T$"::SY) => convert("T"::SY)
+            s
+
+        show_op_detail(page : HyperdocPage, kind : String, origin : SE,
+                       op : SY, sig : SE, pred : SE, doc : String,
+                       i : Integer, only_one : Boolean, sel_fn : SY,
+                       unexposed? : Boolean, generalSearch? : Boolean,
+                       star? : Reference(Boolean)
+                      ) : Void ==
+            oform : SE :=
+                kind = "constructor" => origin
+                cons(op, operation_arguments(op, sig, doc)) pretend SE
+            -- print(message("show_op_detail, oform =")$OutputForm)$OutputForm
+            -- print(oform::OutputForm)$OutputForm
+            op2 := car(oform)
+            args := [fix_T(arg) for arg in rest(destruct(oform))]
+            if convert(op) ~= op2 then
+                BREAK()$Lisp
+            conform : SE := get_property(page, 'domname)
+
+            if null?(conform) then
+                conform := get_property(page, 'conform)
+            if null?(conform) then
+                conform := origin
+
+            form_l := destruct(conform)
+            conname : SY := symbol(first(form_l))
+            conargs := rest(form_l)
+
+            constring : String := constructor_to_string(conform)
+            conlength := #constring
+
+            conkind : SE := get_property(page, 'kind)
+            if null?(conkind) then
+                conkind := convert(string(constructor_kind(conname)$BRI))
+            signature : SE := convert([])
+            if kind = "operation" then
+                signature :=
+                    member?(conname, _$Primitives$Lisp) => convert([])
+                    constructor_signature(conname)$BRI
+                tvarlist : List(SY) :=
+                    TAKE(#conargs, _$TriangleVariableList$Lisp)$Lisp
+                signature := SUBLISLIS(_$FormalMapVariableList$Lisp,
+                                       tvarlist, signature)$Lisp
+            add_to_description(page, "\newline")
+            if only_one then
+                add_to_description(page, menu_button)
+            else
+                add_op_link0(page, 'bcLinks, menu_button, convert(sel_fn),
+                             convert(i))
+            add_to_description(page, "\tab{2}")
+            n := #sig
+            -- print(message("calling display_op_sig")$OutputForm)$OutputForm
+            display_op_sig(page, op2, args, n, pred, convert(empty()),
+                           unexposed?)
+            -- print(message("args, sig =")$OutputForm)$OutputForm
+            -- print(args::OutputForm)$OutputForm
+            -- print(sig::OutputForm)$OutputForm
+            if not(empty?(args)) then
+                co_sig : List(Boolean) := get_db_info(op2, 'COSIG)
+                if not(empty?(co_sig)) then
+                    co_sig := rest(co_sig)
+                add_to_description(page, "\newline\tab{2}{\em Arguments:}")
+                for arg in args for t in rest(destruct(sig)) repeat
+                    change_indent_plus2(page, 15)
+                    if not(empty?(co_sig)) and first(co_sig) and
+                       not t = convert([convert('Type)]) then
+                        arg1 : SE :=
+                            only_one => arg
+                            convert([arg, convert(i)])
+                        add_op_link0(page, 'bcLinks, string(symbol(arg)),
+                                     'kArgPage, arg1)
+                    else
+                        add_list_to(page, ["{\em ", arg_to_string(arg),
+                                            "}"])
+                    add_to_description(page, ", ")
+                    if not(empty?(co_sig)) then
+                        co_sig := rest(co_sig)
+                    emit_value(page, t, generalSearch?,
+                        false, conargs, conkind, conlength, signature)
+                    change_indent_plus2(page, -15)
+                    add_to_description(page, "\newline")
+            add_to_description(page, "\newline\tab{2}{\em Returns:}")
+            change_indent_plus2(page, 15)
+            emit_value(page, first(destruct(sig)),
+                generalSearch?, true, conargs, conkind,
+                    conlength, signature)
+            change_indent_plus2(page, -15)
+            op3 : SE :=
+                pair?(origin) => car(origin)
+                origin
+            if not(null?(origin)) and (generalSearch? or origin ~= conform)
+               and op2 ~= op3 then
+                add_to_description(page, "\newline\tab{2}{\em Origin:}")
+                change_indent(page, 15)
+                if not(exp_con?(origin)) then
+                    emit_star(page)
+                    setref(star?, true)
+                emit_constructor(page, origin)
+                change_indent(page, -15)
+            if not(eq(pred, true pretend SE) or
+               eq(pred, convert('ASCONST))) then
+                -- print(pred::OutputForm)$OutputForm
+                pred := sublis_formal(rest(form_l), pred)$BRI
+                cnt := #destruct(pred)
+                add_to_description(page, "\newline\tab{2}{\em Conditions:}")
+                p : SE := SUBST(conform, '%, pred)$Lisp
+                do_change_indent(page, 15, cnt > 1)
+                emit_predicate(page, p, conform)
+                do_change_indent(page, -15, cnt > 1)
+                add_to_description(page, "\newline")
+            if doc ~= "" then
+                display_doc(page, doc)
+
+        get_cons_form(name : SY) : Cond_rec ==
+            form1 := constructor_form(name)$BRI
+            [form1, true pretend SE]
+
+        constructor_title(page : HyperdocPage, cnt : Integer, key : SY,
+                          kind : SY, exposedOnlyIfTrue : Boolean
+                         ) : List(String) ==
+            thing : String :=
+                thinge := get_property(page, 'thing)
+                null?(thinge) => "constructor"
+                string(thinge)
+            orig := get_property(page, 'domname)
+            if null?(orig) then
+                orig := get_property(page, 'conform)
+            thing = "benefactor" =>
+                [convert(cnt), " constructors used by ",
+                    constructor_to_string(orig)]
+            modifier : List(String) :=
+                thing = "argument" =>
+                    rank := get_property(page, 'rank)
+                    null?(rank) => [""]
+                    [" possible ", string(rank), " "]
+                kind = 'constructor => [" "]
+                [" ", string(kind), " "]
+            exposureWord : String :=
+                exposedOnlyIfTrue => " exposed "
+                ""
+            cnt_str := get_count_str(cnt)
+            if cnt ~= 1 then
+                thing := plural_form(thing)
+            modifier := concat(modifier, thing)
+            prefix : List(String) :=
+                cnt = 1 => cons(cnt_str, modifier)
+                concat([cnt_str, exposureWord], modifier)
+            orig_part : List(String) :=
+                null?(orig) => []
+                [" of {\em ", constructor_to_string(orig), "}"]
+            res := concat(prefix, orig_part)
+            connective : String :=
+                member?(key, ['abbrs, 'files, 'kinds]) => " as "
+                " with "
+            cnt > 0 and member?(key, ['abbrs, 'files, 'parameters,
+                                      'conditions]) =>
+                view : String :=
+                    key = 'abbrs => "abbreviations"
+                    string(key)
+                concat(res, [" viewed", connective, "{\em ", view, "}"])
+            res
+
+        show_cons : (HyperdocPage, SE) -> Void
+
+        count_ops : Op_lst -> Integer
+
+        show_op_names : (HyperdocPage, Op_lst, Reference(Boolean)) -> Void
+
+        display_exported_ops(page : HyperdocPage, lst : Op_lst) : Void ==
+            cnt := #lst
+            cnt = 0 => void()
+            total := count_ops(lst)
+            set_op_lst(page, lst)
+            add_to_description(page, "\indent{0}")
+            add_op_link1(page, 'bcLinks, menu_button, 'names)
+            add_to_description(page, "\tab{3}")
+            if cnt ~= total then
+                if cnt = 1 then
+                    add_to_description(page, "1 name for ")
+                else
+                    add_list_to(page, [convert(cnt)@String, " names for "])
+            if total > 1 then
+                add_list_to(page, [convert(total)@String, " operations "
+                                   "are explicitly exported:"])
+            else
+                add_to_description(page,
+                                   "1 operation is explicitly exported:")
+            star? := ref(false)$Reference(Boolean)
+            show_op_names(page, lst, star?)
+
+        get_constructor_kind : SY -> SY
+
+        get_input_area : (HyperdocPage, Integer) -> List(String)
+
+        get_evalable_constructor_form(page : HyperdocPage, name : SY
+                                     ) : Union(SE, Err_ind) ==
+            -- print(message("get_evalable_constructor_form"
+            --             )$OutputForm)$OutputForm
+            kind := get_constructor_kind(name)
+            form := constructor_form(name)$BRI
+            set_property(page, 'domname, convert([]))
+            -- kind = 'category => convert([])
+            nargs : Integer := #form - 1
+            in_args := get_input_area(page, nargs)
+            set_property(page, 'inputAreaList, in_args pretend SE)
+            n : Integer := 0
+            for arg in in_args repeat
+                arg = "" => iterate
+                n := n + 1
+            n = 0 and 0 < nargs => convert([])@SE
+            0 < n and n < nargs =>
+                el : List(String) := ["Error",
+                    "\centerline{You gave values for only {\em ", convert(n),
+                        " } of the {\em ", convert(nargs),
+                      "}}\centerline{parameters of {\sf ", string(name),
+                  "}}\vspace{1}\centerline{Please enter either {\em all}"
+                    " or {\em none} of the type parameters}"]
+                el::Err_ind
+            args : String :=
+                arg_l : List(String) := ["("]
+                first := true
+                for arg in in_args repeat
+                    if not(first) then
+                        arg_l := cons(",", arg_l)
+                    first := false
+                    arg_l := cons(arg, arg_l)
+                arg_l := cons(")", arg_l)
+                concat(reverse!(arg_l))
+            -- print(message("args =")$OutputForm)$OutputForm
+            -- print(args::OutputForm)$OutputForm
+            res : Union(SE, "failed") :=
+                make_domain_form(string(kind), string(name), args)$Lisp
+            res case "failed" =>
+                s1 := "\centerline{You gave an invalid type:}\newline"
+                      "\centerline{{\sf "
+                el := ["Error", s1, concat(string(name), args), "}}"
+                      ]$List(String)
+                el::Err_ind
+            res
+
+        do_related(page : HyperdocPage, what : String,
+                   fun : (SE, SE) -> Cond_con_lst,
+                   cat_descendants? : Boolean) : Void ==
+            con_form := get_property(page, 'conform)
+            name := symbol(car(con_form))
+            domu := get_evalable_constructor_form(page, name)
+            domu case Err_ind => error_page(domu)
+            domname : SE := domu
+            if not(null?(domname)) and not(cat_descendants?) then
+                set_property(page, 'domname, domname)
+            c_lst : Cond_con_lst := fun(con_form, domname)
+            c_lst := mySort(c_lst)$Lisp
+            set_con_lst(page, c_lst)
+            set_property(page, 'thing, convert(what))
+            show_cons(page, 'names)
+
+        ancestors_page(page : HyperdocPage) : Void ==
+            do_related(page, "ancestor", ancestors$BRI, false)
+
+        descendents_page(page : HyperdocPage) : Void ==
+            do_related(page, "descendant", descendants$BRI, true)
+
+        domains_page(page : HyperdocPage) : Void ==
+            do_related(page, "descendant", domains$BRI, false)
+
+        children_page(page : HyperdocPage) : Void ==
+            do_related(page, "children", children$BRI, false)
+
+        dependents_page(page : HyperdocPage) : Void ==
+            conform := get_property(page, 'conform)
+            name := symbol(car(conform))
+            kind := get_constructor_kind(name)
+            d_lst : List(SY) := dependents(name)$BRI
+            c_lst := [get_cons_form(d) for d in d_lst]
+            set_con_lst(page, c_lst)
+            set_property(page, 'thing, convert("dependent"))
+            show_cons(page, 'names)
+
+        uses_page(page : HyperdocPage) : Void ==
+            conform := get_property(page, 'conform)
+            name := symbol(car(conform))
+            kind := get_constructor_kind(name)
+            domu := get_evalable_constructor_form(page, name)
+            domu case Err_ind => error_page(domu)
+            domname : SE := domu
+            if not(null?(domname)) then
+                set_property(page, 'domname, domname)
+            pakname : SY :=
+                kind = 'category => concat(string(name), "&")::SY
+                name
+            if not(null?(domname)) then
+                conform := get_property(page, 'conform)
+            c_lst : Cond_con_lst := uses(pakname, conform, domname)$BRI
+            set_con_lst(page, c_lst)
+            set_property(page, 'thing, convert("benefactor"))
+            show_cons(page, 'names)
+
+        parents_page(page : HyperdocPage) : Void ==
+            conform := get_property(page, 'conform)
+            name := symbol(car(conform))
+            domu := get_evalable_constructor_form(page, name)
+            domu case Err_ind => error_page(domu)
+            domname : SE := domu
+            if not(null?(domname)) then
+                set_property(page, 'domname, domname)
+            lst : Cond_con_lst := parents(convert(name))$BRI
+            if not(null?(domname)) then
+                lst := SUBLISLIS(cdr(domname), cdr(conform), lst)$Lisp
+            page := new(copy_property_list(get_property_list(page)))
+            set_con_lst(page, lst)
+            set_property(page, 'thing, convert("parent"))
+            choice : SY := (null?(domname) => 'names; 'parameters)
+            show_cons(page, convert(choice))
+
+        users_page(page : HyperdocPage) : Void ==
+            conform := get_property(page, 'conform)
+            name := symbol(car(conform))
+            kind := get_constructor_kind(name)
+            pakname : SY :=
+                kind = 'category => concat(string(name), "&")::SY
+                name
+            d_lst : List(SY) := users(pakname)$BRI
+            c_lst := [get_cons_form(d) for d in d_lst]
+            set_con_lst(page, c_lst)
+            set_property(page, 'thing, convert("user"))
+            show_cons(page, 'names)
+
+        show_cons_doc2(page : HyperdocPage, form : SE,
+                       i : Integer, only_one : Boolean,
+                       star? : Reference(Boolean)) : Void ==
+            -- print(message("show_cons_doc2")$OutputForm)$OutputForm
+            -- print(form::OutputForm)$OutputForm
+            cfl := destruct(form)
+            conname := symbol(first(cfl))
+            args := rest(cfl)
+            exp? := exp_con?(form)
+            member?(conname, _$Primitives$Lisp)$List(SY) =>
+                doc : String := ""
+                sig : SE :=
+                    conname = 'Enumeration =>
+                        mk_fake_sig('Symbol)
+                    mk_fake_sig('SetCategory)
+                show_op_detail(page, "constructor", form, conname, sig,
+                               true pretend SE, doc, i, only_one,
+                               'dbSelectCon, false, false, star?)
+                finish_constructor(page, conname)
+            doc : String := constructor_documentation(conname)$BRI
+            sig := constructor_signature(conname, args)$BRI
+            show_op_detail(page, "constructor", form, conname, sig,
+                           true pretend SE, doc, i, only_one,
+                           'dbSelectCon, false, false, star?)
+            finish_constructor(page, conname)
+
+        show_cons_doc1(page : HyperdocPage, name : SY, i : Integer,
+                       only_one : Boolean, star? : Reference(Boolean)
+                      ) : Void ==
+            if exposed_constructor?(name)$BRI then
+                setref(star?, true)
+            show_cons_doc2(page, constructor_form(name)$BRI, i,
+                           only_one, star?)
+
+        show_cons_doc(page : HyperdocPage, lst : List(SY),
+                      star? : Reference(Boolean)) : Void ==
+            lst := REMOVE_-DUPLICATES(lst)$Lisp
+            not(empty?(lst)) and empty?(rest(lst)) =>
+                show_cons_doc1(page, first(lst), 0, true, star?)
+            i : Integer := 0
+            c_lst := destruct(get_property(page, 'cAlist))
+            for name in lst repeat
+                while symbol(car(car(first(c_lst)))) ~= name repeat
+                    i := i + 1
+                    c_lst := rest(c_lst)
+                show_cons_doc1(page, name, i, false, star?)
+
+        begin_menu(page : HyperdocPage) : Void ==
+            add_to_description(page, "\beginmenu ")
+
+        end_menu(page : HyperdocPage) : Void ==
+            add_to_description(page, "\endmenu ")
+
+        get_constructor_kind(name : SY) : SY ==
+            default_name?(name)$BRI => "default package"::SY
+            constructor_kind(name)$BRI
+
+        is_symbol?(se : SE, sy : SY) : Boolean ==
+            symbol?(se) and symbol(se) = sy
+
+        emit_constructor2(page : HyperdocPage, label : String, form : SE,
+                         do_args : Boolean) : Void ==
+            ls := con_to_strings(label, form, convert([]), do_args, true, [])
+            add_list_to(page, reverse!(ls))
+
+        emit_constructor1(page : HyperdocPage, form : SE, do_args : Boolean
+                         ) : Void ==
+            -- print(message("emit_constructor1")$OutputForm)$OutputForm
+            -- print(form::OutputForm)$OutputForm
+            ls := con_to_strings(form, convert([]), do_args, true, [])
+            add_list_to(page, reverse!(ls))
+
+        emit_constructor(page : HyperdocPage, form : SE) : Void ==
+            emit_constructor1(page, form, true)
+
+        emit_starred_constructor(page : HyperdocPage, form : SE,
+                                 star? : Reference(Boolean)) : Void ==
+            exp? : Boolean :=
+                symbol?(form) => exposed_constructor?(symbol(form))$BRI
+                list?(form) => exp_con?(form)
+                true
+            if not(exp?) then
+                emit_star(page)
+                setref(star?, true)
+            emit_constructor(page, form)
+
+        name_con_table(page: HyperdocPage, lst : Cond_con_lst,
+                       do_args : Boolean,
+                       star? : Reference(Boolean)) : Void ==
+            had_unexposed? := false
+            start_table(page)
+            for rec in lst repeat
+                form := rec.form
+                exposed? := exp_con?(form)
+                add_to_description(page, "{")
+                if exposed? then
+                    add_to_description(page, "\space{2}")
+                else
+                    emit_star(page)
+                    had_unexposed? := true
+                emit_constructor1(page, form, do_args)
+                add_to_description(page, "}")
+            end_table(page)
+            if had_unexposed? then
+                setref(star?, true)
+
+        abbr_table(page: HyperdocPage, lst : Cond_con_lst, la : List(SY),
+                   star? : Reference(Boolean)) : Void ==
+            had_unexposed? := false
+            start_table(page)
+            for rec in lst for abb in la repeat
+                form := rec.form
+                exposed? := exp_con?(form)
+                add_to_description(page, "{")
+                if exposed? then
+                    add_to_description(page, "\space{2}")
+                else
+                    emit_star(page)
+                    had_unexposed? := true
+                emit_constructor2(page, string(abb), form, false)
+                add_to_description(page, "}")
+            end_table(page)
+            if had_unexposed? then
+                setref(star?, true)
+
+        show_cons_kinds(page : HyperdocPage, lst : Cond_con_lst,
+                        star? : Reference(Boolean)) : Void ==
+            cats := doms := packs := defs := []$List(Cond_rec)
+            for l1 in lst repeat
+                op := symbol(car(l1.form))
+                kind : SY := get_constructor_kind(op)
+                kind = 'category => cats := cons(l1, cats)
+                kind = 'domain => doms := cons(l1, doms)
+                kind = 'package => packs := cons(l1, packs)
+                defs := cons(l1, defs)
+            ll := [reverse!(cats), reverse!(doms), reverse!(packs),
+                   reverse!(defs)]$List(List(Cond_rec))
+            l_lab : List(String) := ["category", "domain", "package",
+                                     "default package"]
+            n_cases : Integer := +/[1 for l in ll | #l > 0]
+            begin_menu(page)
+            add_to_description(page, "\indent{1}")
+            for l in ll for lab in l_lab repeat
+                cnt := #l
+                cnt = 0 => iterate
+                add_to_description(page, "\item")
+                if n_cases = 1 then
+                    add_to_description(page, menu_button)
+                else
+                    lnk : List(SE) := [convert(lab), l pretend SE]
+                    add_op_link0(page, 'bcLinks, menu_button,
+                                 'dbShowConsKindsFilter, convert(lnk))
+                add_to_description(page, "\tab{1}")
+                add_to_description(page, "{\em ")
+                add_to_description(page, convert(cnt)@String)
+                add_to_description(page, " ")
+                lab1 : String := (cnt > 1 => plural_form(lab); lab)
+                add_to_description(page, lab1)
+                add_to_description(page, ":}")
+                name_con_table(page, l, false, star?)
+            end_menu(page)
+            add_to_description(page, "\indent{0}")
+
+        split_unconditional(lst : Cond_con_lst
+                           ) : Record(uncons : Cond_con_lst,
+                                      conds : Cond_con_lst) ==
+            uncos := conds := []$Cond_con_lst
+            for el in lst repeat
+                p := el.condition
+                list?(p) and car(p) = convert('hasArgs) =>
+                    -- error "hasArgs found"
+                    uncos := cons(el, uncos)
+                p = (true pretend SE) =>
+                    uncos := cons(el, uncos)
+                null?(p) =>
+                    -- FIXME: this should be filtered out earlier
+                    -- print(el.form::OutputForm)$OutputForm
+                    iterate
+                conds := cons(el, conds)
+            [reverse!(uncos), reverse!(conds)]
+
+        show_conditions1(page: HyperdocPage, lst : Cond_con_lst,
+                         conname: SY, star? : Reference(Boolean)) : Void ==
+            start_table(page)
+            for r1 in lst repeat
+                pred := r1.condition
+                has_args : List(SE) := []
+                if pred ~= (true pretend SE) then
+                    has_arg1 : SE := extractHasArgs(pred)$Lisp
+                    if not(null?(has_arg1)) then
+                        pred := cdr(has_arg1)
+                        has_args := destruct(car(has_arg1))
+                add_to_description(page, "{")
+                emit_starred_constructor(page, r1.form, star?)
+                if not(empty?(has_args)) then
+                    add_to_description(page, " {\em of} ")
+                    n_con : SE := convert(cons(convert(conname), has_args))
+                    emit_constructor(page, n_con)
+                if pred ~= (true pretend SE) then
+                    add_to_description(page, " if ")
+                    emit_predicate(page, pred, r1.form)
+                add_to_description(page, "}")
+            end_table(page)
+
+        show_conditions(page: HyperdocPage, lst : Cond_con_lst,
+                        kind : SY, star? : Reference(Boolean)) : Void ==
+            conform := get_property(page, 'conform)
+            conname := symbol(car(conform))
+            whichever := get_property(page,'whichever)
+            -- print(message("before splitConTable")$OutputForm)$OutputForm
+            (consNoPred, consPred) := split_unconditional(lst)
+            kind_s := string(kind)
+            singular : List(String) := [kind_s, " is"]
+            plural : List(String)  := [plural_form(kind_s), " are"]
+            cnt := #consNoPred
+            cnt_str := get_count_str(cnt)
+            -- print(message("before dbSayItems")$OutputForm)$OutputForm
+            l_str : List(String) := cons(cnt_str,
+                                         (cnt < 2 => singular; plural))
+            add_list_to(page, l_str)
+            add_to_description(page, " unconditional:")
+            show_conditions1(page, consNoPred, conname, star?)
+            add_to_description(page, "\horizontalline{}\newline{}")
+            cnt := #consPred
+            -- print(cnt::OutputForm)$OutputForm
+            cnt_str := get_count_str(cnt)
+            l_str := cons(cnt_str, (cnt < 2 => singular; plural))
+            add_list_to(page, l_str)
+            add_to_description(page, " conditional:")
+            show_conditions1(page, consPred, conname, star?)
+
+        con_page : SE -> Void
+
+        constructor_page : (SY, List(SE), List(String)) -> Void
+
+        star_remark(page : HyperdocPage) : Void ==
+            add_to_description(page,
+                "\newline{}-------------\newline{}{\em *} = unexposed")
+
+        show_constructors2(page : HyperdocPage, lst : Cond_con_lst,
+                           key : SY, exposedOnlyIfTrue : Boolean
+                          ) : Void ==
+            -- print(message("show_constructors2")$OutputForm)$OutputForm
+            if exposedOnlyIfTrue then
+                lst := [x for x in lst | exp_con?(x.form)]
+            conlist := [e1.form for e1 in lst]
+            -- print(conlist::OutputForm)$OutputForm
+            not(empty?(conlist)) and empty?(rest(conlist)) =>
+                c1 := first(conlist)
+                dp := get_property(page, 'domname)
+                null?(dp) =>
+                    cl := destruct(c1)
+                    constructor_page(symbol(first(cl)), cl, [])
+                con_page(c1)
+            name_lst : List(SY) := [
+                symbol(first(destruct(e1))) for e1 in conlist]
+            kinds := [get_constructor_kind(n) for n in name_lst]
+            kinds := REMOVE_-DUPLICATES(kinds)$Lisp
+            kind : SY :=
+                #kinds = 1 => first(kinds)
+                'constructor
+            title := constructor_title(page, #name_lst, key, kind,
+                                       exposedOnlyIfTrue)
+            page := new(copy_property_list(get_property_list(page)))
+            add_title(page, title)
+            add_to_description(page, "\beginscroll ")
+            set_con_lst(page, lst)
+            star? := ref(false)$Reference(Boolean)
+            -- print(message("calling branch fn")$OutputForm)$OutputForm
+            if true then
+                key = 'names => name_con_table(page, lst, false, star?)
+                key = 'abbrs =>
+                    la : List(SY) := [get_db_info(con, 'ABBREVIATION)
+                                        for con in name_lst]
+                    abbr_table(page, lst, la, star?)
+                key = 'documentation => show_cons_doc(page, name_lst, star?)
+                key = 'conditions => show_conditions(page, lst, kind, star?)
+                key = 'parameters =>
+                    name_con_table(page, lst, true, star?)
+                key = 'kinds => show_cons_kinds(page, lst, star?)
+            if deref(star?) then
+                star_remark(page)
+            add_to_description(page, "\endscroll ")
+            -- print(message("calling constructor menu")$OutputForm)$OutputForm
+            constructors_menu(page, kind, key)
+            show(page)
+
+        show_search_path(page : HyperdocPage) : Void ==
+            conform := get_property(page, 'conform)
+            name := symbol(car(conform))
+            kind := get_constructor_kind(name)
+            domu := get_evalable_constructor_form(page, name)
+            domu case Err_ind => error_page(domu)
+            domname : SE := domu
+            title : List(String) :=
+                null?(domname) =>
+                    get_property(page, 'heading) pretend List(String)
+                ["{\sf ", constructor_to_string(domname), "}"]
+            if not(null?(domname)) then
+                set_property(page, 'domname, domname)
+                set_property(page, 'heading, title pretend SE)
+            page := new(copy_property_list(get_property_list(page)))
+            domain : None :=
+                kind = 'category => NIL$Lisp
+                EVAL(domname)$Lisp
+            lst := search_path(conform, domname, domain)$BRI
+            set_con_lst(page, lst)
+            -- FIXME
+            set_property(page, 'thing, convert("constructor"))
+            show_cons(page, 'names)
+
+        show_constructors(lst : List(SY)) : Void ==
+            n_lst : Cond_con_lst := [get_cons_form(l1) for l1 in sort(lst)]
+            page := new(empty())$HyperdocPage
+            show_constructors2(page, n_lst, 'names, exposed_only?)
+
+        con_page_choose(name : SE) : Void ==
+            -- print(message("con_page_choose")$OutputForm)$OutputForm
+            -- print(name::OutputForm)$OutputForm
+            con_page(name)
+
+        exposed_op? : Sig_doc -> Boolean
+
+        show_op_documentation(page : HyperdocPage, s1 : Sig_doc, op : SY,
+                              j : Integer, exactly_one : Boolean,
+                              star? : Reference(Boolean)) : Void ==
+            -- print(message("show_op_documentation")$OutputForm)$OutputForm
+            doc := s1.documentation
+            pred := s1.condition
+            not_exp? := not(exposed_op?(s1))
+            show_op_detail(page, "operation", s1.origin, op, s1.signature,
+                           pred, doc, j, exactly_one, 'dbChooseDomainOp,
+                           not_exp?, true, star?)
+            if not_exp? then
+                setref(star?, true)
+
+        show_ops_documentation(page : HyperdocPage, opl : Op_lst,
+                              exposedOnlyIfTrue : Boolean,
+                              star? : Reference(Boolean)) : Void ==
+            -- print(opl::OutputForm)$OutputForm
+            conform := get_property(page, 'conform)
+            domname := get_property(page, 'domname)
+            if not(null?(domname)) then
+                conform := domname
+            exactly_one : Boolean := not(empty?(opl)) and empty?(rest(opl))
+            exactly_one := exactly_one and #(first(opl).sdl) = 1
+            for rec in opl for base in 0.. by 8192 repeat
+                op := rec.name
+                for s1 in rec.sdl for j in 0.. repeat
+                    show_op_documentation(page, s1, op, base + j,
+                                          exactly_one, star?)
+
+        show_ops : (HyperdocPage, SE) -> Void
+
+        choose_domain_op(page : HyperdocPage, k : Integer) : Void ==
+            (opn, n) := divide(k, 8192)
+            lst := get_op_lst(page)
+            el := lst(opn + 1)
+            op := el.name
+            opd := (el.sdl)(n + 1)
+            page := new(copy_property_list(get_property_list(page)))
+            el2 := [op, [opd]]$Op_rec
+            set_op_lst(page, [el2])
+            show_ops(page, 'documentation)
+
+        pack_pair(i : Integer, j : Integer) : SE ==
+            lse : List(SE) := [convert(i), convert(j)]
+            convert(lse)
+
+        show_op_signatures : (HyperdocPage, Op_lst, Integer,
+                              Reference(Boolean)) -> Void
+
+        con_kind(c : SE) : String ==
+            string(get_constructor_kind(symbol(car(c))))
+
+        show_op_data(page : HyperdocPage, data : Grp_lst,
+                     constructorIfTrue : Boolean, word : String,
+                     fun : SY, star? : Reference(Boolean)) : Void ==
+            set_ops_grd(page, data)
+            single? := empty?(rest(data))
+            begin_menu(page)
+            bin_cnt : Integer := 1
+            for el1 in data repeat
+                tag := el1.grp_tag
+                opl := el1.ops
+                add_to_description(page, "\item")
+                if single? then
+                    add_to_description(page, menu_button)
+                else
+                    add_op_link0(page, 'bcLinks, menu_button, 'dbShowOps,
+                                 pack_pair(bin_cnt, 0))
+                add_to_description(page, "{\em ")
+                phrase1 : String :=
+                    symbol?(tag) =>
+                        st := symbol(tag)
+                        st = 'nowhere => "implemented nowhere"
+                        st = 'constant => "constant"
+                        st = 'unexported => "unexported"
+                        st = '% => "by the domain"
+                        constructorIfTrue =>
+                            add_to_description(page, word)
+                            " an unknown constructor"
+                        "unconditional"
+                    list?(tag) =>
+                        constructorIfTrue =>
+                            add_to_description(page, word)
+                            ""
+                        ""
+                    error "show_op_data: unexpected tag"
+                add_to_description(page, phrase1)
+                add_to_description(page, "}")
+                if list?(tag) then
+                    if constructorIfTrue then
+                        add_list_to(page,
+                                    [" {\em ", con_kind(tag), "}"])
+                    add_to_description(page, " ")
+                    fun = 'bcStarConform =>
+                         emit_starred_constructor(page, tag, star?)
+                    fun = 'bcPred =>
+                        emit_predicate(page, tag, convert([]))
+                    error "show_op_data: unexpected function symbol"
+                add_to_description(page, ":\newline ")
+                show_op_signatures(page, opl, bin_cnt, star?)
+                bin_cnt := bin_cnt + 1
+            end_menu(page)
+
+        show_op_origins(page : HyperdocPage, lst : Op_lst,
+                        star? : Reference(Boolean)) : Void ==
+            data := group_by_origin(lst)$BRI
+            show_op_data(page, data, true, "from", 'bcStarConform, star?)
+
+        show_op_implementations(page : HyperdocPage, lst : Op_lst,
+                        star? : Reference(Boolean)) : Void ==
+            -- print(message("show_op_implementations")$OutputForm)$OutputForm
+            -- print(lst::OutputForm)$OutputForm
+            domname := get_property(page, 'domname)
+            null?(domname) =>
+                error "show_op_implementations: no domname"
+            -- print(domname::OutputForm)$OutputForm
+            args := rest(destruct(constructor_form(symbol(car(domname)))$BRI))
+            data := group_by_implementation(args, domname, lst)$BRI
+            -- print(data::OutputForm)$OutputForm
+            show_op_data(page, data, true, "by", 'bcStarConform, star?)
+
+        show_op_conditions(page : HyperdocPage, lst : Op_lst,
+                           star? : Reference(Boolean)) : Void ==
+            -- print(message("show_op_conditions")$OutputForm)$OutputForm
+            data := group_by_condition(lst)$BRI
+            -- print(data::OutputForm)$OutputForm
+            show_op_data(page, data, false, "", 'bcPred, star?)
+
+        ops_title_suffix(branch : SY) : String ==
+            branch = 'parameters => " viewed with parameters"
+            branch = 'origins    => " organized by origins"
+            branch = 'conditions => " organized by conditions"
+            ""
+
+        from_part(page : HyperdocPage) : List(String) ==
+            res := get_property(page, 'fromHeading) pretend List(String)
+            res
+
+        drop_unexposed_ops : Op_lst -> Op_lst
+
+        count_ops : Op_lst -> Integer
+
+        emit_star(page : HyperdocPage) : Void ==
+            add_to_description(page, "{\em *} ")
+
+        show_op_names(page : HyperdocPage, opl : Op_lst,
+                      star? : Reference(Boolean)) : Void ==
+            -- print(message("show_op_names")$OutputForm)$OutputForm
+            had_star? := false
+            start_table(page)
+            for i in 0.. for rec in opl repeat
+                exposed? := false
+                for sd in rec.sdl repeat
+                    exposed? := exposed? or exposed_op?(sd)
+                add_to_description(page, "{")
+                if exposed? then
+                        add_to_description(page, "\space{2}")
+                else
+                    had_star? := true
+                    emit_star(page)
+                lnk1 : SE := convert(i)
+                ns := escape_if_needed(string(rec.name))
+                add_op_link0(page, 'bcLinks, ns, 'dbShowOps, lnk1)
+                add_to_description(page, "}")
+            end_table(page)
+            if had_star? then
+                setref(star?, true)
+
+        show_op_parameters(page : HyperdocPage, opl : Op_lst,
+                      star? : Reference(Boolean)) : Void ==
+            had_star? := false
+            start_table(page)
+            i : Integer := 0
+            for rec in opl repeat
+                op := rec.name
+                for sd in rec.sdl repeat
+                    i := i + 1
+                    exposed? := exposed_op?(sd)
+                    add_to_description(page, "{")
+                    if exposed? then
+                        add_to_description(page, "\space{2}")
+                    else
+                        had_star? := true
+                        emit_star(page)
+                    args := operation_arguments(op, sd.signature,
+                                                sd.documentation)
+                    display_op_sig(page, convert(op), args pretend List(SE),
+                                   #args + 1, sd.condition,
+                                     convert(i), false)
+                    add_to_description(page, "}")
+            end_table(page)
+            if had_star? then
+                setref(star?, true)
+
+        show_op_signatures(page : HyperdocPage, opl : Op_lst, j : Integer,
+                           star? : Reference(Boolean)) : Void ==
+            had_star? := false
+            start_table(page)
+            i : Integer := 1
+            for rec in opl repeat
+                for sd in rec.sdl repeat
+                    exposed? := exposed_op?(sd)
+                    add_to_description(page, "{")
+                    if exposed? then
+                        add_to_description(page, "\space{2}")
+                    else
+                        had_star? := true
+                        emit_star(page)
+                    lnk1 : SE :=
+                        j = 0 => convert(i)
+                        pack_pair(j, i)
+                    i := i + 1
+                    ns := escape_if_needed(string(rec.name))
+                    add_op_link0(page, 'bcLinks, ns,
+                                 'dbShowOps, lnk1)
+                    add_to_description(page, ": ")
+                    mt : List(SE) := cons(convert('Mapping),
+                                          destruct(sd.signature))
+                    -- print(mt::OutputForm)$OutputForm
+                    emit_constructor(page, convert(mt))
+                    add_to_description(page, "}")
+            end_table(page)
+            if had_star? then
+                setref(star?, true)
+
+        show_op_lines0(page : HyperdocPage, opl : Op_lst,
+                       key : SY, exposedOnlyIfTrue : Boolean) : Void ==
+            -- print(message("show_op_lines0")$OutputForm)$OutputForm
+            -- print(opl::OutputForm)$OutputForm
+            -- print(key::OutputForm)$OutputForm
+            if exposedOnlyIfTrue then
+                opl := drop_unexposed_ops(opl)
+                -- print(message("exposed only")$OutputForm)$OutputForm
+                -- print(opl::OutputForm)$OutputForm
+            cnt : Integer := count_ops(opl)
+            branch : SY :=
+                key = 'names and empty?(rest(opl)) =>
+                    cnt <= max_description_count => 'documentation
+                    key
+                key
+            cnt2 := #opl
+            -- print(message("cnt2 = ")$OutputForm)$OutputForm
+            -- print(cnt2::OutputForm)$OutputForm
+            namedPart : List(String) :=
+                not(empty?(opl)) and empty?(rest(opl)) =>
+                    op1 := first(opl).name
+                    [" {\em ", escape_if_needed(string(op1)), "}"]
+                []
+            cnt_str := get_count_str(cnt)
+            prefix :=
+                exposedOnlyIfTrue => [cnt_str, " exposed "]
+                [cnt_str]
+            title : List(String) :=
+                cnt = 0 => concat(prefix, "operations")
+                cnt2 = 1 or cnt2 = cnt =>
+                    cnt = 1 =>
+                        exposedOnlyIfTrue => concat(
+                           ["Exposed ", "operation"], namedPart)
+                        concat(["Operation", " "], namedPart)
+                    concat(prefix, cons("operations", namedPart))
+                concat([convert(cnt2)@String, " names for ", cnt_str,
+                        "operations"], namedPart)
+            page := new(copy_property_list(get_property_list(page))
+                       )$HyperdocPage
+            title := concat(title, from_part(page))
+            title := concat(title, ops_title_suffix(branch))
+            -- print(title::OutputForm)$OutputForm
+            add_title(page, title)
+            set_property(page, 'branch, convert(branch))
+            add_to_description(page, "\beginscroll ")
+            -- print(message("calling branch fn")$OutputForm)$OutputForm
+            star? := ref(false)$Reference(Boolean)
+            if true then
+                branch = 'names =>
+                    show_op_names(page, opl, star?)
+                branch = 'documentation =>
+                    show_ops_documentation(page, opl, exposedOnlyIfTrue, star?)
+                branch = 'signatures =>
+                    show_op_signatures(page, opl, 0, star?)
+                branch = 'parameters =>
+                    show_op_parameters(page, opl, star?)
+                branch = 'origins =>
+                    show_op_origins(page, opl, star?)
+                branch = 'implementation =>
+                    show_op_implementations(page, opl, star?)
+                branch = 'conditions =>
+                    show_op_conditions(page, opl, star?)
+            -- print(message("branch fn done")$OutputForm)$OutputForm
+            if deref(star?) then
+                star_remark(page)
+            add_to_description(page, "\endscroll ")
+            operations_menu(page, branch, exposedOnlyIfTrue)
+            show(page)
+
+        show_op_lines3(page : HyperdocPage, opl : Op_lst,
+                       key : SY) : Void ==
+            -- print(message("show_op_lines3")$OutputForm)$OutputForm
+            -- print(lst::OutputForm)$OutputForm
+            show_op_lines0(page, opl, key, exposed_only?)
+
+        show_op_lines(opl : Op_lst) : Void ==
+            -- print(message("show_op_lines")$OutputForm)$OutputForm
+            page := new(empty())$HyperdocPage
+            set_op_lst(page, opl)
+            show_op_lines3(page, opl, 'names)
+
+        search_query(tag : SY, kind : String) : Void ==
+            items : List(SE) := [convert(tag), convert(kind)]
+            page := new(empty())$HyperdocPage
+            set_property(page, 'items, convert(items))
+            add_title(page, ["Query Page"])
+            add_to_description(page, "\beginscroll ")
+            emit_query(page, ["{\em Do you want a list of {\em all} ",
+                plural_form(kind), "?\vspace{1}}"], 'grepSearchJump)
+            add_to_description(page, "\endscroll")
+            show(page)
+
+        do_operation_search(pat : String) : Void ==
+            opl_u := search_operations(pat)$BRI
+            opl_u case Err_ind => error_page(opl_u)
+            opl := opl_u@Op_lst
+            cnt := #opl
+            cnt = 0 =>
+                empty_result("operation", pat, "")
+            show_op_lines(opl)
+
+        operation_search(pat : String) : Void ==
+            -- print(message("operation_search")$OutputForm)$OutputForm
+            pat = "*" => search_query('o, "operation")
+            do_operation_search(pat)
+
+        add_link1(page : HyperdocPage, label : String, fun : SY) : Void ==
+            add_op_link0(page, 'bcLinks, label, 'cons_opts, convert(fun))
+
+        add_link(page : HyperdocPage, label : String, fun : SY) : Void ==
+            add_to_description(page, "}{")
+            add_link1(page, label, fun)
+
+        constructor_context_menu(page : HyperdocPage, kind : String,
+               is_asharp? : Boolean) : Void ==
+            start_table(page)
+            add_to_description(page, "{")
+            add_link1(page, "Ancestors", 'ancestors)
+            if kind = "category" then
+                add_link(page, "Children", 'children)
+            if not(is_asharp?) then
+                add_link(page, "Dependents", 'dependents)
+            if kind = "category" then
+                add_link(page, "Descendents", 'descendents)
+                if not(is_asharp?) then
+                    add_link(page, "Domains", 'domains)
+                else
+                    add_to_description(page, "}{{\em Domains}")
+            -- FIXME
+            add_to_description(page, "}{{\em Examples}")
+            add_link(page, "Exports", 'exports)
+            add_link(page, "Operations", 'operations)
+            add_link(page, "Parents", 'parents)
+            if kind ~= "category" then
+                if not(is_asharp?) then
+                    add_link(page, "Search Path", 'search_path)
+                else
+                    add_to_description(page, "}{{\em Search Path}")
+                add_link(page, "Users", 'users)
+                add_link(page, "Uses", 'uses)
+            add_to_description(page, "}")
+            end_table(page)
+
+        add_parameter_fields(page : HyperdocPage, conform : List(SE),
+                                a_strs : List(String)) : Void ==
+            parlist : List(String) :=
+                [string(symbol(par)) for par in rest(conform)]
+            need_wide? := "max"/[#s for s in parlist] > 10
+            w : Integer := (need_wide? => 55; 23)
+            add_to_description(page, "Optional argument ")
+            val_str : String :=
+                not(empty?(rest(parlist))) => "values:"
+                "value:"
+            add_to_description(page, val_str)
+            even := false
+            pvars : List(SY) := _$PatternVariableList$Lisp
+            for parname in pvars for par in rest(conform)
+                                 for spar in parlist repeat
+                par := fix_T(par)
+                add_to_description(page,
+                    (even or need_wide? => "\newline"; "\tab{29}"))
+                even := not(even)
+                a_str : String := ""
+                if not(empty?(a_strs)) then
+                    a_str := first(a_strs)
+                    a_strs := rest(a_strs)
+                l1 : List(SE) :=
+                    [convert('text), convert("{\em "), par, convert("} = ")]
+                l2 : List(SE) :=
+                    [convert(w - #spar), convert(a_str),
+                      convert(parname), convert('EM)]
+                add_to(page, [convert(l1),
+                              convert([convert('bcStrings), convert(l2)])])
+
+        capitalize(s : String) : String ==
+            s := copy(s)
+            s(1) := upperCase(s(1))$Character
+            s
+
+        constructor_page(name : SY, form : List(SE), args : List(String)
+                        ) : Void ==
+            kind : SY := get_constructor_kind(name)
+            kind_s := string(kind)
+            conform : SE := constructor_form(name)$BRI
+            nargs := #conform - 1
+            -- if empty?(args) and nargs > 0 then
+            --    args := [string(symbol(ai)) for ai in rest(destruct(conform))]
+            constrings : List(String) :=
+                #form > 1 => con_to_strings(name, form)
+                [string(name)]
+            heading := concat(constrings, ["}"])
+            heading := cons("{", heading)
+            exp? : Boolean := exposed_constructor?(name)$BRI
+            heading1 : List(String) :=
+                exp? => [capitalize(kind_s), " "]
+                ["Unexposed ", kind_s, " "]
+            title := concat(heading1, heading)
+            page := new(empty())$HyperdocPage
+            add_title(page, title)
+            add_to_description(page, "\beginscroll ")
+            set_property(page, 'heading, heading pretend SE)
+            set_property(page, 'kind, convert(kind_s))
+            set_property(page, 'conform, conform)
+            -- set_property(page, 'signature, convert(signature))
+            -- print(message("calling show_cons_doc2")$OutputForm)$OutputForm
+            star? := ref(exp?)$Reference(Boolean)
+            show_cons_doc2(page, conform, 0, true, star?)
+            if nargs > 0 then
+                add_parameter_fields(page, destruct(conform), args)
+            if not(deref(star?)) then
+                star_remark(page)
+            add_to_description(page, "\endscroll ")
+            constructor_context_menu(page, kind_s, false)
+            show(page)
+
+        show_split_constructors : (Split_rec, String, String) -> Void
+
+        show_constructor_res(lst_u : Con_res, desc : String, pat : String
+                            ) : Void ==
+            lst_u case Err_ind => error_page(lst_u)
+            show_split_constructors(lst_u, desc, pat)
+
+        do_constructor_search(pat : String, tag : SY, desc : String
+                          ) : Void ==
+            -- print(message("do_constructor_search")$OutputForm)$OutputForm
+            lst_u := search_constructors(pat, tag)$BRI
+            show_constructor_res(lst_u, desc, pat)
+
+        con_with_params?(pat : String) : SE ==
+            pat = "Mapping" => convert([])
+            pt := parse(pat)$InputForm
+            null?(pt) => convert(pt)
+            quiet_valid_type?(pt)$Lisp
+
+        constructor_search(pat : String, tag : SY, desc : String
+                          ) : Void ==
+            parse : SE := con_with_params?(pat)
+            not(null?(parse)) =>
+                -- print(message("calling con_page")$OutputForm)$OutputForm
+                con_page(parse)
+            su : Union(SY, "failed") := find_symbol(pat)$Lisp
+            if su case SY then
+                s := su@SY
+                cn : SE := get_db_info(s, 'CONSTRUCTOR)
+                if symbol?(cn) then
+                    pat := string(symbol(cn))
+            lu := is_builtin?(pat)
+            lu case String => downlink(lu)
+            pat = "*" => search_query(tag, desc)
+            do_constructor_search(pat, tag, desc)
+
+        exposed_op?(sd : Sig_doc) : Boolean ==
+            orig_name := car(sd.origin)
+            exposed_constructor?(symbol(orig_name))$BRI
+
+        drop_unexposed_sigs(sdl : List(Sig_doc)) : List(Sig_doc) ==
+            [sd for sd in sdl | exposed_op?(sd)]
+
+        drop_unexposed_ops(opl : Op_lst) : Op_lst ==
+            res : Op_lst := []
+            for rec in opl repeat
+                sdl1 := drop_unexposed_sigs(rec.sdl)
+                empty?(sdl1) => iterate
+                res := cons([rec.name, sdl1], res)
+            reverse!(res)
+
+        drop_unexposed_constructors(lst : List(SY)) : List(SY) ==
+            [name for name in lst | exposed_constructor?(name)$BRI]
+
+        drop_unexposed_lines(lst : Save_rec) : Save_rec ==
+            -- print(message("drop_unexposed_lines")$OutputForm)$OutputForm
+            -- print(lst::OutputForm)$OutputForm
+            not(exposed_only?) => lst
+            ci := lst.save.con_info
+            cats := drop_unexposed_constructors(ci.categories)
+            doms := drop_unexposed_constructors(ci.domains)
+            packs := drop_unexposed_constructors(ci.packages)
+            opl := drop_unexposed_ops(lst.save.op_info)
+            [[[cats, doms, packs], opl], lst.save]
+
+        count_ops(opl : Op_lst) : Integer ==
+            res : Integer := 0
+            for rec in opl repeat
+                res := res + #rec.sdl
+            res
+
+        count_lsts(le : Gen_rec) : Integer ==
+            -- print(message("count_lsts")$OutputForm)$OutputForm
+            -- print(le::OutputForm)$OutputForm
+            cr := le.con_info
+            #cr.categories + #cr.domains + #cr.packages +
+                count_ops(le.op_info)
+
+        show_split_constructors(lst : Split_rec, kind : String, pat : String
+                               ) : Void ==
+            n_lst := concat(lst.categories,
+                            concat(lst.domains, lst.packages))
+            empty?(n_lst) => empty_result(kind, pat, "")
+            show_constructors(n_lst)
+
+        show_single_list(rec : Gen_rec) : Void ==
+            not(empty?(rec.op_info)) =>
+                show_op_lines(rec.op_info)
+            ci := rec.con_info
+            not(empty?(ci.categories)) =>
+                show_constructors(ci.categories)
+            not(empty?(ci.domains)) =>
+                show_constructors(ci.domains)
+            not(empty?(ci.packages)) =>
+                show_constructors(ci.packages)
+            error "show_single_list: all lists are empty"
+
+        say_item_count(page : HyperdocPage, pre : String, cnt : Integer,
+                       singular : String, plural : String,
+                       tail : List(String)) : Void ==
+            -- print(message("say_item_count")$OutputForm)$OutputForm
+            add_to_description(page, "\newline ")
+            if pre ~= "" then
+                add_to_description(page, pre)
+            cnt_str := get_count_str(cnt)
+            add_to_description(page, cnt_str)
+            add_to_description(page, (cnt < 2 => singular; plural))
+            for el in tail repeat
+                add_to_description(page, el)
+            if cnt > 0 then
+                add_to_description(page, ":")
+
+        emit_gen_ops(page : HyperdocPage, c_opl : Op_lst, s_opl : Op_lst,
+                     j : Integer, fn : SY, star? : Reference(Boolean)
+                    ) : Void ==
+            cnt := count_ops(c_opl)
+            u_cnt := #c_opl
+            cnt = 0 => void()
+            -- print(message("emit_gen_ops")$OutputForm)$OutputForm
+            -- print(cnt::OutputForm)$OutputForm
+            add_to_description(page, "\newline ")
+            add_to_description(page, "\tab{2}")
+            kind : String := "operation"
+            lnk1 : List(SE) := [c_opl pretend SE, convert(kind)]
+            add_op_link0(page, 'bcLinks, menu_button, 'genSearchSayJump,
+                          convert(lnk1))
+            add_to_description(page, "{\em ")
+            cnt_str := get_count_str(cnt)
+            add_to_description(page, cnt_str)
+            add_to_description(page, (cnt < 2 => kind; plural_form(kind)))
+            add_to_description(page, "} ")
+            u_cnt >= max_browse_count => void()
+            if u_cnt ~= 1 then
+                add_to_description(page, "\indent{4}")
+                add_to_description(page, "\newline ")
+                start_table(page)
+            had_star? := false
+            i : Integer := 0
+            for rec in c_opl repeat
+                id := rec.name
+                exposed? := false
+                for sd in rec.sdl repeat
+                    exposed? := exposed? or exposed_op?(sd)
+                add_to_description(page, "{")
+                if exposed? then
+                        add_to_description(page, "\space{1}")
+                else
+                    had_star? := true
+                    emit_star(page)
+                lnk1 : SE := convert(j + 8*i)
+                add_op_link0(page, 'bcLinks, string(id), fn, lnk1)
+                -- i := i + #rec.sdl
+                i := i + 1
+                add_to_description(page, "}")
+            if u_cnt ~= 1 then
+                end_table(page)
+                add_to_description(page, "\indent{0}")
+            if had_star? then
+                setref(star?, true)
+
+        emit_gen_item(page: HyperdocPage, c_lst : List(SY),
+                      s_lst : List(SY), kind : String, j : Integer,
+                      fn : SY, star? : Reference(Boolean)) : Void ==
+            cnt : Integer := #c_lst
+            cnt = 0 => void()
+            -- unique_cnt : Integer := #u
+            -- print(message("emit_gen_item")$OutputForm)$OutputForm
+            -- print(cnt::OutputForm)$OutputForm
+            add_to_description(page, "\newline ")
+            add_to_description(page, "\tab{2}")
+            lnk1 : List(SE) := [s_lst pretend SE,
+                                         convert(kind)]
+            add_op_link0(page, 'bcLinks, menu_button, 'genSearchSayJump,
+                          convert(lnk1))
+            add_to_description(page, "{\em ")
+            cnt_str := get_count_str(cnt)
+            add_to_description(page, cnt_str)
+            add_to_description(page, (cnt < 2 => kind; plural_form(kind)))
+            add_to_description(page, "} ")
+            cnt >= max_browse_count => void()
+            if cnt ~= 1 then
+                add_to_description(page, "\indent{4}")
+                add_to_description(page, "\newline ")
+                start_table(page)
+            i : Integer := 1
+            had_star? := false
+            for id in c_lst repeat
+                exposed? := exposed_constructor?(id)$BRI
+                add_to_description(page, "{")
+                if exposed? then
+                    add_to_description(page, "\space{1}")
+                else
+                    had_star? := true
+                    emit_star(page)
+                lnk1 : SE := convert(j + 8*i)
+                add_op_link0(page, 'bcLinks, string(id), fn, lnk1)
+                i := i + 1
+                add_to_description(page, "}")
+            if cnt ~= 1 then
+                end_table(page)
+                add_to_description(page, "\indent{0}")
+            if had_star? then
+                setref(star?, true)
+
+        add_exposure_button(page : HyperdocPage) : Void ==
+            cond : Boolean := not(exposed_only?)
+            lnk1 : List(SE) := [
+                convert(cond => "Exposed Only"; "Unexposed Also"),
+                    convert(""), convert('repeatSearch),
+                        cond pretend SE]
+            lnk : List(SE) := [convert('bcLinks), convert(lnk1)]
+            add_to(page, [convert(lnk)])
+
+        emit_gen_lst(page : HyperdocPage, rec : Save_rec,
+                     fn : SY, star? : Reference(Boolean)) : Void ==
+            -- print(message("emit_gen_lst")$OutputForm)$OutputForm
+            ccur := rec.cur.con_info
+            csave := rec.save.con_info
+            emit_gen_ops(page, rec.cur.op_info, rec.save.op_info,
+                         0, fn, star?)
+            emit_gen_item(page, ccur.categories, csave.categories,
+                              "category", 1, fn, star?)
+            emit_gen_item(page, ccur.domains, csave.domains,
+                              "domain", 2, fn, star?)
+            emit_gen_item(page, ccur.packages, csave.packages,
+                              "package", 3, fn, star?)
+
+        doc_search1(pat : String, doc_lst : Save_rec) : Void ==
+            doc_lst := drop_unexposed_lines(doc_lst)
+            cnt : Integer := count_lsts(doc_lst.cur)
+            cnt = 0 =>
+                empty_result("entry", pat, "")
+            cnt = 1 =>
+                -- lst1 := first(get_not_empties(doc_lst))
+                -- FIXME
+                show_single_list(doc_lst.cur)
+            page := new(empty())$HyperdocPage
+            set_reg_list(page, "failed")
+            set_doc_list(page, doc_lst)
+            set_property(page, 'filter, convert(pat))
+            title : List(String) := [get_count_str(cnt),
+                (cnt < 2 => "entry matches"; "entries match"), " ",
+                    "{\em ", escape_if_needed(pat), "}"]
+            add_title(page, title)
+            add_to_description(page, "\beginscroll ")
+            say_item_count(page, "\newline Documentation Summary: ", cnt,
+                           "mention", "mentions", [" of {\em ", pat, "}"])
+            star? := ref(false)$Reference(Boolean)
+            emit_gen_lst(page, doc_lst, 'showDoc, star?)
+            if deref(star?) then
+                star_remark(page)
+            add_to_description(page, "\endscroll")
+            add_exposure_button(page)
+            show(page)
+
+        gen_search1(pat : String, reg_lst : Save_rec,
+                    doc_lst : Save_rec) : Void ==
+            -- print(message("gen_search1")$OutputForm)$OutputForm
+            reg_lst := drop_unexposed_lines(reg_lst)
+            doc_lst := drop_unexposed_lines(doc_lst)
+            reg_cnt : Integer := count_lsts(reg_lst.cur)
+            doc_cnt : Integer := count_lsts(doc_lst.cur)
+            cnt := reg_cnt + doc_cnt
+            -- print(message("gen_search1, [reg_cnt, doc_cnt] = "
+            --     )$OutputForm)$OutputForm
+            -- print(([reg_cnt, doc_cnt]$List(Integer))::OutputForm)$OutputForm
+            cnt = 0 =>
+                empty_result("entry", pat, "")
+            cnt = 1 =>
+                -- print(message("cnt = 1 =>")$OutputForm)$OutputForm
+                lst := (reg_cnt = 1 => reg_lst.cur; doc_lst.cur)
+                show_single_list(lst)
+            page := new(empty())$HyperdocPage
+            set_reg_list(page, reg_lst)
+            set_doc_list(page, doc_lst)
+            set_property(page, 'filter, convert(pat))
+            pre1 : String :=
+                exposed_only? => "exposed entries match"
+                "entries match"
+            pre2 : String := concat([convert(cnt)@String, " ", pre1])
+            title := [pre2, " {\em ", escape_if_needed(pat), "}"]
+            add_title(page, title)
+            add_to_description(page, "\beginscroll ")
+            if doc_cnt > 0 then
+                say_item_count(page, "{\bf Construct Summary:} ", reg_cnt,
+                               "name matches", "names match", [])
+            star? := ref(false)$Reference(Boolean)
+            emit_gen_lst(page, reg_lst, 'showConstruct, star?)
+            if doc_cnt > 0 then
+                say_item_count(page, "\newline{\bf Documentation Summary:} ",
+                               doc_cnt, "mention", "mentions",
+                               [" of {\em ", pat, "}"])
+                emit_gen_lst(page, doc_lst, 'showDoc, star?)
+            if deref(star?) then
+                star_remark(page)
+            add_to_description(page, "\endscroll")
+            add_exposure_button(page)
+            show(page)
+
+        doc_search0(pat : String) : Void ==
+            pat = "*" => star_error()
+            doc_u := search_documentation(pat)$BRI
+            doc_u case Err_ind => error_page(doc_u)
+            doc_search1(pat, [doc_u, doc_u])
+
+        gen_search0(pat : String, includeDoc? : Boolean) : Void ==
+            -- print(message("gen_search0")$OutputForm)$OutputForm
+            pat = "*" => star_error()
+            reg_u := search_general(pat)$BRI
+            reg_u case Err_ind => error_page(reg_u)
+            doc_lst : Gen_rec := [[[], [], []], []]
+            if includeDoc? then
+                doc_u := search_documentation(pat)
+                doc_u case Err_ind => error_page(doc_u)
+                doc_lst := doc_u
+            gen_search1(pat, [reg_u, reg_u], [doc_lst, doc_lst])
+
+        repeat_search(page : HyperdocPage, exp? : Boolean) : Void ==
+            exposed_only? := exp?
+            pat := string(get_property(page, 'filter))
+            reg_lst_u := get_reg_list(page)
+            doc_lst := get_doc_list(page)
+            reg_lst_u case "failed" => doc_search1(pat, doc_lst)
+            gen_search1(pat, reg_lst_u, doc_lst)
+
+        select_opr(page : HyperdocPage, opl : Op_lst, k : Integer
+                  ) : Op_rec ==
+            -- print(message("select_opr")$OutputForm)$OutputForm
+            -- print(opl::OutputForm)$OutputForm
+            -- print(#opl::OutputForm)$OutputForm
+            -- print(k::OutputForm)$OutputForm
+            branch :=
+                bs := get_property(page, 'branch)
+                null?(bs) => 'names
+                symbol(bs)
+            -- print(branch::OutputForm)$OutputForm
+            branch = 'names => opl(k + 1)
+            j := j0 := 1$Integer
+            repeat
+                opr := first(opl)
+                j0 := j
+                j := j + #opr.sdl
+                j > k => break
+                opl := rest(opl)
+            -- print((k - j0)::OutputForm)$OutputForm
+            -- print(opr::OutputForm)$OutputForm
+            sd := (opr.sdl)(k - j0 + 1)
+            [opr.name, [sd]]
+
+        show_selected_ops(page : HyperdocPage, opl : Op_lst) : Void ==
+            page := new(copy_property_list(get_property_list(page))
+                       )$HyperdocPage
+            set_op_lst(page, opl)
+            branch : SY :=
+                #opl ~= 1 => 'names
+                ope := first(opl)
+                #ope.sdl <= max_description_count => 'documentation
+                'names
+            show_op_lines0(page, opl, branch, exposed_only?)
+
+        show_ops_int(page : HyperdocPage, opl : Op_lst, k : Integer
+                    ) : Void ==
+            opr := select_opr(page, opl, k)
+            opl := [opr]
+            show_selected_ops(page, opl)
+
+        show_ops_list(page : HyperdocPage, pair : List(SE)) : Void ==
+            -- print(message("show_ops_list")$OutputForm)$OutputForm
+            -- print(pair::OutputForm)$OutputForm
+            i := integer(first(pair))
+            j := integer(pair(2))
+            grd := get_ops_grd(page)
+            opl := grd(i).ops
+            j = 0 =>
+                show_selected_ops(page, opl)
+            ope := select_opr(page, opl, j)
+            opl := [ope]
+            show_selected_ops(page, opl)
+
+        get_input_string : (HyperdocPage, SY) -> String
+
+        show_ops_filter(page : HyperdocPage, op_lst : Op_lst
+                       ) : Void ==
+            pat : String := get_input_string(page, 'filter)
+            pat2 := convert_pattern(pat)$BRI
+            pat2 case Err_ind => error_page(pat2)
+            op_lst := filter_ops(pat2, op_lst)$BRI
+            empty?(op_lst) =>
+                empty_result("operation", pat, "")
+            page := new(copy_property_list(get_property_list(page))
+                       )$HyperdocPage
+            set_op_lst(page, op_lst)
+            show_ops(page, get_property(page, 'exclusion))
+
+        show_ops(page : HyperdocPage, key : SE) : Void ==
+            op_lst := get_op_lst(page)
+            list?(key) =>
+                show_ops_list(page, destruct(key))
+            integer?(key) =>
+                show_ops_int(page, op_lst, integer(key))
+            not(symbol?(key)) =>
+                error "show_ops: unexpected form of key"
+            branch := symbol(key)
+            branch = 'filter =>
+                show_ops_filter(page, op_lst)
+            set_property(page, 'key, key)
+            exposedOnlyIfTrue : Boolean := exposed_only?
+            if branch = 'exposureOn or branch = 'exposureOff then
+                exposedOnlyIfTrue := branch = 'exposureOn
+                key := get_property(page, 'exclusion)
+                exposed_only? := exposedOnlyIfTrue
+            show_op_lines0(page, op_lst, symbol(key), exposedOnlyIfTrue)
+
+        con_filter_match(pat : LMA, c : SE, abbrev? : Boolean) : Boolean ==
+            conname := symbol(car(car(c)))
+            subject : SY :=
+                abbrev? => constructor?(conname)$Lisp
+                conname
+            do_match(pat, string(subject))$BRI
+
+        show_cons_filter(page : HyperdocPage) : Void ==
+            pat : String := get_input_string(page, 'filter)
+            pat2 := convert_pattern(pat)$BRI
+            pat2 case Err_ind => error_page(pat2)
+            con_lst := destruct(get_property(page, 'cAlist))
+            e_prop := get_property(page, 'exclusion)
+            abbrev? : Boolean := is_symbol?(e_prop, 'abbrs)
+            con_lst := [c for c in con_lst |
+                        con_filter_match(pat2, c, abbrev?)]
+            empty?(con_lst) => empty_result("constructor", pat, "")
+            page := new(copy_property_list(get_property_list(page))
+                       )$HyperdocPage
+            set_property(page, 'cAlist, convert(con_lst))
+            show_cons(page, get_property(page, 'exclusion))
+
+        show_cons(page : HyperdocPage, key : SE) : Void ==
+            branch := symbol(key)
+            branch = 'filter =>
+                show_cons_filter(page)
+            exposedOnlyIfTrue : Boolean := exposed_only?
+            if branch = 'exposureOn or branch = 'exposureOff then
+                exposedOnlyIfTrue := branch = 'exposureOn
+                key := get_property(page, 'exclusion)
+                exposed_only? := exposedOnlyIfTrue
+            show_constructors2(page, get_con_lst(page), symbol(key),
+                             exposed_only?)
+
+        do_filter(page : HyperdocPage, data : SE) : Void ==
+            page := new(copy_property_list(get_property_list(page))
+                       )$HyperdocPage
+            add_title(page, ["Filter String"])
+            add_to_description(page, "\beginscroll ")
+            add_to_description(page,
+              "\centerline{Enter filter string (use {\em *} for wild card):}")
+            add_to_description(page, "\centerline{")
+            l1 : List(SE) := [convert(50), convert(""),
+                                       convert('filter), convert('EM)]
+            l1 := [convert('bcStrings), convert(l1)]
+            add_to(page, [convert(l1)])
+            add_to_description(page, "}\vspace{1}\centerline{")
+            l1 := concat([convert("\fbox{Filter}"), convert("")],
+                          destruct(data))
+            l1 := [convert('bcLispLinks), convert(l1)]
+            add_to(page, [convert(l1)])
+            add_to_description(page, "}")
+            add_to_description(page, "\endscroll")
+            show(page)
+
+        show_it(page : HyperdocPage, count : SE, ls : Save_rec
+               ) : Void ==
+            cnt := integer(count)
+            (q, r) := divide(cnt, 8)
+            r = 0 => show_ops_int(page, ls.cur.op_info, q)
+            kind : SY
+            cur := ls.cur.con_info
+            lst : List(SY) :=
+                r = 1 =>
+                    kind := 'category
+                    cur.categories
+                r = 2 =>
+                    kind := 'domain
+                    cur.domains
+                r = 3 =>
+                    kind := 'package
+                    cur.packages
+                error "show_it: wrong r"
+            for j in 1.. while j < q repeat
+                lst := rest(lst)
+            name := first(lst)
+            show_constructors([name])
+
+        gen_search_jump(page : HyperdocPage, u : SE) : Void ==
+            -- print(message("gen_search_jump")$OutputForm)$OutputForm
+            (ls, kinde) := destruct(u)
+            kind := string(kinde)
+            pat : String := string(get_property(page, 'filter))
+            -- print(kind::OutputForm)$OutputForm
+            kind = "operation" =>
+                show_op_lines(ls pretend Op_lst)
+            show_constructors(ls pretend List(SY))
+
+        do_search_jump(page : HyperdocPage) : Void ==
+            (te, ke) := destruct(get_property(page, 'items))
+            tag := symbol(te)
+            kind := string(ke)
+            pat : String := "*"
+            kind = "operation" =>
+                do_operation_search(pat)
+            do_constructor_search(pat, tag, kind)
+
+        sfT ==> (String -> Boolean)
+        ifT ==> (Integer -> Boolean)
+
+        do_detailed_operation_search(page : HyperdocPage, nam_f : sfT,
+                                     ari_f : ifT, sig_f : sfT) : Op_lst ==
+            f1 : (String, Sig_doc) -> Boolean := (n, sd) +->
+                not(nam_f(n)) => false
+                sig := sd.signature
+                not(ari_f(#destruct(sig) - 1)) => false
+                sl := cons(convert('Mapping), destruct(sig))
+                sig_f(constructor_to_string(convert(sl))$HyperdocUtilities)
+            search_operations(f1)$BRI
+
+        filter_constructors(cl : List(SY), ari_f : ifT, sig_f : sfT
+                           ) : List(SY) ==
+            res : List(SY) := []
+            for c in cl repeat
+                sig := constructor_signature(c)$BRI
+                -- FIXME
+                null?(sig) => iterate
+                not(ari_f(#destruct(sig) - 1)) => iterate
+                sl := cons(convert('Mapping), destruct(sig))
+                cs := constructor_to_string(convert(sl))$HyperdocUtilities
+                not(sig_f(cs)) => iterate
+                res := cons(c, res)
+            reverse!(res)
+
+        do_detailed_search1(page : HyperdocPage, fl : List(SY),
+                            np : String, ari_f : ifT, sig_f : sfT
+                           ) : Con_res ==
+            -- print(message("do_detailed_search1")$OutputForm)$OutputForm
+            ru := search_constructors(np, 'k)$BRI
+            ru case Err_ind => ru
+            res0 := ru::Split_rec
+            res1 : Split_rec := [[], [], []]
+            if first(fl) = 'category then
+                res1.categories := filter_constructors(res0.categories,
+                                                       ari_f, sig_f)
+                fl := rest(fl)
+            if not(empty?(fl)) and first(fl) = 'domain then
+                res1.domains := filter_constructors(res0.domains,
+                                                    ari_f, sig_f)
+                fl := rest(fl)
+            if not(empty?(fl)) and first(fl) = 'package then
+                res1.packages := filter_constructors(res0.packages,
+                                                     ari_f, sig_f)
+                fl := rest(fl)
+            res1
+
+        get_input_field(page : HyperdocPage, key : SY) : String ==
+            resu := input_string(page, key)
+            resu case String => resu
+            error "get_input_field: no field value"
+
+        pat_err := ["Error", "Invalid pattern"]::Err_ind
+
+        get_string_filter(s : String) : Union(sfT, Err_ind) ==
+            tf : (String) -> Boolean := s +-> true
+            s = "*" or s = "" => tf
+            s := downcase(s)$BRI
+            pu := parse_pattern(s, true)$LogicalRegularExpressionMatch
+            pu case "failed" => pat_err
+            pa := pu@LMA
+            (s1 : String) : Boolean +-> do_match(pa, downcase(s1)$BRI)
+
+        ord_zero ==> 48
+
+        char_to_dig(c : Character) : Union(Integer, "failed") ==
+            i := ord(c)
+            i < ord_zero => "failed"
+            i := i - ord_zero
+            i < 10 => i
+            "failed"
+
+        str_to_num(s : String) : Union(Integer, "failed") ==
+            res : Integer := 0
+            #s = 0 => "failed"
+            for i in 1..#s repeat
+                u1 := char_to_dig(s(i))
+                u1 case "failed" => return "failed"
+                res := 10*res + u1::Integer
+            res
+
+        gen_num_filter(s : String) : Union(ifT, Err_ind) ==
+            tf : (Integer) -> Boolean := i +-> true
+            s = "*" or s = "" => tf
+            (k := position(char("-"), s)) > 0 =>
+                s1 := s(1..(k-1))
+                s2 := s((k+1)..#s)
+                u1 := str_to_num(s1)
+                u1 case "failed" => pat_err
+                i1 := u1::Integer
+                u1 := str_to_num(s2)
+                u1 case "failed" => pat_err
+                i2 := u1::Integer
+                i2 < i1 => pat_err
+                (i : Integer) : Boolean +-> (i1 <= i and i <= i2)
+            op : SY :=
+                s(1) = char("<") =>
+                    #s < 2 => return pat_err
+                    s(2) = char("=") =>
+                        s := s(3..#s)
+                        'le
+                    s := s(2..#s)
+                    'lt
+                s(1) = char(">") =>
+                    #s < 2 => return pat_err
+                    s(2) = char("=") =>
+                        s := s(3..#s)
+                        'ge
+                    s := s(2..#s)
+                    'gt
+                'eq
+            u1 := str_to_num(s)
+            u1 case "failed" => pat_err
+            u := u1::Integer
+            op = 'eq => (i : Integer) : Boolean +-> i = u
+            op = 'le => (i : Integer) : Boolean +-> i <= u
+            op = 'lt => (i : Integer) : Boolean +-> i < u
+            op = 'ge => (i : Integer) : Boolean +-> i >= u
+            op = 'gt => (i : Integer) : Boolean +-> i > u
+            error "unimplemented"
+
+        do_detailed_search(page : HyperdocPage, data : SE) : Void ==
+            which : SY := button_value(page, 'which)
+            name := get_input_field(page, 'name)
+            nargs := get_input_field(page, 'nargs)
+            sig := get_input_field(page, 'sig)
+            -- print(message("do_detailed_search")$OutputForm)$OutputForm
+            -- print(which::OutputForm)$OutputForm
+            -- print([name, nargs, sig]::OutputForm)$OutputForm
+            nfu := get_string_filter(name)
+            nfu case Err_ind => error_page(nfu)
+            nam_f := nfu::sfT
+            afu := gen_num_filter(nargs)
+            afu case Err_ind => error_page(afu)
+            ari_f := afu::ifT
+            sfu := get_string_filter(sig)
+            sfu case Err_ind => error_page(sfu)
+            sig_f := sfu::sfT
+            which = 'ops  =>
+                opl := do_detailed_operation_search(page, nam_f, ari_f, sig_f)
+                empty?(opl) => empty_result("operation", "", "")
+                show_op_lines(opl)
+            not(which = 'cons) =>
+                error_page2("Error",
+                            ["Choose either constructors or operations"])
+            fl : List(SY) := []
+            if button_on?(page, 'cats) then
+                fl := ['category]
+            if button_on?(page, 'doms) then
+                fl := cons('domain, fl)
+            if button_on?(page, 'paks) then
+                fl := cons('package, fl)
+            -- if button_on?(page, 'defs) then
+            --    fl := cons('default, fl)
+            fl := reverse!(fl)
+            empty?(fl) =>
+                error_page2("Error",
+                            ["Nothing choosen"])
+            desc : String :=
+                #fl ~= 1 => "constructor"
+                sf1 := first(fl)
+                sf1 = 'default => "default package"
+                string(sf1)
+            resu := do_detailed_search1(page, fl, name, ari_f, sig_f)
+            resu case Err_ind => error_page(resu)
+            res1 := resu::Split_rec
+            show_split_constructors(res1, desc, "")
+
+        show_ops_from(page : HyperdocPage, lst : Op_lst
+                     ) : Void ==
+            conform := get_property(page, 'conform)
+            domname := get_property(page, 'domname)
+            kind := string(get_property(page, 'kind))
+            if kind = "category" then
+                domname := convert([])
+            if not(null?(domname)) then
+                lst := simp_ops_conditions(lst, conform, domname)$BRI
+            conform :=
+                null?(domname) => conform
+                domname
+            exp_part : String :=
+                exp_con?(conform) => ""
+                "unexposed "
+            from_part : String :=
+                sl :=
+                    null?(domname) =>
+                        con_to_strings(conform, true, [])
+                    con_to_strings(domname, domname, true, true, [])
+                concat(reverse!(sl))
+            -- print(from_part::OutputForm)$OutputForm
+            title : List(String) := [" from ", exp_part, kind, " {\em ",
+                                     from_part, "}"]
+            set_property(page, 'fromHeading, title pretend SE)
+            set_op_lst(page, lst)
+            show_op_lines3(page, lst, 'names)
+
+        do_op_from(op : String, con : String) : Void ==
+            page := new(empty())$HyperdocPage
+            ops := op::SY
+            con_sym := con::SY
+            con_form := constructor_form(con_sym)$BRI
+            set_property(page, 'conform, con_form)
+            kind_sym : SY := get_db_info(con_sym, 'CONSTRUCTORKIND)
+            set_property(page, 'kind, convert(string(kind_sym)))
+            opl : Op_lst := operations(con_form, convert([]))$BRI
+            opl := [rec for rec in opl | rec.name = ops]
+            show_ops_from(page, opl)
+
+        get_input_string(page : HyperdocPage, label : SY) : String ==
+            resu := input_string(page, label)
+            resu case String => resu
+            ""
+
+        get_input_area(page : HyperdocPage, narg : Integer
+                      ) : List(String) ==
+            pvars : List(SY) := _$PatternVariableList$Lisp
+            res : List(String) :=
+                [get_input_string(page, vi) for i in 1..narg for vi in pvars]
+            -- print(message("get_input_area")$OutputForm)$OutputForm
+            -- print(res::OutputForm)$OutputForm
+            res
+
+        input_area_changed?(page : HyperdocPage, narg : Integer
+                           ) : Boolean ==
+            res : Boolean := get_input_area(page, narg) ~=
+                (get_property(page, 'inputAreaList) pretend List(String))
+            -- print(message("input_area_changed?")$OutputForm)$OutputForm
+            -- print(res::OutputForm)$OutputForm
+            res
+
+        constructor_operations_page(page : HyperdocPage) : Void ==
+            conform := get_property(page, 'conform)
+            name := symbol(car(conform))
+            kind := get_constructor_kind(name)
+            narg := #conform - 1
+            u := get_property(page, 'domname)
+            -- print(message("in constructor_operations_page"
+            --              )$OutputForm)$OutputForm
+            -- print(u::OutputForm)$OutputForm
+            domu : Union(SE, Err_ind) :=
+                list?(u) and not(null?(u)) and
+                      (u1 := car(u); is_symbol?(u1, name)) and
+                    not(input_area_changed?(page, narg)) => u
+                get_evalable_constructor_form(page, name)
+            domu case Err_ind => error_page(domu)
+            domname := domu@SE
+            set_property(page, 'domname, domname)
+            title1 : String :=
+                not(null?(domname)) => constructor_to_string(domname)
+                -- constring
+                string(name)
+            title : List(String) := [capitalize(string(kind)),
+                " {\sf ", title1, "}"]
+            set_property(page, 'heading, title pretend SE)
+            use_args? := not(null?(domname))
+            domname :=
+                not(null?(domname)) => domname
+                conform
+            -- print(message("constructor_operations_page calling operations"
+            --             )$OutputForm)$OutputForm
+            opl : Op_lst := operations(conform, domname)$BRI
+            show_ops_from(page, opl)
+
+        unparse_args(op : SY, args : List(SE)) : List(String) ==
+            res : List(String) := []
+            co_sig : List(Boolean) := rest(get_db_info(op, 'COSIG))
+            for k? in co_sig for arg in args for k in 1.. repeat
+                r1 := con_arg_to_strings(k?, op, [], arg, convert([]), k,
+                                         false, [])
+                res := cons(concat(reverse!(r1)), res)
+            reverse!(res)
+
+        -- con_page should always get valid form, that is name should
+        -- be constructor name and number of arguments should match.
+        -- Arguments should be valid expression of appripriate type
+        -- or (possibly fake) variable names.
+        con_page(form : SE) : Void ==
+            atom?(form) => error "con_page: invalid form"
+            lc := destruct(form)
+            -- print(lc::OutputForm)$OutputForm
+            op := symbol(first(lc))
+            args := unparse_args(op, rest(lc))
+            -- lc1 := destruct(constructor_form(op)$BRI)
+            -- if #lc1 > #lc then
+            --    lc := lc1
+            -- print(message("unparsed")$OutputForm)$OutputForm
+            -- print(message("calling constructor_page")$OutputForm)$OutputForm
+            constructor_page(op, lc, args)
+
+        show_cons_kinds_filter(page : HyperdocPage, data : SE
+                              ) : Void ==
+            -- print(message("show_cons_kinds_filter")$OutputForm)$OutputForm
+            (kind, lst) := destruct(data)
+            set_con_lst(page, lst pretend Cond_con_lst)
+            show_cons(page, get_property(page, 'exclusion))
+
+        select_con(page : HyperdocPage, data : SE) : Void ==
+            i := integer(data)
+            lst := get_con_lst(page)
+            form := (lst(i + 1)).form
+            con_page(convert([car(form)]))
+
+        make_string_box(width : Integer, name : SY) : SE ==
+            e1 : List(SE) := [convert(width), convert("*"),
+                              convert(name), convert('EM)]
+            convert([convert('bcStrings), convert(e1)])
+
+        make_text_item(txt : String) : SE ==
+            CONS('text, txt)$Lisp
+
+        add_string_box(txt : String, width : Integer, name : SY,
+                       acc : List(SE)) : List(SE) ==
+            acc := cons(make_text_item(txt), acc)
+            cons(make_string_box(width, name), acc)
+
+        add_button(sname : SY, tname : String, acc : List(SE)
+                  ) : List(SE) ==
+            l1 : List(SE) := [convert(1@Integer), convert(sname)]
+            l1 := [convert('bcButtons), convert(l1)]
+            acc := cons(convert(l1), acc)
+            cons(make_text_item(concat([" {\em ", tname, "} "])), acc)
+
+        detailed_search(pat : String) : Void ==
+            page := new(empty())$HyperdocPage
+            add_title(page, ["Detailed Search with Options"])
+            add_to_description(page, "\beginscroll ")
+            add_list_to(page, [
+                "Select what you want to search for, then click on "
+                      "{\em Search} below.",
+                        "\horizontalline{}\newline{}"])
+            l1 := [make_text_item("\newline\vspace{1}\newline ")]
+            lo : List(SE) := [convert("\tab{3}{\em Operations}"),
+                              convert(l1), convert('ops)]
+            l1 := [make_text_item("\tab{17}")]
+            l1 := add_button('cats, "categories", l1)
+            l1 := add_button('doms, "domains", l1)
+            l1 := add_button('paks, "packages", l1)
+            -- l1 := add_button('defs, "defaults", l1)
+            l1 := cons(make_text_item("\newline\tab{3}"), l1)
+            l1 := add_string_box("name", 14, 'name, l1)
+            l1 := add_string_box(" \#args", 4, 'nargs, l1)
+            l1 := add_string_box("signature", 14, 'sig, l1)
+            l1 := cons(make_text_item("\vspace{1}\newline "), l1)
+            l1 := reverse!(l1)
+            lc : List(SE) := [convert("\tab{3}{\em Constructors}"),
+                              convert(l1), convert('cons)]
+            l1 := [convert('bcRadioButtons), convert('which),
+                   convert(lo), convert(lc)]
+            add_to(page, [convert(l1)])
+            add_to_description(page, "\vspace{1}\newline\centerline{ ")
+            l1 := [convert("\fbox{Search}"), convert(""),
+                   convert('generalSearchDo), convert([])]
+            add_to(page, [convert([convert('bcLinks), convert(l1)])])
+            add_to_description(page, "}")
+            add_to_description(page, "\endscroll")
+            show(page)
+
+        exports_page(page : HyperdocPage) : Void ==
+            conform := get_property(page, 'conform)
+            name := symbol(car(conform))
+            kind := get_constructor_kind(name)
+            domu := get_evalable_constructor_form(page, name)
+            domu case Err_ind => error_page(domu)
+            domname : SE := domu
+            set_property(page, 'domname, domname)
+            con_string : String :=
+                null?(domname) => string(name)
+                constructor_to_string(domname)
+            form_l :=
+                null?(domname) => conform
+                domname
+            data := exports(form_l)$BRI
+            con_lst := data.cats
+            op_lst := data.ops
+            if not(null?(domname)) then
+                n_lst : Cond_con_lst := []
+                for e1 in con_lst repeat
+                    p1 := e1.condition
+                    n_p1 : SE := simpHasPred(p1)$Lisp
+                    n_e1 : Cond_rec :=
+                        p1 = n_p1 => e1
+                        [e1.form, n_p1]
+                    n_lst := cons(n_e1, n_lst)
+                con_lst := reverse!(n_lst)
+                no_lst : Op_lst := []
+                for rec in op_lst repeat
+                    n_sdl := []$List(Sig_doc)
+                    for sd in rec.sdl repeat
+                        p1 := sd.condition
+                        n_p1 : SE := simpHasPred(p1)$Lisp
+                        null?(n_p1) => iterate
+                        n_sd : Sig_doc :=
+                            p1 = n_p1 => sd
+                            [sd.signature, n_p1, sd.origin, sd.documentation]
+                        n_sdl := cons(n_sd, n_sdl)
+                    if not empty?(n_sdl) then
+                        no_lst := cons([rec.name, n_sdl], no_lst)
+                op_lst := reverse!(no_lst)
+            page := new(copy_property_list(get_property_list(page)))
+            cnt := #con_lst + count_ops(op_lst)
+            prefix : List(String) := [get_count_str(cnt),
+                   (cnt > 1 => "exports"; "export")]
+            title := concat(prefix, [" of ", string(kind),  " {\sf ",
+                       con_string, "}"])
+            add_title(page, title)
+            star? := ref(false)$Reference(Boolean)
+            add_to_description(page, "\beginscroll")
+            begin_menu(page)
+            if not(empty?(con_lst)) then
+                lnk1 : List(SE) := [con_lst pretend SE, convert('names)]
+                add_op_link0(page, 'bcLinks, menu_button, 'dbShowCons1,
+                             convert(lnk1))
+                add_to_description(page, "\tab{2}")
+                add_to_description(page, "All attributes and operations from:")
+                name_con_table(page, con_lst, false, star?)
+            if not(empty?(op_lst)) then
+                if not(empty?(con_lst)) then
+                    add_to_description(page, "\vspace{1}\newline{}")
+                display_exported_ops(page, op_lst)
+            end_menu(page)
+            add_to_description(page, "\endscroll")
+            show(page)
+
+        contains_formal(se : SE) : Boolean ==
+            -- FIXME
+            true
+
+        k_arg_page(page: HyperdocPage, arg : SE) : Void ==
+            -- print(message("k_arg_page")$OutputForm)$OutputForm
+            -- print(arg::OutputForm)$OutputForm
+            i : Integer := -1
+            conform : SE :=
+                list?(arg) =>
+                    al := destruct(arg)
+                    i := integer(al(2))
+                    arg := al(1)
+                    lst := get_con_lst(page)
+                    form2 := (lst(i + 1)).form
+                    constructor_form(symbol(car(form2)))$BRI
+                get_property(page, 'conform)
+            op := symbol(car(conform))
+            args := destruct(cdr(conform))
+            -- print(conform::OutputForm)$OutputForm
+            n := position(arg, args)
+            -- print(n::OutputForm)$OutputForm
+            source : List(SE) :=
+                rest(destruct(constructor_signature(op)$BRI))
+            arg_n : SE := source(n)
+            arg_form := sublis_formal(args, arg_n)$BRI
+            dom_name : SE :=
+                i < 0 => get_property(page, 'domname)
+                convert([])
+            arg_dom : SE :=
+                not(null?(dom_name)) =>
+                    sublis_formal(rest(destruct(dom_name)), arg_n)$BRI
+                empty?(args) => arg_n
+                contains_formal(arg_n) => convert([])
+                arg_n
+            descendants := domains(arg_form, arg_dom)$BRI
+            page := new(copy_property_list(get_property_list(page)))
+            set_property(page, 'conform, conform)
+            set_property(page, 'domname, convert([]))
+            set_con_lst(page, descendants)
+            rank : String :=
+                n > 5 => concat(convert(n)@String, "-th")
+                ["first", "second", "third", "fourth", "fifth"](n)
+            set_property(page, 'rank, convert(rank))
+            set_property(page, 'thing, convert("argument"))
+            show_cons(page, 'names)
+
+        get_builtin_opl(c : SY, orig : SE) : Op_lst ==
+            opl0 : List(SE) := GET(c, 'documentation)$Lisp
+            res : Op_lst := []
+            tc := true pretend SE
+            for r0 in opl0 repeat
+                rl0 := destruct(r0)
+                name := symbol(first(rl0))
+                -- fix change made by Shoe translator
+                if name = "CASE"::SY then
+                    name := "case"::SY
+                sdl : List(Sig_doc) := []
+                for s0 in rest(rl0) repeat
+                    sl0 := destruct(s0)
+                    sig := first(sl0)
+                    doc := string(sl0(2))
+                    sdl := cons([sig, tc, orig, doc]$Sig_doc, sdl)
+                sdl := reverse!(sdl)
+                res := cons([name, sdl]$Op_rec, res)
+            reverse!(res)
+
+        builtin_operations(c : SY) : Void ==
+            -- print(message("builtin_operations")$OutputForm)$OutputForm
+            -- print(c::OutputForm)$OutputForm
+            con_form := constructor_form(c)$BRI
+            opl := get_builtin_opl(c, con_form)
+            page := new(empty())$HyperdocPage
+            set_property(page, 'conform, con_form)
+            set_property(page, 'kind, convert("domain"))
+            show_ops_from(page, opl)
+
+        do_search(pat : String, tag : SY, desc : String) : Void ==
+            -- print(message("do_search")$OutputForm)$OutputForm
+            pat := trim_pattern(pat)
+            tag = 'aok => gen_search0(pat, false)
+            tag = 'det =>
+                detailed_search(pat)
+            tag = 'doc => doc_search0(pat)
+            tag = 'gen => gen_search0(pat, true)
+            tag = 'o => operation_search(pat)
+            tag = 'oPageFrom => do_op_from(pat, desc)
+            constructor_search(pat, tag, desc)
+
+        show_spad_type_error(s: String) : Void ==
+            msg : List(String) := [s, "is not a valid constructor name"]
+            error_page2("Error", msg)
+
+        show_spad_type(s : String) : Void ==
+            cnu : Union(SY, "failed") := find_symbol(s)$Lisp
+            cnu case "failed" => show_spad_type_error(s)
+            name := cnu@SY
+            constructor_name?(name)$BRI =>
+                con_page(convert([convert(name)]))
+            show_spad_type_error(s)
+
+        Gloss_rec ==> Record(term : String, description : String)
+        gloss_lst : List(Gloss_rec) := []
+        gloss_valid : Boolean := false
+
+        load_gloss() : Void ==
+            kfn : String := concat(_$spadroot$Lisp, "/algebra/glosskey.text")
+            dfn : String := concat(_$spadroot$Lisp, "/algebra/glossdef.text")
+            kf := open(kfn::FileName, "input")$TextFile
+            df := open(dfn::FileName, "input")$TextFile
+            gl : List(Gloss_rec) := []
+            repeat
+                kl := readLineIfCan!(kf)
+                kl case "failed" => break
+                dl := readLine!(df)
+                k := position(char_tick, kl)
+                key := kl(1..(k - 1))
+                k := position(char_tick, dl)
+                desc := dl((k+1)..#dl)
+                gl := cons([key, desc]$Gloss_rec, gl)
+            close!(kf)
+            close!(df)
+            gloss_lst := reverse!(gl)
+            gloss_valid := true
+
+        do_gloss_page(s : String) : Void ==
+            if s = "" then
+                s := "*"
+            s = "*" => downlink("GlossaryPage")
+            pat := convert_pattern(s)$BRI
+            pat case Err_ind => error_page(pat)
+            if not(gloss_valid) then
+                load_gloss()
+            res : List(Gloss_rec) := []
+            for gloss in gloss_lst repeat
+                if do_match(pat, gloss.term)$BRI then
+                    res := cons(gloss, res)
+            res := reverse!(res)
+            empty?(res) =>
+                el : List(String) := ["\centerline{",
+                    "No glossary items match {\em ", s, "}}"]
+                error_page2("Sorry", el)
+            page := new(empty())$HyperdocPage
+            add_title(page, ["Glossary items matching {\em ", s, "}"])
+            add_to_description(page, "\beginscroll\beginmenu")
+            for gloss in res repeat
+                add_list_to(page, [
+                    "\item{\em \menuitemstyle{}}\tab{0}{\em ",
+                      escape_if_needed(gloss.term), "} ", gloss.description])
+            add_to_description(page, "\endmenu \endscroll\newline ")
+            l1 : List(SE) := [convert("Search"), convert(""),
+                              convert('htGlossSearch), convert([])]
+            l1 := [convert('bcLinks), convert(l1)]
+            add_to(page, [convert(l1)])
+            add_to_description(page, " for glossary entry matching ")
+            l1 := [convert(24), convert("*"), convert('filter),
+                   convert('EM)]
+            l1 := [convert('bcStrings), convert(l1)]
+            add_to(page, [convert(l1)])
+            show(page)
+
+        do_gloss_search(page : HyperdocPage) : Void ==
+            s := get_input_string(page, 'filter)
+            do_gloss_page(s)
+
+        cons_opts(page : HyperdocPage, tag : SY) : Void ==
+            tag = 'ancestors =>
+                ancestors_page(page)
+            tag = 'children =>
+                children_page(page)
+            tag = 'dependents =>
+                dependents_page(page)
+            tag = 'descendents =>
+                descendents_page(page)
+            tag = 'domains =>
+                domains_page(page)
+            tag = 'exports =>
+                exports_page(page)
+            tag = 'operations => constructor_operations_page(page)
+            tag = 'parents =>
+                parents_page(page)
+            tag = 'search_path => show_search_path(page)
+            tag = 'users =>
+                users_page(page)
+            tag = 'uses =>
+                uses_page(page)
+            error "cons_opts: unimplemented"
+
+        do_page_fun1(page : HyperdocPage, tag : SY,
+                    data : SE) : Void ==
+            tag = 'cons_opts => cons_opts(page, symbol(data))
+            tag = 'dbChooseDomainOp => choose_domain_op(page, integer(data))
+            tag = 'dbSelectCon => select_con(page, data)
+            tag = 'dbShowCons => show_cons(page, data)
+            tag = 'dbShowCons1 =>
+                show_constructors2(page, car(data) pretend Cond_con_lst,
+                          symbol(car(cdr(data))), exposed_only?)
+            tag = 'dbShowConsKindsFilter => show_cons_kinds_filter(page, data)
+            tag = 'dbShowOps => show_ops(page, data)
+            tag = 'htGlossSearch => do_gloss_search(page)
+            tag = 'htFilterPage => do_filter(page, data)
+            tag = 'generalSearchDo =>
+                do_detailed_search(page, data)
+            tag = 'genSearchSayJump =>
+                gen_search_jump(page, data)
+            tag = 'grepSearchJump => do_search_jump(page)
+            tag = 'kArgPage =>
+                k_arg_page(page, data)
+            tag = 'kxPage =>
+                downlink(string(data))
+            tag = 'repeatSearch => repeat_search(page, not(null?(data)))
+            tag = 'showConstruct =>
+                show_it(page, data, get_reg_list(page)::Save_rec)
+            tag = 'showDoc =>
+                show_it(page, data, get_doc_list(page))
+            error "do_page_fun1: unimplemented"
+
+        do_gen_fun1(tag : SY, data : SE) : Void ==
+            tag = 'conPage => con_page(data)
+            tag = 'conPageChoose => con_page_choose(data)
+            tag = 'dbSpecialOperations => builtin_operations(symbol(data))
+            tag = 'htGloss => do_gloss_page(string(data))
+            tag = 'spadType => show_spad_type(string(data))
+            error "do_gen_fun1: unimplemented"
