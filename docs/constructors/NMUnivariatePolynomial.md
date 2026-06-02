@@ -364,7 +364,6 @@ length(p) returns the number of coefficients in its dense representation. It inc
 minimalPolynomial(algn) returns the minimal polynomial of algn. Convenience function.
 
 - **Signature**: `(NMAlgebraicNumber)->%`
-- **Signature**: `(NMAlgebraicNumber)->%`
 
 ### `monic?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L50)\]
 
@@ -410,7 +409,6 @@ reverse the coefficients of p (the leading becomes the trailing) and normalise t
 
 roots(p) returns the roots of p. Convenience function.
 
-- **Signature**: `(%)->JLVector(NMAlgebraicNumber)`
 - **Signature**: `(%)->JLVector(NMAlgebraicNumber)`
 
 ### `shiftLeft` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L140)\]

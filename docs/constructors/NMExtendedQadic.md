@@ -4,7 +4,7 @@
 
 ## Description
 
-This is a domain implements unramified extensions of p-adic numbers $Q_p$ of degree $d$ using the Nemo Julia package.
+This domain implements unramified extensions of p-adic numbers $Q_p$ of degree $d$ using the Nemo Julia package.
 
 **NMExtendedQadic(p: Integer,deg: Integer,prec: Integer) is a domain constructor**  
 **Abbreviation for NMExtendedQadic is NXQADIC**  
@@ -95,7 +95,7 @@ O() returns the default Big-oh from domain parameters.
 
 ### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L234)\]
 
-coerce(x) coerces x as a unramified extension of p-adics.
+coerce(x) coerces x as an unramified extension of p-adics.
 
 - **Signature**: `(NMInteger)->%`
 
@@ -107,7 +107,7 @@ frobenius(x,i) returns the image of the i-th power of Frobenius of x.
 
 ### `jnqadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L239)\]
 
-jnqadic(x) returns x as a unramified extension of p-adics.
+jnqadic(x) returns x as an unramified extension of p-adics.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`

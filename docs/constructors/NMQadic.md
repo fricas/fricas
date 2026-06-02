@@ -4,7 +4,7 @@
 
 ## Description
 
-This is a domain implements unramified extensions of p-adic numbers $Q_p$ of degree 1 and absolute precision 64 using the Nemo Julia package.
+This domain implements unramified extensions of p-adic numbers $Q_p$ of degree 1 and absolute precision 64 using the Nemo Julia package.
 
 **NMQadic(p: Integer) is a domain constructor**  
 **Abbreviation for NMQadic is NQADIC**  
@@ -93,13 +93,9 @@ O() returns the default Big-oh from domain parameters.
 
 - **Signature**: `()->%`
 
-- **Signature**: `()->%`
-
 ### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L234)\]
 
-coerce(x) coerces x as a unramified extension of p-adics.
-
-- **Signature**: `(NMInteger)->%`
+coerce(x) coerces x as an unramified extension of p-adics.
 
 - **Signature**: `(NMInteger)->%`
 
@@ -109,14 +105,9 @@ frobenius(x,i) returns the image of the i-th power of Frobenius of x.
 
 - **Signature**: `(%,Integer)->%`
 
-- **Signature**: `(%,Integer)->%`
-
 ### `jnqadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L239)\]
 
-jnqadic(x) returns x as a unramified extension of p-adics.
-
-- **Signature**: `(Integer)->%`
-- **Signature**: `(NMInteger)->%`
+jnqadic(x) returns x as an unramified extension of p-adics.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
@@ -127,13 +118,9 @@ modulus() returns the value of p.
 
 - **Signature**: `()->Integer`
 
-- **Signature**: `()->Integer`
-
 ### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L226)\]
 
 teichmuller(x) computes the Teichmuller lift of x. The valuation of x must be non negative.
-
-- **Signature**: `(%)->%`
 
 - **Signature**: `(%)->%`
 ---

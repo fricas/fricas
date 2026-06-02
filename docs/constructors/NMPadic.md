@@ -94,13 +94,9 @@ O() returns the default Big-oh from domain parameters.
 
 - **Signature**: `()->%`
 
-- **Signature**: `()->%`
-
 ### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L96)\]
 
 coerce(x) coerces x to a p-adic number.
-
-- **Signature**: `(NMInteger)->%`
 
 - **Signature**: `(NMInteger)->%`
 
@@ -111,14 +107,9 @@ jnpadic(x) returns x as a p-adic number.
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-- **Signature**: `(Integer)->%`
-- **Signature**: `(NMInteger)->%`
-
 ### `liftQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L85)\]
 
 liftQ(x) lift x to a Nemo Fraction Nemo Integer.
-
-- **Signature**: `(%)->NMFraction(NMInteger)`
 
 - **Signature**: `(%)->NMFraction(NMInteger)`
 
@@ -128,13 +119,9 @@ liftZ(x) lift x to a Nemo Integer.
 
 - **Signature**: `(%)->NMInteger`
 
-- **Signature**: `(%)->NMInteger`
-
 ### `moduloP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L87)\]
 
 moduloP(x) returns a, where x = a + b p.
-
-- **Signature**: `(%)->NMInteger`
 
 - **Signature**: `(%)->NMInteger`
 
@@ -144,21 +131,15 @@ modulus() returns the value of p.
 
 - **Signature**: `()->Integer`
 
-- **Signature**: `()->Integer`
-
 ### `quotientByP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L89)\]
 
 quotientByP(x) returns b, where x = a + b p.
 
 - **Signature**: `(%)->%`
 
-- **Signature**: `(%)->%`
-
 ### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L91)\]
 
 teichmuller(x) computes the Teichmuller lift of x. The valuation of x must be non negative.
-
-- **Signature**: `(%)->%`
 
 - **Signature**: `(%)->%`
 ---

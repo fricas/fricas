@@ -149,9 +149,6 @@ Gamma(x) is the Euler Gamma function evaluated at x.
 
 - **Signature**: `(%)->%`
 
-- **Signature**: `(%)->%`
-- **Signature**: `(%,%)->%`
-
 Gamma(x,y) is the incomplete Gamma function.
 
 - **Signature**: `(%,%)->%`
@@ -162,13 +159,9 @@ abs2(x) returns the square of the absolute value of x.
 
 - **Signature**: `(%)->%`
 
-- **Signature**: `(%)->%`
-
 ### `accuracyBits` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L116)\]
 
 accuracyBits(x) returns the relative accuracy of x in bits.
-
-- **Signature**: `(%)->JLInt64`
 
 - **Signature**: `(%)->JLInt64`
 
@@ -178,13 +171,9 @@ addError!(x, y) adds the values (absolute) of the midpoint and radius of y to th
 
 - **Signature**: `(%,%)->%`
 
-- **Signature**: `(%,%)->%`
-
 ### `atan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L69)\]
 
 atan(x, y) computes the inverse tangent of x/y.
-
-- **Signature**: `(%,%)->%`
 
 - **Signature**: `(%,%)->%`
 
@@ -194,22 +183,15 @@ bits(x) returns the bit length of the mantissa of x. For a result computed at pr
 
 - **Signature**: `(%)->JLInt64`
 
-- **Signature**: `(%)->JLInt64`
-
 ### `catalan` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L34)\]
 
 catalan() returns the Catalan's constant.
 
 - **Signature**: `()->%`
 
-- **Signature**: `()->%`
-
 ### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L139)\]
 
 coerce(x) coerces x.
-
-- **Signature**: `(Float)->%`
-- **Signature**: `(JLFloat64)->%`
 
 - **Signature**: `(Float)->%`
 - **Signature**: `(JLFloat64)->%`
@@ -223,16 +205,9 @@ contains?(x,y) checks whether or not y is contained in x.
 - **Signature**: `(%,NMFraction(NMInteger))->Boolean`
 - **Signature**: `(%,NMInteger)->Boolean`
 
-- **Signature**: `(%,%)->Boolean`
-- **Signature**: `(%,JLFloat)->Boolean`
-- **Signature**: `(%,NMFraction(NMInteger))->Boolean`
-- **Signature**: `(%,NMInteger)->Boolean`
-
 ### `containsNegative?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L99)\]
 
 containsNegative?(x) cheks whether or not x contains any negative value.
-
-- **Signature**: `(%)->Boolean`
 
 - **Signature**: `(%)->Boolean`
 
@@ -242,13 +217,9 @@ containsNonNegative?(x) cheks whether or not x contains any non negative value.
 
 - **Signature**: `(%)->Boolean`
 
-- **Signature**: `(%)->Boolean`
-
 ### `containsNonPositive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L105)\]
 
 containsNonPositive?(x) checks whether or not x contains any non positive value.
-
-- **Signature**: `(%)->Boolean`
 
 - **Signature**: `(%)->Boolean`
 
@@ -258,13 +229,9 @@ containsPositive?(x) cheks whether or not x contains any positive value.
 
 - **Signature**: `(%)->Boolean`
 
-- **Signature**: `(%)->Boolean`
-
 ### `containsZero?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L94)\]
 
 containsZero?(x) checks whether or not 0 is contained in x.
-
-- **Signature**: `(%)->Boolean`
 
 - **Signature**: `(%)->Boolean`
 
@@ -275,14 +242,9 @@ convert(x) converts x.
 - **Signature**: `(%)->JLFloat`
 - **Signature**: `(%)->NMFraction(NMInteger)`
 
-- **Signature**: `(%)->JLFloat`
-- **Signature**: `(%)->NMFraction(NMInteger)`
-
 ### `eulerGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L32)\]
 
 eulerGamma() returns the Euler's constant gamma (γ).
-
-- **Signature**: `()->%`
 
 - **Signature**: `()->%`
 
@@ -292,13 +254,9 @@ exact?(x) checks whether x is exact i.e. with 0 radius.
 
 - **Signature**: `(%)->Boolean`
 
-- **Signature**: `(%)->Boolean`
-
 ### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L63)\]
 
 exp() returns the NMArbField ℯ (exp(1)).
-
-- **Signature**: `()->%`
 
 - **Signature**: `()->%`
 
@@ -308,13 +266,9 @@ exp1() returns the NMArbField ℯ (exp(1)).
 
 - **Signature**: `()->%`
 
-- **Signature**: `()->%`
-
 ### `expm1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L58)\]
 
 expm1(x) computes accurately e^x-1. It avoids the loss of precision involved in the direct evaluation of exp(x)-1 for small values of x.
-
-- **Signature**: `(%)->%`
 
 - **Signature**: `(%)->%`
 
@@ -324,13 +278,9 @@ finite?(x) checks whether or not x is finite, not an infinity for example.
 
 - **Signature**: `(%)->Boolean`
 
-- **Signature**: `(%)->Boolean`
-
 ### `glaisher` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L38)\]
 
 glaisher() returns the Glaisher's constant.
-
-- **Signature**: `()->%`
 
 - **Signature**: `()->%`
 
@@ -340,13 +290,9 @@ guess(a, deg) returns the reconstructed algebraic number found if it succeeds. U
 
 - **Signature**: `(%,NonNegativeInteger)->NMAlgebraicNumber`
 
-- **Signature**: `(%,NonNegativeInteger)->NMAlgebraicNumber`
-
 ### `hurwitzZeta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L71)\]
 
 hurwitzZeta(s,a) returns the Hurwitz zeta function of s and a.
-
-- **Signature**: `(%,%)->%`
 
 - **Signature**: `(%,%)->%`
 
@@ -356,13 +302,9 @@ integer?(x) checks whether or not x is an integer.
 
 - **Signature**: `(%)->Boolean`
 
-- **Signature**: `(%)->Boolean`
-
 ### `jnball` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L143)\]
 
 jnball(x,r) returns a ball with midpoint x and radius r.
-
-- **Signature**: `(%,%)->%`
 
 - **Signature**: `(%,%)->%`
 
@@ -371,13 +313,6 @@ jnball(x,r) returns a ball with midpoint x and radius r.
 jnrb(fl) returns fl as a real Arb ball.
 
 - **Signature**: `(Float)->%`
-
-- **Signature**: `(Float)->%`
-- **Signature**: `(Fraction(Integer))->%`
-- **Signature**: `(Integer)->%`
-- **Signature**: `(NMAlgebraicNumber)->%`
-- **Signature**: `(NMExactCalciumField)->%`
-- **Signature**: `(String)->%`
 
 jnrb(fi) returns fi as a real Arb ball.
 
@@ -405,13 +340,9 @@ khinchin() returns the Khinchin's constant.
 
 - **Signature**: `()->%`
 
-- **Signature**: `()->%`
-
 ### `ldexp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L67)\]
 
 ldexp(x, n) returns x * 2^n.
-
-- **Signature**: `(%,NMInteger)->%`
 
 - **Signature**: `(%,NMInteger)->%`
 
@@ -421,13 +352,9 @@ log1p(x) logarithm of 1+x computed accurately.
 
 - **Signature**: `(%)->%`
 
-- **Signature**: `(%)->%`
-
 ### `midpoint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L118)\]
 
 midpoint(x) returns the midpoint of x.
-
-- **Signature**: `(%)->%`
 
 - **Signature**: `(%)->%`
 
@@ -437,13 +364,9 @@ nonNegative?(v) checks whether or not x is greater or equal to zero.
 
 - **Signature**: `(%)->Boolean`
 
-- **Signature**: `(%)->Boolean`
-
 ### `nonPositive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L30)\]
 
 nonPositive?(v) checks whether or not x is lower or equal to zero.
-
-- **Signature**: `(%)->Boolean`
 
 - **Signature**: `(%)->Boolean`
 
@@ -453,13 +376,9 @@ nonZero?(x) returns true if x is not equal to 0.
 
 - **Signature**: `(%)->Boolean`
 
-- **Signature**: `(%)->Boolean`
-
 ### `overlaps?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L83)\]
 
 overlaps?(x,y) checks whether or not any part of x and y balls overlaps.
-
-- **Signature**: `(%,%)->Boolean`
 
 - **Signature**: `(%,%)->Boolean`
 
@@ -469,13 +388,9 @@ polyLog(x,y) returns the polyLog function applied to x and y.
 
 - **Signature**: `(%,%)->%`
 
-- **Signature**: `(%,%)->%`
-
 ### `radius` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L120)\]
 
 radius(x) returns the radius of x.
-
-- **Signature**: `(%)->%`
 
 - **Signature**: `(%)->%`
 
@@ -485,13 +400,9 @@ randtest(randtype) returns a random number depending on the Julia symbol randtyp
 
 - **Signature**: `(JLSymbol)->%`
 
-- **Signature**: `(JLSymbol)->%`
-
 ### `setUnion` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L130)\]
 
 setUnion(x,y) returns the unions of the intervals x and y.
-
-- **Signature**: `(%,%)->%`
 
 - **Signature**: `(%,%)->%`
 
@@ -501,21 +412,15 @@ trim(x) rounds off insignificant bits from the midpoint.
 
 - **Signature**: `(%)->%`
 
-- **Signature**: `(%)->%`
-
 ### `uniqueInteger` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L127)\]
 
 uniqueInteger(x) returns a NMInteger if there is a unique integer in the interval x, "failed" otherwise.
 
 - **Signature**: `(%)->Union(NMInteger,"failed")`
 
-- **Signature**: `(%)->Union(NMInteger,"failed")`
-
 ### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnball.spad#L40)\]
 
 urand01() returns a uniformly distributed random number contained in [0,1].
-
-- **Signature**: `()->%`
 
 - **Signature**: `()->%`
 ---

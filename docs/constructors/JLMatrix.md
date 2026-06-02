@@ -362,13 +362,11 @@ cho l.L * chol.U
 radicalEigenvalues(mat) returns a Julia vector containing the eigenvalues of mat.
 
 - **Signature**: `(%)->JLVector(NMAlgebraicNumber)`
-- **Signature**: `(%)->JLVector(NMAlgebraicNumber)`
 
 ### `radicalEigenvaluesWithMultiplicities` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1646)\]
 
 radicalEigenvaluesWithMultiplicities(mat) returns a Julia vector containing Julia tuples of the eigenvalues and their multiplicities. The tuples are of internal type (NMAlgebraicNumber, JLObjInt64).
 
-- **Signature**: `(%)->JLVector(JLObjTuple)`
 - **Signature**: `(%)->JLVector(JLObjTuple)`
 
 ### `trace` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L1730)\]

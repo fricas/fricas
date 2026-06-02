@@ -171,7 +171,6 @@ airyBiZero(n,x) is the n-th zero function of the Airy function Bi(z) smaller tha
 angerJ(v, z) is the Anger J function.
 
 - **Signature**: `(R,R)->R`
-- **Signature**: `(R,R)->R`
 
 angerJ(v, n, z) is the associated Anger J function.
 
@@ -546,7 +545,6 @@ jacobiTheta(n, z, m) are the Jacobi theta functions.
 jacobiZeta(phi,m) computes the Jacobi Zeta function.
 
 - **Signature**: `(R,R)->R`
-- **Signature**: `(R,R)->R`
 
 ### `kelvinBei` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L117)\]
 
@@ -607,7 +605,6 @@ legendreP(n, z) evaluates the Legendre polynomial of the first kind at z.
 legendreP(n, m, z) evaluates the associated Legendre polynomial of the first type at z.
 
 - **Signature**: `(R,R,R)->R`
-- **Signature**: `(R,R,R)->R`
 
 ### `legendreQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L115)\]
 
@@ -618,13 +615,11 @@ legendreQ(n, z) returns the Legendre function of the second kind.
 legendreQ(n, m, z) evaluates the associated Legendre function of the second kind at z.
 
 - **Signature**: `(R,R,R)->R`
-- **Signature**: `(R,R,R)->R`
 
 ### `lerchPhi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L153)\]
 
 lerchPhi(z,s,a) returns Lerch's transcendent phi of arguments.
 
-- **Signature**: `(R,R,R)->R`
 - **Signature**: `(R,R,R)->R`
 
 ### `logBarnesG` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L244)\]
@@ -920,13 +915,11 @@ weierstrassZeta(g2, g3, z) is the Weierstrass Zeta function.
 whittakerM(k,m,z) computes the Whittaker function M of z.
 
 - **Signature**: `(R,R,R)->R`
-- **Signature**: `(R,R,R)->R`
 
 ### `whittakerW` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L90)\]
 
 whittakerW(k,m,z) computes the Whittaker function W of z.
 
-- **Signature**: `(R,R,R)->R`
 - **Signature**: `(R,R,R)->R`
 
 ### `zernikeR` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L283)\]

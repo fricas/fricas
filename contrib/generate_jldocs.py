@@ -511,6 +511,19 @@ def render_md(name: str, kind: str, group: str, info: dict) -> str:
             lines.append(op_title)
             lines.append("")
 
+            # Deduplicate blocks by signature, keeping the one with the longest description
+            deduped = {}
+            for b in my_blocks:
+                sig = b["signature"]
+                if not sig:
+                    deduped[id(b)] = b
+                elif sig not in deduped:
+                    deduped[sig] = b
+                else:
+                    if len(b["description"]) > len(deduped[sig]["description"]):
+                        deduped[sig] = b
+            my_blocks = list(deduped.values())
+
             # Group signatures by their description to avoid redundant text
             by_desc = {} # description -> list of signatures
             for b in my_blocks:
