@@ -1,6 +1,6 @@
 # NMUnivariatePowerSeries
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NUPS.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnseries.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -103,55 +103,55 @@ NMUnivariatePowerSeries is the Nemo univariate power series using Julia. prec de
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NUPS.spad#L73)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnseries.spad#L73)\]
 
 coerce(x) converts the variable x to a Nemo univariate power series.
 
 - **Signature**: `(Variable(x))->%`
 
-### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NUPS.spad#L57)\]
+### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnseries.spad#L57)\]
 
 exp(s) returns the exponential of the power series s.
 
 - **Signature**: `(%)->%`
 
-### `integrate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NUPS.spad#L49)\]
+### `integrate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnseries.spad#L49)\]
 
 integrate(f(x)) returns an anti-derivative of the power series f(x) with constant coefficient 0.
 
 - **Signature**: `(%)->%`
 
-### `inverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NUPS.spad#L39)\]
+### `inverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnseries.spad#L39)\]
 
 inverse(s) returns the inverse of s. Throws a Julia error if no such inverse exists.
 
 - **Signature**: `(%)->%`
 
-### `log` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NUPS.spad#L59)\]
+### `log` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnseries.spad#L59)\]
 
 log(s) returns the logarithm of the power series s.
 
 - **Signature**: `(%)->%`
 
-### `monomial?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NUPS.spad#L45)\]
+### `monomial?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnseries.spad#L45)\]
 
 monomial?(f) tests if f is a single monomial.
 
 - **Signature**: `(%)->Boolean`
 
-### `sqrt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NUPS.spad#L42)\]
+### `sqrt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnseries.spad#L42)\]
 
 sqrt(f) returns the square root of f if it exists, a Julia error is thrown if f has no square root.
 
 - **Signature**: `(%)->%`
 
-### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NUPS.spad#L36)\]
+### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnseries.spad#L36)\]
 
 valuation(s) returns the valuation of the given power series, the degree of the first nonzero term
 
 - **Signature**: `(%)->NonNegativeInteger`
 
-### `variable` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NUPS.spad#L33)\]
+### `variable` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnseries.spad#L33)\]
 
 variable(f) returns the (unique) power series variable of the power series f.
 

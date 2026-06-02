@@ -1,6 +1,6 @@
 # WSRational
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSRAT.spad#L1)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L388)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
 
 ## Description
 
@@ -104,19 +104,19 @@ Julia Wolfram Symbolic rational numbers using the MathLink Julia package.
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSRAT.spad#L14)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L401)\]
 
 coerce(z) coerces z. Convenience function.
 
 - **Signature**: `(Integer)->%`
 
-### `convert` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSRAT.spad#L20)\]
+### `convert` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L407)\]
 
 convert(q) returns q as a Fraction(Integer).
 
 - **Signature**: `(%)->Fraction(Integer)`
 
-### `jWSRational` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSRAT.spad#L22)\]
+### `jWSRational` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L409)\]
 
 jWSRational(q) constructs q as a WSRational.
 

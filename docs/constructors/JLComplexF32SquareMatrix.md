@@ -1,6 +1,6 @@
 # JLComplexF32SquareMatrix
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32SMA.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L950)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -132,19 +132,19 @@ This domain provides a fast Julia Float32 square matrix type with no bound check
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32SMA.spad#L15)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L964)\]
 
 coerce(m) coerces m to JLComplexF32Matrix
 
 - **Signature**: `(%)->JLComplexF32Matrix`
 
-### `qcoerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32SMA.spad#L12)\]
+### `qcoerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L961)\]
 
 qcoerce(m) coerces m to JLComplexF32SquareMatrix trusting that m is square.
 
 - **Signature**: `(JLComplexF32Matrix)->%`
 
-### `squareMatrix` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32SMA.spad#L17)\]
+### `squareMatrix` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L966)\]
 
 squareMatrix(m) returns a copy of m as a JLComplexF32SquareMatrix.
 

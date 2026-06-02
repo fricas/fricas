@@ -1,6 +1,6 @@
 # JLObjTuple
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBTPLE.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L715)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -43,7 +43,7 @@ Convenience domain for Julia Tuples, objects that are used within Julia, and not
 
 ## Operations added
 
-### `jtuple` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBTPLE.spad#L12)\]
+### `jtuple` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L726)\]
 
 jtuple(lst) returns a Julia Tuple from the List lst. lst must be compatible with 1D format.
 

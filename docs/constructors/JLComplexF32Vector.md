@@ -1,6 +1,6 @@
 # JLComplexF32Vector
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L545)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -77,19 +77,19 @@ This domain provides a fast JLComplexF32 vector type with no bound checking on e
 
 ## Operations added
 
-### `copy!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L26)\]
+### `copy!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L570)\]
 
 copy!(b,a) efficiently copies a to b. No checks are performed on array dimensions.
 
 - **Signature**: `(%,%)->%`
 
-### `imag` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L23)\]
+### `imag` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L567)\]
 
 imag(v) returns a JLFloat32 vector with the imaginary part of the v elements.
 
 - **Signature**: `(%)->JLFloat32Vector`
 
-### `jlApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L29)\]
+### `jlApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L573)\]
 
 jlApply(func, x) applies func to argument x.
 
@@ -100,49 +100,49 @@ jlApply(func, x, val) applies func to arguments x and val.
 
 - **Signature**: `(String,%,JLFloat32)->JLFloat32`
 
-### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L35)\]
+### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L579)\]
 
 jlApprox?(x,y) computes inexact equality comparison with default parameters. Two numbers compare equal if their relative distance or their absolute distance is within tolerance bounds. Applied component-wise.
 
 - **Signature**: `(%,%)->Boolean`
 
-### `jlDisplay` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L47)\]
+### `jlDisplay` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L591)\]
 
 jlDisplay(v) pretty prints v (à la Julia).
 
 - **Signature**: `(%)->Void`
 
-### `juliaCVPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L49)\]
+### `juliaCVPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L593)\]
 
 juliaCVPrint(b) defines whether or not FriCAS uses the printing version of Julia for matrices instead of its OutputForm version. Returns previous value. By default it is the Julia version.
 
 - **Signature**: `(Boolean)->Boolean`
 
-### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L43)\]
+### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L587)\]
 
 nrand(n) returns a normally distributed Julia vector of size n with mean=0 and standard deviation=1. See Julia documentation (randn) for this complex version used here.
 
 - **Signature**: `(PositiveInteger)->%`
 
-### `qnew` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L16)\]
+### `qnew` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L560)\]
 
 qnew(n) creates a new uninitialized vector of length n.
 
 - **Signature**: `(NonNegativeInteger)->%`
 
-### `real` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L20)\]
+### `real` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L564)\]
 
 real(v) returns a JLFloat32 vector with the real part of the v elements.
 
 - **Signature**: `(%)->JLFloat32Vector`
 
-### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L40)\]
+### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L584)\]
 
 urand01(n) returns a uniformly (0..1) distributed Julia vector of size n.
 
 - **Signature**: `(PositiveInteger)->%`
 
-### `vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32VEC.spad#L18)\]
+### `vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L562)\]
 
 vector(l) converts the list l to a vector.
 

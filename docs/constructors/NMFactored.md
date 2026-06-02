@@ -1,6 +1,6 @@
 # NMFactored
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFR.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L1909)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -37,7 +37,7 @@ Nemo factored objects.
 
 ## Operations added
 
-### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFR.spad#L15)\]
+### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L1923)\]
 
 factor(intd) returns the factorization of intd.
 
@@ -47,14 +47,14 @@ factor(intd) returns the factorization of intd. Currently its printed OutputForm
 
 - **Signature**: `(R)->Factored(R)`
 
-### `factorSquareFree` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFR.spad#L24)\]
+### `factorSquareFree` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L1932)\]
 
 factorSquareFree(intd) returns the factorization of intd.
 
 - **Signature**: `(R)->%`
 - **Signature**: `(R)->Factored(R)`
 
-### `unit` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFR.spad#L28)\]
+### `unit` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L1936)\]
 
 unit(fr) returns the unit part of the factorization.
 

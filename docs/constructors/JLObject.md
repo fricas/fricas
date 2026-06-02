@@ -1,6 +1,6 @@
 # JLObject
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBJECT.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L259)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -48,7 +48,7 @@ Generic Julia objects i.e. objects that are used within Julia, and not directly 
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBJECT.spad#L15)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L273)\]
 
 coerce(i) coerces i as a JLObject. Convenience function.
 
@@ -62,37 +62,37 @@ coerce(str) coerces str as a JLObject. See 'jobject(String)' for more informatio
 
 - **Signature**: `(String)->%`
 
-### `isa?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBJECT.spad#L13)\]
+### `isa?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L271)\]
 
 isa?(x, y) returns true if x is a subtype of y.
 
 - **Signature**: `(%,%)->Boolean`
 
-### `jany` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBJECT.spad#L27)\]
+### `jany` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L285)\]
 
 jany() returns the JLObject representing Any in Julia.
 
 - **Signature**: `()->%`
 
-### `jlCollect` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBJECT.spad#L24)\]
+### `jlCollect` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L282)\]
 
 jlCollect(obj) collects element of a Julia iterator in a JLVector.
 
 - **Signature**: `(%)->JLVector(%)`
 
-### `jmissing` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBJECT.spad#L29)\]
+### `jmissing` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L287)\]
 
 jmissing() returns the JLObject representing Missing in Julia.
 
 - **Signature**: `()->%`
 
-### `jnothing` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBJECT.spad#L31)\]
+### `jnothing` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L289)\]
 
 jnothing() returns the JLObject representing Nothing in Julia.
 
 - **Signature**: `()->%`
 
-### `jobject` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBJECT.spad#L38)\]
+### `jobject` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L296)\]
 
 jobject(n) returns the JLObject representing the integer n.
 
@@ -107,13 +107,13 @@ jobject("rand(Float64,(2,3,4))") returns a 2x3x4 array of Float64 elements. A Ju
 
 - **Signature**: `(String)->%`
 
-### `jstring` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBJECT.spad#L35)\]
+### `jstring` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L293)\]
 
 jstring(str) returns the JLObject representing the String str. Convenience function.
 
 - **Signature**: `(String)->%`
 
-### `junion` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBJECT.spad#L33)\]
+### `junion` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jobject.spad#L291)\]
 
 junion(l) returns the JLObject representing the union of the types in l.
 

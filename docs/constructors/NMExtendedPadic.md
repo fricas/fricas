@@ -1,6 +1,6 @@
 # NMExtendedPadic
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L63)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -88,56 +88,56 @@ This domain implements the field of p-adic numbers $Q_p$ using the Nemo Julia pa
 
 ## Operations added
 
-### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L37)\]
+### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L98)\]
 
 O() returns the default Big-oh from domain parameters.
 
 - **Signature**: `()->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L35)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L96)\]
 
 coerce(x) coerces x to a p-adic number.
 
 - **Signature**: `(NMInteger)->%`
 
-### `jnpadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L39)\]
+### `jnpadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L100)\]
 
 jnpadic(x) returns x as a p-adic number.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-### `liftQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L24)\]
+### `liftQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L85)\]
 
 liftQ(x) lift x to a Nemo Fraction Nemo Integer.
 
 - **Signature**: `(%)->NMFraction(NMInteger)`
 
-### `liftZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L22)\]
+### `liftZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L83)\]
 
 liftZ(x) lift x to a Nemo Integer.
 
 - **Signature**: `(%)->NMInteger`
 
-### `moduloP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L26)\]
+### `moduloP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L87)\]
 
 moduloP(x) returns a, where x = a + b p.
 
 - **Signature**: `(%)->NMInteger`
 
-### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L33)\]
+### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L94)\]
 
 modulus() returns the value of p.
 
 - **Signature**: `()->Integer`
 
-### `quotientByP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L28)\]
+### `quotientByP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L89)\]
 
 quotientByP(x) returns b, where x = a + b p.
 
 - **Signature**: `(%)->%`
 
-### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L30)\]
+### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L91)\]
 
 teichmuller(x) computes the Teichmuller lift of x. The valuation of x must be non negative.
 

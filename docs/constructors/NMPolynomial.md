@@ -1,6 +1,6 @@
 # NMPolynomial
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NPOLY.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L980)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -159,79 +159,79 @@ This type is a basic representation of generic sparse distributed multivariable 
 
 ## Operations added
 
-### `coefficients`
+### `coefficients` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L702)\]
 
 - **Signature**: `(%)->JLVector(R)`
 
-### `constant?`
+### `constant?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L658)\]
 
 - **Signature**: `(%)->Boolean`
 
-### `constantCoefficient`
+### `constantCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L712)\]
 
 - **Signature**: `(%)->R`
 
-### `degree`
+### `degree` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L698)\]
 
 - **Signature**: `(%,PositiveInteger)->NonNegativeInteger`
 
-### `exactDivide`
+### `exactDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L691)\]
 
 - **Signature**: `(%,%)->%`
 
-### `factor`
+### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L696)\]
 
 - **Signature**: `(%)->NMFactored(%)`
 
-### `internalOrdering`
+### `internalOrdering` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L714)\]
 
 - **Signature**: `()->JLObject`
 
-### `length`
+### `length` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L700)\]
 
 - **Signature**: `(%)->NonNegativeInteger`
 
-### `monomial?`
+### `monomial?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L660)\]
 
 - **Signature**: `(%)->Boolean`
 
-### `monomialRecursive?`
+### `monomialRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L662)\]
 
 - **Signature**: `(%)->Boolean`
 
-### `monomials`
+### `monomials` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L704)\]
 
 - **Signature**: `(%)->JLVector(%)`
 
-### `nemoPPrint`
+### `nemoPPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L719)\]
 
 - **Signature**: `(Boolean)->Boolean`
 
-### `primitiveMonomials`
+### `primitiveMonomials` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L707)\]
 
 - **Signature**: `(%)->JLVector(%)`
 
-### `square?`
+### `square?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L672)\]
 
 - **Signature**: `(%)->Boolean`
 
-### `term?`
+### `term?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L665)\]
 
 - **Signature**: `(%)->Boolean`
 
-### `termRecursive?`
+### `termRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L667)\]
 
 - **Signature**: `(%)->Boolean`
 
-### `trailingCoefficient`
+### `trailingCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L710)\]
 
 - **Signature**: `(%)->R`
 
-### `univariate?`
+### `univariate?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L670)\]
 
 - **Signature**: `(%)->Boolean`
 
-### `vectorOfTerms`
+### `vectorOfTerms` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L717)\]
 
 - **Signature**: `(%)->JLVector(%)`
 ---

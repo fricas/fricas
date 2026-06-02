@@ -1,6 +1,6 @@
 # JLComplexF32Matrix
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L681)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -116,67 +116,67 @@ This domain provides a fast JLComplexF32 matrix type with no bound checking on e
 
 ## Operations added
 
-### `adjoint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L80)\]
+### `adjoint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L760)\]
 
 adjoint(m) returns the adjoint of m i.e. the conjugate transposition of m.
 
 - **Signature**: `(%)->%`
 
-### `adjoint!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L83)\]
+### `adjoint!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L763)\]
 
 adjoint!(a, m) stores in a the adjoint of m i.e. the conjugate transposition of m.
 
 - **Signature**: `(%,%)->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L32)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L712)\]
 
 coerce(m) coerces m to a Julia Complex Float 32 matrix.
 
 - **Signature**: `(JLFloat32Matrix)->%`
 
-### `copy!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L65)\]
+### `copy!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L745)\]
 
 copy!(b,a) efficiently copies a to b. No checks are performed on array dimensions.
 
 - **Signature**: `(%,%)->%`
 
-### `diagonalMatrix` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L68)\]
+### `diagonalMatrix` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L748)\]
 
 diagonalMatrix(v) returns a diagonal matrix with elements of v.
 
 - **Signature**: `(JLComplexF32Vector)->%`
 
-### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L20)\]
+### `elt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L700)\]
 
 elt(m, i) returns the i-th element of m. Column major order.
 
 - **Signature**: `(%,NonNegativeInteger)->JLComplexF32`
 
-### `hermitian?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L50)\]
+### `hermitian?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L730)\]
 
 hermitian?(m) tests hermiticity of m.
 
 - **Signature**: `(%)->Boolean`
 
-### `hermitianPart` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L60)\]
+### `hermitianPart` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L740)\]
 
 hermitianPart(m) returns the symmetric part of m (m + m')/2.
 
 - **Signature**: `(%)->%`
 
-### `hermitianPart!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L62)\]
+### `hermitianPart!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L742)\]
 
 hermitianPart!(m) overwrites m with the symmetric part of m (m + m')/2 to save memory space and returns m.
 
 - **Signature**: `(%)->%`
 
-### `imag` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L41)\]
+### `imag` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L721)\]
 
 imag(m) returns a JLFloat32 matrix with the imaginary part of the m elements.
 
 - **Signature**: `(%)->JLFloat32Matrix`
 
-### `jlApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L44)\]
+### `jlApply` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L724)\]
 
 jlApply(func, x) applies func to argument x.
 
@@ -187,73 +187,73 @@ jlApply(func, x, val) applies func to arguments x and val.
 
 - **Signature**: `(String,%,JLFloat32)->JLFloat32`
 
-### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L55)\]
+### `jlApprox?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L735)\]
 
 jlApprox?(x,y) computes inexact equality comparison with default parameters. Two numbers compare equal if their relative distance or their absolute distance is within tolerance bounds. Applied component-wise.
 
 - **Signature**: `(%,%)->Boolean`
 
-### `jlDisplay` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L34)\]
+### `jlDisplay` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L714)\]
 
 jlDisplay(m) pretty prints m (à la Julia).
 
 - **Signature**: `(%)->Void`
 
-### `jlVector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L36)\]
+### `jlVector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L716)\]
 
 jlVector(m) returns reference to the internal vector representation.
 
 - **Signature**: `(%)->JLComplexF32Vector`
 
-### `juliaCMPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L86)\]
+### `juliaCMPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L766)\]
 
 juliaCMPrint(b) defines whether or not FriCAS uses the printing version of Julia for matrices instead of its OutputForm version. Returns previous value. By default it is the Julia version.
 
 - **Signature**: `(Boolean)->Boolean`
 
-### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L73)\]
+### `nrand` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L753)\]
 
 nrand(m,n) returns a Julia matrix of size (m,n) with random elements from the normal distribution with mean=0and standard deviation=1. See Julia documentation (randn) for this complex version used here.
 
 - **Signature**: `(PositiveInteger,PositiveInteger)->%`
 
-### `positiveDefinite?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L52)\]
+### `positiveDefinite?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L732)\]
 
 positiveDefinite?(m) tests whether or not m is Hermitian positive definite using a Cholesky factorisation.
 
 - **Signature**: `(%)->Boolean`
 
-### `qelt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L23)\]
+### `qelt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L703)\]
 
 qelt(m, i) returns the i-th element of m. Column major order.
 
 - **Signature**: `(%,NonNegativeInteger)->JLComplexF32`
 
-### `qsetelt!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L29)\]
+### `qsetelt!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L709)\]
 
 qsetelt!(m, i, r) sets the i-th element of m to r. Column major order.
 
 - **Signature**: `(%,NonNegativeInteger,JLComplexF32)->JLComplexF32`
 
-### `real` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L38)\]
+### `real` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L718)\]
 
 real(m) returns a JLFloat32 matrix with the real part of the m elements.
 
 - **Signature**: `(%)->JLFloat32Matrix`
 
-### `setelt!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L26)\]
+### `setelt!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L706)\]
 
 setelt!(m, i, r) sets the i-th element of m to r. Column major order.
 
 - **Signature**: `(%,NonNegativeInteger,JLComplexF32)->JLComplexF32`
 
-### `transpose!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L78)\]
+### `transpose!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L758)\]
 
 transpose!(b, a) stores transposed a in b.
 
 - **Signature**: `(%,%)->%`
 
-### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32MAT.spad#L70)\]
+### `urand01` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jarray32.spad#L750)\]
 
 urand01(m,n) returns a uniformly (0..1) distributed Julia matrix of size (m,n).
 

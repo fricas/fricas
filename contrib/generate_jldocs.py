@@ -99,6 +99,8 @@ def bare_name(s):
 # ── Source Discovery ──────────────────────────────────────────────────────────
 
 CONSTRUCTOR_SOURCES = {}  # name -> (file_path, line_number)
+FILE_ABBREV_LINES = {}    # file_path -> sorted list of )abbrev line numbers
+SYNONYM_TARGETS = {}      # synonym_name -> target_name  e.g. "NMQadic" -> "NMExtendedQadic"
 
 def discover_sources():
     print("Scanning src/algebra for constructor definitions …")
@@ -120,13 +122,56 @@ def discover_sources():
             m = re.search(r"\)abbrev\s+\w+\s+\w+\s+(\w+)", content)
             if m:
                 name = m.group(1)
-                CONSTRUCTOR_SOURCES[name] = (file_path, int(line_num))
+                ln = int(line_num)
+                CONSTRUCTOR_SOURCES[name] = (file_path, ln)
+                FILE_ABBREV_LINES.setdefault(file_path, []).append(ln)
     except Exception as e:
         print(f"  !! Error during source discovery: {e}")
 
-def find_op_line(file_path, op_name, start_line):
+    # Sort the )abbrev lines per file for binary-search lookups
+    for fp in FILE_ABBREV_LINES:
+        FILE_ABBREV_LINES[fp].sort()
+
+    # Detect domain synonyms: lines like  Name(...) == OtherName(...)
+    synonym_re = re.compile(r"^(\w+)\([^)]*\)\s*==\s*(\w+)\(")
+    for name in list(CONSTRUCTOR_SOURCES):
+        if name not in ALL_JLFRICAS:
+            continue
+        fp, start = CONSTRUCTOR_SOURCES[name]
+        end = find_constructor_end(fp, start)
+        try:
+            with open(fp, "r") as f:
+                lines = f.readlines()
+            for i in range(start, min(end, len(lines))):
+                m = synonym_re.match(lines[i])
+                if m and m.group(1) == name:
+                    target = m.group(2)
+                    SYNONYM_TARGETS[name] = target
+                    break
+        except:
+            pass
+
+    if SYNONYM_TARGETS:
+        print(f"  Detected synonyms: {SYNONYM_TARGETS}")
+
+
+def find_constructor_end(file_path, start_line):
+    """
+    Return the line number of the next )abbrev in the same file,
+    or a large sentinel if this is the last constructor in the file.
+    """
+    abbrevs = FILE_ABBREV_LINES.get(file_path, [])
+    for ln in abbrevs:
+        if ln > start_line:
+            return ln
+    # No next constructor — use a large number (end of file)
+    return 10**9
+
+
+def find_op_line(file_path, op_name, start_line, end_line=None):
     """
     Heuristic to find the export line of an operation in a SPAD file.
+    Searches from start_line up to (but not including) end_line.
     """
     if not os.path.exists(file_path): return None
     try:
@@ -134,9 +179,11 @@ def find_op_line(file_path, op_name, start_line):
             lines = f.readlines()
         
         # Search for "op_name :" or "op_name:" or "op_name  :"
-        # starting from start_line
+        # starting from start_line, bounded by end_line
+        if end_line is None:
+            end_line = len(lines) + 1
         pattern = re.compile(r"^\s*" + re.escape(op_name) + r"\s*:")
-        for i in range(start_line - 1, len(lines)):
+        for i in range(start_line - 1, min(end_line - 1, len(lines))):
             if pattern.search(lines[i]):
                 return i + 1
     except:
@@ -436,20 +483,30 @@ def render_md(name: str, kind: str, group: str, info: dict) -> str:
     ops = info["ops"]
     if ops:
         lines += ["## Operations added", ""]
+
+        # For synonym domains, also accept ops from the target constructor
+        target_name = SYNONYM_TARGETS.get(name, name)
+        # Resolve source info for op line lookups: for synonyms, use
+        # the target constructor's source (since the synonym has no body)
+        op_source_info = source_info
+        if name in SYNONYM_TARGETS:
+            op_source_info = CONSTRUCTOR_SOURCES.get(target_name)
+
         for op_name, blocks in sorted(ops.items()):
-            # Filter blocks to only those from this constructor
-            my_blocks = [b for b in blocks if b["from"] == name]
+            # Filter blocks to those from this constructor or its synonym target
+            my_blocks = [b for b in blocks if b["from"] == name or b["from"] == target_name]
             if not my_blocks:
                 continue
             
             # Title for the operation name with source link
             op_line = None
-            if source_info:
-                op_line = find_op_line(source_info[0], op_name, source_info[1])
+            if op_source_info:
+                end_ln = find_constructor_end(op_source_info[0], op_source_info[1])
+                op_line = find_op_line(op_source_info[0], op_name, op_source_info[1], end_ln)
             
             op_title = f"### `{op_name}`"
             if op_line:
-                op_url = f"{GITHUB_BASE}{source_info[0]}#L{op_line}"
+                op_url = f"{GITHUB_BASE}{op_source_info[0]}#L{op_line}"
                 op_title += f" &nbsp; \\[[source]({op_url})\\]"
             lines.append(op_title)
             lines.append("")

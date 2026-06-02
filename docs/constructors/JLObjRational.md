@@ -1,6 +1,6 @@
 # JLObjRational
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBRAT.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L575)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -66,7 +66,7 @@ Convenience domain for Julia Rationals, objects that are used within Julia, and 
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBRAT.spad#L32)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L606)\]
 
 coerce(p) returns a Julia Rational from the Fraction p.
 
@@ -80,13 +80,13 @@ coerce(str) returns a Julia Rational from the str command.
 
 - **Signature**: `(String)->%`
 
-### `denominator` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBRAT.spad#L36)\]
+### `denominator` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L610)\]
 
 denominator(p) returns the denominator of the rational p.
 
 - **Signature**: `(%)->Integer`
 
-### `jrational` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBRAT.spad#L42)\]
+### `jrational` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L616)\]
 
 jrational(p) returns a Julia Rational from the Fraction p.
 
@@ -100,7 +100,7 @@ jrational(str) returns the Julia Rational from the str command.
 
 - **Signature**: `(String)->%`
 
-### `numerator` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBRAT.spad#L34)\]
+### `numerator` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L608)\]
 
 numerator(p) returns the numerator of the rational p.
 

@@ -1,6 +1,6 @@
 # JLPlotFunctions
 
-> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -53,25 +53,25 @@ low level plotting functions using the Plots package for Julia.
 
 ## Operations added
 
-### `jlBar` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L47)\]
+### `jlBar` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L47)\]
 
 jlBar(x,y) draws a bar plot of y vs x.
 
 - **Signature**: `(JLFloat64Vector,JLFloat64Vector)->Void`
 
-### `jlBar!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L49)\]
+### `jlBar!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L49)\]
 
 jlBar!(x,y) draws a bar plot of y vs x on the existing graph object.
 
 - **Signature**: `(JLFloat64Vector,JLFloat64Vector)->Void`
 
-### `jlClosePlots` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L20)\]
+### `jlClosePlots` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L20)\]
 
 jlClosePlots() closes all plot windows.
 
 - **Signature**: `()->Void`
 
-### `jlContour` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L66)\]
+### `jlContour` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L66)\]
 
 jlContour(x,y,mat) draws the contour plot of surface mat.
 
@@ -81,7 +81,7 @@ jlContour(f, a..b, c..d) draws the contour plot of y = f(x,y) as x ranges from m
 
 - **Signature**: `((DoubleFloat,DoubleFloat)->DoubleFloat,Segment(Float),Segment(Float))->Void`
 
-### `jlContour!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L68)\]
+### `jlContour!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L68)\]
 
 jlContour!(x,y,mat) draws the contour plot of surface mat on the existing graph object.
 
@@ -91,7 +91,7 @@ jlContour!(f, a..b, c..d) draws the contour plot of y = f(x,y) as x ranges from 
 
 - **Signature**: `((DoubleFloat,DoubleFloat)->DoubleFloat,Segment(Float),Segment(Float))->Void`
 
-### `jlContourf` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L71)\]
+### `jlContourf` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L71)\]
 
 jlContourf(x,y,mat) draws the contour plot of surface mat. Fill area between contours.
 
@@ -101,7 +101,7 @@ jlContourf(f, a..b, c..d) draws the contour plot of y = f(x,y) as x ranges from 
 
 - **Signature**: `((DoubleFloat,DoubleFloat)->DoubleFloat,Segment(Float),Segment(Float))->Void`
 
-### `jlContourf!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L74)\]
+### `jlContourf!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L74)\]
 
 jlContourf!(x,y,mat) draws the contour plot of surface mat on the existing graph object. Fill area between contours.
 
@@ -111,31 +111,31 @@ jlContourf!(f, a..b, c..d) draws the contour plot of y = f(x,y) as x ranges from
 
 - **Signature**: `((DoubleFloat,DoubleFloat)->DoubleFloat,Segment(Float),Segment(Float))->Void`
 
-### `jlCurves` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L39)\]
+### `jlCurves` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L39)\]
 
 jlCurves(x,y) draws a Bezier plot curve from (x.1,y.1) to (x.end,y.end) with control points (x.2,y.2),..., (x.end-1,y.end-1) and draws it.
 
 - **Signature**: `(JLFloat64Vector,JLFloat64Vector)->Void`
 
-### `jlCurves!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L43)\]
+### `jlCurves!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L43)\]
 
 jlCurves!(x,y) draws a Bezier plot curve from (x.1,y.1) to (x.end,y.end) with control points (x.2,y.2),..., (x.end-1,y.end-1) and draws it on the existing graph object.
 
 - **Signature**: `(JLFloat64Vector,JLFloat64Vector)->Void`
 
-### `jlDensity` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L29)\]
+### `jlDensity` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L29)\]
 
 jlDensity(x) draws a line plot of a kernel density estimate of x.
 
 - **Signature**: `(JLFloat64Vector)->Void`
 
-### `jlDensity!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L31)\]
+### `jlDensity!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L31)\]
 
 jlDensity!(x) draws a line plot of a kernel density estimate of x on the existing graph object.
 
 - **Signature**: `(JLFloat64Vector)->Void`
 
-### `jlPlot` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L34)\]
+### `jlPlot` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L34)\]
 
 jlPlot(x,y) draws a plot using elements of x and y.
 
@@ -158,7 +158,7 @@ jlPlot(f, a..b, c..d) draws the graph of z = f(x, y) as x ranges from min(a, b) 
 
 - **Signature**: `((DoubleFloat,DoubleFloat)->DoubleFloat,Segment(Float),Segment(Float))->Void`
 
-### `jlPlot!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L36)\]
+### `jlPlot!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L36)\]
 
 jlPlot!(x,y) draws a plot using elements of x and y on the existing graph object.
 
@@ -176,7 +176,7 @@ jlPlot!(f, a..b, c..d) adds the graph of z = f(x, y) as x ranges from min(a, b) 
 
 - **Signature**: `((DoubleFloat,DoubleFloat)->DoubleFloat,Segment(Float),Segment(Float))->Void`
 
-### `jlPlotTitle!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L77)\]
+### `jlPlotTitle!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L77)\]
 
 jlPlotTitle!(title) draws `title' as plot title in the current plot. For example: jlPlotTitle! "sin(x)" if you have the LaTeXStrings Julia package 
 
@@ -197,43 +197,43 @@ jlPlotTitle! jlLatex "Plot: $sin(x)$"
 
 - **Signature**: `(String)->Void`
 
-### `jlPlotXlabel!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L95)\]
+### `jlPlotXlabel!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L95)\]
 
 jlPlotXlabel!(str) sets x label. See jlPlotTitle from JLPlotFunctions for more informations on the different supported formats.
 
 - **Signature**: `(String)->Void`
 
-### `jlPlotXlims!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L89)\]
+### `jlPlotXlims!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L89)\]
 
 jlPlotXlims!(x1,x2) sets x plot limits.
 
 - **Signature**: `(JLFloat64,JLFloat64)->Void`
 
-### `jlPlotYlabel!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L99)\]
+### `jlPlotYlabel!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L99)\]
 
 jlPlotYlabel!(str) sets y label. See jlPlotTitle from JLPlotFunctions for more informations on the different supported formats.
 
 - **Signature**: `(String)->Void`
 
-### `jlPlotYlims!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L91)\]
+### `jlPlotYlims!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L91)\]
 
 jlPlotYlims!(y1,y2) sets y plot limits.
 
 - **Signature**: `(JLFloat64,JLFloat64)->Void`
 
-### `jlPlotZlabel!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L103)\]
+### `jlPlotZlabel!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L103)\]
 
 jlPlotZlabel!(str) sets z label. See jlPlotTitle from JLPlotFunctions for more informations on the different supported formats.
 
 - **Signature**: `(String)->Void`
 
-### `jlPlotZlims!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L93)\]
+### `jlPlotZlims!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L93)\]
 
 jlPlotZlims!(z1,z2) sets z plot limits.
 
 - **Signature**: `(JLFloat64,JLFloat64)->Void`
 
-### `jlRange` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L22)\]
+### `jlRange` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L22)\]
 
 jlRange(range) is a utility function that returns a JLFloat64Vector with 250 points from low(range) to high(range).
 
@@ -243,19 +243,19 @@ jlRange(range, n) is a utility function that returns a JLFloat64Vector with n po
 
 - **Signature**: `(Segment(Float),PositiveInteger)->JLFloat64Vector`
 
-### `jlSavePlot` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L167)\]
+### `jlSavePlot` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L167)\]
 
 jlSavePlot(file) save the current plot in file. Supported formats: png (default), PDF, svg and more. See https://docs.juliaplots.org/latest/output/#savefig-/-format
 
 - **Signature**: `(String)->Void`
 
-### `jlSetPlotsBackend!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L16)\]
+### `jlSetPlotsBackend!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L16)\]
 
 jlSetPlotsBackend!(backend) sets the backend for plotting. The available backends are "gr", gaston", "plotly", "plotlyjs", "pythonplot", "pgfplotsx", "unicodeplots" and "inspectdr".
 
 - **Signature**: `(String)->Void`
 
-### `jlSurface` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L61)\]
+### `jlSurface` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L61)\]
 
 jlSurface(x,y,mat) draws the plot surface of mat.
 
@@ -265,7 +265,7 @@ jlSurface(f, a..b, c..d) draws the surface of y = f(x,y) as x ranges from min(a,
 
 - **Signature**: `((DoubleFloat,DoubleFloat)->DoubleFloat,Segment(Float),Segment(Float))->Void`
 
-### `jlSurface!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L63)\]
+### `jlSurface!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L63)\]
 
 jlSurface!(x,y,mat) draws the plot surface of mat on the existing graph object.
 
@@ -275,7 +275,7 @@ jlSurface!(f, a..b, c..d) draws the surface of y = f(x,y) as x ranges from min(a
 
 - **Signature**: `((DoubleFloat,DoubleFloat)->DoubleFloat,Segment(Float),Segment(Float))->Void`
 
-### `jlWireframe` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L56)\]
+### `jlWireframe` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L56)\]
 
 jlWireframe(x,y,mat) draws the wireframe surface of mat.
 
@@ -285,7 +285,7 @@ jlWireframe(f, a..b, c..d) draws the wireframe of y = f(x,y) as x ranges from mi
 
 - **Signature**: `((DoubleFloat,DoubleFloat)->DoubleFloat,Segment(Float),Segment(Float))->Void`
 
-### `jlWireframe!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JPLOT.spad#L58)\]
+### `jlWireframe!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jplot.spad#L58)\]
 
 jlWireframe!(x,y,mat) draws the wireframe surface of mat on the existing graph object.
 

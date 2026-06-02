@@ -172,7 +172,7 @@ This type is a basic representation of sparse, distributed multivariate polynomi
 
 ## Operations added
 
-### `coefficients` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1545)\]
+### `coefficients`
 
 - **Signature**: `(%)->JLVector(R)`
 
@@ -180,23 +180,23 @@ This type is a basic representation of sparse, distributed multivariate polynomi
 
 - **Signature**: `(%)->Boolean`
 
-### `constantCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1530)\]
+### `constantCoefficient`
 
 - **Signature**: `(%)->R`
 
-### `degree` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1518)\]
+### `degree`
 
 - **Signature**: `(%,PositiveInteger)->NonNegativeInteger`
 
-### `exactDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1511)\]
+### `exactDivide`
 
 - **Signature**: `(%,%)->%`
 
-### `exponent_vectors` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1549)\]
+### `exponent_vectors`
 
 - **Signature**: `(%)->JLVector(JLVector(JLObjInt64))`
 
-### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1516)\]
+### `factor`
 
 - **Signature**: `(%)->NMFactored(%)`
 
@@ -204,19 +204,19 @@ This type is a basic representation of sparse, distributed multivariate polynomi
 
 - **Signature**: `()->JLObject`
 
-### `jmp2nmp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1513)\]
+### `jmp2nmp`
 
 - **Signature**: `(MultivariatePolynomial(VarSet,R))->%`
 
-### `leading_exponent_vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1555)\]
+### `leading_exponent_vector`
 
 - **Signature**: `(%)->JLVector(JLObjInt64)`
 
-### `leading_monomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1551)\]
+### `leading_monomial`
 
 - **Signature**: `(%)->%`
 
-### `length` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1520)\]
+### `length`
 
 - **Signature**: `(%)->NonNegativeInteger`
 
@@ -224,11 +224,11 @@ This type is a basic representation of sparse, distributed multivariate polynomi
 
 - **Signature**: `(%)->Boolean`
 
-### `monomialRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1480)\]
+### `monomialRecursive?`
 
 - **Signature**: `(%)->Boolean`
 
-### `monomials` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1522)\]
+### `monomials`
 
 - **Signature**: `(%)->JLVector(%)`
 
@@ -236,7 +236,7 @@ This type is a basic representation of sparse, distributed multivariate polynomi
 
 - **Signature**: `(Boolean)->Boolean`
 
-### `primitiveMonomials` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1525)\]
+### `primitiveMonomials`
 
 - **Signature**: `(%)->JLVector(%)`
 
@@ -264,7 +264,7 @@ This type is a basic representation of sparse, distributed multivariate polynomi
 
 - **Signature**: `(%)->Boolean`
 
-### `termRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1485)\]
+### `termRecursive?`
 
 - **Signature**: `(%)->Boolean`
 
@@ -276,7 +276,7 @@ This type is a basic representation of sparse, distributed multivariate polynomi
 
 - **Signature**: `(%)->Boolean`
 
-### `vectorOfTerms` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1547)\]
+### `vectorOfTerms`
 
 - **Signature**: `(%)->JLVector(%)`
 ---

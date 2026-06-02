@@ -1,6 +1,6 @@
 # WSSymbol
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L1)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L115)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
 
 ## Description
 
@@ -51,91 +51,91 @@ Julia Wolfram Symbolic symbols using the MathLink Julia package.
 
 ## Operations added
 
-### `WComplex` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L14)\]
+### `WComplex` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L128)\]
 
 WComplex() returns the WS Complex symbol.
 
 - **Signature**: `()->%`
 
-### `WFailure` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L24)\]
+### `WFailure` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L138)\]
 
 WFailure() returns the WS Failure symbol.
 
 - **Signature**: `()->%`
 
-### `WFalse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L22)\]
+### `WFalse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L136)\]
 
 WFalse() returns the WS False symbol.
 
 - **Signature**: `()->%`
 
-### `WFormat` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L38)\]
+### `WFormat` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L152)\]
 
 WFormat() returns the WS Format symbol.
 
 - **Signature**: `()->%`
 
-### `WInteger` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L18)\]
+### `WInteger` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L132)\]
 
 WInteger() returns the WS Integer symbol.
 
 - **Signature**: `()->%`
 
-### `WList` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L28)\]
+### `WList` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L142)\]
 
 WList() returns the WS List symbol.
 
 - **Signature**: `()->%`
 
-### `WMissing` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L34)\]
+### `WMissing` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L148)\]
 
 WMissing() returns the WS Missing symbol.
 
 - **Signature**: `()->%`
 
-### `WNone` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L36)\]
+### `WNone` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L150)\]
 
 WNone() returns the WS None symbol.
 
 - **Signature**: `()->%`
 
-### `WRational` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L16)\]
+### `WRational` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L130)\]
 
 WRational() returns the WS Rational symbol.
 
 - **Signature**: `()->%`
 
-### `WReal` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L12)\]
+### `WReal` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L126)\]
 
 WReal() returns the WS Real symbol.
 
 - **Signature**: `()->%`
 
-### `WRule` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L26)\]
+### `WRule` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L140)\]
 
 WRule() returns the WS Rule symbol.
 
 - **Signature**: `()->%`
 
-### `WString` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L30)\]
+### `WString` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L144)\]
 
 WString() returns the WS String symbol.
 
 - **Signature**: `()->%`
 
-### `WSymbol` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L32)\]
+### `WSymbol` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L146)\]
 
 WSymbol() returns the WS Symbol symbol.
 
 - **Signature**: `()->%`
 
-### `WTrue` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L20)\]
+### `WTrue` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L134)\]
 
 WTrue() returns the WS True symbol.
 
 - **Signature**: `()->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L40)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L154)\]
 
 coerce(bool) coerces bool to a Julia WS boolean.
 
@@ -157,7 +157,7 @@ coerce(sym) is a convenience function to coerce sym to a FriCAS Symbol.
 
 - **Signature**: `(%)->Symbol`
 
-### `jWSSym` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSSYM.spad#L52)\]
+### `jWSSym` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L166)\]
 
 jWSSym(str) constructs str as a WSSymbol.
 

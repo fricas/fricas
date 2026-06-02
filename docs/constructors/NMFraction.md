@@ -1,6 +1,6 @@
 # NMFraction
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFRAC.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L1751)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -134,25 +134,25 @@ Nemo Fractions over an integral domain.
 
 ## Operations added
 
-### `abs2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFRAC.spad#L29)\]
+### `abs2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L1779)\]
 
 abs2(x) returns the square of the absolute value of x.
 
 - **Signature**: `(%)->%`
 
-### `differentiate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFRAC.spad#L34)\]
+### `differentiate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L1784)\]
 
 differentiate(x, f) differentiates x extending the derivation f on NMFraction(R).
 
 - **Signature**: `(%,(NMInteger)->NMInteger)->%`
 
-### `factorFraction` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFRAC.spad#L17)\]
+### `factorFraction` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L1767)\]
 
 factorFraction(r) factors the numerator and the denominator of the fraction r.
 
 - **Signature**: `(%)->Fraction(Factored(R))`
 
-### `random` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NFRAC.spad#L31)\]
+### `random` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnemo.spad#L1781)\]
 
 random(p) returns a random rational with numerator and denominator having p bits before canonicalisation.
 

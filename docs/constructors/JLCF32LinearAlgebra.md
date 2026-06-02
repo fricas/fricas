@@ -1,6 +1,6 @@
 # JLCF32LinearAlgebra
 
-> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L393)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -44,13 +44,13 @@ Linear Algebra functions computed using Julia and its algorithms. 32 bits versio
 
 ## Operations added
 
-### `condSkeel` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L42)\]
+### `condSkeel` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L434)\]
 
 condSkeel(m) computes the Skeel condition number of m.
 
 - **Signature**: `(JLComplexF32Matrix)->JLFloat32`
 
-### `conditionNumber` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L38)\]
+### `conditionNumber` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L430)\]
 
 conditionNumber(m) computes the condition number of m.
 
@@ -60,67 +60,67 @@ conditionNumber(m, p) computes the p-condition number of m.
 
 - **Signature**: `(JLComplexF32Matrix,JLFloat32)->JLFloat32`
 
-### `eigen` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L62)\]
+### `eigen` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L454)\]
 
 eigen(m) computes the spectral decomposition of m.
 
 - **Signature**: `(JLComplexF32Matrix)->Record(values:JLComplexF32Vector,vectors:JLComplexF32Matrix)`
 
-### `eigen!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L64)\]
+### `eigen!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L456)\]
 
 eigen!(m) computes the spectral decomposition of m but overwrites m to save memory space.
 
 - **Signature**: `(JLComplexF32Matrix)->Record(values:JLComplexF32Vector,vectors:JLComplexF32Matrix)`
 
-### `eigenSystem` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L67)\]
+### `eigenSystem` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L459)\]
 
 eigenSystem(m) computes the spectral decomposition of m.
 
 - **Signature**: `(JLComplexF32Matrix)->Record(values:JLComplexF32Vector,leftVectors:JLComplexF32Matrix,rightVectors:`
 
-### `eigenSystem!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L70)\]
+### `eigenSystem!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L462)\]
 
 eigenSystem!(m) computes the spectral decomposition of m but overwrites m to save memory space.
 
 - **Signature**: `(JLComplexF32Matrix)->Record(values:JLComplexF32Vector,leftVectors:JLComplexF32Matrix,rightVectors:`
 
-### `eigvals` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L79)\]
+### `eigvals` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L471)\]
 
 eigvals(m) returns the eigen values of m.
 
 - **Signature**: `(JLComplexF32Matrix)->JLComplexF32Vector`
 
-### `eigvals!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L81)\]
+### `eigvals!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L473)\]
 
 eigvals!(m) returns the eigen values of m but overwrites m to save memory space.
 
 - **Signature**: `(JLComplexF32Matrix)->JLComplexF32Vector`
 
-### `eigvecs` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L84)\]
+### `eigvecs` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L476)\]
 
 eigvecs(m) returns the eigen vectors of m.
 
 - **Signature**: `(JLComplexF32Matrix)->JLComplexF32Matrix`
 
-### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L90)\]
+### `exp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L482)\]
 
 exp(m) returns the matrix exponential of m.
 
 - **Signature**: `(JLComplexF32Matrix)->JLComplexF32Matrix`
 
-### `log` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L92)\]
+### `log` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L484)\]
 
 log(m) tries to compute the principal matrix logarithm of m. Otherwise, returns a non principal matrix logarithm of m if possible.
 
 - **Signature**: `(JLComplexF32Matrix)->JLComplexF32Matrix`
 
-### `mpInverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L86)\]
+### `mpInverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L478)\]
 
 mpInverse(m) returns the Moore-Penrose pseudo inverse of m.
 
 - **Signature**: `(JLComplexF32Matrix)->JLComplexF32Matrix`
 
-### `norm` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L23)\]
+### `norm` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L415)\]
 
 norm(m) computes the 2-norm of m, also known as the Frobenius norm.
 
@@ -138,7 +138,7 @@ norm(v,p) computes the p-norm of v.
 
 - **Signature**: `(JLComplexF32Vector,JLFloat32)->JLFloat32`
 
-### `normalize` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L13)\]
+### `normalize` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L405)\]
 
 normalize(m) returns normalized m such that its norm equals 1.
 
@@ -148,7 +148,7 @@ normalize(v) returns normalized v such that its norm equals 1.
 
 - **Signature**: `(JLComplexF32Vector)->JLComplexF32Vector`
 
-### `normalize!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L15)\]
+### `normalize!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L407)\]
 
 normalize!(m) destructively normalize m such that its norm equals 1.
 
@@ -158,7 +158,7 @@ normalize!(v) destructively normalize v such that norm(v) equals 1.
 
 - **Signature**: `(JLComplexF32Vector)->JLComplexF32Vector`
 
-### `operatorNorm` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L32)\]
+### `operatorNorm` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L424)\]
 
 operatorNorm(m) computes the operator norm of m induced by the vector 2-norm.
 
@@ -168,55 +168,55 @@ operatorNorm(m,p) computes the operator norm of m induced by the vector p-norm.
 
 - **Signature**: `(JLComplexF32Matrix,JLFloat32)->JLFloat32`
 
-### `rank` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L44)\]
+### `rank` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L436)\]
 
 rank(m, tol) computes rank of m. Counts singular value with magnitude greater than tol.
 
 - **Signature**: `(JLComplexF32Matrix,JLFloat32)->NonNegativeInteger`
 
-### `rank!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L47)\]
+### `rank!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L439)\]
 
 rank!(m, tol) computes rank of m. Counts singular value with magnitude greater than tol but overwrites m to save memory space.
 
 - **Signature**: `(JLComplexF32Matrix,JLFloat32)->NonNegativeInteger`
 
-### `solve` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L51)\]
+### `solve` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L443)\]
 
 solve(A,B) solves the matrix equation A*X=B, and returns X.
 
 - **Signature**: `(JLComplexF32Matrix,JLComplexF32Matrix)->JLComplexF32Matrix`
 
-### `solve!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L53)\]
+### `solve!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L445)\]
 
 solve!(A,B) solves the matrix equation A*X=B. Overwrites B with matrix X and returns X.
 
 - **Signature**: `(JLComplexF32Matrix,JLComplexF32Matrix)->JLComplexF32Matrix`
 
-### `sqrt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L88)\]
+### `sqrt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L480)\]
 
 sqrt(m) returns the principal square root of m.
 
 - **Signature**: `(JLComplexF32Matrix)->JLComplexF32Matrix`
 
-### `svd` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L56)\]
+### `svd` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L448)\]
 
 svd(m) computes the singular value decomposition SVD of m such that SVD.U * diagonalMatrix(SVD.sv) * SVD.Vt =m.
 
 - **Signature**: `(JLComplexF32Matrix)->Record(U:JLComplexF32Matrix,sv:JLFloat32Vector,Vt:JLComplexF32Matrix)`
 
-### `svd!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L59)\]
+### `svd!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L451)\]
 
 svd!(m) is the same as svd(m) but overwrites m to save memory space.
 
 - **Signature**: `(JLComplexF32Matrix)->Record(U:JLComplexF32Matrix,sv:JLFloat32Vector,Vt:JLComplexF32Matrix)`
 
-### `svdvals` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L74)\]
+### `svdvals` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L466)\]
 
 svdvals(m) returns the singular values of m.
 
 - **Signature**: `(JLComplexF32Matrix)->JLFloat32Vector`
 
-### `svdvals!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JCF32LA.spad#L76)\]
+### `svdvals!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jla32.spad#L468)\]
 
 svdvals!(m) returns the singular values of m but overwrites m to save memory space.
 

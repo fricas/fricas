@@ -1,6 +1,6 @@
 # WSNumericalSpecialFunctions
 
-> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L1)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
+> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L1)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
 
 ## Description
 
@@ -92,7 +92,7 @@ Julia Wolfram Symbolic numerical special functions using the MathLink Julia pack
 
 ## Operations added
 
-### `Beta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L18)\]
+### `Beta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L18)\]
 
 Beta(x, y) is Gamma(x) * Gamma(y)/Gamma(x+y).
 
@@ -102,13 +102,13 @@ Beta(z, a, b) is the incomplete Beta function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `EiEn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L168)\]
+### `EiEn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L168)\]
 
 EiEn(n,z) returns the exponential integral En of z.
 
 - **Signature**: `(WSInteger,R)->R`
 
-### `Gamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L16)\]
+### `Gamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L16)\]
 
 Gamma(z) is the Euler Gamma function.
 
@@ -122,19 +122,19 @@ Gamma(a,z1,z2) computes the generalized incomplete Gamma function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `airyAi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L44)\]
+### `airyAi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L44)\]
 
 airyAi(z) is the Airy function Ai(z).
 
 - **Signature**: `(R)->R`
 
-### `airyAiPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L46)\]
+### `airyAiPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L46)\]
 
 airyAiPrime(z) is the derivative of the Airy function Ai(z).
 
 - **Signature**: `(R)->R`
 
-### `airyAiZero` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L48)\]
+### `airyAiZero` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L48)\]
 
 airyAiZero(n) is the n-th zero function of the Airy function Ai(z).
 
@@ -144,19 +144,19 @@ airyAiZero(n,x) is the n-th zero function of the Airy function Ai(z) smaller tha
 
 - **Signature**: `(R,R)->R`
 
-### `airyBi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L53)\]
+### `airyBi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L53)\]
 
 airyBi(z) is the Airy function Bi(z).
 
 - **Signature**: `(R)->R`
 
-### `airyBiPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L60)\]
+### `airyBiPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L60)\]
 
 airyBiPrime(z) is the derivative of the Airy function Bi(z).
 
 - **Signature**: `(R)->R`
 
-### `airyBiZero` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L55)\]
+### `airyBiZero` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L55)\]
 
 airyBiZero(n) is the n-th zero function of the Airy function Bi(z).
 
@@ -166,7 +166,7 @@ airyBiZero(n,x) is the n-th zero function of the Airy function Bi(z) smaller tha
 
 - **Signature**: `(R,R)->R`
 
-### `angerJ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L62)\]
+### `angerJ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L62)\]
 
 angerJ(v, z) is the Anger J function.
 
@@ -177,115 +177,115 @@ angerJ(v, n, z) is the associated Anger J function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `barnesG` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L246)\]
+### `barnesG` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L246)\]
 
 barnesG(z) computes the Barnes G-function of z.
 
 - **Signature**: `(R)->R`
 
-### `besselI` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L40)\]
+### `besselI` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L40)\]
 
 besselI(v, z) is the modified Bessel function of the first kind.
 
 - **Signature**: `(R,R)->R`
 
-### `besselJ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L30)\]
+### `besselJ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L30)\]
 
 besselJ(v, z) is the Bessel function of the first kind.
 
 - **Signature**: `(R,R)->R`
 
-### `besselJZero` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L32)\]
+### `besselJZero` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L32)\]
 
 besselJZero(n,x) returns the n-th zero of the Bessel J n-th function.
 
 - **Signature**: `(R,R)->R`
 
-### `besselK` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L42)\]
+### `besselK` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L42)\]
 
 besselK(v, z) is the modified Bessel function of the second kind.
 
 - **Signature**: `(R,R)->R`
 
-### `besselY` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L35)\]
+### `besselY` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L35)\]
 
 besselY(v, z) is the Bessel function of the second kind.
 
 - **Signature**: `(R,R)->R`
 
-### `besselYZero` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L37)\]
+### `besselYZero` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L37)\]
 
 besselYZero(n,x) returns the n-th zero of the Bessel Y n-th function.
 
 - **Signature**: `(R,R)->R`
 
-### `betaRegularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L230)\]
+### `betaRegularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L230)\]
 
 betaRegularized(z,a,b) computes the regularized incomplete Beta function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `charlierC` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L157)\]
+### `charlierC` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L157)\]
 
 charlierC(n, a, z) is the Charlier polynomial
 
 - **Signature**: `(R,R,R)->R`
 
-### `chebyshevT` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L271)\]
+### `chebyshevT` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L271)\]
 
 chebyshevT(n, z) evaluates the Chebyshev polynomial of the first kind at z.
 
 - **Signature**: `(R,R)->R`
 
-### `chebyshevU` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L274)\]
+### `chebyshevU` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L274)\]
 
 chebyshevU(n, expr) evaluates the Chebyshev polynomial of the second kind at z.
 
 - **Signature**: `(R,R)->R`
 
-### `conjugate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L66)\]
+### `conjugate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L66)\]
 
 conjugate(z) is the conjugate of the complex number z.
 
 - **Signature**: `(R)->R`
 
-### `coulombF` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L305)\]
+### `coulombF` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L305)\]
 
 coulombF(l,eta,ro) is the regular Coulomb wave function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `coulombG` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L307)\]
+### `coulombG` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L307)\]
 
 coulombG(l,eta,ro) is the irregular Coulomb wave function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `coulombH1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L309)\]
+### `coulombH1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L309)\]
 
 coulombH1(l,eta,ro) is the incoming irregular Coulomb wave function H^(+).
 
 - **Signature**: `(R,R,R)->R`
 
-### `coulombH2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L311)\]
+### `coulombH2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L311)\]
 
 coulombH2(l,eta,ro) is the incoming irregular Coulomb wave function H^(-).
 
 - **Signature**: `(R,R,R)->R`
 
-### `dawson` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L68)\]
+### `dawson` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L68)\]
 
 dawson(x) computes the Dawson integral of x.
 
 - **Signature**: `(R)->R`
 
-### `dedekindEta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L381)\]
+### `dedekindEta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L381)\]
 
 dedekindEta(tau) computes the Dedekind eta modular function.
 
 - **Signature**: `(R)->R`
 
-### `digamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L22)\]
+### `digamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L22)\]
 
 digamma(z) is the logarithmic derivative of Gamma(z) (often written psi(z) in the literature).
 
@@ -295,25 +295,25 @@ digamma(n,z) is the n-th derivative of the digamma function.
 
 - **Signature**: `(R,R)->R`
 
-### `diracDelta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L196)\]
+### `diracDelta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L196)\]
 
 diracDelta(x) returns the Dirac delta function of x.
 
 - **Signature**: `(R)->WSExpression`
 
-### `dirichletEta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L383)\]
+### `dirichletEta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L383)\]
 
 dirichletEta(z) computes the Dirichlet eta function of z.
 
 - **Signature**: `(R)->R`
 
-### `dirichletL` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L194)\]
+### `dirichletL` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L194)\]
 
 dirichletL(k,j,s) returns Dirichlet L-function of s, modulus k, index j.
 
 - **Signature**: `(R,R,R)->R`
 
-### `ellipticE` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L369)\]
+### `ellipticE` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L369)\]
 
 ellipticE(z) computes the complete elliptic integral of the second kind.
 
@@ -323,19 +323,19 @@ ellipticE(phi,m) computes the elliptic integral of the second kind.
 
 - **Signature**: `(R,R)->R`
 
-### `ellipticF` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L367)\]
+### `ellipticF` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L367)\]
 
 ellipticF(phi,m) computes the elliptic integral of the first kind.
 
 - **Signature**: `(R,R)->R`
 
-### `ellipticK` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L364)\]
+### `ellipticK` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L364)\]
 
 ellipticK(m) computes the complete elliptic integral of the first kind.
 
 - **Signature**: `(R)->R`
 
-### `ellipticPi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L373)\]
+### `ellipticPi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L373)\]
 
 ellipticPi(n,m) computes the complete elliptic integral of the third kind.
 
@@ -345,31 +345,31 @@ ellipticPi(n,phi,m) computes the elliptic integral of the third kind.
 
 - **Signature**: `(R,R,R)->R`
 
-### `ellipticTheta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L355)\]
+### `ellipticTheta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L355)\]
 
 ellipticTheta(a, u, q) computes the theta function, a ranges from 1 to 4.
 
 - **Signature**: `(R,R,R)->R`
 
-### `ellipticThetaPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L357)\]
+### `ellipticThetaPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L357)\]
 
 ellipticThetaPrime(a, u, q) computes the derivative of the theta function, a ranges from 1 to 4.
 
 - **Signature**: `(R,R,R)->R`
 
-### `fibonacci` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L250)\]
+### `fibonacci` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L250)\]
 
 fibonacci(n, z) evaluates the Fibonacci polynomial at z.
 
 - **Signature**: `(WSInteger,R)->R`
 
-### `gammaRegularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L232)\]
+### `gammaRegularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L232)\]
 
 gammaRegularized(a,z) computes the regularized incomplete Gamma function.
 
 - **Signature**: `(R,R)->R`
 
-### `gegenbauerC` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L266)\]
+### `gegenbauerC` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L266)\]
 
 gegenbauerC(n,z) evaluates the renormalized form of the Gegenbauer polynomial at z.
 
@@ -379,206 +379,206 @@ gegenbauerC(n,lambda,z) evaluates the Gegenbauer polynomial at z.
 
 - **Signature**: `(WSInteger,R,R)->R`
 
-### `gudermannian` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L176)\]
+### `gudermannian` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L176)\]
 
 gudermannian(z) computes the Gudermannian of z.
 
 - **Signature**: `(R)->R`
 
-### `hankelH1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L103)\]
+### `hankelH1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L103)\]
 
 hankelH1(v, z) is the first Hankel function (Bessel function of the third kind).
 
 - **Signature**: `(R,R)->R`
 
-### `hankelH2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L106)\]
+### `hankelH2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L106)\]
 
 hankelH2(v, z) is the second Hankel function (Bessel function of the third kind).
 
 - **Signature**: `(R,R)->R`
 
-### `haversine` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L172)\]
+### `haversine` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L172)\]
 
 haversine(z) computes the Haversine of z.
 
 - **Signature**: `(R)->R`
 
-### `hermiteH` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L277)\]
+### `hermiteH` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L277)\]
 
 hermiteH(n, z) evaluates the Hermite polynomial at z.
 
 - **Signature**: `(R,R)->R`
 
-### `hurwitzLerchPhi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L221)\]
+### `hurwitzLerchPhi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L221)\]
 
 hurwitzLerchPhi(z,s,a) computes the Hurwitz-Lerch transcendent phi function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `hurwitzZeta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L219)\]
+### `hurwitzZeta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L219)\]
 
 hurwitzZeta(s,a) computes the Hurwitz zeta.
 
 - **Signature**: `(R,R)->R`
 
-### `hyperFactorial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L248)\]
+### `hyperFactorial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L248)\]
 
 hyperFactorial(n) computes the hyperfactorial of n.
 
 - **Signature**: `(R)->R`
 
-### `hypergeometric0F1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L287)\]
+### `hypergeometric0F1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L287)\]
 
 hypergeometric0F1(a,z) is the hypergeometric 0F1.
 
 - **Signature**: `(R,R)->R`
 
-### `hypergeometric0F1Regularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L289)\]
+### `hypergeometric0F1Regularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L289)\]
 
 hypergeometric0F1Regularized(a,z) is the regularized hypergeometric 0F1.
 
 - **Signature**: `(R,R)->R`
 
-### `hypergeometric1F1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L291)\]
+### `hypergeometric1F1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L291)\]
 
 hypergeometric1F1(a,b,z) is the Kummer confluent hypergeometric function 1F1.
 
 - **Signature**: `(R,R,R)->R`
 
-### `hypergeometric1F1Regularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L294)\]
+### `hypergeometric1F1Regularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L294)\]
 
 hypergeometric1F1Regularized(a,b,z) is the regularized confluent hypergeometric function 1F1.
 
 - **Signature**: `(R,R,R)->R`
 
-### `hypergeometricU` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L297)\]
+### `hypergeometricU` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L297)\]
 
 hypergeometricU(a,b,z) is the confluent hypergeometric function U.
 
 - **Signature**: `(R,R,R)->R`
 
-### `inverseBetaRegularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L236)\]
+### `inverseBetaRegularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L236)\]
 
 inverseBetaRegularized(s,a,b) computes the Beta inverse.
 
 - **Signature**: `(R,R,R)->R`
 
-### `inverseErf` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L225)\]
+### `inverseErf` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L225)\]
 
 inverseErf(z) computes the inverse error function of z.
 
 - **Signature**: `(R)->R`
 
-### `inverseErfc` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L227)\]
+### `inverseErfc` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L227)\]
 
 inverseErfc(z) computes the inverse complementary error function of z.
 
 - **Signature**: `(R)->R`
 
-### `inverseGammaRegularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L238)\]
+### `inverseGammaRegularized` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L238)\]
 
 inverseGammaRegularized(a,s) computes the Gamma inverse.
 
 - **Signature**: `(R,R)->R`
 
-### `inverseGudermannian` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L178)\]
+### `inverseGudermannian` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L178)\]
 
 inverseGudermannian(z) computes the inverse Gudermannian of z.
 
 - **Signature**: `(R)->R`
 
-### `inverseHaversine` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L174)\]
+### `inverseHaversine` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L174)\]
 
 inverseHaversine(z) computes the inverse Haversine of z.
 
 - **Signature**: `(R)->R`
 
-### `inverseJacobiCn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L353)\]
+### `inverseJacobiCn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L353)\]
 
 inverseJacobiCn(nu, m) computes the inverse Jacobi's CN elliptic function.
 
 - **Signature**: `(R,R)->R`
 
-### `inverseJacobiSn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L351)\]
+### `inverseJacobiSn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L351)\]
 
 inverseJacobiSn(nu, m) computes the inverse Jacobi's SN elliptic function.
 
 - **Signature**: `(R,R)->R`
 
-### `jacobiAmplitude` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L346)\]
+### `jacobiAmplitude` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L346)\]
 
 jacobiAmplitude(u,m) computes the amplitude function am.
 
 - **Signature**: `(R,R)->R`
 
-### `jacobiCn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L138)\]
+### `jacobiCn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L138)\]
 
 jacobiCn(z, m) is the Jacobi elliptic cn function, defined by jacobiCn(z, m)^2 + jacobiSn(z, m)^2 = 1 and jacobiCn(0, m) = 1.
 
 - **Signature**: `(R,R)->R`
 
-### `jacobiDn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L142)\]
+### `jacobiDn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L142)\]
 
 jacobiDn(z, m) is the Jacobi elliptic dn function, defined by jacobiDn(z, m)^2 + m*jacobiSn(z, m)^2 = 1 and jacobiDn(0, m) = 1.
 
 - **Signature**: `(R,R)->R`
 
-### `jacobiP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L285)\]
+### `jacobiP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L285)\]
 
 jacobiP(n, a, b, z) evaluates the Jacobi polynomial at z.
 
 - **Signature**: `(R,R,R,R)->R`
 
-### `jacobiSn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L135)\]
+### `jacobiSn` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L135)\]
 
 jacobiSn(z, m) is the Jacobi elliptic sn function, defined by the formula jacobiSn(ellipticF(z, m), m) = z.
 
 - **Signature**: `(R,R)->R`
 
-### `jacobiTheta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L151)\]
+### `jacobiTheta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L151)\]
 
 jacobiTheta(n, z, m) are the Jacobi theta functions.
 
 - **Signature**: `(WSInteger,R,R)->R`
 
-### `jacobiZeta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L146)\]
+### `jacobiZeta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L146)\]
 
 jacobiZeta(phi,m) computes the Jacobi Zeta function.
 
 - **Signature**: `(R,R)->R`
 - **Signature**: `(R,R)->R`
 
-### `kelvinBei` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L117)\]
+### `kelvinBei` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L117)\]
 
 kelvinBei(v, z) is the Kelvin bei function defined by equality kelvinBei(v, z) = imag(besselJ(v, exp(3*Rpi*Ri/4)*z)) for z and v real.
 
 - **Signature**: `(R,R)->R`
 
-### `kelvinBer` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L121)\]
+### `kelvinBer` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L121)\]
 
 kelvinBer(v, z) is the Kelvin ber function defined by equality kelvinBer(v, z) = real(besselJ(v, exp(3*Rpi*Ri/4)*z)) for z and v real.
 
 - **Signature**: `(R,R)->R`
 
-### `kelvinKei` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L125)\]
+### `kelvinKei` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L125)\]
 
 kelvinKei(v, z) is the Kelvin kei function defined by equality kelvinKei(v, z) = imag(exp(-v*Rpi*Ri/2)*besselK(v, exp(Rpi*Ri/4)*z)) for z and v real.
 
 - **Signature**: `(R,R)->R`
 
-### `kelvinKer` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L130)\]
+### `kelvinKer` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L130)\]
 
 kelvinKer(v, z) is the Kelvin ker function defined by equality kelvinKer(v, z) = real(exp(-v*Rpi*Ri/2)*besselK(v, exp(Rpi*Ri/4)*z)) for z and v real.
 
 - **Signature**: `(R,R)->R`
 
-### `kleinInvariantJ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L385)\]
+### `kleinInvariantJ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L385)\]
 
 kleinInvariantJ(tau) computes the Klein's absolute invariant.
 
 - **Signature**: `(R)->R`
 
-### `laguerreL` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L279)\]
+### `laguerreL` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L279)\]
 
 laguerreL(n, z) evaluates the Laguerre polynomial at z.
 
@@ -588,7 +588,7 @@ laguerreL(n, a, z) evaluates the generalized Laguerre polynomial a z.
 
 - **Signature**: `(R,R,R)->R`
 
-### `lambertW` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L70)\]
+### `lambertW` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L70)\]
 
 lambertW(z) = w is the principal branch of the solution to the equation we^w = z.
 
@@ -598,7 +598,7 @@ lambertW(k,z) returns the k-th solution to LambertW function.
 
 - **Signature**: `(WSInteger,R)->R`
 
-### `legendreP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L113)\]
+### `legendreP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L113)\]
 
 legendreP(n, z) evaluates the Legendre polynomial of the first kind at z.
 
@@ -609,7 +609,7 @@ legendreP(n, m, z) evaluates the associated Legendre polynomial of the first typ
 - **Signature**: `(R,R,R)->R`
 - **Signature**: `(R,R,R)->R`
 
-### `legendreQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L115)\]
+### `legendreQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L115)\]
 
 legendreQ(n, z) returns the Legendre function of the second kind.
 
@@ -620,104 +620,104 @@ legendreQ(n, m, z) evaluates the associated Legendre function of the second kind
 - **Signature**: `(R,R,R)->R`
 - **Signature**: `(R,R,R)->R`
 
-### `lerchPhi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L153)\]
+### `lerchPhi` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L153)\]
 
 lerchPhi(z,s,a) returns Lerch's transcendent phi of arguments.
 
 - **Signature**: `(R,R,R)->R`
 - **Signature**: `(R,R,R)->R`
 
-### `logBarnesG` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L244)\]
+### `logBarnesG` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L244)\]
 
 logBarnesG(z) is the logarithm of Barnes-G.
 
 - **Signature**: `(R)->R`
 
-### `logGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L242)\]
+### `logGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L242)\]
 
 logGamma(z) returns the log-Gamma of z.
 
 - **Signature**: `(R)->R`
 
-### `lommelS1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L109)\]
+### `lommelS1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L109)\]
 
 lommelS1(mu, nu, z) is the Lommel s function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `lommelS2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L111)\]
+### `lommelS2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L111)\]
 
 lommelS2(mu, nu, z) is the Lommel S function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `mathieuC` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L327)\]
+### `mathieuC` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L327)\]
 
 mathieuC(a,q,z) is the even Mathieu function with characteristic a and parameter q.
 
 - **Signature**: `(R,R,R)->R`
 
-### `mathieuCPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L333)\]
+### `mathieuCPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L333)\]
 
 mathieuCPrime(a,q,z) derivative of the even Mathieu function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `mathieuCharacteristicA` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L337)\]
+### `mathieuCharacteristicA` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L337)\]
 
 mathieuCharacteristicA(r,q) returns the characteristic for even Mathieu function.
 
 - **Signature**: `(R,R)->R`
 
-### `mathieuCharacteristicB` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L340)\]
+### `mathieuCharacteristicB` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L340)\]
 
 mathieuCharacteristicB(r,q) returns the characteristic for odd Mathieu function.
 
 - **Signature**: `(R,R)->R`
 
-### `mathieuCharacteristicExponent` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L343)\]
+### `mathieuCharacteristicExponent` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L343)\]
 
 mathieuCharacteristicExponent(a,q) returns the characteristic exponent of the Mathieu function.
 
 - **Signature**: `(R,R)->R`
 
-### `mathieuS` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L330)\]
+### `mathieuS` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L330)\]
 
 mathieuS(b,q,z) is the odd Mathieu function with characteristic b and parameter q.
 
 - **Signature**: `(R,R,R)->R`
 
-### `mathieuSPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L335)\]
+### `mathieuSPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L335)\]
 
 mathieuSPrime(b,q,z) derivative of the odd Mathieu function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `modularLambda` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L387)\]
+### `modularLambda` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L387)\]
 
 modularLambda(tau) computes the lambda modular function.
 
 - **Signature**: `(R)->R`
 
-### `parabolicCylinderD` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L303)\]
+### `parabolicCylinderD` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L303)\]
 
 parabolicCylinderD(nu,z) computes the parabolic cylinder function D of z.
 
 - **Signature**: `(R,R)->R`
 
-### `pochhammer` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L240)\]
+### `pochhammer` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L240)\]
 
 pochhammer(a,n) returns the Pochhammer symbol.
 
 - **Signature**: `(R,R)->R`
 
-### `polygamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L25)\]
+### `polygamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L25)\]
 
 polygamma(k, z) is the k-th derivative of digamma(z), (often written psi(k, z) in the literature).
 
 - **Signature**: `(R,R)->R`
 
-### `polylog` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L73)\]
+### `polylog` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L73)\]
 
 polylog(s, z) is the polylogarithm of order s at z.
 
@@ -727,25 +727,25 @@ polylog(n,p,z) is the Nielsen generalized polylogarithm function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `qBinomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L319)\]
+### `qBinomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L319)\]
 
 qBinomial(n,m,q) returns the q-analog of binomial coefficient.
 
 - **Signature**: `(R,R,R)->R`
 
-### `qFactorial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L317)\]
+### `qFactorial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L317)\]
 
 qFactorial(z,q) returns the q-analog of factorial of z.
 
 - **Signature**: `(R,R)->R`
 
-### `qGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L321)\]
+### `qGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L321)\]
 
 qGamma(z,q) returns the q-analog of Euler Gamma of z.
 
 - **Signature**: `(R,R)->R`
 
-### `qPochhammer` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L313)\]
+### `qPochhammer` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L313)\]
 
 qPochhammer(z,q) returns the q-Pochhammer symbol of z.
 
@@ -755,7 +755,7 @@ qPochhammer(z,q,n) returns the q-Pochhammer symbol of z.
 
 - **Signature**: `(R,R,R)->R`
 
-### `qPolyGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L323)\]
+### `qPolyGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L323)\]
 
 qPolyGamma(z,q) returns the q-digamma of z.
 
@@ -765,43 +765,43 @@ qPolyGamma(n,z,q) returns the n-th derivative of the q-digamma function of z.
 
 - **Signature**: `(R,R,R)->R`
 
-### `ramanujanTau` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L202)\]
+### `ramanujanTau` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L202)\]
 
 ramanujanTau(n) returns the Ramanujan tau of n.
 
 - **Signature**: `(R)->R`
 
-### `ramanujanTauL` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L204)\]
+### `ramanujanTauL` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L204)\]
 
 ramanujanTauL(s) computes the Ramanujan tau Dirichlet L-function of s.
 
 - **Signature**: `(R)->R`
 
-### `ramanujanTauTheta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L206)\]
+### `ramanujanTauTheta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L206)\]
 
 ramanujanTauTheta(z) returns the Ramanujan tau theta of z.
 
 - **Signature**: `(R)->R`
 
-### `ramanujanTauZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L208)\]
+### `ramanujanTauZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L208)\]
 
 ramanujanTauZ(t) computes the Ramanujan tau Z-function of t.
 
 - **Signature**: `(R)->R`
 
-### `riemannSiegelTheta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L210)\]
+### `riemannSiegelTheta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L210)\]
 
 riemannSiegelTheta(t) returns the Riemann-Siegel theta function of t.
 
 - **Signature**: `(R)->R`
 
-### `riemannSiegelZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L212)\]
+### `riemannSiegelZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L212)\]
 
 riemannSiegelZ(t) computes the Riemann-Siegel Z function of t.
 
 - **Signature**: `(R)->R`
 
-### `riemannZeta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L155)\]
+### `riemannZeta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L155)\]
 
 riemannZeta(z) is the Riemann Zeta function.
 
@@ -811,43 +811,43 @@ riemannZeta(s,a) is the generalized Riemann Zeta function.
 
 - **Signature**: `(R,R)->R`
 
-### `sign` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L14)\]
+### `sign` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L14)\]
 
 sign(x) is 1 if x is positive, -1 if x is negative, 0 if x equals 0.
 
 - **Signature**: `(R)->R`
 
-### `sphericalBesselJ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L182)\]
+### `sphericalBesselJ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L182)\]
 
 sphericalBesselJ(n,z) returns the spherical Bessel of the first kind of z.
 
 - **Signature**: `(R,R)->R`
 
-### `sphericalBesselY` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L185)\]
+### `sphericalBesselY` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L185)\]
 
 sphericalBesselY(n,z) returns the spherical Bessel of the second kind of z.
 
 - **Signature**: `(R,R)->R`
 
-### `sphericalHankelH1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L188)\]
+### `sphericalHankelH1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L188)\]
 
 sphericalHankelH1(n,z) returns the spherical Hankel of the first kind of z.
 
 - **Signature**: `(R,R)->R`
 
-### `sphericalHankelH2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L191)\]
+### `sphericalHankelH2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L191)\]
 
 sphericalHankelH2(n,z) computes the spherical Hankel of the second kind of z.
 
 - **Signature**: `(R,R)->R`
 
-### `sphericalHarmonicY` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L263)\]
+### `sphericalHarmonicY` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L263)\]
 
 sphericalHarmonicY(l, m, theta, phi) returns the spherical harmonic Y or evaluates it.
 
 - **Signature**: `(R,R,R,R)->R`
 
-### `stieltjesGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L215)\]
+### `stieltjesGamma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L215)\]
 
 stieltjesGamma(n) returns the n-th Stieltjes constant.
 
@@ -857,25 +857,25 @@ stieltjesGamma(n,a) returns the generalized n-th Stieltjes constant.
 
 - **Signature**: `(WSInteger,R)->R`
 
-### `struveH` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L98)\]
+### `struveH` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L98)\]
 
 struveH(v, z) is the Struve H function.
 
 - **Signature**: `(R,R)->R`
 
-### `struveL` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L100)\]
+### `struveL` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L100)\]
 
 struveL(v, z) is the Struve L function defined by the formula struveL(v, z) = -Ri^exp(-v*Rpi*Ri/2)*struveH(v,Ri*z).
 
 - **Signature**: `(R,R)->R`
 
-### `unitStep` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L348)\]
+### `unitStep` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L348)\]
 
 unitStep(x) returns the unit step function i.e. 0 for x less than 0, 1 for x greater or equal to 0.
 
 - **Signature**: `(R)->WSExpression`
 
-### `weberE` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L94)\]
+### `weberE` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L94)\]
 
 weberE(v, z) is the Weber E function.
 
@@ -885,51 +885,51 @@ weberE(v, n, z) is the associated Weber E function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `weierstrassP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L75)\]
+### `weierstrassP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L75)\]
 
 weierstrassP(g2, g3, z) is the Weierstrass P function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `weierstrassPInverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L84)\]
+### `weierstrassPInverse` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L84)\]
 
 weierstrassPInverse(g2, g3, z) is the inverse of Weierstrass P function, defined by the formula weierstrassP(g2, g3, weierstrassPInverse(g2, g3, z)) = z.
 
 - **Signature**: `(R,R,R)->R`
 
-### `weierstrassPPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L77)\]
+### `weierstrassPPrime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L77)\]
 
 weierstrassPPrime(g2, g3, z) is the derivative of Weierstrass P function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `weierstrassSigma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L80)\]
+### `weierstrassSigma` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L80)\]
 
 weierstrassSigma(g2, g3, z) is the Weierstrass sigma function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `weierstrassZeta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L82)\]
+### `weierstrassZeta` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L82)\]
 
 weierstrassZeta(g2, g3, z) is the Weierstrass Zeta function.
 
 - **Signature**: `(R,R,R)->R`
 
-### `whittakerM` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L88)\]
+### `whittakerM` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L88)\]
 
 whittakerM(k,m,z) computes the Whittaker function M of z.
 
 - **Signature**: `(R,R,R)->R`
 - **Signature**: `(R,R,R)->R`
 
-### `whittakerW` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L90)\]
+### `whittakerW` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L90)\]
 
 whittakerW(k,m,z) computes the Whittaker function W of z.
 
 - **Signature**: `(R,R,R)->R`
 - **Signature**: `(R,R,R)->R`
 
-### `zernikeR` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSNSF.spad#L283)\]
+### `zernikeR` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jwsnsf.spad#L283)\]
 
 zernikeR(n, m, z) evaluates the Zernike radial polynomial at z.
 

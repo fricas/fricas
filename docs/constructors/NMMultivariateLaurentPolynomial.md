@@ -1,6 +1,6 @@
 # NMMultivariateLaurentPolynomial
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1432)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -176,13 +176,13 @@ This type is a basic representation of sparse, distributed multivariate Laurent 
 
 ## Operations added
 
-### `coefficients` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L114)\]
+### `coefficients` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1545)\]
 
 coefficients(p) returns a Julia vector of coefficients of p.
 
 - **Signature**: `(%)->JLVector(R)`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L127)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1558)\]
 
 coerce(lp) coerces lp.
 
@@ -191,139 +191,139 @@ coerce(lp) coerces lp.
 - **Signature**: `(%)->NMMultivariateLaurentPolynomial(NMInteger,VarSet)`
 - **Signature**: `(%)->NMMultivariateLaurentPolynomial(NMRealField,VarSet)`
 
-### `constantCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L99)\]
+### `constantCoefficient` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1530)\]
 
 constantCoefficient(p) returns the constant of p.
 
 - **Signature**: `(%)->R`
 
-### `degree` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L87)\]
+### `degree` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1518)\]
 
 degree(p,i) returns the degree of the i-th variable.
 
 - **Signature**: `(%,PositiveInteger)->NonNegativeInteger`
 
-### `exactDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L80)\]
+### `exactDivide` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1511)\]
 
 exactDivide(p,q) divides p by q if the division is exact.
 
 - **Signature**: `(%,%)->%`
 
-### `exponent_vectors` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L118)\]
+### `exponent_vectors` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1549)\]
 
 exponent_vectors(lp) returns the exponent vectors.
 
 - **Signature**: `(%)->JLVector(JLVector(JLObjInt64))`
 
-### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L85)\]
+### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1516)\]
 
 factor(p) returns the factorization of p.
 
 - **Signature**: `(%)->NMFactored(%)`
 
-### `gen` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L107)\]
+### `gen` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1538)\]
 
 gen(i) returns the i-th generator.
 
 - **Signature**: `(Integer)->%`
 
-### `gen?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L109)\]
+### `gen?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1540)\]
 
 gen?(lp) checks whether or not lp is a generator.
 
 - **Signature**: `(%)->Boolean`
 
-### `gens` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L105)\]
+### `gens` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1536)\]
 
 gens() returns a vector of the generators (variables).
 
 - **Signature**: `()->JLVector(%)`
 
-### `jmp2nmp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L82)\]
+### `jmp2nmp` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1513)\]
 
 jmp2nmp(p) converts the multivariate polynomial p to a Nemo multivariate polynomial.
 
 - **Signature**: `(MultivariatePolynomial(VarSet,R))->%`
 
-### `leading_exponent_vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L124)\]
+### `leading_exponent_vector` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1555)\]
 
 leading_exponent_vector(lp) returns the of leading exponent.
 
 - **Signature**: `(%)->JLVector(JLObjInt64)`
 
-### `leading_monomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L120)\]
+### `leading_monomial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1551)\]
 
 leading_monomial(lp) returns the leading monomial.
 
 - **Signature**: `(%)->%`
 
-### `leading_term` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L122)\]
+### `leading_term` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1553)\]
 
 leading_term(lp) returns the leading term.
 
 - **Signature**: `(%)->%`
 
-### `length` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L89)\]
+### `length` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1520)\]
 
 length(p) retruns the number of terms of p.
 
 - **Signature**: `(%)->NonNegativeInteger`
 
-### `mapCoefficients` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L140)\]
+### `mapCoefficients` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1571)\]
 
 mapCoefficients(jmap, p) applies the Julia map jmap to the coefficients of p an returns the modified Laurent polynomial. Use coerce to change the base ring instead of mapCoefficients.
 
 - **Signature**: `(JLObject,%)->%`
 
-### `monomialRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L49)\]
+### `monomialRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1480)\]
 
 monomialRecursive?(p) checks whether or not p is monomial recurisvely (all scalar types).
 
 - **Signature**: `(%)->Boolean`
 
-### `monomials` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L91)\]
+### `monomials` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1522)\]
 
 monomials(p) returns the list of non-zero monomials of p includind its coefficients.
 
 - **Signature**: `(%)->JLVector(%)`
 
-### `nemoMLPPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L150)\]
+### `nemoMLPPrint` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1581)\]
 
 nemoMLPPrint(bool) set the output mode. If set to false, use the FriCAS output mode if possible. Otherwise use the Nemo one (default).
 
 - **Signature**: `(Boolean)->Boolean`
 
-### `numberOfVariables` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L103)\]
+### `numberOfVariables` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1534)\]
 
 numberOfVariables() returns the number of variables.
 
 - **Signature**: `()->JLObject`
 
-### `primitiveMonomials` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L94)\]
+### `primitiveMonomials` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1525)\]
 
 primitiveMonomials(p) returns the list of non-zero primitive monomials of p, i.e. not including its coefficients.
 
 - **Signature**: `(%)->JLVector(%)`
 
-### `symbols` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L101)\]
+### `symbols` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1532)\]
 
 symbols() returns a Julia vector of variables (Julia symbols).
 
 - **Signature**: `()->JLVector(JLObject)`
 
-### `termRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L54)\]
+### `termRecursive?` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1485)\]
 
 termRecursive?(p) checks whether or not p as one term polynomial recursively on all scalar types.
 
 - **Signature**: `(%)->Boolean`
 
-### `variableIndex` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L111)\]
+### `variableIndex` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1542)\]
 
 variableIndex(var) returns the index of the variable var. Julia raises an error if var is not
 
 - **Signature**: `(%)->JLObjInt64`
 
-### `vectorOfTerms` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NMLP.spad#L116)\]
+### `vectorOfTerms` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpoly.spad#L1547)\]
 
 terms(lp) returns the vector of terms.
 

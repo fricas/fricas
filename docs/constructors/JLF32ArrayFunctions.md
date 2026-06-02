@@ -1,6 +1,6 @@
 # JLF32ArrayFunctions
 
-> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF32AF.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Package &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jafunctions.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -39,7 +39,7 @@ This package provides different Julia utility functions for operations using CPU
 
 ## Operations added
 
-### `jlApplyFunction` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF32AF.spad#L18)\]
+### `jlApplyFunction` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jafunctions.spad#L18)\]
 
 jlApplyFunction(func, cvec) returns the output value of func applied to cvec.
 
@@ -89,7 +89,7 @@ jlApplyFunction(func, mat, nr) applies func to the matrix mat, internally a vect
 
 - **Signature**: `(String,JLFloat32Vector,NonNegativeInteger)->Void`
 
-### `jlApplyFunction!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JF32AF.spad#L35)\]
+### `jlApplyFunction!` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jafunctions.spad#L35)\]
 
 jlApplyFunction!(func, cvec1, cvec2) applies the Julia function func to cvec2 and overwrites cvec1 with the result. Please note that overwriting is done by Julia and not FriCAS. See Julia 'copy!' for example.
 

@@ -1,6 +1,6 @@
 # JLObjInt64
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBI64.spad#L1)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L518)\] &nbsp;|&nbsp; **Group**: JL — Native Julia
 
 ## Description
 
@@ -73,13 +73,13 @@ Convenience domain for Julia Int64, objects that are used within Julia, and not 
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBI64.spad#L15)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L532)\]
 
 coerce(i) coerces i to an Integer.
 
 - **Signature**: `(%)->Integer`
 
-### `jint64` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/JOBI64.spad#L17)\]
+### `jint64` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jimobject.spad#L534)\]
 
 jint64(i) returns i as a JLObjInt64.
 

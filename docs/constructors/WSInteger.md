@@ -1,6 +1,6 @@
 # WSInteger
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSINT.spad#L1)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L263)\] &nbsp;|&nbsp; **Group**: WS — Wolfram/MathLink
 
 ## Description
 
@@ -104,50 +104,50 @@ Julia Wolfram Symbolic integers using the MathLink Julia package.
 
 ## Operations added
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSINT.spad#L32)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L294)\]
 
 coerce(z) coerces z.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(%)->WSRational`
 
-### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSINT.spad#L30)\]
+### `factor` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L292)\]
 
 factor(n) returns the WS factorization of n.
 
 - **Signature**: `(%)->WSList(WSList(%))`
 
-### `fibonacci` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSINT.spad#L20)\]
+### `fibonacci` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L282)\]
 
 fibonacci(n) returns the Fibonacci number Fn.
 
 - **Signature**: `(%)->%`
 
-### `hyperFactorial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSINT.spad#L16)\]
+### `hyperFactorial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L278)\]
 
 hyperFactorial(n) computes the hyperfactorial of n.
 
 - **Signature**: `(%)->%`
 
-### `integer` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSINT.spad#L14)\]
+### `integer` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L276)\]
 
 integer(i) returns i as a FriCAS Integer.
 
 - **Signature**: `(%)->Integer`
 
-### `jWSInt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSINT.spad#L36)\]
+### `jWSInt` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L298)\]
 
 jWSInt(int) constructs int as a WSInteger.
 
 - **Signature**: `(Integer)->%`
 
-### `qFactorial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSINT.spad#L18)\]
+### `qFactorial` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L280)\]
 
 qFactorial(x,q) returns the q-analog of factorial of x.
 
 - **Signature**: `(%,%)->%`
 
-### `stirling1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSINT.spad#L22)\]
+### `stirling1` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L284)\]
 
 stirling1(n,m) returns the Stirling number of the first kind from n and m. For example:
 
@@ -158,7 +158,7 @@ stirling1(20 , jWSInt 2)
 
 - **Signature**: `(%,%)->%`
 
-### `stirling2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/WSINT.spad#L26)\]
+### `stirling2` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jws.spad#L288)\]
 
 stirling2(n,m) returns the Stirling number of the second kind from n and m. For example:
 

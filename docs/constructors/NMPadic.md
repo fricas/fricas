@@ -1,6 +1,6 @@
 # NMPadic
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NPADIC.spad#L1)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L191)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -88,40 +88,77 @@ This domain implements the field of p-adic numbers $Q_p$ with precision 64 using
 
 ## Operations added
 
-### `O`
+### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L98)\]
+
+O() returns the default Big-oh from domain parameters.
 
 - **Signature**: `()->%`
 
-### `coerce`
+- **Signature**: `()->%`
+
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L96)\]
+
+coerce(x) coerces x to a p-adic number.
 
 - **Signature**: `(NMInteger)->%`
 
-### `jnpadic`
+- **Signature**: `(NMInteger)->%`
+
+### `jnpadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L100)\]
+
+jnpadic(x) returns x as a p-adic number.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-### `liftQ`
+- **Signature**: `(Integer)->%`
+- **Signature**: `(NMInteger)->%`
+
+### `liftQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L85)\]
+
+liftQ(x) lift x to a Nemo Fraction Nemo Integer.
 
 - **Signature**: `(%)->NMFraction(NMInteger)`
 
-### `liftZ`
+- **Signature**: `(%)->NMFraction(NMInteger)`
+
+### `liftZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L83)\]
+
+liftZ(x) lift x to a Nemo Integer.
 
 - **Signature**: `(%)->NMInteger`
 
-### `moduloP`
+- **Signature**: `(%)->NMInteger`
+
+### `moduloP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L87)\]
+
+moduloP(x) returns a, where x = a + b p.
 
 - **Signature**: `(%)->NMInteger`
 
-### `modulus`
+- **Signature**: `(%)->NMInteger`
+
+### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L94)\]
+
+modulus() returns the value of p.
 
 - **Signature**: `()->Integer`
 
-### `quotientByP`
+- **Signature**: `()->Integer`
+
+### `quotientByP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L89)\]
+
+quotientByP(x) returns b, where x = a + b p.
 
 - **Signature**: `(%)->%`
 
-### `teichmuller`
+- **Signature**: `(%)->%`
+
+### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L91)\]
+
+teichmuller(x) computes the Teichmuller lift of x. The valuation of x must be non negative.
+
+- **Signature**: `(%)->%`
 
 - **Signature**: `(%)->%`
 ---
