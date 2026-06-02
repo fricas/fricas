@@ -73,7 +73,7 @@ bcLinearSolveEqns(htPage, p) ==
     (domainConditions (isDomain PI (PositiveInteger)))
     (inputStrings
       ("Enter the {\em number} of equations:" "" 5 2 numberOfEquations PI))))
-  htMakeDoneButton('"Continue", 'bcLinearSolveEqns1)
+  htMakeDoneButton(page, '"Continue", 'bcLinearSolveEqns1)
   htShowPage1(page)
 
 bcSystemSolve(htPage, p) ==
@@ -82,7 +82,7 @@ bcSystemSolve(htPage, p) ==
     (domainConditions (isDomain PI (PositiveInteger)))
     (inputStrings
       ("Enter the {\em number} of equations:" "" 5 2 numberOfEquations PI))))
-  htMakeDoneButton('"Continue", 'bcSystemSolveEqns1)
+  htMakeDoneButton(page, '"Continue", 'bcSystemSolveEqns1)
   htShowPage1(page)
 
 bcSolveSingle(htPage,p) ==
@@ -171,7 +171,7 @@ bcInputEquations(htPage,solutionMethod) ==
     ['(text . "Enter the unknowns (leave blank if implied):"),
      '(text . "\tab{44}"),
       ['bcStrings, [10, bcMakeUnknowns(numEqs), 'unknowns, 'P]]]))
-  htMakeDoneButton('"Continue", 'bcInputEquationsEnd)
+  htMakeDoneButton(page, '"Continue", 'bcInputEquationsEnd)
   htShowPage1(page)
 
 bcCreateVariableString(i) ==
@@ -220,7 +220,7 @@ bcSolveEquationsNumerically(htPage,p) ==
       (inputStrings
         ("Enter the number of desired {\em digits} of accuracy" ""
           5 20 acc PI))))
-  htMakeDoneButton('"Continue", 'bcSolveNumerically1)
+  htMakeDoneButton(page, '"Continue", 'bcSolveNumerically1)
   htShowPage1(page)
 
 bcSolveNumerically1(htPage) ==

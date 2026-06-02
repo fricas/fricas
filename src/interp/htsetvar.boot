@@ -319,7 +319,7 @@ htShowIntegerPage(htPage, setData) ==
   ht_add_to_page(page, [
     '(domainConditions (Satisfies S chkRange)),
       ['bcStrings, [5, eval(setData.setVar), 'value, 'S]]])
-  htMakeDoneButton('"Select to Set Value", 'htSetInteger)
+  htMakeDoneButton(page, '"Select to Set Value", 'htSetInteger)
   htShowPage1(page)
 
 htSetInteger(htPage) ==
@@ -357,7 +357,7 @@ htShowFunctionPageContinued2(htPage, setData, cval, checker, phrase,
       ['text,:phrase],
         ['inputStrings,
           [ '"", '"", 60, cval, 'value, 'S]]])
-  htMakeDoneButton('"Select To Set Value", fun_to_call)
+  htMakeDoneButton(page, '"Select to Set Value", fun_to_call)
   htShowPage1(page)
 
 htFunctionSetLiteral(htPage, val) ==
@@ -583,7 +583,7 @@ htCacheAddChoice htPage ==
       ['inputStrings,
         [STRCONC('"Function {\em ", name, '"} will cache"),
           '"values", 5, 10, htMakeLabel('"c", i), 'ALLPI]]])
-  htMakeDoneButton('"Select to Set Values", 'htCacheSet)
+  htMakeDoneButton(page, '"Select to Set Values", 'htCacheSet)
   htShowPage1(page)
 
 htMakeLabel(prefix,i) == INTERN STRCONC(prefix,stringize i)
@@ -635,5 +635,5 @@ htCacheOne names ==
     (inputStrings
       ("Enter {\em all} or a positive integer:"
        "" 5 10 c1 ALLPI))))
-  htMakeDoneButton('"Select to Set Value", 'htCacheSet)
+  htMakeDoneButton(page, '"Select to Set Value", 'htCacheSet)
   htShowPage1(page)
