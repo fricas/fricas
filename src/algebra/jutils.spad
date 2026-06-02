@@ -101,7 +101,7 @@ JLUtilityFunctions() : Exports == Implementation where
     import from JLObject
 
     jlInitialize(true)
-    
+
     defined?(func) ==>
       not jlDefined?(func) =>
         error concat(string(func), " is not defined in Julia")
@@ -174,12 +174,12 @@ JLStringUtilities() : Exports == Implementation where
     NNI  ==> NonNegativeInteger
     Exports ==> with
         jlMessageStyled : String -> Void
-        ++ jlMessageStyled(message) prints the message with formatted 
+        ++ jlMessageStyled(message) prints the message with formatted
         ++ style within braces (I am {red:here}).
         ++ For example:
         ++ \example{jlMessageStyled("{red:■} {green:■} {yellow:■} {blue:■} {magenta:■} {cyan:■}")}
         jlMessageStyled : (String, JLSymbol) -> Void
-        ++ jlMessageStyled(message, color) prints the message with formatted 
+        ++ jlMessageStyled(message, color) prints the message with formatted
         ++ `color` (english color).
         ++ For example:
         ++ \example{jlMessageStyled("I AM HERE!!!", "red")}
@@ -249,7 +249,7 @@ JLStringUtilities() : Exports == Implementation where
             error "The Julia package StyledStrings must be installed"
         if not jlUsing "Latexify" then
             jlMessageStyled("The Julia package Latexify should be installed. " _
-                "You will not be able to latexify a string (jlToLatex).\n\n", jsym "green")        
+                "You will not be able to latexify a string (jlToLatex).\n\n", jsym "green")
         jlRegex(s) == concat ["r_"", s, "_""]
         jlSubstitute(s) == concat ["s_"", s, "_""]
         jlLatex(s) == concat ["L_"", s, "_""]
@@ -263,20 +263,20 @@ JLStringUtilities() : Exports == Implementation where
         jlToLatex(str) ==
             string(jlref(concat(["latexify(", jlString(str), ").s"]))$JLObject)
 
-        jlSplit(str, delims, n) == 
+        jlSplit(str, delims, n) ==
             resl : List(String) := []
             if #delims = 1 or (delims.1 ~= char("r") and delims.2 ~= char"_"") then
                 delims := jlRegex delims
             estr : String :=
-                concat(["splt=split(_"", str, "_", ", delims, ", limit=", 
+                concat(["splt=split(_"", str, "_", ", delims, ", limit=",
                     string(n), ");"])
             jlEvalString(estr)@Void
             n_items: Integer := jlEvalString("length(splt)")
             for i in 1..n_items repeat
-                estr := concat(["string(if((ret=splt[", string(i), 
+                estr := concat(["string(if((ret=splt[", string(i),
                     "])===nothing) _"_" else ret end)"])
                 resl := concat!(resl, jlEvalString(estr)@String)
-            jlEvalString("splt=nothing")@Void     
+            jlEvalString("splt=nothing")@Void
             resl
 
         jlSplit(str, delims) == jlSplit(str, delims, 0)
@@ -299,10 +299,10 @@ JLStringUtilities() : Exports == Implementation where
             jlEvalString(estr)@Void
             n_caps := jlEvalString("size(reg.captures,1)")@Integer
             for i in 1..n_caps repeat
-                estr := concat(["string(if((ret=reg.captures[", string(i), 
+                estr := concat(["string(if((ret=reg.captures[", string(i),
                     "])===nothing) _"_" else ret end)"])
-                resl := concat!(resl, jlEvalString(estr)@String)   
-            jlEvalString("reg=nothing")@Void    
+                resl := concat!(resl, jlEvalString(estr)@String)
+            jlEvalString("reg=nothing")@Void
             resl
 
         jlRegexMatch(s : String, r : String) : StringTable(String) ==
@@ -508,11 +508,11 @@ JLObjDynamicLinker() : Exports == Implementation where
             xtype := string jlType x
             ytype := string jlType y
             ztype := string jlType z
-            jlref(concat ["ccall(", getind(func), 
+            jlref(concat ["ccall(", getind(func),
                 ",", xtype, ",(", xtype, ",", ytype, "," , ztype, "),",
                     getind(x), ",", getind(y), ",", getind(z), ")"])
         jlDlCApply(func, type, x, xtype,  y, ytype, z, ztype) ==
-            jlref(concat ["ccall(", getind(func), 
+            jlref(concat ["ccall(", getind(func),
                 ",", type, ",(", xtype, ",", ytype, "," , ztype, "),",
                     getind(x), ",", getind(y), ",", getind(z), ")"])
         jlDlOpen(library) ==
@@ -528,7 +528,7 @@ JLObjDynamicLinker() : Exports == Implementation where
             if throw then
                 jlref(concat(["Libdl.dlopen(_"", library, "_", ", getind(flags), ")"]))
             else
-                jlref(concat(["Libdl.dlopen(_"", library, "_", ", 
+                jlref(concat(["Libdl.dlopen(_"", library, "_", ",
                     getind(flags), ", throw_error=false)"]))
         jlDlClose(library) ==
             jlEvalString(concat ["Libdl.dlclose(", getind(library), ")"])@Boolean

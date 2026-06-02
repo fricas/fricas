@@ -1,6 +1,6 @@
 # NMQadic
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L320)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L321)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -65,12 +65,12 @@ This domain implements unramified extensions of p-adic numbers $Q_p$ of degree 1
  ?rem? : (%, %) -> %                                    rightPower : (%, PositiveInteger) -> %
  rightPower : (%, NonNegativeInteger) -> %              rightRecip : % -> Union(%,"failed")
  sample : () -> %                                       sizeLess? : (%, %) -> Boolean
- sqrt : % -> %                                          squareFree : % -> Factored(%)
- squareFreePart : % -> %                                string : % -> String
- subtractIfCan : (%, %) -> Union(%,"failed")            teichmuller : % -> %
- unit? : % -> Boolean                                   unitCanonical : % -> %
- valuation : % -> JLObjInt64                            zero? : % -> Boolean
- ?~=? : (%, %) -> Boolean
+ sqrt : % -> %                                          square? : % -> Boolean
+ squareFree : % -> Factored(%)                          squareFreePart : % -> %
+ string : % -> String                                   subtractIfCan : (%, %) -> Union(%,"failed")
+ teichmuller : % -> %                                   unit? : % -> Boolean
+ unitCanonical : % -> %                                 valuation : % -> JLObjInt64
+ zero? : % -> Boolean                                   ?~=? : (%, %) -> Boolean
  ?*? : (Fraction(Integer), %) -> % if % has CHARZ
  ?*? : (%, Fraction(Integer)) -> % if % has CHARZ
  coerce : Fraction(Integer) -> % if % has CHARZ
@@ -87,38 +87,38 @@ This domain implements unramified extensions of p-adic numbers $Q_p$ of degree 1
 
 ## Operations added
 
-### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L237)\]
+### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L238)\]
 
 O() returns the default Big-oh from domain parameters.
 
 - **Signature**: `()->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L234)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L235)\]
 
 coerce(x) coerces x as an unramified extension of p-adics.
 
 - **Signature**: `(NMInteger)->%`
 
-### `frobenius` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L229)\]
+### `frobenius` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L230)\]
 
 frobenius(x,i) returns the image of the i-th power of Frobenius of x.
 
 - **Signature**: `(%,Integer)->%`
 
-### `jnqadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L239)\]
+### `jnqadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L240)\]
 
 jnqadic(x) returns x as an unramified extension of p-adics.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L232)\]
+### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L233)\]
 
 modulus() returns the value of p.
 
 - **Signature**: `()->Integer`
 
-### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L226)\]
+### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L227)\]
 
 teichmuller(x) computes the Teichmuller lift of x. The valuation of x must be non negative.
 

@@ -320,13 +320,13 @@ NMUnivariatePolynomial(R : NMRing, x : Symbol):
         collect(coefficients(",getind(p),")))-1"]))@NNI
     leadingTerm(p) ==
       ind := getind(p)
-      deg : NNI := parsei(string jlref(concat ["degree(", ind,")"])) 
+      deg : NNI := parsei(string jlref(concat ["degree(", ind,")"]))
       [deg, jlref(concat ["leading_coefficient(", ind,")"])$R]
     listOfTerms(p) ==
       ind := getind(p)
-      v : JLVector(R) := jlref(concat ["reverse(collect(coefficients(",ind, ")))"]) 
+      v : JLVector(R) := jlref(concat ["reverse(collect(coefficients(",ind, ")))"])
       ret : List(Record(k:NNI, c:R)) := []
-      for i in 0..(#v-1) repeat 
+      for i in 0..(#v-1) repeat
         if not zero?(coef := qelt(v,i+1)) then
           ret := concat(ret, [(#v-i-1) pretend NNI, coef])
       ret
@@ -590,13 +590,13 @@ NMUnivariateLaurentPolynomial(R : NMRing, x : Symbol):
       jlEvalString(concat [getind(p), ".mindeg"])
     --leadingTerm(p) ==
     --  ind := getind(p)
-    --  deg : NNI := parsei(string jlref(concat ["degree(", ind,")"])) 
+    --  deg : NNI := parsei(string jlref(concat ["degree(", ind,")"]))
     --  [deg, jlref(concat ["leading_coefficient(", ind,")"])$R]
     --listOfTerms(p) ==
     --  ind := getind(p)
-    --  v : JLVector(R) := jlref(concat ["reverse(collect(coefficients(",ind, ")))"]) 
+    --  v : JLVector(R) := jlref(concat ["reverse(collect(coefficients(",ind, ")))"])
     --  ret : List(Record(k:NNI, c:R)) := []
-    --  for i in 0..(#v-1) repeat 
+    --  for i in 0..(#v-1) repeat
     --    if not zero?(coef := qelt(v,i+1)) then
     --      ret := concat(ret, [(#v-i-1) pretend NNI, coef])
     --  ret
@@ -653,7 +653,7 @@ InnerNMPolynomial(R : NMRing, Ordering : JLSymbol) : Exports == Implementation w
   PI        ==> PositiveInteger
   NNI       ==> NonNegativeInteger
   parsei    ==> PARSE_-INTEGER$Lisp
-  Exports ==> Join(NMCommutativeRing, PolynomialCategory(R, 
+  Exports ==> Join(NMCommutativeRing, PolynomialCategory(R,
                   IndexedExponents(Symbol), Symbol)) with
     constant? : % -> Boolean
     ++ constant?(p) checks whether or not p is a constant polynomial.
@@ -677,13 +677,13 @@ InnerNMPolynomial(R : NMRing, Ordering : JLSymbol) : Exports == Implementation w
       ++ number q (Fraction(Integer))
       "*" : (%, Fraction(Integer)) -> %
       ++ p * q is the product of p with a rational
-      ++ number q (Fraction(Integer)) 
+      ++ number q (Fraction(Integer))
       "+" : (Fraction(Integer), %) -> %
       ++ q + p is the sum of a p with a rational
       ++ number q (Fraction(Integer))
       "*" : (Fraction(Integer), %) -> %
       ++ q * p is the product of p with a rational
-      ++ q (Fraction(Integer)) 
+      ++ q (Fraction(Integer))
     "*"      : (%, PositiveInteger) -> %
     ++ * is the positive integer multiplication.
     "*"      : (%, NonNegativeInteger) -> %
@@ -736,7 +736,7 @@ InnerNMPolynomial(R : NMRing, Ordering : JLSymbol) : Exports == Implementation w
     -- Our Nemo Ring
     NUNPRing := jlRegexReplace(concat("NUPOLY", FORMAT(false, "~a", tmp)$Lisp),
       jlRegex("[(|)|\s]"), jlSubstitute(""))
- 
+
     getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
     junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
     jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
@@ -834,7 +834,7 @@ InnerNMPolynomial(R : NMRing, Ordering : JLSymbol) : Exports == Implementation w
     --mainVariable(p : %) ==
     --  jlEvalString(concat(["is_constant(", getind(p),")"]))@Boolean
     --    => "failed"
-    --  sym : String := jlEvalString(concat ["string(vars(",getind(p),")[1])"])  
+    --  sym : String := jlEvalString(concat ["string(vars(",getind(p),")[1])"])
     --  variable(sym::Symbol)$OrderedVariableList(VarSet)
     variables(p) ==
       l : List(Symbol) := []
@@ -859,7 +859,7 @@ InnerNMPolynomial(R : NMRing, Ordering : JLSymbol) : Exports == Implementation w
       jlref(concat ["constant_coefficient(", getind(p),")"])$R
     monomials(p) : List(%) ==
       vmon := jlref(concat ["collect(terms(", getind(p),"))"])$JLVector(%)
-      l : List(%) := [] 
+      l : List(%) := []
       for i in 1..#vmon repeat
         l := concat(l, vmon.i)
       l
@@ -867,7 +867,7 @@ InnerNMPolynomial(R : NMRing, Ordering : JLSymbol) : Exports == Implementation w
       jlref(concat ["collect(terms(", getind(p),"))"])$JLVector(%)
     primitiveMonomials(p) : List(%) ==
       terms := jlref(concat ["collect(monomials(", getind(p),"))"])$JLVector(%)
-      l : List(%) := [] 
+      l : List(%) := []
       for i in 1..#terms repeat
         l := concat(l, terms.i)
       l
@@ -875,7 +875,7 @@ InnerNMPolynomial(R : NMRing, Ordering : JLSymbol) : Exports == Implementation w
     primitiveMonomials(p) : JLVector(%) ==
       jlref(concat ["collect(monomials(", getind(p),"))"])$JLVector(%)
 
-    --leadingTerm(p) == 
+    --leadingTerm(p) ==
     --  tp : JLObject := junfunc("leading_term", p)
     --  ind := getind(tp)
     --  coef := jlref(concat ["coeff(", ind,",1)"])$R
@@ -890,11 +890,11 @@ InnerNMPolynomial(R : NMRing, Ordering : JLSymbol) : Exports == Implementation w
     --  [construct(res)$IndexedExponents(OrderedVariableList(VarSet)), coef]
 
     -- TODO: Iterators
-    vectorOfTerms(p) == 
+    vectorOfTerms(p) ==
       jlref(concat ["collect(terms(", getind(p),"))"])
 
     -- TODO: extremely expensive
-    listOfTerms(p) == 
+    listOfTerms(p) ==
       v : JLVector(%) := jlref(concat ["collect(terms(", getind(p),"))"])
       ret : List(Record(k: IndexedExponents(Symbol), c: R)) := []
       for i in 1..#v repeat
@@ -940,7 +940,7 @@ InnerNMPolynomial(R : NMRing, Ordering : JLSymbol) : Exports == Implementation w
     degree(p : %, index : PI) ==
       jlEvalString(concat(["degree(", getind(p),",", string(index),")"]))@NNI
 
-    -- unitCanonical(p) == junfunc("canonical_unit", p) -- The Nemo one 
+    -- unitCanonical(p) == junfunc("canonical_unit", p) -- The Nemo one
     recip(p) ==
       unit?(p) => p
       "failed"
@@ -1037,7 +1037,7 @@ InnerNMMultivariatePolynomial(R : NMRing, VarSet : List Symbol,
   PI        ==> PositiveInteger
   NNI       ==> NonNegativeInteger
   parsei    ==> PARSE_-INTEGER$Lisp
-  Exports ==> Join(NMCommutativeRing, PolynomialCategory(R, 
+  Exports ==> Join(NMCommutativeRing, PolynomialCategory(R,
                   IndexedExponents(OrderedVariableList(VarSet)),
                     OrderedVariableList(VarSet))) with
     constant? : % -> Boolean
@@ -1062,13 +1062,13 @@ InnerNMMultivariatePolynomial(R : NMRing, VarSet : List Symbol,
       ++ number q (Fraction(Integer))
       "*" : (%, Fraction(Integer)) -> %
       ++ p * q is the product of p with a rational
-      ++ number q (Fraction(Integer)) 
+      ++ number q (Fraction(Integer))
       "+" : (Fraction(Integer), %) -> %
       ++ q + p is the sum of a p with a rational
       ++ number q (Fraction(Integer))
       "*" : (Fraction(Integer), %) -> %
       ++ q * p is the product of p with a rational
-      ++ q (Fraction(Intger)) 
+      ++ q (Fraction(Intger))
     "*"      : (%, PositiveInteger) -> %
     ++ * is the positive integer multiplication.
     "*"      : (%, NonNegativeInteger) -> %
@@ -1137,15 +1137,15 @@ InnerNMMultivariatePolynomial(R : NMRing, VarSet : List Symbol,
 
     -- Check VarSet (TODO: reflect SMP)
     #VarSet ~= #removeDuplicates(VarSet) =>
-      error "Duplicate symbols in NMMultivariatePolynomial constructor" 
+      error "Duplicate symbols in NMMultivariatePolynomial constructor"
 
-    -- List of double-quoted vars     
+    -- List of double-quoted vars
     lvars := map(v +-> string(v), VarSet)$ListFunctions2(Symbol, String)
     -- vars for polynomial_ring() arguments
     jvars := first lines formatExpression(lvars::OutputForm)$Format1D
-    
+
     -- Our Julia ring
-    
+
     NMPRing := concat([NMPRing, concat(lvars)])
 
     getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
@@ -1245,7 +1245,7 @@ InnerNMMultivariatePolynomial(R : NMRing, VarSet : List Symbol,
     mainVariable(p : %) ==
       jlEvalString(concat(["is_constant(", getind(p),")"]))@Boolean
         => "failed"
-      sym : String := jlEvalString(concat ["string(vars(",getind(p),")[1])"])  
+      sym : String := jlEvalString(concat ["string(vars(",getind(p),")[1])"])
       variable(sym::Symbol)$OrderedVariableList(VarSet)
     variables(p) == enumerate()$OrderedVariableList(VarSet)
     length(p) == jlEvalString(concat(["length(", getind(p),")"]))
@@ -1269,7 +1269,7 @@ InnerNMMultivariatePolynomial(R : NMRing, VarSet : List Symbol,
       jlref(concat ["constant_coefficient(", getind(p),")"])$R
     monomials(p) : List(%) ==
       vmon := jlref(concat ["collect(terms(", getind(p),"))"])$JLVector(%)
-      l : List(%) := [] 
+      l : List(%) := []
       for i in 1..#vmon repeat
         l := concat(l, vmon.i)
       l
@@ -1277,15 +1277,15 @@ InnerNMMultivariatePolynomial(R : NMRing, VarSet : List Symbol,
       jlref(concat ["collect(terms(", getind(p),"))"])$JLVector(%)
     primitiveMonomials(p) : List(%) ==
       terms := jlref(concat ["collect(monomials(", getind(p),"))"])$JLVector(%)
-      l : List(%) := [] 
+      l : List(%) := []
       for i in 1..#terms repeat
         l := concat(l, terms.i)
       l
     -- TODO to FriCAS array returns
     primitiveMonomials(p) : JLVector(%) ==
       jlref(concat ["collect(monomials(", getind(p),"))"])$JLVector(%)
-  
-    leadingTerm(p) == 
+
+    leadingTerm(p) ==
       tp : JLObject := junfunc("leading_term", p)
       ind := getind(tp)
       coef := jlref(concat ["coeff(", ind,",1)"])$R
@@ -1301,10 +1301,10 @@ InnerNMMultivariatePolynomial(R : NMRing, VarSet : List Symbol,
       [construct(res)$IndexedExponents(OrderedVariableList(VarSet)), coef]
 
     -- TODO: Iterators
-    vectorOfTerms(p) == 
+    vectorOfTerms(p) ==
       jlref(concat ["collect(terms(", getind(p),"))"])
 
-    listOfTerms(p) == 
+    listOfTerms(p) ==
       v : JLVector(%) := jlref(concat ["collect(terms(", getind(p),"))"])
       ret : List(Record(k: IndexedExponents(OrderedVariableList(VarSet)),c: R)) := []
       for i in 1..#v repeat
@@ -1358,7 +1358,7 @@ InnerNMMultivariatePolynomial(R : NMRing, VarSet : List Symbol,
     leading_monomial(p) == junfunc("leading_monomial", p)
     leading_exponent_vector(p) == junfunc("leading_exponent_vector", p)
 
-    -- unitCanonical(p) == junfunc("canonical_unit", p) -- The Nemo one 
+    -- unitCanonical(p) == junfunc("canonical_unit", p) -- The Nemo one
     recip(p) ==
       unit?(p) => p
       "failed"
@@ -1430,7 +1430,7 @@ NMMultivariatePolynomial(R : NMRing, VarSet : List Symbol) ==
           InnerNMMultivariatePolynomial(R, VarSet, coerce("lex")@JLSymbol)
 
 )abbrev domain NMLP NMMultivariateLaurentPolynomial
-++ Multivariate laurent polynomial domain using Julia AbstractAlgebra package 
+++ Multivariate laurent polynomial domain using Julia AbstractAlgebra package
 ++ Author: G. Vanuxem
 ++ Basic Functions: degree, eval, coefficient, monomial, differentiate,
 ++ resultant, gcd
@@ -1470,7 +1470,7 @@ NMMultivariateLaurentPolynomial(R : NMRing,
   PI        ==> PositiveInteger
   NNI       ==> NonNegativeInteger
   parsei    ==> PARSE_-INTEGER$Lisp
-  Exports ==> Join(NMCommutativeRing, PolynomialCategory(R, 
+  Exports ==> Join(NMCommutativeRing, PolynomialCategory(R,
                   IndexedExponents(OrderedVariableList(VarSet)),
                     OrderedVariableList(VarSet))) with
     --constant? : % -> Boolean
@@ -1495,13 +1495,13 @@ NMMultivariateLaurentPolynomial(R : NMRing,
       ++ number q (Fraction(Integer))
       "*" : (%, Fraction(Integer)) -> %
       ++ p * q is the product of p with a rational
-      ++ number q (Fraction(Integer)) 
+      ++ number q (Fraction(Integer))
       "+" : (Fraction(Integer), %) -> %
       ++ q + p is the sum of a p with a rational
       ++ number q (Fraction(Integer))
       "*" : (Fraction(Integer), %) -> %
       ++ q * p is the product of p with a rational
-      ++ q (Fraction(Intger)) 
+      ++ q (Fraction(Intger))
     "*"      : (%, PositiveInteger) -> %
     ++ * is the positive integer multiplication.
     "*"      : (%, NonNegativeInteger) -> %
@@ -1541,7 +1541,7 @@ NMMultivariateLaurentPolynomial(R : NMRing,
     ++ gen?(lp) checks whether or not lp is a generator.
     variableIndex : % -> JLObjInt64
     ++ variableIndex(var) returns the index of the variable var.
-    ++ Julia raises an error if var is not  
+    ++ Julia raises an error if var is not
     coefficients : % -> JLVector(R)
     ++ coefficients(p) returns a Julia vector of coefficients of p.
     vectorOfTerms : % -> JLVector(%)
@@ -1600,13 +1600,13 @@ NMMultivariateLaurentPolynomial(R : NMRing,
 
     -- Check VarSet (TODO: reflect SMP)
     #VarSet ~= #removeDuplicates(VarSet) =>
-      error "Duplicate symbols in NMMultivariateLaurentPolynomial constructor" 
-     
-    -- List of double-quoted vars     
+      error "Duplicate symbols in NMMultivariateLaurentPolynomial constructor"
+
+    -- List of double-quoted vars
     lvars := map(v +-> string(v), VarSet)$ListFunctions2(Symbol, String)
     -- vars for polynomial_ring() arguments
     jvars := first lines formatExpression(lvars::OutputForm)$Format1D
-    
+
     -- Our Julia ring
     NMLPRing := concat([NMLPRing, concat(lvars)])
 
@@ -1736,7 +1736,7 @@ NMMultivariateLaurentPolynomial(R : NMRing,
     --mainVariable(p : %) ==
     --  jlEvalString(concat(["is_constant(", getind(p),")"]))@Boolean
     --    => "failed"
-    --  sym : String := jlEvalString(concat ["string(vars(",getind(p),")[1])"])  
+    --  sym : String := jlEvalString(concat ["string(vars(",getind(p),")[1])"])
     --  variable(sym::Symbol)$OrderedVariableList(VarSet)
     variables(p) == enumerate()$OrderedVariableList(VarSet)
     length(p) == jlEvalString(concat(["length(", getind(p),")"]))
@@ -1749,7 +1749,7 @@ NMMultivariateLaurentPolynomial(R : NMRing,
       jlref(concat ["constant_coefficient(", getind(p),")"])$R
     monomials(p) : List(%) ==
       vmon := jlref(concat ["collect(terms(", getind(p),"))"])$JLVector(%)
-      l : List(%) := [] 
+      l : List(%) := []
       for i in 1..#vmon repeat
         l := concat(l, vmon.i)
       l
@@ -1757,7 +1757,7 @@ NMMultivariateLaurentPolynomial(R : NMRing,
       jlref(concat ["collect(terms(", getind(p),"))"])$JLVector(%)
     primitiveMonomials(p) : List(%) ==
       terms  := jlref(concat ["collect(monomials(", getind(p),"))"])$JLVector(%)
-      l : List(%) := [] 
+      l : List(%) := []
       for i in 1..#terms repeat
         l := concat(l, terms.i)
       l
@@ -1779,7 +1779,7 @@ NMMultivariateLaurentPolynomial(R : NMRing,
           [coerce(variable(coerce(sym)$Symbol)$OrderedVariableList(VarSet))@OrderedVariableList(VarSet),
             exp]$Record(k:OrderedVariableList(VarSet),c:NNI))
       [construct(res)$IndexedExponents(OrderedVariableList(VarSet)), coef]
-    --listOfTerms(p) == 
+    --listOfTerms(p) ==
     --  v : JLVector(%) := jlref(concat ["collect(terms(", getind(p),"))"])
     --  ret : List(Record(k: IndexedExponents(OrderedVariableList(VarSet)),c: R)) := []
     --  for i in 1..#v repeat
@@ -1822,7 +1822,7 @@ NMMultivariateLaurentPolynomial(R : NMRing,
     --degree(p : %, index : PI) ==
     --  jlEvalString(concat(["degree(", getind(p),",", string(index),")"]))@NNI
 
-    -- unitCanonical(p) == junfunc("canonical_unit", p) -- The Nemo one 
+    -- unitCanonical(p) == junfunc("canonical_unit", p) -- The Nemo one
 
     if R has DivisionRing then
       recip(p) ==

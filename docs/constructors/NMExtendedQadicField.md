@@ -1,6 +1,6 @@
 # NMExtendedQadicField
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L335)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L336)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -65,11 +65,12 @@ This domain implements unramified extensions of $K = Q_p[X]/(f)$ using the polyn
  rightPower : (%, PositiveInteger) -> %                 rightPower : (%, NonNegativeInteger) -> %
  rightRecip : % -> Union(%,"failed")                    sample : () -> %
  sizeLess? : (%, %) -> Boolean                          sqrt : % -> %
- squareFree : % -> Factored(%)                          squareFreePart : % -> %
- string : % -> String                                   subtractIfCan : (%, %) -> Union(%,"failed")
- teichmuller : % -> %                                   unit? : % -> Boolean
- unitCanonical : % -> %                                 valuation : % -> JLObjInt64
- zero? : % -> Boolean                                   ?~=? : (%, %) -> Boolean
+ square? : % -> Boolean                                 squareFree : % -> Factored(%)
+ squareFreePart : % -> %                                string : % -> String
+ subtractIfCan : (%, %) -> Union(%,"failed")            teichmuller : % -> %
+ unit? : % -> Boolean                                   unitCanonical : % -> %
+ valuation : % -> JLObjInt64                            zero? : % -> Boolean
+ ?~=? : (%, %) -> Boolean
  ?*? : (Fraction(Integer), %) -> % if % has CHARZ
  ?*? : (%, Fraction(Integer)) -> % if % has CHARZ
  coerce : Fraction(Integer) -> % if % has CHARZ

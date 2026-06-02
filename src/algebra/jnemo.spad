@@ -17,9 +17,9 @@ NMType() : Category == JLObjectType
 ++ Description:
 ++  Parent category of Nemo ring domains.
 NMRing() : Category == Join(NMType, JLObjectRing) with
-      exact? : % -> Boolean 
+      exact? : % -> Boolean
       ++ exact?(x) checks whether or not x is exact.
-      unit? : % -> Boolean 
+      unit? : % -> Boolean
       ++ unit?(x) checks whether or not x is a unit, i.e. invertible.
       equal? : (% , %) -> Boolean
       ++ equal?(x,y) checks whether or not x and y are equal.
@@ -41,7 +41,7 @@ NMRing() : Category == Join(NMType, JLObjectRing) with
       junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
       jbinbfunc(op,a,b) ==> jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
       exact?(x) == junbfunc("is_exact_type",x)
-      unit?(x) == junbfunc("is_unit",x)      
+      unit?(x) == junbfunc("is_unit",x)
       equal?(x,y) == jbinbfunc("==",x,y)
       exactDivide(x,y) == jbinfunc("divexact",x,y)
 
@@ -144,7 +144,7 @@ NMInteger() : Exports == Implementation where
     length(x) == coerce(jlEvalString(concat(["nbits(", getind(x),")"]))@Integer)
     shift(a, sh) ==
       zero? sh => a
-      sh > 0 => jlref(concat(["<<(", getind(a), ",", string(sh), ")"])) 
+      sh > 0 => jlref(concat(["<<(", getind(a), ",", string(sh), ")"]))
       jlref(concat([">>(", getind(a), ",", string(abs sh), ")"]))
 
     addmod(a, b, p) ==
@@ -172,7 +172,7 @@ NMInteger() : Exports == Implementation where
 
     -- x quo y == jbinfunc("div", x, y)
     x quo y == jbinfunc("÷", x, y)
-    x rem y == jbinfunc("%", x, y)    
+    x rem y == jbinfunc("%", x, y)
     gcd(a,b) == jbinfunc("gcd",a,b)
     lcm(a,b) == jbinfunc("lcm",a,b)
     (p1:% exquo p2:%): Union(%,"failed") ==
@@ -187,10 +187,10 @@ NMInteger() : Exports == Implementation where
 
     convert(i) : JLObjBigInt == jlref(concat ["BigInt(", getind(i), ")"])
     coerce(jsi : %) : JI64 ==
-      ret : Integer := parsei string jsi 
+      ret : Integer := parsei string jsi
       (ret <= convert(max())@Integer) and (ret >= convert(min())@Integer) =>
         ret pretend JI64
-      error "Integer too large to represent in a machine word"    
+      error "Integer too large to represent in a machine word"
     coerce(i : JI64) : % == jlref(concat(["ZZ(", convert(i), ")"]))
     coerce(i : Integer) == jlref(concat(["ZZ(", string(i), ")"]))
     convert(x : %) : Integer  == parsei(string x)
@@ -376,7 +376,7 @@ NMAlgebraicNumber() : Exports == Implementation where
       inp := parse(string p)$InputForm
       interpret(inp)$InputFormFunctions1(UP)
         pretend SparseUnivariatePolynomial(%)
-  
+
     minimalPolynomial(an) : SparseUnivariatePolynomial(Z) ==
       AN  := NMAlgebraicNumber
       sym : Symbol := coerce jlRandomString(8)
@@ -462,9 +462,9 @@ NMAlgebraicNumber() : Exports == Implementation where
     --  res : String := ""
     --  for t in ts repeat
     --    termStr : String := concat(["(", getind(t.c), ")*x^", string(t.k)])
-    --    if res = "" then 
+    --    if res = "" then
     --      res := termStr
-    --    else 
+    --    else
     --      res := concat([res, "+", termStr])
     --  res
 
@@ -526,7 +526,7 @@ NMAlgebraicNumber() : Exports == Implementation where
     retract(x : %) : NMInteger ==
       junfunc("ZZRingElem", x)
     retract(x : %) : Fraction Integer ==
-      retract(junfunc("QQFieldElem",x) pretend NMFraction(NMInteger)) 
+      retract(junfunc("QQFieldElem",x) pretend NMFraction(NMInteger))
     retract(x : %) : NMFraction(NMInteger) ==
       junfunc("QQFieldElem", x) pretend NMFraction(NMInteger)
 
@@ -663,7 +663,7 @@ NMPrimeField(p : PositiveInteger) : Exports == Implementation where
     ++ quadraticNonResidue() computes the smallest non negative integer,
     ++ which represents a quadratic non residue.
     coerce : Integer -> %
-    ++ coerce(i) coerces i as a NMPrimeField element. 
+    ++ coerce(i) coerces i as a NMPrimeField element.
     coerce : NMInteger -> %
     ++ coerce(i) coerces i as a NMPrimeField element.
     jnpf : Integer -> %
@@ -863,11 +863,11 @@ NMFiniteField(p : PositiveInteger, n: PositiveInteger) : Exports == Implementati
     jlObject() == jlEvalString(concat(["string(", NFF,")"]))@String
 
     0 == jlref(concat(["zero(", NFF,")"]))
-    1 == jlref(concat(["one(", NFF,")"]))    
+    1 == jlref(concat(["one(", NFF,")"]))
 
     generator? x == junbfunc("is_gen",x)
     absolute? ==
-      jlEvalString(concat(["is_absolute(", NFF,")"]))@Boolean   
+      jlEvalString(concat(["is_absolute(", NFF,")"]))@Boolean
 
     x : % * y : NMInteger == jbinfunc("*", x, y)
     x : % * y : Integer == jlref(concat [getind(x), "*", string(y)])
@@ -901,7 +901,7 @@ NMFiniteField(p : PositiveInteger, n: PositiveInteger) : Exports == Implementati
     coordinates(x : %) : Vector(NMPrimeField(p)) ==
       new(1, x pretend NMPrimeField(p))
     represents(v)  == v(1) pretend %
-    
+
     retract(x) == x pretend NMPrimeField(p)
     retractIfCan(x) == x pretend NMPrimeField(p)
 
@@ -949,7 +949,7 @@ InnerNMExactCalciumField(Options : JLObjDict) : Exports ==
   Exports ==> Join(NMField, OrderedSet, RadicalCategory,
             ComplexCategory(%), TranscendentalFunctionCategory) with
     real? : % -> Boolean
-    ++ real?(z) checks whether or not z is a real number. 
+    ++ real?(z) checks whether or not z is a real number.
     integer? : % -> Boolean
     ++ integer?(z) checks whether or not z is an integer.
     algebraic? : % -> Boolean
@@ -986,7 +986,7 @@ InnerNMExactCalciumField(Options : JLObjDict) : Exports ==
     negativeInfinity : () -> %
     ++ negativeInfinity() returns negative infinity.
     infinity : % -> %
-    ++ infinity(x) returns signed infinity depending on x sign. 
+    ++ infinity(x) returns signed infinity depending on x sign.
     unknown : () -> %
     ++ unknown() returns the unknown special value.
     undefined : () -> %
@@ -1013,7 +1013,7 @@ InnerNMExactCalciumField(Options : JLObjDict) : Exports ==
     ++ pow(x, i, repr) x raised to power i using one of the repr representations:
     ++ :default (since 'default' is a FriCAS keyword use jsym(String) to coerce it)
     ++ :arithmetic
-    ++ See the Nemo documentation for more information, 
+    ++ See the Nemo documentation for more information,
     ++ and InnerNMExactCalciumField for more options.
     sin : (%, JLSymbol) -> %
     ++ sin(x, repr) returns sin(x) using one of the repr representations:
@@ -1050,7 +1050,7 @@ InnerNMExactCalciumField(Options : JLObjDict) : Exports ==
     ++ :logarithm
     ++ :direct
     Gamma : % -> %
-    ++ Gamma(x) is the Euler Gamma function evaluated at x. 
+    ++ Gamma(x) is the Euler Gamma function evaluated at x.
     erf : % -> %
     ++ erf(x) is the error function evaluated at x.
     erfi : % -> %
@@ -1152,7 +1152,7 @@ InnerNMExactCalciumField(Options : JLObjDict) : Exports ==
       jlEvalString(concat [getind(x),"==",getind(y)])@Boolean
     x ~= y ==
       jlEvalString(concat [getind(x),"!=",getind(y)])@Boolean
-    imaginary() == jlref(concat ["onei(", INECF,")"]) 
+    imaginary() == jlref(concat ["onei(", INECF,")"])
     real(x) == junfunc("real", x)
     imag(x) == junfunc("imag", x)
     pi() == jlref(concat ["const_pi(",INECF,")"])
@@ -1184,7 +1184,7 @@ InnerNMExactCalciumField(Options : JLObjDict) : Exports ==
     x <= y == jbinbfunc("<=",x,y)
     smaller?(x, y)  == jbinbfunc("<",x,y)
     sign x == junfunc("sign",x)
-    csign x == junfunc("csgn",x) 
+    csign x == junfunc("csgn",x)
     abs x == junfunc("abs",x)
     abs2 x == junfunc("abs2",x)
     argument x == junfunc("angle",x)
@@ -1192,7 +1192,7 @@ InnerNMExactCalciumField(Options : JLObjDict) : Exports ==
     conjugate(x,repr) ==
       jlref(concat ["conj(",getind(x), ",form=", string(repr),")"])
     floor x == junfunc("floor",x)
-    ceiling x == junfunc("ceil",x) 
+    ceiling x == junfunc("ceil",x)
 
     zero?(x) == junbfunc("iszero", x)
     one?(x) == junbfunc("isone", x)
@@ -1303,17 +1303,17 @@ InnerNMExactCalciumField(Options : JLObjDict) : Exports ==
     random(depth, bits, type) ==
       jlref(concat ["rand(",INECF,",depth=", string(depth), ",bits=",
         string(bits),",randtype=", string(type), ")"])
-  
+
     retractIfCan(x : %) : Union(NMInteger, "failed") ==
-      integer?(x) =>   
+      integer?(x) =>
         jlref(concat ["ZZ(", getind(x),")"])$NMInteger
       "failed"
     retractIfCan(x : %) : Union(NMFraction(NMInteger), "failed") ==
-      rational?(x) =>   
+      rational?(x) =>
         jlref(concat ["QQ(", getind(x),")"])$NMFraction(NMInteger)
       "failed"
     --retractIfCan(x : %) : Union(NMAlgebraicNumber, "failed") ==
-    --  algebraic?(x) =>   
+    --  algebraic?(x) =>
     --    jlref(concat ["QQBar(", getind(x),")"])$NMAlgebraicNumber
     --  "failed"
     retractIfCan(x) : Union(NMRealBall, "failed") ==
@@ -1321,7 +1321,7 @@ InnerNMExactCalciumField(Options : JLObjDict) : Exports ==
         junfunc(jlNMRing()$NMRealBall(), x) pretend NMRealBall
       "failed"
     retract(x) : NMComplexBall ==
-      junfunc(jlNMRing()$NMComplexBall(), x) 
+      junfunc(jlNMRing()$NMComplexBall(), x)
     complex(r, i) ==
       jlref(concat([INECFP, getind(r),"+onei(",INECF,")*", getind(i), ")"]))
     coerce(i : Integer) == jlref(concat([INECFP, string(i),")"]))
@@ -1362,7 +1362,7 @@ NMExactCalciumField() : Exports == Implementation where
   Exports ==> Join(NMField, OrderedSet, RadicalCategory,
             ComplexCategory(%), TranscendentalFunctionCategory) with
     real? : % -> Boolean
-    ++ real?(z) checks whether or not z is a real number. 
+    ++ real?(z) checks whether or not z is a real number.
     integer? : % -> Boolean
     ++ integer?(z) checks whether or not z is an integer.
     algebraic? : % -> Boolean
@@ -1399,7 +1399,7 @@ NMExactCalciumField() : Exports == Implementation where
     negativeInfinity : () -> %
     ++ negativeInfinity() returns negative infinity.
     infinity : % -> %
-    ++ infinity(x) returns signed infinity depending on x sign. 
+    ++ infinity(x) returns signed infinity depending on x sign.
     unknown : () -> %
     ++ unknown() returns the unknown special value.
     undefined : () -> %
@@ -1462,7 +1462,7 @@ NMExactCalciumField() : Exports == Implementation where
     ++ :direct
 
     Gamma : % -> %
-    ++ Gamma(x) is the Euler Gamma function evaluated at x. 
+    ++ Gamma(x) is the Euler Gamma function evaluated at x.
     erf : % -> %
     ++ erf(x) is the error function evaluated at x.
     erfi : % -> %
@@ -1559,7 +1559,7 @@ NMExactCalciumField() : Exports == Implementation where
       jlEvalString(concat [getind(x),"==",getind(y)])@Boolean
     x ~= y ==
       jlEvalString(concat [getind(x),"!=",getind(y)])@Boolean
-    imaginary() == jlref(concat ["onei(", NECF,")"]) 
+    imaginary() == jlref(concat ["onei(", NECF,")"])
     real(x) == junfunc("real", x)
     imag(x) == junfunc("imag", x)
     pi() == jlref(concat ["const_pi(",NECF,")"])
@@ -1591,7 +1591,7 @@ NMExactCalciumField() : Exports == Implementation where
     x <= y == jbinbfunc("<=",x,y)
     smaller?(x, y)  == jbinbfunc("<",x,y)
     sign x == junfunc("sign",x)
-    csign x == junfunc("csgn",x) 
+    csign x == junfunc("csgn",x)
     abs x == junfunc("abs",x)
     abs2 x == junfunc("abs2",x)
     argument x == junfunc("angle",x)
@@ -1599,7 +1599,7 @@ NMExactCalciumField() : Exports == Implementation where
     conjugate(x,repr) ==
       jlref(concat ["conj(",getind(x), ",form=", string(repr),")"])
     floor x == junfunc("floor",x)
-    ceiling x == junfunc("ceil",x) 
+    ceiling x == junfunc("ceil",x)
 
     zero?(x) == junbfunc("iszero", x)
     one?(x) == junbfunc("isone", x)
@@ -1681,7 +1681,7 @@ NMExactCalciumField() : Exports == Implementation where
       a@%
     coth x == cosh x * csch x
 
-  
+
     asinh x == log(x + sqrt(x^2 + 1))
     acosh x == 2*log(sqrt((x+1)/2) + sqrt((x-1)/2))
     atanh x == (log(1+x)-log(1-x))/2
@@ -1708,17 +1708,17 @@ NMExactCalciumField() : Exports == Implementation where
     random(depth, bits, type) ==
       jlref(concat ["rand(",NECF,",depth=", string(depth), ",bits=",
         string(bits),",randtype=", string(type), ")"])
-  
+
     retractIfCan(x : %) : Union(NMInteger, "failed") ==
-      integer?(x) =>   
+      integer?(x) =>
         jlref(concat ["ZZ(", getind(x),")"])$NMInteger
       "failed"
     retractIfCan(x : %) : Union(NMFraction(NMInteger), "failed") ==
-      rational?(x) =>   
+      rational?(x) =>
         jlref(concat ["QQ(", getind(x),")"])$NMFraction(NMInteger)
       "failed"
     retractIfCan(x : %) : Union(NMAlgebraicNumber, "failed") ==
-      algebraic?(x) =>   
+      algebraic?(x) =>
         jlref(concat ["QQBar(", getind(x),")"])$NMAlgebraicNumber
       "failed"
     retractIfCan(x) : Union(NMRealBall, "failed") ==
@@ -1726,7 +1726,7 @@ NMExactCalciumField() : Exports == Implementation where
         junfunc(jlNMRing()$NMRealBall(), x) pretend NMRealBall
       "failed"
     retract(x) : NMComplexBall ==
-      junfunc(jlNMRing()$NMComplexBall(), x) 
+      junfunc(jlNMRing()$NMComplexBall(), x)
     complex(r, i) ==
       jlref(concat([NECFP, getind(r),"+onei(",NECF,")*", getind(i), ")"]))
     coerce(i : Integer) == jlref(concat([NECFP, string(i),")"]))
@@ -1771,7 +1771,7 @@ NMFraction(R : Join(NMCommutativeRing, IntegralDomain)) :
     "/" : (R, %) -> %
     ++ / is the division operator.
     "*" : (%, NMInteger) -> %
-    ++ x*i is the integer multiplication (NMInteger). 
+    ++ x*i is the integer multiplication (NMInteger).
     "*" : (NMInteger, %) -> %
     ++ i*x is the integer multiplication (NMInteger).
     if R has IntegerNumberSystem then
@@ -1789,7 +1789,7 @@ NMFraction(R : Join(NMCommutativeRing, IntegralDomain)) :
     ++ ring.
     random : (Segment(Integer), Segment(Integer)) -> %
     ++ random(seg1, seg2) returns a random fraction depending
-    ++ on the base ring. 
+    ++ on the base ring.
     ++ For example:
     ++ \example{FRPRing:=NFRAC(NUP(NINT,'x))}
     ++ \example{random(1..5,-10..10)$FRPRing}
@@ -1845,7 +1845,7 @@ NMFraction(R : Join(NMCommutativeRing, IntegralDomain)) :
     recip(x) ==
       zero?(x) => "failed"
       junfunc("inv",x) pretend %
-        
+
     if R has IntegerNumberSystem then
       retract(x : %) : Fraction(Integer) ==
            retract(numer x)@Integer / retract(denom x)@Integer
@@ -1903,7 +1903,7 @@ NMFraction(R : Join(NMCommutativeRing, IntegralDomain)) :
       error "retract$NMFraction: denominator is not 1"
     coerce(r : R) == jlref(concat([NFRP, getind(r),")"]))
     coerce(p) : OutputForm ==
-      ret : Fraction(R) := numer(p)/denom(p) 
+      ret : Fraction(R) := numer(p)/denom(p)
       coerce(ret)
 
 )abbrev domain NFR NMFactored
@@ -1913,7 +1913,7 @@ NMFraction(R : Join(NMCommutativeRing, IntegralDomain)) :
 ++ Description:
 ++  Nemo factored objects.
 ++ References: https://flintlib.org/; https://nemocas.github.io/Nemo.jl/stable/
-NMFactored(R : Join(NMRing, IntegralDomain)) : 
+NMFactored(R : Join(NMRing, IntegralDomain)) :
       Exports == Implementation where
   INT ==> Integer
   NNI ==> NonNegativeInteger

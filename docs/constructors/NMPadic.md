@@ -1,6 +1,6 @@
 # NMPadic
 
-> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L191)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
+> **Kind**: Domain &nbsp;|&nbsp; \[[Source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L193)\] &nbsp;|&nbsp; **Group**: NM — Nemo (FLINT)
 
 ## Description
 
@@ -67,11 +67,12 @@ This domain implements the field of p-adic numbers $Q_p$ with precision 64 using
  rightPower : (%, PositiveInteger) -> %                 rightPower : (%, NonNegativeInteger) -> %
  rightRecip : % -> Union(%,"failed")                    sample : () -> %
  sizeLess? : (%, %) -> Boolean                          sqrt : % -> %
- squareFree : % -> Factored(%)                          squareFreePart : % -> %
- string : % -> String                                   subtractIfCan : (%, %) -> Union(%,"failed")
- teichmuller : % -> %                                   unit? : % -> Boolean
- unitCanonical : % -> %                                 valuation : % -> JLObjInt64
- zero? : % -> Boolean                                   ?~=? : (%, %) -> Boolean
+ square? : % -> Boolean                                 squareFree : % -> Factored(%)
+ squareFreePart : % -> %                                string : % -> String
+ subtractIfCan : (%, %) -> Union(%,"failed")            teichmuller : % -> %
+ unit? : % -> Boolean                                   unitCanonical : % -> %
+ valuation : % -> JLObjInt64                            zero? : % -> Boolean
+ ?~=? : (%, %) -> Boolean
  ?*? : (Fraction(Integer), %) -> % if % has CHARZ
  ?*? : (%, Fraction(Integer)) -> % if % has CHARZ
  coerce : Fraction(Integer) -> % if % has CHARZ

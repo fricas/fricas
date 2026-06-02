@@ -5,11 +5,11 @@
 ++ Related Domains:
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: p-adic, completion
+++ Keywords: `p`-adic, completion
 ++ Examples:
 ++ References:
 ++ Description: This category provides representations of
-++ the p-adic numbers using the Nemo Julia package.
+++ the `p`-adic numbers using the Nemo Julia package.
 NMPadicNumberCategory(R : NMCommutativeRing) : Category == Definition where
   NINT  ==> NMInteger
   NFINT ==> NMFraction(NMInteger)
@@ -20,35 +20,35 @@ NMPadicNumberCategory(R : NMCommutativeRing) : Category == Definition where
     prime : % -> Z
     ++ prime(x) returns the modulus used for x.
     "+" : (%, %) -> %
-    ++ p + q is the sum of two q-adic numbers.
+    ++ p + q is the sum of two p-adic numbers.
     "-" : (%, %) -> %
-    ++ p - q is the difference of two q-adic numbers.
+    ++ p - q is the difference of two p-adic numbers.
     "*" : (%, %) -> %
-    ++ p * q is the product of two q-adic numbers.
+    ++ p * q is the product of two p-adic numbers.
     "/" : (%, %) -> %
-    ++ p / q is the division of two q-adic numbers.
+    ++ p / q is the division of two p-adic numbers.
     "+" : (NINT, %) -> %
     ++ i + x is the addition of a Julia Nemo Integer
-    ++ and a q-adic number.
+    ++ and a p-adic number.
     "+" : (%, NINT) -> %
-    ++ x + i is the addition of a q-adic number
+    ++ x + i is the addition of a p-adic number
     ++ and a Julia Nemo integer.
     "+" : (%, NFINT) -> %
-    ++ x + q is the addition of a q-adic number
+    ++ x + q is the addition of a p-adic number
     ++ and a Julia Nemo Fraction integer.
     "+" : (NFINT, %) -> %
     ++ q + x is the addition of a Julia Nemo Fraction integer
-    ++ and a q-adic number.
+    ++ and a p-adic number.
     "*" : (%, NFINT) -> %
-    ++ x * q is the multiplication of a q-adic number
+    ++ x * q is the multiplication of a p-adic number
     ++ and a Julia Nemo Fraction integer.
     "*" : (NFINT, %) -> %
     ++ q * x is the multiplication of a Julia Nemo Fraction integer
-    ++ and a q-adic number.
+    ++ and a p-adic number.
     "*" : (NINT, %) -> %
-    ++ i * x is the multiplication of a NemoInteger and a q-adic number.
+    ++ i * x is the multiplication of a NemoInteger and a p-adic number.
     "*" : (%, NINT) -> %
-    ++ x * i is the multiplication of an Integer and a q-adic number.
+    ++ x * i is the multiplication of an Integer and a p-adic number.
     valuation : % -> JLObjInt64
     ++ valuation(x) is the valuation of x.
     order : % -> Z
@@ -67,17 +67,19 @@ NMPadicNumberCategory(R : NMCommutativeRing) : Category == Definition where
 ++ Also See:
 ++ AMS Classifications:
 ++ Keywords:
-++ Keywords: p-adic, completion
+++ Keywords: `p`-adic, completion
 ++ Examples:
 ++ References:
-++ Description: This domain implements the field of p-adic numbers
+++ Description: This domain implements the field of `p`-adic numbers
 ++ $\mathbb{Q}_p$ using the Nemo Julia package.
 NMExtendedPadic(p : Integer, prec : Integer) :
     Exports == Implementation where
   Z    ==> Integer
   NINT ==> NMInteger
   NFINT ==> NMFraction(NMInteger)
-  Exports ==> NMPadicNumberCategory(NMInteger) with 
+  Exports ==> NMPadicNumberCategory(NMInteger) with
+    square? : % -> Boolean
+    ++ square?(x) returns true if and only if x is a square in the ring.
     liftZ : % -> NINT
     ++ liftZ(x) lift x to a Nemo Integer.
     liftQ : % -> NFINT
@@ -92,7 +94,7 @@ NMExtendedPadic(p : Integer, prec : Integer) :
     modulus : () -> Z
     ++ \spad{modulus()} returns the value of p.
     coerce : NMInteger -> %
-    ++ coerce(x) coerces x to a p-adic number.    
+    ++ coerce(x) coerces x to a p-adic number.
     O : () -> %
     ++ O() returns the default Big-oh from domain parameters.
     jnpadic : Integer -> %
@@ -105,6 +107,7 @@ NMExtendedPadic(p : Integer, prec : Integer) :
 
     jlImport "Nemo.Generic.prime"
     jlImport "Nemo.O"
+    jlImport "AbstractAlgebra.is_square"
 
     getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
     junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
@@ -114,9 +117,9 @@ NMExtendedPadic(p : Integer, prec : Integer) :
 
     Rep := SExpression
     not prime?(p) => error "p must be a prime number"
-    
+
     -- Set up the field
-    EXPADIC := concat(["PADIC", string(p), "p", string(prec)])
+    EXPADIC := concat(["PADIC", string(p), "a", string(prec)])
     jlEvalString(concat([EXPADIC, "=padic_field(", string(p), ", precision=", string(prec),")"]))
     jlNMRing() == EXPADIC
     EXPADICP := concat(EXPADIC,"(")
@@ -126,17 +129,18 @@ NMExtendedPadic(p : Integer, prec : Integer) :
     unit?(a) == junbfunc("is_unit", a)
     one?(a) == junbfunc("isone", a)
     zero?(a) == junbfunc("iszero", a)
+    square?(a) == junbfunc("is_square", a)
 
     0 ==  jlref(concat ["zero(", EXPADIC, ")"])
     1 ==  jlref(concat ["one(", EXPADIC, ")"])
-    pa : % = pb : % == jbinbfunc("==", pa,pb) 
+    pa : % = pb : % == jbinbfunc("==", pa,pb)
     pa : % ~= pb : % == jbinbfunc("!=", pa,pb)
-  
+
     (pa:% + pb:%) : % == jbinfunc("+", pa,pb)
     (pa:% - pb:%) : % == jbinfunc("-", pa,pb)
     (pa:% * pb:%) : % == jbinfunc("*", pa,pb)
     (pa:% / pb:%) : % == jbinfunc("/", pa,pb)
-  
+
     a : NINT + pa : % == jbinfunc("+",a,pa)
     a : NINT * pa : % == jbinfunc("*",a,pa)
     pa : % + a : NINT == jbinfunc("+",pa,a)
@@ -165,7 +169,7 @@ NMExtendedPadic(p : Integer, prec : Integer) :
       order(x) > 0 => 0
       liftZ(x) rem coerce p
 
-    quotientByP(x : %) == 
+    quotientByP(x : %) ==
       order(x) < 0 => error "quotientByP: valuation is negative"
       a := moduloP x
       (x - coerce(a)@%) / coerce(p)@%
@@ -193,10 +197,10 @@ NMExtendedPadic(p : Integer, prec : Integer) :
 ++ Related Domains: NMExtendedPadic
 ++ Also See: NMPadicNumberCategory
 ++ AMS Classifications:
-++ Keywords: p-adic, completion
+++ Keywords: `p`-adic, completion
 ++ Examples:
 ++ References:
-++ Description: This domain implements the field of p-adic numbers
+++ Description: This domain implements the field of `p`-adic numbers
 ++ $\mathbb{Q}_p$ with precision 64 using the Nemo Julia package.
 NMPadic(p : Integer) == NMExtendedPadic(p, 64)
 
@@ -207,11 +211,11 @@ NMPadic(p : Integer) == NMExtendedPadic(p, 64)
 ++ Related Domains:
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: q-adic, completion
+++ Keywords: `q`-adic, completion
 ++ Examples:
 ++ References:
 ++ Description: This domain implements unramified extensions of
-++ p-adic numbers $\mathbb{Q}_p$ of degree $d$ using the Nemo Julia package.
+++ `p`-adic numbers $\mathbb{Q}_p$ of degree $d$ using the Nemo Julia package.
 NMExtendedQadic(p, deg, prec) : Exports == Implementation where
   p     : Integer
   deg   : Integer
@@ -242,41 +246,41 @@ NMExtendedQadic(p, deg, prec) : Exports == Implementation where
   Implementation ==> add
     import from JLUtilityFunctions
     import from String
-  
+
     jlImport "Nemo.Generic.prime"
     jlImport "Nemo.O"
-  
+
     getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
     junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
     jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
     junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
     jbinbfunc(op,a,b) ==> jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
-  
+
     Rep := SExpression
-    
+
     -- Set up the field
-    EXQADIC := concat(["EXQADIC", string(p), "p",string(prec)])
+    EXQADIC := concat(["EXQADIC", string(p), "a",string(prec)])
     jlEvalString(concat([EXQADIC, ",_=qadic_field(", string(p), ",", string(deg),
       ",precision=", string(prec),")"]))
     jlNMRing() == EXQADIC
     EXQADICP := concat(EXQADIC,"(")
     jlObject() == jlEvalString(concat(["string(", EXQADIC,")"]))
     O() == jlref(concat(["O(",EXQADIC,",", string(p),"^",string(prec),")"]))
-  
+
     unit?(a) == junbfunc("is_unit", a)
     one?(a) == junbfunc("isone", a)
     zero?(a) == junbfunc("iszero", a)
-  
+
     0 ==  jlref(concat ["zero(", EXQADIC, ")"])
     1 ==  jlref(concat ["one(", EXQADIC, ")"])
-    pa : % = pb : % == jbinbfunc("==", pa,pb) 
+    pa : % = pb : % == jbinbfunc("==", pa,pb)
     pa : % ~= pb : % == jbinbfunc("!=", pa,pb)
-  
+
     (pa:% + pb:%) : % == jbinfunc("+", pa,pb)
     (pa:% - pb:%) : % == jbinfunc("-", pa,pb)
     (pa:% * pb:%) : % == jbinfunc("*", pa,pb)
     (pa:% / pb:%) : % == jbinfunc("/", pa,pb)
-  
+
     a : NINT + pa : % == jbinfunc("+",a,pa)
     a : NINT * pa : % == jbinfunc("*",a,pa)
     pa : % + a : NINT == jbinfunc("+",pa,a)
@@ -285,11 +289,11 @@ NMExtendedQadic(p, deg, prec) : Exports == Implementation where
     a  : NFINT * pa: % == jbinfunc("*", a, pa)
     pa : % + a : NFINT == jbinfunc("+", pa, a)
     a  : NFINT + pa: % == jbinfunc("+", a, pa)
-  
+
     characteristic() == 0
-  
+
     --euclideanSize(x) == order(retract x)
-  
+
     prime(x) == p
     precision(x) == prec
     sqrt(x) == junfunc("sqrt",x)
@@ -298,16 +302,16 @@ NMExtendedQadic(p, deg, prec) : Exports == Implementation where
     log(x) == junfunc("log",x)
     teichmuller(x) == junfunc("teichmuller",x)
     frobenius(x,n) == jlref(concat ["frobenius(",getind(x),",", string(n),")"])
- 
+
     --invModP : Z -> Z
     --invModP n == invmod(n, p)
-  
+
     modulus() == p
     --moduloP x     == (empty? x => 0; frst x)
     --quotientByP x == (empty? x => x; rst x)
- 
+
     order x == coerce(valuation(x))
-  
+
     coerce(i : Integer) == jlref(concat([EXQADICP, string(i),")"]))
     coerce(i : NMInteger) == junfunc(EXQADIC, i)
     jnqadic(x : Integer) == jlref(concat([EXQADICP, string(x),")"]))
@@ -321,11 +325,11 @@ NMExtendedQadic(p, deg, prec) : Exports == Implementation where
 ++ Related Domains:
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: q-adic, completion
+++ Keywords: `q`-adic, completion
 ++ Examples:
 ++ References:
 ++ Description: This domain implements unramified extensions of
-++ p-adic numbers $\mathbb{Q}_p$ of degree 1 and absolute precision 64
+++ `p`-adic numbers $\mathbb{Q}_p$ of degree 1 and absolute precision 64
 ++ using the Nemo Julia package.
 NMQadic(p : Integer) == NMExtendedQadic(p, 1, 64)
 
@@ -336,7 +340,7 @@ NMQadic(p : Integer) == NMExtendedQadic(p, 1, 64)
 ++ Related Domains:
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: q-adic, completion
+++ Keywords: `q`-adic, completion
 ++ Examples:
 ++ References:
 ++ Description: This domain implements unramified extensions of
@@ -368,20 +372,20 @@ NMExtendedQadicField(R, P, poly, prec) : Exports == Implementation where
   Implementation ==> add
     import from JLUtilityFunctions
     import from String
-  
+
     jlImport "Nemo.Generic.prime"
     jlImport "Nemo.O"
-  
+
     getind(a) ==> concat(["getindex(refs,", string(jlId(a)), ")"])
     junfunc(func, a) ==> make_jlref_wcall1(func, a)$Lisp
     jbinfunc(func,a,b) ==> make_jlref_wcall2(func, a, b)$Lisp
     junbfunc(bfunc, a) ==> jl_call1_bool_wrapped_index(bfunc, jlId(a))$Lisp
     jbinbfunc(op,a,b) ==> jl_call2_bool_wrapped_index(op, jlId(a), jlId(b))$Lisp
-  
+
     Rep := SExpression
-    
+
     -- Set up the field
-    EXQADICF := concat(["EXQADICF", string(jlApply("hash",(poly))), "p", string(prec)])
+    EXQADICF := concat(["EXQADICF", string(jlApply("hash",(poly))), "a", string(prec)])
     jlEvalString(concat([EXQADICF, ",_=qadic_field(", getind(poly), ", precision=", string(prec),")"]))
     jlNMRing() == EXQADICF
     EXQADICFP := concat(EXQADICF,"(")
@@ -389,21 +393,21 @@ NMExtendedQadicField(R, P, poly, prec) : Exports == Implementation where
     O() ==
       p := characteristic()$R
       jlref(concat(["O(", EXQADICF, ",", string(p), "^", string(prec), ")"]))
-  
+
     unit?(a) == junbfunc("is_unit", a)
     one?(a) == junbfunc("isone", a)
     zero?(a) == junbfunc("iszero", a)
-  
+
     0 ==  jlref(concat ["zero(", EXQADICF, ")"])
     1 ==  jlref(concat ["one(", EXQADICF, ")"])
-    pa : % = pb : % == jbinbfunc("==", pa,pb) 
+    pa : % = pb : % == jbinbfunc("==", pa,pb)
     pa : % ~= pb : % == jbinbfunc("!=", pa,pb)
-  
+
     (pa:% + pb:%) == jbinfunc("+", pa,pb)
     (pa:% - pb:%) == jbinfunc("-", pa,pb)
     (pa:% * pb:%) == jbinfunc("*", pa,pb)
     (pa:% / pb:%) == jbinfunc("/", pa,pb)
-  
+
     a : NINT + pa : % == jbinfunc("+",a,pa)
     a : NINT * pa : % == jbinfunc("*",a,pa)
     pa : % + a : NINT == jbinfunc("+",pa,a)
@@ -412,9 +416,9 @@ NMExtendedQadicField(R, P, poly, prec) : Exports == Implementation where
     a  : NFINT * pa: % == jbinfunc("*", a, pa)
     pa : % + a : NFINT == jbinfunc("+", pa, a)
     a  : NFINT + pa: % == jbinfunc("+", a, pa)
-  
+
     characteristic() == 0
-  
+
     --euclideanSize(x) == order(retract x)
     -- TODO
     prime(x) == characteristic()$R
@@ -425,14 +429,13 @@ NMExtendedQadicField(R, P, poly, prec) : Exports == Implementation where
     log(x) == junfunc("log",x)
     teichmuller(x) == junfunc("teichmuller",x)
     frobenius(x,n) == jlref(concat ["frobenius(",getind(x),",", string(n),")"])
-  
-  
+
     --approximate(x, n) ==
     --  n <= 0 or empty? x => 0
     --  frst x + p * approximate(rst x, n - 1)
-   
+
     order x == coerce(valuation x)
-  
+
     coerce(i : Integer) == jlref(concat([EXQADICFP, string(i),")"]))
     coerce(i : NMInteger) == junfunc(EXQADICF, i)
     jnqadic(x : Integer) == jlref(concat([EXQADICFP, string(x),")"]))
