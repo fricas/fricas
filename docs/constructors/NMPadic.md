@@ -117,14 +117,6 @@ This domain implements the field of p-adic numbers $Q_p$ with precision 64 using
 
 - **Signature**: `()->Integer`
 
-### `precision`
-
-- **Signature**: `(%)->Integer`
-
-### `prime`
-
-- **Signature**: `(%)->Integer`
-
 ### `quotientByP`
 
 - **Signature**: `(%)->%`
@@ -132,9 +124,5 @@ This domain implements the field of p-adic numbers $Q_p$ with precision 64 using
 ### `teichmuller`
 
 - **Signature**: `(%)->%`
-
-### `valuation`
-
-- **Signature**: `(%)->JLObjInt64`
 ---
 [Back to Index](../index.md)

@@ -108,20 +108,8 @@ This is a domain implements unramified extensions of p-adic numbers $Q_p$ of deg
 
 - **Signature**: `()->Integer`
 
-### `precision`
-
-- **Signature**: `(%)->Integer`
-
-### `prime`
-
-- **Signature**: `(%)->Integer`
-
 ### `teichmuller`
 
 - **Signature**: `(%)->%`
-
-### `valuation`
-
-- **Signature**: `(%)->JLObjInt64`
 ---
 [Back to Index](../index.md)

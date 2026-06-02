@@ -59,7 +59,7 @@ This domain implements unramified extensions of $K = Q_p[X]/(f)$ using the polyn
  nothing? : % -> Boolean                                nthRoot : (%, Integer) -> %
  one? : % -> Boolean                                    opposite? : (%, %) -> Boolean
  order : % -> Integer                                   plenaryPower : (%, PositiveInteger) -> %
- precision : % -> Integer                               prime : % -> NMInteger
+ precision : % -> Integer                               prime : % -> Integer
  prime? : % -> Boolean                                  ?quo? : (%, %) -> %
  recip : % -> Union(%,"failed")                         ?rem? : (%, %) -> %
  rightPower : (%, PositiveInteger) -> %                 rightPower : (%, NonNegativeInteger) -> %
@@ -86,53 +86,35 @@ This domain implements unramified extensions of $K = Q_p[X]/(f)$ using the polyn
 
 ## Operations added
 
-### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L69)\]
+### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L33)\]
 
 O() returns the default Big-oh from domain parameters.
 
 - **Signature**: `()->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L67)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L31)\]
 
-coerce(x) returns x as the q-adic completion of the Nemo Integer.
+coerce(x) coerces x as a unramified extension of p-adics.
 
 - **Signature**: `(NMInteger)->%`
 
-### `frobenius` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L60)\]
+### `frobenius` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L28)\]
 
 frobenius(x,i) returns the image of the i-th power of Frobenius of x.
 
 - **Signature**: `(%,Integer)->%`
 
-### `jnqadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L71)\]
+### `jnqadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L35)\]
 
-jnqadic(x) returns x as the q-adic completion of the Nemo Integer.
+jnqadic(x) returns x as a unramified extension of p-adics.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L65)\]
-
-precision(x) returns the precision used for x.
-
-- **Signature**: `(%)->Integer`
-
-### `prime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L63)\]
-
-prime(x) returns the modulus used for x.
-
-- **Signature**: `(%)->NMInteger`
-
-### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L57)\]
+### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L25)\]
 
 teichmuller(x) computes the Teichmuller lift of x. The valuation of x must be non negative.
 
 - **Signature**: `(%)->%`
-
-### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADICF.spad#L55)\]
-
-valuation(x) is the valuation of x.
-
-- **Signature**: `(%)->JLObjInt64`
 ---
 [Back to Index](../index.md)

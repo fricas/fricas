@@ -87,69 +87,41 @@ This is a domain implements unramified extensions of p-adic numbers $Q_p$ of deg
 
 ## Operations added
 
-### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L64)\]
+### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L33)\]
 
 O() returns the default Big-oh from domain parameters.
 
 - **Signature**: `()->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L62)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L30)\]
 
-coerce(x) returns x as the q-adic completion of the Nemo Integer.
+coerce(x) coerces x as a unramified extension of p-adics.
 
 - **Signature**: `(NMInteger)->%`
 
-### `frobenius` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L52)\]
+### `frobenius` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L25)\]
 
 frobenius(x,i) returns the image of the i-th power of Frobenius of x.
 
 - **Signature**: `(%,Integer)->%`
 
-### `jnqadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L66)\]
+### `jnqadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L35)\]
 
-jnqadic(x) returns x as the q-adic completion of the Nemo Integer.
+jnqadic(x) returns x as a unramified extension of p-adics.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L60)\]
+### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L28)\]
 
 modulus() returns the value of p.
 
 - **Signature**: `()->Integer`
 
-### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L58)\]
-
-precision(x) returns the precision used for x.
-
-- **Signature**: `(%)->Integer`
-
-### `prime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L55)\]
-
-prime(x) returns the modulus used for x. Convenience function.
-
-- **Signature**: `(%)->Integer`
-
-### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L49)\]
+### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L22)\]
 
 teichmuller(x) computes the Teichmuller lift of x. The valuation of x must be non negative.
 
 - **Signature**: `(%)->%`
-
-### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXQADIC.spad#L44)\]
-
-valuation(x) is the valuation of x. For example: 
-
-**Example**:
-```fricas
-p := 2*7^3 + 4*7^5 + O()$NMExtendedQadic(7,64,100)
-```
-
-**Example**:
-```fricas
-valuation(p)
-```
-
-- **Signature**: `(%)->JLObjInt64`
 ---
 [Back to Index](../index.md)

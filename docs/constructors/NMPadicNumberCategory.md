@@ -15,9 +15,13 @@ This category provides representations of the p-adic numbers using the Nemo Juli
 ```fricas
 --- Operations ---
 
+ ?*? : (%, NMInteger) -> %                              ?*? : (NMInteger, %) -> %
+ ?*? : (NMFraction(NMInteger), %) -> %                  ?*? : (%, NMFraction(NMInteger)) -> %
  ?*? : (PositiveInteger, %) -> %                        ?*? : (%, %) -> %
  ?*? : (Integer, %) -> %                                ?*? : (NonNegativeInteger, %) -> %
- ?*? : (NMInteger, %) -> JLObject                       ?+? : (%, %) -> %
+ ?*? : (NMInteger, %) -> JLObject                       ?+? : (NMFraction(NMInteger), %) -> %
+ ?+? : (%, NMFraction(NMInteger)) -> %                  ?+? : (%, NMInteger) -> %
+ ?+? : (NMInteger, %) -> %                              ?+? : (%, %) -> %
  ?-? : (%, %) -> %                                      -? : % -> %
  ?/? : (%, %) -> %                                      0 : () -> %
  1 : () -> %                                            ?=? : (%, %) -> Boolean
@@ -52,7 +56,8 @@ This category provides representations of the p-adic numbers using the Nemo Juli
  mutable? : % -> Boolean                                nothing? : % -> Boolean
  nthRoot : (%, Integer) -> %                            one? : % -> Boolean
  opposite? : (%, %) -> Boolean                          order : % -> Integer
- plenaryPower : (%, PositiveInteger) -> %               prime? : % -> Boolean
+ plenaryPower : (%, PositiveInteger) -> %               precision : % -> Integer
+ prime : % -> Integer                                   prime? : % -> Boolean
  ?quo? : (%, %) -> %                                    recip : % -> Union(%,"failed")
  ?rem? : (%, %) -> %                                    rightPower : (%, PositiveInteger) -> %
  rightPower : (%, NonNegativeInteger) -> %              rightRecip : % -> Union(%,"failed")
@@ -60,8 +65,8 @@ This category provides representations of the p-adic numbers using the Nemo Juli
  sqrt : % -> %                                          squareFree : % -> Factored(%)
  squareFreePart : % -> %                                string : % -> String
  subtractIfCan : (%, %) -> Union(%,"failed")            unit? : % -> Boolean
- unitCanonical : % -> %                                 zero? : % -> Boolean
- ?~=? : (%, %) -> Boolean
+ unitCanonical : % -> %                                 valuation : % -> JLObjInt64
+ zero? : % -> Boolean                                   ?~=? : (%, %) -> Boolean
  ?*? : (Fraction(Integer), %) -> % if % has CHARZ
  ?*? : (%, Fraction(Integer)) -> % if % has CHARZ
  coerce : Fraction(Integer) -> % if % has CHARZ
@@ -89,5 +94,23 @@ approximate(x, n) returns an integer y such that y = x (mod p^n) when n is posit
 order(x) returns the exponent of the highest power of p dividing x.
 
 - **Signature**: `(%)->Integer`
+
+### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L19)\]
+
+precision(x) returns the precision used for x.
+
+- **Signature**: `(%)->Integer`
+
+### `prime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L21)\]
+
+prime(x) returns the modulus used for x.
+
+- **Signature**: `(%)->Integer`
+
+### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L53)\]
+
+valuation(x) is the valuation of x.
+
+- **Signature**: `(%)->JLObjInt64`
 ---
 [Back to Index](../index.md)
