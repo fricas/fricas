@@ -4,9 +4,9 @@
 
 ## Description
 
-This domain implements Zp, the p-adic completion of the integers using the Nemo Julia package.
+This domain implements the field of p-adic numbers $Q_p$ using the Nemo Julia package.
 
-**NMExtendedPadic(p: NMInteger,prec: Integer) is a domain constructor**  
+**NMExtendedPadic(p: Integer,prec: Integer) is a domain constructor**  
 **Abbreviation for NMExtendedPadic is NXPADIC**  
 **This constructor is exposed in this frame.**
 
@@ -23,12 +23,13 @@ This domain implements Zp, the p-adic completion of the integers using the Nemo 
  ?+? : (%, NMFraction(NMInteger)) -> %                  ?+? : (%, NMInteger) -> %
  ?+? : (NMInteger, %) -> %                              ?+? : (%, %) -> %
  ?-? : (%, %) -> %                                      -? : % -> %
- 0 : () -> %                                            1 : () -> %
- ?=? : (%, %) -> Boolean                                O : () -> %
- ?^? : (%, %) -> %                                      ?^? : (%, Fraction(Integer)) -> %
+ ?/? : (%, %) -> %                                      0 : () -> %
+ 1 : () -> %                                            ?=? : (%, %) -> Boolean
+ O : () -> %                                            ?^? : (%, %) -> %
+ ?^? : (%, Fraction(Integer)) -> %                      ?^? : (%, Integer) -> %
  ?^? : (%, PositiveInteger) -> %                        ?^? : (%, NonNegativeInteger) -> %
  annihilate? : (%, %) -> Boolean                        antiCommutator : (%, %) -> %
- approximate : (%, Integer) -> Integer                  associates? : (%, %) -> Boolean
+ approximate : (%, Integer) -> NMInteger                associates? : (%, %) -> Boolean
  associator : (%, %, %) -> %                            characteristic : () -> NonNegativeInteger
  coerce : NMInteger -> %                                coerce : % -> %
  coerce : Integer -> %                                  coerce : % -> JLObject
@@ -36,8 +37,9 @@ This domain implements Zp, the p-adic completion of the integers using the Nemo 
  convert : % -> String                                  equal? : (%, %) -> Boolean
  euclideanSize : % -> NonNegativeInteger                exact? : % -> Boolean
  exactDivide : (%, %) -> %                              exp : % -> %
- ?exquo? : (%, %) -> Union(%,"failed")                  gcd : (%, %) -> %
- gcd : List(%) -> %                                     jlAbout : % -> Void
+ ?exquo? : (%, %) -> Union(%,"failed")                  factor : % -> Factored(%)
+ gcd : (%, %) -> %                                      gcd : List(%) -> %
+ inv : % -> %                                           jlAbout : % -> Void
  jlApply : (String, %, %, %, %, %) -> JLObject          jlApply : (String, %, %, %, %) -> JLObject
  jlApply : (String, %, %, %) -> JLObject                jlApply : (String, %, %) -> JLObject
  jlApply : (String, %) -> JLObject                      jlDisplay : % -> Void
@@ -54,21 +56,25 @@ This domain implements Zp, the p-adic completion of the integers using the Nemo 
  leftPower : (%, NonNegativeInteger) -> %               leftRecip : % -> Union(%,"failed")
  liftQ : % -> NMFraction(NMInteger)                     liftZ : % -> NMInteger
  log : % -> %                                           missing? : % -> Boolean
- moduloP : % -> Integer                                 modulus : () -> Integer
+ moduloP : % -> NMInteger                               modulus : () -> Integer
  mutable? : % -> Boolean                                nothing? : % -> Boolean
  nthRoot : (%, Integer) -> %                            one? : % -> Boolean
- opposite? : (%, %) -> Boolean                          order : % -> NonNegativeInteger
+ opposite? : (%, %) -> Boolean                          order : % -> Integer
  plenaryPower : (%, PositiveInteger) -> %               precision : % -> Integer
- prime : % -> Integer                                   ?quo? : (%, %) -> %
- quotientByP : % -> %                                   recip : % -> Union(%,"failed")
- ?rem? : (%, %) -> %                                    rightPower : (%, PositiveInteger) -> %
- rightPower : (%, NonNegativeInteger) -> %              rightRecip : % -> Union(%,"failed")
- sample : () -> %                                       sizeLess? : (%, %) -> Boolean
- sqrt : % -> %                                          string : % -> String
- subtractIfCan : (%, %) -> Union(%,"failed")            teichmuller : % -> %
- unit? : % -> Boolean                                   unitCanonical : % -> %
- valuation : % -> %                                     zero? : % -> Boolean
- ?~=? : (%, %) -> Boolean
+ prime : % -> Integer                                   prime? : % -> Boolean
+ ?quo? : (%, %) -> %                                    quotientByP : % -> %
+ recip : % -> Union(%,"failed")                         ?rem? : (%, %) -> %
+ rightPower : (%, PositiveInteger) -> %                 rightPower : (%, NonNegativeInteger) -> %
+ rightRecip : % -> Union(%,"failed")                    sample : () -> %
+ sizeLess? : (%, %) -> Boolean                          sqrt : % -> %
+ squareFree : % -> Factored(%)                          squareFreePart : % -> %
+ string : % -> String                                   subtractIfCan : (%, %) -> Union(%,"failed")
+ teichmuller : % -> %                                   unit? : % -> Boolean
+ unitCanonical : % -> %                                 valuation : % -> JLObjInt64
+ zero? : % -> Boolean                                   ?~=? : (%, %) -> Boolean
+ ?*? : (Fraction(Integer), %) -> % if % has CHARZ
+ ?*? : (%, Fraction(Integer)) -> % if % has CHARZ
+ coerce : Fraction(Integer) -> % if % has CHARZ
  divide : (%, %) -> Record(quotient: %,remainder: %)
  expressIdealMember : (List(%), %) -> Union(List(%),"failed")
  extendedEuclidean : (%, %) -> Record(coef1: %,coef2: %,generator: %)
@@ -82,59 +88,77 @@ This domain implements Zp, the p-adic completion of the integers using the Nemo 
 
 ## Operations added
 
-### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L62)\]
+### `O` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L66)\]
 
 O() returns the default Big-oh from domain parameters.
 
 - **Signature**: `()->%`
 
-### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L56)\]
+### `coerce` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L64)\]
 
 coerce(x) returns x as the p-adic completion of the Nemo Integer.
 
 - **Signature**: `(NMInteger)->%`
 
-### `jnpadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L58)\]
+### `jnpadic` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L68)\]
 
 jnpadic(x) returns x as the p-adic completion of the Nemo Integer.
 
 - **Signature**: `(Integer)->%`
 - **Signature**: `(NMInteger)->%`
 
-### `liftQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L51)\]
+### `liftQ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L48)\]
 
 liftQ(x) lift x to a Nemo Fraction Nemo Integer.
 
 - **Signature**: `(%)->NMFraction(NMInteger)`
 
-### `liftZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L49)\]
+### `liftZ` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L46)\]
 
 liftZ(x) lift x to a Nemo Integer.
 
 - **Signature**: `(%)->NMInteger`
 
-### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L67)\]
+### `moduloP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L50)\]
+
+moduloP(x) returns a, where x = a + b p.
+
+- **Signature**: `(%)->NMInteger`
+
+### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L57)\]
+
+modulus() returns the value of p.
+
+- **Signature**: `()->Integer`
+
+### `precision` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L62)\]
 
 precision(x) returns the precision used for x.
 
 - **Signature**: `(%)->Integer`
 
-### `prime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L64)\]
+### `prime` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L59)\]
 
 prime(x) returns the modulus used for x. Convenience function.
 
 - **Signature**: `(%)->Integer`
 
-### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L53)\]
+### `quotientByP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L52)\]
+
+quotientByP(x) returns b, where x = a + b p.
+
+- **Signature**: `(%)->%`
+
+### `teichmuller` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L54)\]
 
 teichmuller(x) computes the Teichmuller lift of x. The valuation of x must be non negative.
 
 - **Signature**: `(%)->%`
 
-### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L47)\]
+### `valuation` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/NXPADIC.spad#L44)\]
 
 valuation(x) is the valuation of x.
 
-- **Signature**: `(%)->%`
+- **Signature**: `(%)->JLObjInt64`
 ---
 [Back to Index](../index.md)

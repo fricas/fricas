@@ -4,9 +4,9 @@
 
 ## Description
 
-Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i), where the a[i] lie in 0, 1,..., (p - 1) using the Nemo Julia package.
+This domain implements the field of p-adic numbers $Q_p$ with precision 64 using the Nemo Julia package.
 
-**NMPadic(p: NMInteger) is a domain constructor**  
+**NMPadic(p: Integer) is a domain constructor**  
 **Abbreviation for NMPadic is NPADIC**  
 **This constructor is exposed in this frame.**
 
@@ -23,12 +23,13 @@ Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i)
  ?+? : (%, NMFraction(NMInteger)) -> %                  ?+? : (%, NMInteger) -> %
  ?+? : (NMInteger, %) -> %                              ?+? : (%, %) -> %
  ?-? : (%, %) -> %                                      -? : % -> %
- 0 : () -> %                                            1 : () -> %
- ?=? : (%, %) -> Boolean                                O : () -> %
- ?^? : (%, %) -> %                                      ?^? : (%, Fraction(Integer)) -> %
+ ?/? : (%, %) -> %                                      0 : () -> %
+ 1 : () -> %                                            ?=? : (%, %) -> Boolean
+ O : () -> %                                            ?^? : (%, %) -> %
+ ?^? : (%, Fraction(Integer)) -> %                      ?^? : (%, Integer) -> %
  ?^? : (%, PositiveInteger) -> %                        ?^? : (%, NonNegativeInteger) -> %
  annihilate? : (%, %) -> Boolean                        antiCommutator : (%, %) -> %
- approximate : (%, Integer) -> Integer                  associates? : (%, %) -> Boolean
+ approximate : (%, Integer) -> NMInteger                associates? : (%, %) -> Boolean
  associator : (%, %, %) -> %                            characteristic : () -> NonNegativeInteger
  coerce : NMInteger -> %                                coerce : % -> %
  coerce : Integer -> %                                  coerce : % -> JLObject
@@ -36,8 +37,9 @@ Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i)
  convert : % -> String                                  equal? : (%, %) -> Boolean
  euclideanSize : % -> NonNegativeInteger                exact? : % -> Boolean
  exactDivide : (%, %) -> %                              exp : % -> %
- ?exquo? : (%, %) -> Union(%,"failed")                  gcd : (%, %) -> %
- gcd : List(%) -> %                                     jlAbout : % -> Void
+ ?exquo? : (%, %) -> Union(%,"failed")                  factor : % -> Factored(%)
+ gcd : (%, %) -> %                                      gcd : List(%) -> %
+ inv : % -> %                                           jlAbout : % -> Void
  jlApply : (String, %, %, %, %, %) -> JLObject          jlApply : (String, %, %, %, %) -> JLObject
  jlApply : (String, %, %, %) -> JLObject                jlApply : (String, %, %) -> JLObject
  jlApply : (String, %) -> JLObject                      jlDisplay : % -> Void
@@ -54,21 +56,25 @@ Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i)
  leftPower : (%, NonNegativeInteger) -> %               leftRecip : % -> Union(%,"failed")
  liftQ : % -> NMFraction(NMInteger)                     liftZ : % -> NMInteger
  log : % -> %                                           missing? : % -> Boolean
- moduloP : % -> Integer                                 modulus : () -> Integer
+ moduloP : % -> NMInteger                               modulus : () -> Integer
  mutable? : % -> Boolean                                nothing? : % -> Boolean
  nthRoot : (%, Integer) -> %                            one? : % -> Boolean
- opposite? : (%, %) -> Boolean                          order : % -> NonNegativeInteger
+ opposite? : (%, %) -> Boolean                          order : % -> Integer
  plenaryPower : (%, PositiveInteger) -> %               precision : % -> Integer
- prime : % -> Integer                                   ?quo? : (%, %) -> %
- quotientByP : % -> %                                   recip : % -> Union(%,"failed")
- ?rem? : (%, %) -> %                                    rightPower : (%, PositiveInteger) -> %
- rightPower : (%, NonNegativeInteger) -> %              rightRecip : % -> Union(%,"failed")
- sample : () -> %                                       sizeLess? : (%, %) -> Boolean
- sqrt : % -> %                                          string : % -> String
- subtractIfCan : (%, %) -> Union(%,"failed")            teichmuller : % -> %
- unit? : % -> Boolean                                   unitCanonical : % -> %
- valuation : % -> %                                     zero? : % -> Boolean
- ?~=? : (%, %) -> Boolean
+ prime : % -> Integer                                   prime? : % -> Boolean
+ ?quo? : (%, %) -> %                                    quotientByP : % -> %
+ recip : % -> Union(%,"failed")                         ?rem? : (%, %) -> %
+ rightPower : (%, PositiveInteger) -> %                 rightPower : (%, NonNegativeInteger) -> %
+ rightRecip : % -> Union(%,"failed")                    sample : () -> %
+ sizeLess? : (%, %) -> Boolean                          sqrt : % -> %
+ squareFree : % -> Factored(%)                          squareFreePart : % -> %
+ string : % -> String                                   subtractIfCan : (%, %) -> Union(%,"failed")
+ teichmuller : % -> %                                   unit? : % -> Boolean
+ unitCanonical : % -> %                                 valuation : % -> JLObjInt64
+ zero? : % -> Boolean                                   ?~=? : (%, %) -> Boolean
+ ?*? : (Fraction(Integer), %) -> % if % has CHARZ
+ ?*? : (%, Fraction(Integer)) -> % if % has CHARZ
+ coerce : Fraction(Integer) -> % if % has CHARZ
  divide : (%, %) -> Record(quotient: %,remainder: %)
  expressIdealMember : (List(%), %) -> Union(List(%),"failed")
  extendedEuclidean : (%, %) -> Record(coef1: %,coef2: %,generator: %)
@@ -103,6 +109,14 @@ Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i)
 
 - **Signature**: `(%)->NMInteger`
 
+### `moduloP`
+
+- **Signature**: `(%)->NMInteger`
+
+### `modulus`
+
+- **Signature**: `()->Integer`
+
 ### `precision`
 
 - **Signature**: `(%)->Integer`
@@ -111,12 +125,16 @@ Implementation of Zp: p-adic numbers are represented as sum(i = 0.., a[i] * p^i)
 
 - **Signature**: `(%)->Integer`
 
+### `quotientByP`
+
+- **Signature**: `(%)->%`
+
 ### `teichmuller`
 
 - **Signature**: `(%)->%`
 
 ### `valuation`
 
-- **Signature**: `(%)->%`
+- **Signature**: `(%)->JLObjInt64`
 ---
 [Back to Index](../index.md)

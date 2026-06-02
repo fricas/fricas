@@ -19,11 +19,12 @@ This category provides representations of the p-adic numbers using the Nemo Juli
  ?*? : (Integer, %) -> %                                ?*? : (NonNegativeInteger, %) -> %
  ?*? : (NMInteger, %) -> JLObject                       ?+? : (%, %) -> %
  ?-? : (%, %) -> %                                      -? : % -> %
- 0 : () -> %                                            1 : () -> %
- ?=? : (%, %) -> Boolean                                ?^? : (%, %) -> %
- ?^? : (%, Fraction(Integer)) -> %                      ?^? : (%, PositiveInteger) -> %
+ ?/? : (%, %) -> %                                      0 : () -> %
+ 1 : () -> %                                            ?=? : (%, %) -> Boolean
+ ?^? : (%, %) -> %                                      ?^? : (%, Fraction(Integer)) -> %
+ ?^? : (%, Integer) -> %                                ?^? : (%, PositiveInteger) -> %
  ?^? : (%, NonNegativeInteger) -> %                     annihilate? : (%, %) -> Boolean
- antiCommutator : (%, %) -> %                           approximate : (%, Integer) -> Integer
+ antiCommutator : (%, %) -> %                           approximate : (%, Integer) -> R
  associates? : (%, %) -> Boolean                        associator : (%, %, %) -> %
  characteristic : () -> NonNegativeInteger              coerce : % -> %
  coerce : Integer -> %                                  coerce : % -> JLObject
@@ -31,8 +32,9 @@ This category provides representations of the p-adic numbers using the Nemo Juli
  convert : % -> String                                  equal? : (%, %) -> Boolean
  euclideanSize : % -> NonNegativeInteger                exact? : % -> Boolean
  exactDivide : (%, %) -> %                              exp : % -> %
- ?exquo? : (%, %) -> Union(%,"failed")                  gcd : (%, %) -> %
- gcd : List(%) -> %                                     jlAbout : % -> Void
+ ?exquo? : (%, %) -> Union(%,"failed")                  factor : % -> Factored(%)
+ gcd : (%, %) -> %                                      gcd : List(%) -> %
+ inv : % -> %                                           jlAbout : % -> Void
  jlApply : (String, %, %, %, %, %) -> JLObject          jlApply : (String, %, %, %, %) -> JLObject
  jlApply : (String, %, %, %) -> JLObject                jlApply : (String, %, %) -> JLObject
  jlApply : (String, %) -> JLObject                      jlDisplay : % -> Void
@@ -47,19 +49,22 @@ This category provides representations of the p-adic numbers using the Nemo Juli
  lcm : List(%) -> %                                     leftPower : (%, PositiveInteger) -> %
  leftPower : (%, NonNegativeInteger) -> %               leftRecip : % -> Union(%,"failed")
  log : % -> %                                           missing? : % -> Boolean
- moduloP : % -> Integer                                 modulus : () -> Integer
  mutable? : % -> Boolean                                nothing? : % -> Boolean
  nthRoot : (%, Integer) -> %                            one? : % -> Boolean
- opposite? : (%, %) -> Boolean                          order : % -> NonNegativeInteger
- plenaryPower : (%, PositiveInteger) -> %               ?quo? : (%, %) -> %
- quotientByP : % -> %                                   recip : % -> Union(%,"failed")
+ opposite? : (%, %) -> Boolean                          order : % -> Integer
+ plenaryPower : (%, PositiveInteger) -> %               prime? : % -> Boolean
+ ?quo? : (%, %) -> %                                    recip : % -> Union(%,"failed")
  ?rem? : (%, %) -> %                                    rightPower : (%, PositiveInteger) -> %
  rightPower : (%, NonNegativeInteger) -> %              rightRecip : % -> Union(%,"failed")
  sample : () -> %                                       sizeLess? : (%, %) -> Boolean
- sqrt : % -> %                                          string : % -> String
+ sqrt : % -> %                                          squareFree : % -> Factored(%)
+ squareFreePart : % -> %                                string : % -> String
  subtractIfCan : (%, %) -> Union(%,"failed")            unit? : % -> Boolean
  unitCanonical : % -> %                                 zero? : % -> Boolean
  ?~=? : (%, %) -> Boolean
+ ?*? : (Fraction(Integer), %) -> % if % has CHARZ
+ ?*? : (%, Fraction(Integer)) -> % if % has CHARZ
+ coerce : Fraction(Integer) -> % if % has CHARZ
  divide : (%, %) -> Record(quotient: %,remainder: %)
  expressIdealMember : (List(%), %) -> Union(List(%),"failed")
  extendedEuclidean : (%, %) -> Record(coef1: %,coef2: %,generator: %)
@@ -73,34 +78,16 @@ This category provides representations of the p-adic numbers using the Nemo Juli
 
 ## Operations added
 
-### `approximate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L27)\]
+### `approximate` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L58)\]
 
 approximate(x, n) returns an integer y such that y = x (mod p^n) when n is positive, and 0 otherwise.
 
-- **Signature**: `(%,Integer)->Integer`
+- **Signature**: `(%,Integer)->R`
 
-### `moduloP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L23)\]
-
-moduloP(x) returns a, where x = a + b p.
-
-- **Signature**: `(%)->Integer`
-
-### `modulus` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L21)\]
-
-modulus() returns the value of p.
-
-- **Signature**: `()->Integer`
-
-### `order` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L18)\]
+### `order` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L55)\]
 
 order(x) returns the exponent of the highest power of p dividing x.
 
-- **Signature**: `(%)->NonNegativeInteger`
-
-### `quotientByP` &nbsp; \[[source](https://github.com/gvanuxem/jlfricas/blob/master/src/algebra/jnpadic.spad#L25)\]
-
-quotientByP(x) returns b, where x = a + b p.
-
-- **Signature**: `(%)->%`
+- **Signature**: `(%)->Integer`
 ---
 [Back to Index](../index.md)
