@@ -61,11 +61,11 @@ Please sign up before posting a message.
 
 The main source of information about FriCAS is the "Axiom book" by
 Jenks and Sutor in its adaptation for FriCAS. FriCAS continues to
-update that contents of that book along with its development and calls
+update the contents of that book along with its development and calls
 it |PACKAGE_BOOK|. Its content is shown by the integrated HyperDoc
 help system. You can also access the book in .pdf form at
 https://fricas.github.io/book.pdf.
-An older version is available in in .xhtml form at
+An older version is available in .xhtml form at
 https://wiki.fricas.org/JenksSutorInXhtml.
 
 
@@ -213,7 +213,7 @@ You can use a construction like
         finally
             bits(l)
 
-to temporarily set the floating poing precision and have it reset
+to temporarily set the floating point precision and have it reset
 after the computation even if the computation (your work) results in
 an error.
 
@@ -241,7 +241,7 @@ depend on the change and which you want to use, directly or
 indirectly.
 
 Full build takes care of bootstrapping and recompiles everything, so
-after that things works in expected way.
+after that things work in expected way.
 
 
 15. Are there things in FriCAS that do not work properly?
@@ -249,7 +249,7 @@ after that things works in expected way.
 
 Yes, there are certainly, a number of them. We list here a few.
 
-* Functions that have types as their parameters work in in the
+* Functions that have types as their parameters work in the
   compiler, but not in the interpreter.
 
   See

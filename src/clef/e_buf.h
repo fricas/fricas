@@ -24,7 +24,7 @@ extern void shift_buff(int cp, int bp, int diff);
 
 extern void store_final_buff_char(char c);
 
-extern void null_termiante_buff(void);
+extern void null_terminate_buff(void);
 extern int buff_length(void);
 extern int buff_cmp(char *s);
 

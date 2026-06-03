@@ -243,7 +243,7 @@
 (deftype machine_int () '(unsigned-byte 64))
 
 ;;; (x*y + z) using 32-bit x and y and 64-bit z and assuming that
-;;; intermediate results fits into 64 bits
+;;; intermediate result fits into 64 bits
 (defmacro QSMULADD64_32 (x y z)
     `(the machine_int
          (+ (the machine_int
@@ -888,7 +888,7 @@
 ;;; Support for re-seeding the lisp random number generator.
 (defun SEEDRANDOM () (setf *random-state* (make-random-state t)))
 
-; "failed" union branch, independet of type of union
+; "failed" union branch, independent of type of union
 (defvar |$spad_failure| (cons 1 "failed"))
 
 (defmacro |trappedSpadEval| (form)

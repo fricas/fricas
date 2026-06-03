@@ -114,7 +114,7 @@ In the following we list publications mentioning FriCAS.
   `The modular group and words in its two generators
   <https://arxiv.org/abs/1512.02596v5>`_
   (DOI: `10.1007/s10986-017-9339-2
-  <https://doi.org/10.1007/s10986-017-9339-2>`_
+  <https://doi.org/10.1007/s10986-017-9339-2>`_)
 
 * **Ralf Hemmecke**
   (2018):
@@ -152,7 +152,7 @@ In the following we list publications mentioning FriCAS.
   `A factorization theory for some free fields
   <https://www.ieja.net/files/papers/volume-28/2-V28-2020.pdf>`_
   (DOI: `10.24330/ieja.768114
-  <https://doi.org/https://doi.org/10.24330/ieja.768114>`_)
+  <https://doi.org/10.24330/ieja.768114>`_)
 
 * **Ralf Hemmecke**, **Silviu Radu**, and **Liangjie Ye**
   (2019):
@@ -202,7 +202,7 @@ In the following we list publications mentioning FriCAS.
   `On posets and polytopes attached to arbors
   <https://www.arxiv.org/pdf/2503.04247v2>`_
   (DOI: `10.7146/math.scand.a-159563
-  <https://doi.org/10.7146/math.scand.a-159563>`_
+  <https://doi.org/10.7146/math.scand.a-159563>`_)
 
 * **Ralf Hemmecke**, **Peter Paule**, and  **Silviu Radu**
   (2026):

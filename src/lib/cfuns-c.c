@@ -124,7 +124,7 @@ make_path_from_file(char *s, char *t)
     return 1;
 }
 
-/* The functions writeablep() and readablep() determine write and
+/* The functions writablep() and readablep() determine write and
    read access of a file designated by its name.
 
    The access is determined based on the POSIX semantics; see
@@ -155,7 +155,7 @@ make_path_from_file(char *s, char *t)
         access to the dirname of path.  */
 
 int
-writeablep(char *path)
+writablep(char *path)
 {
     struct stat buf;
     char newpath[100];

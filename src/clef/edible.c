@@ -240,7 +240,7 @@ main(int argc, char *argv[])
   close(serverNum);
   ppid = getppid();
 
-  /* Iinitialize some stuff for the reading and writing */
+  /* Initialize some stuff for the reading and writing */
   define_function_keys();
   init_reader();
   PTY = 1;

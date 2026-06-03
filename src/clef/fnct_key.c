@@ -89,7 +89,7 @@ set_editor_key(void)
 
 
 
-/***  This routine id used to find the users function key mappings. It
+/***  This routine is used to find the users function key mappings. It
     simply searches the users HOME directory for a file called ".clef".
     If found it gets the key bindings from within
     *****/
@@ -168,7 +168,7 @@ get_key(int fd,char * ty) {
 
     /*
      * Determines the key number being mapped, and whether it is immediate or
-     * delay. It reurns the key value, and modifies the parameter type
+     * delay. It returns the key value, and modifies the parameter type
      */
     char keynum[1024];
     int nr;
