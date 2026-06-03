@@ -407,7 +407,13 @@ defaultTarget(opNode,op,nargs,args) ==
       isEqualOrSubDomain(a1, $Integer) and isEqualOrSubDomain(a2, $Integer) =>
         putTarget(opNode, target := $RationalNumber)
         target
+      isEqualOrSubDomain(a1,$Integer) and a2 is '(NMInteger) =>
+        putTarget(opNode, target := ['NMFraction, 'NMInteger])
+        target
       a1 = a2 =>
+        a1 is '(NMInteger) =>
+          putTarget(opNode, target := ['NMFraction, 'NMInteger])
+          target
         if (target := resolveTCat(first args, '(Field))) then
           putTarget(opNode,target)
         target
@@ -429,6 +435,9 @@ defaultTarget(opNode,op,nargs,args) ==
         target
       a2 is ['Polynomial,D] and (a1 = D) =>
         putTarget(opNode,target := mkRationalFunction D)
+        target
+      a2 is ['NMPolynomial,D] and (a1 = D) =>
+        putTarget(opNode,target := ['NMFraction, ['NMPolynomial, D]])
         target
       target
 
