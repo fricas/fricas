@@ -1084,7 +1084,7 @@ Known problems
   Also, Clozure CL earlier than release 1.2 has bug in complex cosine
   function.  Those bugs are fixed in release 1.2.  If you want to use
   earlier version you can work around the bugs applying the
-  ``contib/omcl.diff`` patch and recompiling the compiler (see the
+  ``contrib/omcl.diff`` patch and recompiling the compiler (see the
   patch or Clozure CL documentation for instructions).
 
 - Older versions of Clisp may fail to build FriCAS complaining about
@@ -1097,7 +1097,7 @@ Known problems
 .. _Axiom: https://www.nongnu.org/axiom/
 .. _CLISP: http://clisp.cons.org
 .. _Clozure CL: http://ccl.clozure.com/manual/chapter2.2.html
-.. _CMUCL: https://www.cons.org/cmucl/
+.. _CMUCL: https://cmucl.org
 .. _CTAN: https://www.ctan.org/
 .. _ECL: http://ecls.sourceforge.net
 .. _Emacs: https://www.gnu.org/software/emacs/

@@ -1396,7 +1396,7 @@ DEFPARAMETER($useInternalHistoryTable, true)
 
 history l ==
   l or null $options => say_msg("S2IH0006", CONCAT(
-      '"You have not used the correct syntax for the %b history %d command.",
+      '"You have not used the correct syntax for the %b history %d command. ",
       '"Issue %b )help history %d for more information."), NIL)
   historySpad2Cmd()
 

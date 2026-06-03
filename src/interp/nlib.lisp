@@ -31,7 +31,7 @@
 
 (in-package "BOOT")
 
-; Assumes that file is postioned after end of actual data, so that
+; Assumes that file is positioned after end of actual data, so that
 ; new indextable should overwrite old indextable (or part of it),
 ; but should not overwrite data.
 (defun |write_indextable| (stream indextable)

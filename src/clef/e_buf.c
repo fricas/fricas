@@ -121,7 +121,7 @@ shift_buff(int cp, int bp, int diff) {
 }
 
 void
-null_termiante_buff(void) {
+null_terminate_buff(void) {
     buff[buff_pntr] = 0;
 }
 

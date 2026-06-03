@@ -1,4 +1,4 @@
-;;; This file contains portablity and support routines which abstract away
+;;; This file contains portability and support routines which abstract away
 ;;; differences between Lisp dialects.
 
 #+gcl
@@ -598,7 +598,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (foreign-defs
 
-(fricas-foreign-call |writeablep| "writeablep" int
+(fricas-foreign-call |writablep| "writablep" int
         (filename c-string))
 
 #+:fricas_has_remove_directory
@@ -769,9 +769,9 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;; Chdir function
 
 (defun CHDIR (dir)
-  ;; if current working directory is changed to DIR successfully, reutrn t,
+  ;; if current working directory is changed to DIR successfully, return t,
   ;; otherwise return nil.
-  (ignore-errors ;; check return value
+  (ignore-errors
     #+:clisp
     (ext:cd dir)
     #+:cmu

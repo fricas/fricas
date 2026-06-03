@@ -1,4 +1,4 @@
-;;; We put this in separate file to avoid problems with compilation.
+;;; We put this in a separate file to avoid problems with compilation.
 (make-package "FRICAS-LISP"
      :use (list (or (find-package "COMMON-LISP")
                     "LISP")))
@@ -49,7 +49,7 @@
           |fricas_probe_file| |run_program| |run_shell_command|
           DEFCONST |exit_with_status| MEMQ |quiet_load_alien|
           |handle_input_file| |handle_output_file| |maybe_delete_file|
-          |remove_directory| |writeablep| |openServer| |sockGetInt|
+          |remove_directory| |writablep| |openServer| |sockGetInt|
           |sockSendInt| |sockSendString| |sockGetFloat| |sockSendFloat|
           |serverSwitch| |sockSendSignal| |sockGetStringFrom|))
 

@@ -689,7 +689,7 @@ insert_queue(void) {
     if (!ECHOIT) {
         return;
     }
-    null_termiante_buff();
+    null_terminate_buff();
     if (ring != NULL && !buff_cmp(ring->buff)) {
         return;
     }
