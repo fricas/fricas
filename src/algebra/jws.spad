@@ -766,10 +766,12 @@ WSReal() : Exports == Implementation where
       error "jWSReal: Not a machine number"
     coerce(f : Float) ==
       tmp := outputSpacing(0)
-      ret : % := jlref(concat(["WReal(_"", toString(f), "_")"]))
-      outputSpacing(tmp)
-      machineNumber?(ret pretend WSExpression) => ret
-      error "jWSReal: Not a machine number"
+      try
+        ret : % := jlref(concat(["WReal(_"", toString(f), "_")"]))
+        machineNumber?(ret pretend WSExpression) => ret
+        error "jWSReal: Not a machine number"
+      finally
+        outputSpacing(tmp)
     coerce(f : JLFloat64) == jlref(concat(["WReal(_"", toString(f), "_")"]))
     coerce(f : DoubleFloat) == jlref(concat(["WReal(_"", toString(f), "_")"]))
     coerce(f : JLFloat) ==
@@ -781,10 +783,12 @@ WSReal() : Exports == Implementation where
     jWSReal(f : DoubleFloat) == jlref(concat(["WReal(_"", toString(f), "_")"]))
     jWSReal(f : Float) ==
       tmp := outputSpacing(0)
-      ret := jlref(concat(["WReal(_"", toString(f), "_")"]))
-      outputSpacing(tmp)
-      machineNumber?(ret pretend WSExpression) => ret
-      error "jWSReal: Not a machine number"
+      try
+        ret := jlref(concat(["WReal(_"", toString(f), "_")"]))
+        machineNumber?(ret pretend WSExpression) => ret
+        error "jWSReal: Not a machine number"
+      finally
+        outputSpacing(tmp)
     jWSReal(f : Integer) == jlref(concat(["WReal(_"", string(f), "_")"]))
     jWSReal(str) ==
       x:= jlref(concat(["WReal(_"", str, "_")"]))
@@ -1057,10 +1061,13 @@ WSAPReal(prec : PositiveInteger) : Exports == Implementation where
       jlref(concat(["weval(NN(_"", str, "_`", string(prec), "_"))"]))
     coerce(f : Float) ==
       tmp := outputSpacing(0)
-      ret : % := jlref(concat(["weval(NN(_"", convert(f)@String,
-        "_`", string(prec),"_"))"]))
-      outputSpacing(tmp)
-      ret
+      try
+        ret : % := jlref(concat(["weval(NN(_"", convert(f)@String,
+          "_`", string(prec),"_"))"]))
+        machineNumber?(ret pretend WSExpression) => ret
+        error "jWSReal: Not a machine number"
+      finally
+        outputSpacing(tmp)
     coerce(f : JLFloat) ==
       jlref(concat(["weval(NN(_"", toString(f), "_`", string(prec), "_"))"]))
     coerce(i : Integer) ==
@@ -1081,9 +1088,12 @@ WSAPReal(prec : PositiveInteger) : Exports == Implementation where
       jlref(concat(["weval(NN(_"", toString(f), "_`", string(prec), "_"))"]))
     jWSReal(f : Float) ==
       tmp := outputSpacing(0)
-      a := jlref(concat(["weval(NN(_"", toString(f), "_`", string(prec), "_"))"]))
-      outputSpacing(tmp)
-      a
+      try
+        a := jlref(concat(["weval(NN(_"", toString(f), "_`", string(prec), "_"))"]))
+        machineNumber?(a pretend WSExpression) => a
+        error "jWSReal: Not a machine number"
+      finally
+        outputSpacing(tmp)
     coerce(x) : OutputForm ==
       x >= 0 => coerce(x pretend WSExpression)
       - coerce(abs(x) pretend WSExpression)

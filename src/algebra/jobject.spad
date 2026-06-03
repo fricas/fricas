@@ -673,9 +673,11 @@ JLObjPy() : Exports == Implementation where
       jlref(concat(["Py(_"", str, "_")"]))
     coerce(f : Float) ==
       tmp := outputSpacing(0)
-      ret := jlref(toString(f))
-      outputSpacing(tmp)
-      jlref(concat(["Py(", getind(ret),")"]))
+      try
+        ret := jlref(toString(f))
+        jlref(concat(["Py(", getind(ret),")"]))
+      finally
+        outputSpacing(tmp)
     coerce(pyobj : %) : OutputForm ==
       jl_string_getindex(jlId pyobj)$Lisp
     jpython(str : String) ==
@@ -786,9 +788,10 @@ JLObjR() : Exports == Implementation where
       jlref(concat(["R_"", str, "_""]))
     coerce(f : Float) ==
       tmp := outputSpacing(0)
-      ret := toString(f)
-      outputSpacing(tmp)
-      jlref(concat(["R_"", ret,"_""]))
+      try
+        jlref(concat(["R_"", toString(f),"_""]))
+      finally
+        outputSpacing(tmp)
     jr(robj : JLObject) ==
       junfunc("robject", robj)
     jr(str : String) ==
@@ -1119,9 +1122,10 @@ JLFloat() : Exports == Implementation where
     coerce(i : Integer) : % == jlref(concat(["BigFloat(", string(i),")"]))
     coerce(x : Float) : % ==
       tmp := outputSpacing(0)
-      ret : % := jlref(concat(["BigFloat(_"", convert(x)@String, "_")"]))
-      outputSpacing(tmp)
-      ret
+      try
+        jlref(concat(["BigFloat(_"", convert(x)@String, "_")"]))
+      finally
+        outputSpacing(tmp)
     coerce(fi: Fraction(Integer)) == coerce(numer(fi))/coerce(denom(fi))
     coerce(f : %) : OutputForm == message(string(f))
     jfloat(s : String) : % == jlref(concat(["BigFloat(_"", s,"_")"]))
