@@ -1,6 +1,7 @@
 # jlFriCAS
 
 [![FriCAS CI on x64|arm64 Linux (with Julia support - SBCL based)](https://github.com/gvanuxem/jlfricas/actions/workflows/linuxJulia_sbcl.yml/badge.svg)](https://github.com/gvanuxem/jlfricas/actions/workflows/linuxJulia_sbcl.yml)\
+[![FriCAS CI on x64 Linux (with Julia support - CCL based)](https://github.com/gvanuxem/jlfricas/actions/workflows/linuxJulia_ccl.yml/badge.svg)](https://github.com/gvanuxem/jlfricas/actions/workflows/linuxJulia_ccl.yml)\
 [![FriCAS CI on x64 Windows (with Julia support - SBCL based)](https://github.com/gvanuxem/jlfricas/actions/workflows/windowsJulia_sbcl.yml/badge.svg)](https://github.com/gvanuxem/jlfricas/actions/workflows/windowsJulia_sbcl.yml)\
 [![FriCAS CI on arm64|intel macOS (with Julia support - SBCL based)](https://github.com/gvanuxem/jlfricas/actions/workflows/macOSJulia_sbcl.yml/badge.svg)](https://github.com/gvanuxem/jlfricas/actions/workflows/macOS_Julia_sbcl.yml)
 
@@ -9,7 +10,7 @@
 [FriCAS](https://fricas.github.io) is a general purpose computer algebra
 system (CAS).
 
-In this work-in-progress repository, a C wrapper using libjulia is embedded in [FriCAS](https://fricas.github.io/) to call [Julia](https://julialang.org) optimized numerical routines such as **BLAS** and **LAPACK**, and more generally to manipulate Julia objects from within FriCAS.
+In this work-in-progress repository, a C wrapper using libjulia is embedded in [FriCAS](https://fricas.github.io/) to call [Julia](https://julialang.org) optimized numerical routines such as **BLAS** and **LAPACK**, and more generally to manipulate Julia objects from within jlFriCAS.
 
 The build process supports Clozure CL (x86-64) and SBCL (x86-64 and arm64). For SBCL, only Julia 1.10.0, Julia 1.11.* and higher are supported, see [Caveats](#caveat-sbcl). It must not be considered production-ready. An overview of what is added to FriCAS is available [here](https://gvanuxem.github.io/jlfricas/). [Binary snapshots](https://github.com/gvanuxem/jlfricas/releases) are available.
 
