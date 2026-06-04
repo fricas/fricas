@@ -770,16 +770,6 @@ BrowserInformation : Exports == Implementation where
      ops_from_exports : () -> Op_lst
        ++ ops_from_exports() gives list of all exported operations
        ++ computed from constructor exports.
-     ops_from_libdb : () -> Op_lst
-       ++ ops_from_libdb() gives list of all exported operations
-       ++ from libdb.
-       ++ This operation is present only to check compatibility with
-       ++ old code and will be removed in the future.
-     search_operations_libdb : String -> Op_res
-       ++ search_operations_libdb(n) searches for all operations with
-       ++ name matching n using old code.
-       ++ This operation is present only to check compatibility with
-       ++ old code and will be removed in the future.
      downcase : String -> String
        ++ downcase(s) converts s to lower case.
      sublis_formal : (List(SE), SE) -> SE
@@ -1384,33 +1374,6 @@ BrowserInformation : Exports == Implementation where
                 res := cons([opr.name, reverse!(res1)], res)
         reverse!(res)
 
-    string_to_integer(s : String) : Union(Integer, "failed") ==
-        res : SExpression := string2Integer(s)$Lisp
-        null?(res) => "failed"
-        integer(res)
-
-    load_docs(fl : List(Fun_rec)) : Void ==
-        for f1 in fl repeat
-            sd := f1.sd
-            ds := sd.documentation
-            ds = "" => iterate
-            ku := string_to_integer(ds)
-            if ku case Integer then
-                k := ku@Integer
-                ds :=
-                    k < 2 => ""
-                    dbReadComments(k)$Lisp
-                sd.documentation := ds
-
-    ops_from_libdb() : Op_lst ==
-        res1 := search_operations_libdb("*")
-        res1 case Err_ind => error "ops_from_libdb: search failed"
-        opl1 := res1@Op_lst
-        fl := flatten_opll([opl1])
-        load_docs(fl)
-        fl := sort(fun_cmp, fl)
-        group_funs(fl)
-
     constructor_kind(name : SY) : SY ==
         get_db_info(name, 'CONSTRUCTORKIND)
 
@@ -1559,46 +1522,6 @@ BrowserInformation : Exports == Implementation where
         not(symbol(e1) = 'constructor) => ""
         doc := destruct(doc(2))
         string(doc(2))
-
-    expand_op_line(l1 : String) : Record(name : SY, opr : Sig_doc) ==
-        els : List(String) := dbParts(l1, 7, 1)$Lisp
-        (name_s, nargs, xflag, sig_s, origs, pred_s, doc) := els
-        name := name_s::SY
-        pred := parse(pred_s)$InputForm pretend SE
-        if null?(pred) then
-            pred := true pretend SE
-        sig := (parse(sig_s)$InputForm) pretend SE
-        car(sig) ~= convert('Mapping) =>
-                    error "expand_op_lines: unexpected signature"
-        sig := cdr(sig)
-        con_sym := get_conname(origs)::Symbol
-        orig_l := cons(convert(con_sym),
-                         get_constructor_args(con_sym)
-                      )$List(SExpression)
-        [name, [sig, pred, convert(orig_l), doc]]
-
-    expand_op_lines(lst : List(String)) : Op_lst ==
-        empty?(lst) => []
-        lst := sort(lst)
-        res : Op_lst := []
-        (oname, sig1) := expand_op_line(first(lst))
-        lst := rest(lst)
-        res1 : List(Sig_doc) := [sig1]
-        for l1 in lst repeat
-            (name, sig1) := expand_op_line(l1)
-            name = oname =>
-                res1 := cons(sig1, res1)
-            res := cons([oname, reverse!(res1)], res)
-            oname := name
-            res1 := [sig1]
-        res := cons([oname, reverse!(res1)], res)
-        reverse!(res)
-
-    search_operations_libdb(pat : String) : Op_res ==
-        res1 : List(SExpression) := grepConstruct(pat, 'o)$Lisp
-        empty?(res1) => []
-        not(STRINGP(first(res1))$Lisp) => rest(res1) pretend Err_ind
-        expand_op_lines(res1 pretend List(String))
 
     add_stars(pat1 : String) : String ==
         pre : String :=

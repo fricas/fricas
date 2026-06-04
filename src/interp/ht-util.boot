@@ -34,70 +34,33 @@
 
 )package "BOOT"
 
--- List of issued hypertex lines
-$htLineList := nil
+htSay2(page, x) == bcHt2(page, x)
 
--- pointer to the page we are currently defining
-$curPage := nil
+htSayList1(page, lx) ==
+  for x in lx repeat bcHt2(page, x)
+
+bcHt2(page, line) == ht_add_item(page, line)
+
+htShowPage1(page) ==
+-- show the page which has been computed
+   ht_add_string(page, '"\endscroll")
+   ht_show_page(page)
+
+-- start defining a HyperTeX page
+
+htInitPage(title, propList) ==
+    page := ht_new_page(propList)
+    bcHt2(page, ['"\begin{page}{", htpName page, '"}{"])
+    htSay2(page, title)
+    ht_add_string(page, '"} \beginscroll ")
+    page
 
 -- List of currently active window named
 $activePageList := nil
 
-htSay(x) ==
-    bcHt(x)
-
-htSayStandard(x) ==  --do AT MOST for $standard
-    bcHt(x)
-
-htSayStandardList(lx) ==
-    htSayList(lx)
-
-htSayList(lx) ==
-  for x in lx repeat bcHt(x)
-
-bcHt line ==
-  $newPage =>  --this path affects both saturn and old lines
-    text :=
-      PAIRP line => [['text, :line]]
-      STRINGP line => line
-      [['text, line]]
-    htpAddToPageDescription($curPage, text)
-  PAIRP line =>
-    $htLineList := NCONC(nreverse mapStringize COPY_-LIST line, $htLineList)
-  $htLineList := [basicStringize line, :$htLineList]
-
-htpDestroyPage(pageName) ==
-  pageName in $activePageList =>
-    SET(pageName, nil)
-    $activePageList := NREMOVE($activePageList, pageName)
-
 htpName htPage ==
 -- GENSYM whose value is the page
   ELT(htPage, 0)
-
-htpSetName(htPage, val) ==
-  SETELT(htPage, 0, val)
-
-htpDomainConditions htPage ==
--- List of Domain conditions
-  ELT(htPage, 1)
-
-htpSetDomainConditions(htPage, val) ==
-  SETELT(htPage, 1, val)
-
-htpDomainVariableAlist htPage ==
--- alist of pattern variables and conditions
-  ELT(htPage, 2)
-
-htpSetDomainVariableAlist(htPage, val) ==
-  SETELT(htPage, 2, val)
-
-htpDomainPvarSubstList htPage ==
--- alist of user pattern variables to system vars
-  ELT(htPage, 3)
-
-htpSetDomainPvarSubstList(htPage, val) ==
-  SETELT(htPage, 3, val)
 
 htpRadioButtonAlist htPage ==
 -- alist of radio button group names and labels
@@ -108,15 +71,9 @@ htpButtonValue(htPage, groupName) ==
     (stripSpaces htpLabelInputString(htPage, buttonName)) = '"t" =>
       return buttonName
 
-htpSetRadioButtonAlist(htPage, val) ==
-  SETELT(htPage, 4, val)
-
 htpInputAreaAlist htPage ==
 -- Alist of input-area labels, and default values
   ELT(htPage, 5)
-
-htpSetInputAreaAlist(htPage, val) ==
-  SETELT(htPage, 5, val)
 
 htpPropertyList htPage ==
 -- Association list of user-defined properties
@@ -138,132 +95,9 @@ htpLabelInputString(htPage, label) ==
     trimString s
   nil
 
-htpLabelFilteredInputString(htPage, label) ==
--- value user typed as input string on page
-  props := LASSOC(label, htpInputAreaAlist htPage)
-  props =>
-    #props > 5 and ELT(props, 6) =>
-      FUNCALL(SYMBOL_-FUNCTION ELT(props, 6), ELT(props, 0))
-    ELT(props, 0)
-  nil
-
-htpLabelSpadValue(htPage, label) ==
--- Scratchpad value of parsed and evaled inputString, as (type . value)
-  props := LASSOC(label, htpInputAreaAlist htPage)
-  props => ELT(props, 1)
-  nil
-
-htpSetLabelSpadValue(htPage, label, val) ==
--- value user typed as input string on page
-  props := LASSOC(label, htpInputAreaAlist htPage)
-  props => SETELT(props, 1, val)
-  nil
-
-htpLabelErrorMsg(htPage, label) ==
--- error message associated with input area
-  props := LASSOC(label, htpInputAreaAlist htPage)
-  props => ELT(props, 2)
-  nil
-
-htpSetLabelErrorMsg(htPage, label, val) ==
--- error message associated with input area
-  props := LASSOC(label, htpInputAreaAlist htPage)
-  props => SETELT(props, 2, val)
-  nil
-
-htpLabelType(htPage, label) ==
--- either 'string or 'button
-  props := LASSOC(label, htpInputAreaAlist htPage)
-  props => ELT(props, 3)
-  nil
-
-htpLabelDefault(htPage, label) ==
--- default value for the input area
-  msg := htpLabelInputString(htPage, label) =>
-    msg = '"t" => 1
-    msg = '"nil" => 0
-    msg
-  props := LASSOC(label, htpInputAreaAlist htPage)
-  props =>
-    ELT(props, 4)
-  nil
-
-
-htpLabelSpadType(htPage, label) ==
--- pattern variable for target domain for input area
-  props := LASSOC(label, htpInputAreaAlist htPage)
-  props => ELT(props, 5)
-  nil
-
-htpLabelFilter(htPage, label) ==
--- string to string mapping applied to input area strings before parsing
-  props := LASSOC(label, htpInputAreaAlist htPage)
-  props => ELT(props, 6)
-  nil
-
-htpPageDescription htPage ==
--- a list of all the commands issued to create the basic-command page
-  ELT(htPage, 7)
-
-htpSetPageDescription(htPage, pageDescription) ==
-  SETELT(htPage, 7, pageDescription)
-
-iht line ==
--- issue a single hyperteTeX line, or a group of lines
-  $newPage => nil
-  PAIRP line =>
-    $htLineList := NCONC(nreverse mapStringize COPY_-LIST line, $htLineList)
-  $htLineList := [basicStringize line, :$htLineList]
-
-bcIssueHt line ==
-  PAIRP line => htMakePage1 line
-  iht line
-
-mapStringize l ==
-  ATOM l => l
-  RPLACA(l, basicStringize first l)
-  RPLACD(l, mapStringize rest l)
-  l
-
-basicStringize s ==
-    STRINGP(s) => s
-    s = '_% => '"\%"
-    PRINC_-TO_-STRING(s)
-
 stringize s ==
   STRINGP s => s
   PRINC_-TO_-STRING s
-
-htProcessBcButtons buttons ==
-  for [defaultValue, buttonName] in buttons repeat
-    if NULL LASSOC(buttonName, htpInputAreaAlist $curPage) then
-      setUpDefault(buttonName, ['button, defaultValue])
-    k := htpLabelDefault($curPage,buttonName)
-    k = 0 => iht ['"\off{",buttonName,'"}"]
-    k = 1 => iht ['"\on{", buttonName,'"}"]
-    iht ['"\inputbox[", htpLabelDefault($curPage, buttonName), '"]{",
-         buttonName, '"}{\htbmfile{pick}}{\htbmfile{unpick}}"]
-
-bcSadFaces() ==
-  '"\space{1}{\em\htbitmap{error}\htbitmap{error}\htbitmap{error}}"
-
-htLispLinks(links,:option) ==
-  [links,options] := beforeAfter('options,links)
-  indent := LASSOC('indent,options) or 5
-  iht '"\newline\indent{"
-  iht stringize indent
-  iht '"}\beginitems"
-  for [message, info, func, :value] in links repeat
-    iht '"\item["
-    call := (IFCAR option => '"\lispmemolink"; '"\lispdownlink")
-    htMakeButton(call,message, mkCurryFun(func, value))
-    iht ['"]\space{}"]
-    bcIssueHt info
-  iht '"\enditems\indent{0} "
-
-htLispMemoLinks(links) == htLispLinks(links,true)
-
-beforeAfter(x,u) == [[y for [y,:r] in tails u while x ~= y],r]
 
 mkCurryFun(fun, val) ==
   name := GENTEMP()
@@ -272,158 +106,11 @@ mkCurryFun(fun, val) ==
   EVAL code
   name
 
-htRadioButtons [groupName, :buttons] ==
-  htpSetRadioButtonAlist($curPage, [[groupName, :buttonNames buttons],
-                                    : htpRadioButtonAlist $curPage])
-  boxesName := GENTEMP()
-  iht ['"\newline\indent{5}\radioboxes{", boxesName,
-     '"}{\htbmfile{pick}}{\htbmfile{unpick}}\beginitems "]
-  defaultValue := '"1"
-  for [message, info, buttonName] in buttons repeat
-    if NULL LASSOC(buttonName, htpInputAreaAlist $curPage) then
-      setUpDefault(buttonName, ['button, defaultValue])
-      defaultValue := '"0"
-    iht ['"\item{\em\radiobox[", htpLabelDefault($curPage, buttonName), '"]{",
-         buttonName, '"}{",boxesName, '"}\space{}"]
-    bcIssueHt message
-    iht '"\space{}}"
-    bcIssueHt info
-  iht '"\enditems\indent{0} "
-
-htBcRadioButtons [groupName, :buttons] ==
-  htpSetRadioButtonAlist($curPage, [[groupName, :buttonNames buttons],
-                                    : htpRadioButtonAlist $curPage])
-  boxesName := GENTEMP()
-  iht ['"\radioboxes{", boxesName,
-     '"}{\htbmfile{pick}}{\htbmfile{unpick}} "]
-  defaultValue := '"1"
-  for [message, info, buttonName] in buttons repeat
-    if NULL LASSOC(buttonName, htpInputAreaAlist $curPage) then
-      setUpDefault(buttonName, ['button, defaultValue])
-      defaultValue := '"0"
-    iht ['"{\em\radiobox[", htpLabelDefault($curPage, buttonName), '"]{",
-         buttonName, '"}{",boxesName, '"}"]
-    bcIssueHt message
-    iht '"\space{}}"
-    bcIssueHt info
-
-buttonNames buttons ==
-  [buttonName for [.,., buttonName] in buttons]
-
-htInputStrings strings ==
-  iht '"\newline\indent{5}\beginitems "
-  for [mess1, mess2, numChars, default, stringName, spadType, :filter]
-   in strings repeat
-    if NULL LASSOC(stringName, htpInputAreaAlist $curPage) then
-      setUpDefault(stringName, ['string, default, spadType, filter])
-    if htpLabelErrorMsg($curPage, stringName) then
-      iht ['"\centerline{{\em ", htpLabelErrorMsg($curPage, stringName), '"}}"]
-
-      mess2 := CONCAT(mess2, bcSadFaces())
-      htpSetLabelErrorMsg($curPage, stringName, nil)
-    iht '"\item "
-    bcIssueHt mess1
-    iht ['"\inputstring{", stringName, '"}{",
-         numChars, '"}{", htpLabelDefault($curPage,stringName), '"} "]
-    bcIssueHt mess2
-  iht '"\enditems\indent{0}\newline "
-
-htProcessDomainConditions condList ==
-  htpSetDomainConditions($curPage, renamePatternVariables condList)
-  htpSetDomainVariableAlist($curPage, computeDomainVariableAlist())
-
-renamePatternVariables condList ==
-  htpSetDomainPvarSubstList($curPage,
-    renamePatternVariables1(condList, nil, $PatternVariableList))
-  substFromAlist(condList, htpDomainPvarSubstList $curPage)
-
-renamePatternVariables1(condList, substList, patVars) ==
-  null condList => substList
-  [cond, :restConds] := condList
-  cond is ['isDomain, pv, pattern] or cond is ['ofCategory, pv, pattern]
-    or cond is ['Satisfies, pv, cond] =>
-      if pv = $EmptyMode then nsubst := substList
-      else nsubst := [[pv, :car patVars], :substList]
-      renamePatternVariables1(restConds, nsubst, rest patVars)
-  substList
-
-substFromAlist(l, substAlist) ==
-  for [pvar, :replace] in substAlist repeat
-    l := substitute(replace, pvar, l)
-  l
-
-computeDomainVariableAlist() ==
-  [[pvar, :pvarCondList pvar] for [., :pvar] in
-    htpDomainPvarSubstList $curPage]
-
-pvarCondList pvar ==
-  nreverse pvarCondList1([pvar], nil, htpDomainConditions $curPage)
-
-pvarCondList1(pvarList, activeConds, condList) ==
-  null condList => activeConds
-  [cond, : restConds] := condList
-  cond is [., pv, pattern] and pv in pvarList =>
-    pvarCondList1(nconc(pvarList, pvarsOfPattern pattern),
-                  [cond, :activeConds], restConds)
-  pvarCondList1(pvarList, activeConds, restConds)
-
-pvarsOfPattern pattern ==
-  NULL LISTP pattern => nil
-  [pvar for pvar in rest pattern | pvar in $PatternVariableList]
-
 htMakeDoneButton(page, message, func) ==
-  bcHt '"\newline\vspace{1}\centerline{"
-  if message = '"Continue" then
-    bchtMakeButton('"\lispdownlink", "\ContinueBitmap", func)
-  else
-    bchtMakeButton('"\lispdownlink",CONCAT('"\fbox{", message, '"}"), func)
-  bcHt '"} "
-
-htProcessDoneButton [label , func] ==
-  iht '"\newline\vspace{1}\centerline{"
-
-  if label = '"Continue" then
-    htMakeButton('"\lispdownlink", "\ContinueBitmap", func)
-  else if label = '"Push to enter names" then
-    htMakeButton('"\lispdownlink",'"\ControlBitmap{ClickToSet}", func)
-  else
-    htMakeButton('"\lispdownlink", CONCAT('"\fbox{", label, '"}"), func)
-
-  iht '"} "
-
-bchtMakeButton(htCommand, message, func) ==
-  bcHt [htCommand, '"{", message,
-       '"}{(|htDoneButton| '|", func, '"| (PROGN "]
-  for [id, ., ., ., type, :.] in htpInputAreaAlist $curPage repeat
-    bcHt ['"(|htpSetLabelInputString| ", htpName $curPage, '"'|", id, '"| "]
-    if type = 'string then
-      bcHt ['"_"\stringvalue{", id, '"}_""]
-    else
-      bcHt ['"_"\boxvalue{", id, '"}_""]
-    bcHt '") "
-  bcHt [htpName $curPage, '"))} "]
-
-htProcessDoitButton [label, command, func] ==
-  fun := mkCurryFun(func, [command])
-  iht '"\newline\vspace{1}\centerline{"
-  htMakeButton('"\lispcommand", CONCAT('"\fbox{", label, '"}"), fun)
-  iht '"} "
-  iht '"\vspace{2}{Select \  \UpButton{} \  to go back one page.}"
-  iht '"\newline{Select \  \ExitButton{QuitPage} \  to remove this window.}"
+    ht_add_to_page(page, [['doneButton, message, func]])
 
 htMakeDoitButton(page, label, command) ==
-  -- use bitmap button if just plain old "Do It"
-  if label = '"Do It" then
-    bcHt '"\newline\vspace{1}\centerline{\lispcommand{\DoItBitmap}{(|doDoitButton| "
-  else
-    bcHt ['"\newline\vspace{1}\centerline{\lispcommand{\fbox{", label,
-       '"}}{(|doDoitButton| "]
-  bcHt htpName $curPage
-  bcHt ['" _"", htEscapeString command, '"_""]
-  bcHt '")}}"
-
-  bcHt '"\vspace{2}{Select \  \UpButton{} \  to go back one page.}"
-  bcHt '"\newline{Select \  \ExitButton{QuitPage} \  to remove this window.}"
+    ht_add_to_page(page, [['doitButton, label, command]])
 
 doDoitButton(htPage, command) ==
   executeInterpreterCommand command
@@ -437,29 +124,11 @@ executeInterpreterCommand command ==
   princPrompt()
   FORCE_-OUTPUT()
 
-htDoneButton(func, htPage, :optionalArgs) ==
-------> Handle argument values passed from page if present
-  if optionalArgs then
-    htpSetInputAreaAlist(htPage, first optionalArgs)
-  typeCheckInputAreas htPage =>
-    htMakeErrorPage htPage
+-- Called via lisplink
+htDoneButton(func, htPage) ==
   NULL FBOUNDP func =>
     systemError ['"unknown function", func]
   FUNCALL(SYMBOL_-FUNCTION func, htPage)
-
-typeCheckInputAreas htPage ==
-  -- This needs to be severely beefed up
-  errorCondition := false
-  for entry in htpInputAreaAlist htPage
-   | entry is [stringName, ., ., ., 'string, ., spadType, filter] repeat
-    string := htpLabelFilteredInputString(htPage, stringName)
-    null(ncParseFromString(string)) =>
-        -- FIXME: this effectively ignores errors, but otherwise
-        -- search without parameters does not work
-        -- errorCondition := true
-        htpSetLabelErrorMsg(htPage, '"Syntax Error", '"Syntax Error")
-    nil
-  errorCondition
 
 -- predefined filter strings
 
@@ -485,13 +154,14 @@ unescapeStringsInForm form ==
 bcBlankLine(page) ==
     ht_add_string(page, '"\vspace{1}\newline ")
 
-errorPage(htPage,[heading,kind,:info]) ==
-  kind = 'invalidType => kInvalidTypePage first info
-  if heading = 'error then page := htInitPage('"Error",nil) else
-                           page := htInitPage(heading,nil)
+errorPage([heading, kind, :info]) ==
+  kind = 'invalidType => BREAK()
+  page :=
+      heading = 'error => htInitPage('"Error", nil)
+      htInitPage(heading, nil)
   bcBlankLine(page)
-  for x in info repeat htSay x
-  htShowPage()
+  for x in info repeat htSay2(page, x)
+  htShowPage1(page)
 
  -- from bc-util
 

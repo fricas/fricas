@@ -98,8 +98,6 @@ if [ ! -z "${copy_lisp}" ]; then
    done
    mkdir -p pre-generated/target/algebra
    cp ../src/algebra/*.daase pre-generated/target/algebra
-   cp ../src/algebra/libdb.text pre-generated/target/algebra
-   cp ../src/algebra/comdb.text pre-generated/target/algebra
    cp ../src/doc/glossdef.text pre-generated/target/algebra
    cp ../src/doc/glosskey.text pre-generated/target/algebra
    cp -r ../src/algebra/USERS.DAASE pre-generated/target/algebra

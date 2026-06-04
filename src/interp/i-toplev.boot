@@ -150,7 +150,6 @@ interpsysInitialization(display_messages) ==
   setOutputAlgebra "%initialize%"
   loadExposureGroupData()
   if $displayStartMsgs then say_msg("S2IZ0053", init_msg, ['"database"])
-  mkLowerCaseConTable()
   if not $ruleSetsInitialized then initializeRuleSets()
   if $displayStartMsgs then say_msg("S2IZ0053", init_msg, ['"constructors"])
   makeConstructorsAutoLoad()

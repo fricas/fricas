@@ -33,17 +33,6 @@
 
 $historyDisplayWidth := 120
 
-downlink page ==
-  htInitPage('"Bridge",nil)
-  htSayList(['"\replacepage{", page, '"}"])
-  htShowPage()
-
-dbNonEmptyPattern pattern ==
-  null pattern => '"*"
-  pattern := STRINGIMAGE pattern
-  #pattern > 0 => pattern
-  '"*"
-
 htSystemVariables() ==
     not $fullScreenSysVars => htSetVars()
     classlevel := $UserLevel
@@ -132,66 +121,6 @@ htSetSystemVariable(htPage,[name,value]) ==
     value
   SET(name,value)
   htSystemVariables ()
-
-htGloss(pattern) == htGlossPage(nil,dbNonEmptyPattern pattern or '"*",true)
-
-htGlossPage(htPage,pattern,tryAgain?) ==
-  $wildCard: local := char '_*
-  pattern = '"*" => downlink 'GlossaryPage
-  filter := pmTransFilter pattern
-  grepForm := mkGrepPattern(filter,'none)
-  $key: local := 'none
-  results := applyGrep(grepForm,'gloss)
-  defstream := MAKE_INSTREAM(STRCONC($spadroot,
-                                     '"/algebra/glossdef.text"))
-  lines := gatherGlossLines(results,defstream)
-  heading :=
-    pattern = '"" => '"Glossary"
-    null lines => ['"No glossary items match {\em ",pattern,'"}"]
-    ['"Glossary items matching {\em ",pattern,'"}"]
-  null lines =>
-    tryAgain? and #pattern > 0 =>
-      (pattern.(k := MAXINDEX(pattern))) = char 's =>
-        htGlossPage(htPage,SUBSTRING(pattern,0,k),true)
-      UPPER_-CASE_-P pattern.0 =>
-        htGlossPage(htPage,DOWNCASE pattern,false)
-      errorPage(htPage,['"Sorry",nil,['"\centerline{",:heading,'"}"]])
-    errorPage(htPage,['"Sorry",nil,['"\centerline{",:heading,'"}"]])
-  htInitPageNoScroll(nil,heading)
-  htSay('"\beginscroll\beginmenu")
-  for line in lines repeat
-    tick := charPosition($tick,line,1)
-    htSayList(['"\item{\em \menuitemstyle{}}\tab{0}{\em ",
-               escapeString SUBSTRING(line,0,tick),'"} ",
-               SUBSTRING(line,tick + 1,nil)])
-  htSay '"\endmenu "
-  htSay '"\endscroll\newline "
-  htMakePage [['bcLinks,['"Search",'"",'htGlossSearch,nil]]]
-  htSay '" for glossary entry matching "
-  htMakePage [['bcStrings, [24,'"*",'filter,'EM]]]
-  htShowPageNoScroll()
-
-gatherGlossLines(results,defstream) ==
-  acc := nil
-  for keyline in results repeat
-    n := charPosition($tick,keyline,0)
-    keyAndTick := SUBSTRING(keyline,0,n + 1)
-    byteAddress := string2Integer SUBSTRING(keyline,n + 1,nil)
-    FILE_-POSITION(defstream,byteAddress)
-    line := read_line defstream
-    k := charPosition($tick,line,1)
-    pointer := SUBSTRING(line,0,k)
-    def := SUBSTRING(line,k + 1,nil)
-    xtralines := nil
-    while (x := read_line defstream) and
-      (j := charPosition($tick,x,1)) and (nextPointer := SUBSTRING(x,0,j))
-        and (nextPointer = pointer) repeat
-          xtralines := [SUBSTRING(x,j + 1,nil),:xtralines]
-    acc := [STRCONC(keyAndTick,def, "STRCONC"/NREVERSE xtralines),:acc]
-  REVERSE acc
-
-htGlossSearch(htPage,junk) ==  htGloss htpLabelInputString(htPage,'filter)
-
 
 htSetVars() ==
   $path := nil
@@ -293,12 +222,11 @@ htSetLiterals2(page, name, message, cval, values, functionToCall) ==
   ht_add_string(page, '"Select one of the following: \newline\tab{3} ")
   links := [[STRCONC('"",STRINGIMAGE opt), '"\newline\tab{3}", functionToCall, opt] for opt in values]
   ht_add_to_page(page, [['bcLispLinks, :links]])
-  bcHt ['"\indent{0}\newline\vspace{1} The current setting is: {\em ",
-        translateTrueFalse2YesNo(cval), '"} "]
+  bcHt2(page, ['"\indent{0}\newline\vspace{1} The current setting is: {\em ",
+        translateTrueFalse2YesNo(cval), '"} "])
   htShowPage1(page)
 
 htSetLiteral(htPage, val) ==
-  htInitPage('"Set Command", nil)
   SET(htpProperty(htPage, 'variable), translateYesNo2TrueFalse val)
   htKill(htPage,val)
 
@@ -326,7 +254,7 @@ htSetInteger(htPage) ==
   htInitPage(mkSetTitle(), nil)
   val := chkRange htpLabelInputString(htPage,'value)
   not INTEGERP val =>
-    errorPage(htPage,['"Value Error",nil,'"\vspace{3}\centerline{{\em ",val,'"}}\vspace{2}\newline\centerline{Click on \UpBitmap{} to re-enter value}"])
+    errorPage(['"Value Error",nil,'"\vspace{3}\centerline{{\em ",val,'"}}\vspace{2}\newline\centerline{Click on \UpBitmap{} to re-enter value}"])
   SET(htpProperty(htPage, 'variable), val)
   htKill(htPage,val)
 

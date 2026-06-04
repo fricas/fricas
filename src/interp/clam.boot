@@ -190,6 +190,17 @@ clearCategoryCache catName ==
 clear_callbacks() ==
     $SPADRREAD_fun := [0, nil]
     $SPADRWRITE_fun := [0, nil]
+    -- HyperDoc support
+    $do_search_fun := [0, nil]
+    $do_page_fun0_fun := [0, nil]
+    $do_page_fun1_fun := [0, nil]
+    $do_page_fun2_fun := [0, nil]
+    $do_gen_fun1_fun := [0, nil]
+    $add_description_string_fun := [0, nil]
+    $add_to_noproces_fun := [0, nil]
+    $show_page_fun := [0, nil]
+    $add_to_page_fun := [0, nil]
+    $make_page_fun := [0, nil]
 
 displayHashtable x ==
   l:= NREVERSE SORTBY('CAR,[[opOf HGET(x,key),key] for key in HKEYS x])

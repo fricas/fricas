@@ -33,22 +33,6 @@
 
 --% Manipulation of Constructor Datat
 
---=======================================================================
---            Build Table of Lower Case Constructor Names
---=======================================================================
-mkLowerCaseConTable() ==
---Table is referenced by functions conPageFastPath and grepForAbbrev
-  $lowerCaseConTb := MAKE_HASHTABLE('EQUAL)
-  for x in allConstructors() repeat augmentLowerCaseConTable x
-  $lowerCaseConTb
-
-augmentLowerCaseConTable x ==
-  y := get_database(x, 'ABBREVIATION)
-  item:=[x,y,nil]
-  HPUT($lowerCaseConTb,x,item)
-  HPUT($lowerCaseConTb,DOWNCASE x,item)
-  HPUT($lowerCaseConTb,y,item)
-
 abbreviation? abb ==
   -- if it is an abbreviation, return the corresponding name
   get_database(abb, 'CONSTRUCTOR)
@@ -96,9 +80,6 @@ abbQuery(x) ==
 
 installConstructor(cname) ==
   item := [cname, get_database(cname, 'ABBREVIATION), nil]
-  if BOUNDP '$lowerCaseConTb and $lowerCaseConTb then
-    HPUT($lowerCaseConTb,cname,item)
-    HPUT($lowerCaseConTb,DOWNCASE cname,item)
 
 constructorAbbreviationErrorCheck(c,a,typ) ==
   siz := SIZE (s := PNAME a)
