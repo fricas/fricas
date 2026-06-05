@@ -205,7 +205,7 @@ file_directory(n) ==
     while k >=0 and not(is_dir_separator?(n.k)) repeat
         k := k - 1
     k < 0 => '""
-    k = 0 => "/"
+    k = 0 => '"/"
     SUBSTRING(n, 0, k)
 
 make_filename2(n, e) ==
