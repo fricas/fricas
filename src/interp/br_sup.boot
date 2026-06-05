@@ -46,7 +46,21 @@ quiet_valid_type?(t) ==
 
 --% Call to Spad code generating pages ---
 
-$add_description_string_fun := [0, nil]
+clear_hyperdoc_funs() ==
+    $add_description_string_fun := [0, nil]
+    $add_to_noproces_fun := [0, nil]
+    $add_to_page_fun := [0, nil]
+    $destroy_page_fun := [0, nil]
+    $do_gen_fun1_fun := [0, nil]
+    $do_page_fun0_fun := [0, nil]
+    $do_page_fun1_fun := [0, nil]
+    $do_page_fun2_fun := [0, nil]
+    $do_search_fun := [0, nil]
+    $make_page_fun := [0, nil]
+    $set_input_string_fun := [0, nil]
+    $show_page_fun := [0, nil]
+
+clear_hyperdoc_funs()
 
 ht_add_string(page, s) ==
     not(STRINGP(s)) => BREAK()
@@ -54,8 +68,6 @@ ht_add_string(page, s) ==
               getFunctionFromDomain1("add_to_description",
                 '(HyperdocPage), $Void, '((HyperdocPage) (String))))
     SPADCALL(page, s, fun)
-
-$add_to_noproces_fun := [0, nil]
 
 ht_add_item(page, line) ==
     STRINGP line => ht_add_string(page, line)
@@ -67,23 +79,17 @@ ht_add_item(page, line) ==
             '(HyperdocPage), $Void, '((HyperdocPage) (List (SExpression)))))
     SPADCALL(page, text, fun)
 
-$show_page_fun := [0, nil]
-
 ht_show_page(page) ==
     fun := SpadFun($show_page_fun,
                getFunctionFromDomain1("show", '(HyperdocPage),
                                       $Void, '((HyperdocPage))))
     SPADCALL(page, fun)
 
-$add_to_page_fun := [0, nil]
-
 ht_add_to_page(page, itemList) ==
     fun := SpadFun($add_to_page_fun,
               getFunctionFromDomain1("add_to", '(HyperdocPage),
                 $Void, '((HyperdocPage) (List (SExpression)))))
     SPADCALL(page, itemList, fun)
-
-$make_page_fun := [0, nil]
 
 ht_new_page(propList) ==
     fun := SpadFun($make_page_fun,
@@ -92,15 +98,11 @@ ht_new_page(propList) ==
     page := SPADCALL(propList, fun)
     page
 
-$destroy_page_fun := [0, nil]
-
 htpDestroyPage(name) ==
     fun := SpadFun($destroy_page_fun,
               getFunctionFromDomain1("destroy", '(HyperdocPage),
                 $Void, '(Symbol)))
     SPADCALL(name, fun)
-
-$set_input_string_fun := [0, nil]
 
 htpSetLabelInputString(page, key, val) ==
     fun := SpadFun($set_input_string_fun,
@@ -108,15 +110,11 @@ htpSetLabelInputString(page, key, val) ==
                 $Void, [["HyperdocPage"], ["Symbol"], ["String"]]))
     SPADCALL(page, key, val, fun)
 
-$do_search_fun := [0, nil]
-
 do_search(pat, tag, desc) ==
     fun := SpadFun($do_search_fun,
              getFunctionFromDomain1("do_search", ["HyperdocTopPage"],
                 $Void, [["String"], ["Symbol"], ["String"]]))
     SPADCALL(pat, tag, desc, fun)
-
-$do_page_fun0_fun := [0, nil]
 
 do_page_fun0(page, tag) ==
     fun := SpadFun($do_page_fun0_fun,
@@ -124,15 +122,11 @@ do_page_fun0(page, tag) ==
                 $Void, [["HyperdocPage"], ["Symbol"]]))
     SPADCALL(page, tag, fun)
 
-$do_page_fun1_fun := [0, nil]
-
 do_page_fun1(page, tag, data) ==
     fun := SpadFun($do_page_fun1_fun,
              getFunctionFromDomain1("do_page_fun1", ["HyperdocTopPage"],
                 $Void, [["HyperdocPage"], ["Symbol"], ["SExpression"]]))
     SPADCALL(page, tag, data, fun)
-
-$do_page_fun2_fun := [0, nil]
 
 do_page_fun2(page, tag, data1, data2) ==
     fun := SpadFun($do_page_fun2_fun,
@@ -140,8 +134,6 @@ do_page_fun2(page, tag, data1, data2) ==
                 $Void, [["HyperdocPage"], ["Symbol"],
                     ["SExpression"], ["SExpression"]]))
     SPADCALL(page, tag, data1, data2, fun)
-
-$do_gen_fun1_fun := [0, nil]
 
 do_gen_fun1(tag, data) ==
     fun := SpadFun($do_gen_fun1_fun,
