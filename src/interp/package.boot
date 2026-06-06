@@ -69,10 +69,10 @@ encodeItem x ==
   STRINGIMAGE x
 
 getCaps x ==
-  s:= STRINGIMAGE x
+  s := STRINGIMAGE(x)
   clist:= [c for i in 0..MAXINDEX s | UPPER_-CASE_-P (c:= s.i)]
   null clist => '"__"
-  "STRCONC"/[first clist,:[DOWNCASE u for u in rest clist]]
+  "STRCONC"/[first(clist), :[CHAR_-DOWNCASE(u) for u in rest(clist)]]
 
 --% abbreviation code
 

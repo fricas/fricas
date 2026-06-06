@@ -191,7 +191,6 @@ transformAndRecheckComments(name,lines) ==
   u := checkComments(name,lines)
   $recheckingFlag := true
   checkRewrite(name,[u])
-  $recheckingFlag := false
   u
 
 checkRewrite(name, lines) ==    --similar to checkComments from c-doc

@@ -513,7 +513,10 @@ outputTranIterate x ==
     ['STEP,outputTran n,init',outputTran step,:final']
   x is ["IN",n,s] => ["IN",outputTran n,outputTran s]
   x is [op,p] and op in '(_| UNTIL WHILE) =>
-    op:= DOWNCASE op
+    op :=
+        op = 'WHILE => "while"
+        op = 'UNTIL => "until"
+        op
     ['CONCATB,op,outputTran p]
   throwKeyedMsg("S2IX0008",['outputTranIterate,['"illegal iterate: ",x]])
 

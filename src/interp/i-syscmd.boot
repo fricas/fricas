@@ -129,7 +129,7 @@ synonymsForUserLevel l ==
   $UserLevel = 'development => l
   nl := NIL
   for syn in reverse l repeat
-    cmd := STRING2ID_N(rest(syn), 1)
+    cmd := first_symbol(rest(syn))
     null(selectOption(cmd, commandsForUserLevel($systemCommands), nil)) =>
         nil
     nl := [syn,:nl]
@@ -256,7 +256,7 @@ listConstructorAbbreviations() ==
         '" there are several hundred abbreviations, please confirm your",
         '" request by typing %b y %d or %b yes %d and then pressing %b",
         '" Enter %d :"), [])
-  MEMQ(STRING2ID_N(x, 1), '(Y YES)) =>
+  x =>
     whatSpad2Cmd '(categories)
     whatSpad2Cmd '(domains)
     whatSpad2Cmd '(packages)
@@ -424,8 +424,7 @@ close args ==
     closeInterpreterFrame(NIL)
   x := query_user_msg("S2IZ0072",
         '"This is the last FriCAS session.  Do you want to kill FriCAS?", [])
-  MEMQ(STRING2ID_N(x, 1), '(YES Y)) =>
-    QUIT()
+  x => QUIT()
   nil
 
 must_find_file(af, ft) ==
@@ -893,7 +892,7 @@ displayOperations l ==
             '" operations (functions) be displayed.  As there are several",
             '" hundred operations, please confirm your request by typing",
             '" %b y %d or %b yes %d and then pressing %b Enter %d :"), [])
-        if MEMQ(STRING2ID_N(x, 1), '(Y YES)) then
+        if x then
             for op in allOperations() repeat reportOpSymbol(op)
         else say_msg("S2IZ0059", CONCAT(
             '"Since you did not respond with %b y %d or %b yes %d the",
@@ -1350,7 +1349,7 @@ importFromFrame args ==
             '"User verification required: do you really want to import",
             '" everything from the frame %1b ?  If so, please enter",
             '" %b y %d or %b yes %d :"), [fname])
-    MEMQ(STRING2ID_N(x, 1), '(Y YES)) =>
+    x =>
       vars := NIL
       for [v,:props] in CAAR fenv repeat
         v = "--macros" =>
@@ -1457,7 +1456,7 @@ historySpad2Cmd() ==
          '"Turning on the history facility will clear the contents of",
          '"the workspace.  Please enter %b y %d or %b yes %d if you really",
          '" want to do this:"), [])
-      MEMQ(STRING2ID_N(x, 1), '(Y YES)) =>
+      x =>
         histFileErase histFileName()
         $HiFiAccess:= 'T
         $options := nil
@@ -2010,7 +2009,7 @@ quitSpad2Cmd() ==
   x := query_user_msg("S2IZ0031", CONCAT(
         '"Please enter %b y %d or %b yes %d if you really want to leave the",
         '" interactive environment and return to the operating system:"), [])
-  MEMQ(STRING2ID_N(x, 1), '(Y YES)) => leaveScratchpad()
+  x => leaveScratchpad()
   say_msg("S2IZ0032", CONCAT(
         '"You have chosen to remain in the %b FriCAS %d",
         '" interactive environment."), [])
@@ -2375,7 +2374,7 @@ spool(filename) ==
 
 processSynonymLine line ==
   line := STRING_-LEFT_-TRIM('" ", line)
-  key := STRING2ID_N (line, 1)
+  key := first_symbol(line)
   value := SUBSTRING(line, # STRINGIMAGE key, nil)
   value := STRING_-LEFT_-TRIM('" ", value)
   [key, :value]
@@ -2741,7 +2740,9 @@ filterListOfStringsWithFn(patterns,names,fn) ==
 satisfiesRegularExpressions(name,patterns) ==
   -- this is a first cut
   nf := true
-  dname := DOWNCASE COPY name
+  if SYMBOLP(name) then
+      name := PNAME(name)
+  dname := DOWNCASE(name)
   for pattern in patterns while nf repeat
     -- use @ as a wildcard
     STRPOS(pattern,dname,0,'"@") => nf := nil
@@ -2762,7 +2763,7 @@ processSynonyms() ==
   to := search_str('" ", line, 1)
   if to then to := to - 1
   synstr := SUBSTRING (line, 1, to)
-  syn := STRING2ID_N (synstr, 1)
+  syn := first_symbol(synstr)
   null (fun := LASSOC (syn, $CommandSynonymAlist)) => NIL
   to := search_str('")", fun, 1)
   if to and to ~= #fun - 1 then

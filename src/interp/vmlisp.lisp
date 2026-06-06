@@ -73,13 +73,6 @@
         ((atom l) l)
         (t (mapcar #'upcase l))))
 
-(defun DOWNCASE (l)
-  (cond ((stringp l) (string-downcase l))
-        ((identp l) (intern (string-downcase (symbol-name l))))
-        ((characterp l) (char-downcase l))
-        ((atom l) l)
-        (t (mapcar #'downcase l))))
-
 ; 11.2 Accessing
 
 (defun PNAME (x) (symbol-name x))
@@ -347,17 +340,6 @@
 (define-function 'STRCONC #'CONCAT)
 
 ; 17.2 Accessing
-
-(defun STRING2ID_N (cvec n)
-  (if (< n 1)
-      nil
-      (let ((start (position-if-not #'(lambda (x) (char= x #\Space)) cvec)))
-        (if start
-            (let ((end (or (position #\Space cvec :start start) (length cvec))))
-              (if (= n 1)
-                  (intern (subseq cvec start end))
-                  (STRING2ID_N (subseq cvec end) (1- n))))
-            0))))
 
 (defun SUBSTRING (cvec start length)
   (setq cvec (string cvec))

@@ -396,7 +396,8 @@ query_user_msg(key, msg, args) ==
   ioHook("startQueryUser")
   ans := read_line conStream
   ioHook("endOfQueryUser")
-  UPCASE(ans)
+  ans := DOWNCASE(STRING_-TRIM('" ", ans))
+  ans = '"y" or ans = '"yes"
 
 flowSegmentedMsg(msg, len, offset) ==
   -- tries to break a sayBrightly-type input msg into multiple

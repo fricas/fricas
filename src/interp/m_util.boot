@@ -336,3 +336,10 @@ bright_warn(m) ==
 COT(x) == COS(x)/SIN(x)
 
 is_char?(c) == CHARACTERP(c)
+
+first_symbol(s) ==
+    pos := search_str('" ", s, 0)
+    INTERN(SUBSTRING(s, 0, pos))
+
+DOWNCASE(s) == STRING_-DOWNCASE(s)
+
