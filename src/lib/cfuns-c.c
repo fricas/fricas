@@ -86,7 +86,7 @@ directoryp(char *path)
         return (-1);
     }
     else {
-        return ((buf.st_mode & S_IFDIR) != 0);
+        return (S_ISDIR(buf.st_mode) != 0);
     }
 }
 
@@ -101,27 +101,6 @@ makedir(char *path)
 #else
    return ( mkdir (path) );
 #endif
-}
-
-static int
-make_path_from_file(char *s, char *t)
-{
-    char *pos = NULL;
-    char *c;
-
-    /** simply copies the path name from t into s **/
-    for (c = t + strlen(t); c != t; c--)
-        if ( ( *c == '/' ) || ( *c == '\\' ) ) {
-            pos = c;
-            break;
-        }
-    /** Check to see if the path was actually present **/
-    if (c == t) {               /** No Path, so return the pwd **/
-        return (-1);
-    }
-    /** now just do the copying **/
-    strncpy(s, t, pos - t);
-    return 1;
 }
 
 /* The functions writablep() and readablep() determine write and
@@ -150,42 +129,42 @@ make_path_from_file(char *s, char *t)
 /* Return
      -1 if the file designated by PATH is non-existent.
       0 if the file exists but write access is denied.
-      1 if the file exists and process has write access.
-      2 if the file does not exist but process has write
-        access to the dirname of path.  */
+      1 if the file exists and process has write access.  */
 
 int
-writablep(char *path)
+writablep(char *path, int need_dir)
 {
     struct stat buf;
-    char newpath[100];
-    int code;
-
-    code = stat(path, &buf);
+    int code = stat(path, &buf);
     if (code == -1) {
-        /** The file does not exist, so check to see
-                 if the directory is writable                  *****/
-        if (make_path_from_file(newpath, path) == -1 ||
-            stat(newpath, &buf) == -1) {
-            return (-1);
-        }
+        return -1;
     }
-    else if (geteuid() == buf.st_uid) {
-        return ((buf.st_mode & S_IWUSR) != 0);
+    int has_dir = S_ISDIR(buf.st_mode) != 0;
+    if (has_dir != need_dir) {
+        return 0;
+    }
+    if (geteuid() == buf.st_uid) {
+        return ((buf.st_mode & S_IWUSR) != 0
+                 && (!need_dir || buf.st_mode & S_IXUSR));
 #ifdef S_IWGRP
-    }
-    else if (getegid() == buf.st_gid) {
-        return ((buf.st_mode & S_IWGRP) != 0);
+    } else if (getegid() == buf.st_gid) {
+        return ((buf.st_mode & S_IWGRP) != 0
+#ifdef S_IXGRP
+                && (!need_dir || buf.st_mode & S_IXGRP)
+#endif
+               );
 #endif
 #ifdef S_IWOTH
-    }
-    else {
-        return ((buf.st_mode & S_IWOTH) != 0);
+    } else {
+        return ((buf.st_mode & S_IWOTH) != 0
+#ifdef S_IXOTH
+                 && (!need_dir || buf.st_mode & S_IXOTH)
+#endif
+               );
 #endif
     };
     return ( 1 ); /* MSYS/MinGW */
 }
-
 
 #ifdef HOST_HAS_DIRECTORY_OPERATIONS
 

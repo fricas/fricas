@@ -568,7 +568,8 @@ with this hack and will try to convince the GCL crowd to fix this.
 (foreign-defs
 
 (fricas-foreign-call |writablep| "writablep" int
-        (filename c-string))
+        (filename c-string)
+        (need_dir int))
 
 #+:fricas_has_remove_directory
 (fricas-foreign-call |remove_directory| "remove_directory" int
