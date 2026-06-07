@@ -211,8 +211,6 @@
 
 (defun CHAR2NUM (c) (char-code (character c)))
 
-(define-function '|isLowerCaseLetter| #'LOWER-CASE-P)
-
 #+(or :UNICODE :SB-UNICODE :OPENMCL-UNICODE-STRINGS)
 (defun NUM2USTR (n)
     (make-string 1 :initial-element (NUM2CHAR n)))

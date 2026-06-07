@@ -105,7 +105,7 @@ set1(l,setTree) ==
   arg := selectOption(first(l), setOptionNames, 'optionError)
   setData := [arg,:LASSOC(arg,setTree)]
 
-  -- check is the user is authorized for the set variable
+  -- check if the user is authorized for the set variable
   null satisfiesUserLevel setData.setLevel =>
         say_user_level_msg([$UserLevel, '"set option"])
 

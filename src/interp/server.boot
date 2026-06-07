@@ -145,12 +145,8 @@ parseAndEvalToHypertex str ==
     sockSendString($MenuServer, s)
 
 parseAndEvalToString str ==
-  $collectOutput:local := true
-  $outputLines: local := nil
-  $IOindex: local := nil
-  v := CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str))
-  v = 'restart => ['"error"]
-  NREVERSE $outputLines
+    $IOindex: local := nil
+    parseAndEvalToStringEqNum(str)
 
 parseAndEvalToStringEqNum str ==
   $collectOutput:local := true
