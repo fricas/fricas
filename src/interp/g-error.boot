@@ -122,7 +122,8 @@ handleLispBreakLoop($BreakMode) ==
         '%l,'"   Please enter your choice now:"]
       x := find_symbol(STRING_-TRIM('" ", queryUser(msgQ)))
       x :=
-        selectOption(x, '(top break continue), nil)
+            not(first(x) = 0) => nil
+            selectOption(rest(x), '(top break continue), nil)
       null x =>
         sayBrightly bright '"  That was not one of your choices!"
         gotIt := NIL
