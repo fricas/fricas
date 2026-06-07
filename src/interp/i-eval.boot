@@ -126,9 +126,9 @@ evaluateType form ==
     op='Enumeration => form
     evaluateFormAsType form
   constructor? form =>
-    ATOM form => evaluateType [form]
-    throwEvalTypeMsg("S2IE0003",[form,form])
-  throwEvalTypeMsg("S2IE0004", [form])
+        ATOM(form) => evaluateType([form])
+        throw_eval_msg_not_full([form, form])
+  throw_msg_eval_invalid_type(form)
 
 ++ `form' used in a context where a type (domain or category) is
 ++ expected.  Attempt to fully evaluate it.  Error if the resulting
@@ -140,7 +140,7 @@ evaluateFormAsType form ==
   -- ??? Maybe we should be more careful about generalized types.
   bottomUp t is [m] and (m = ["Mode"] or isCategoryForm(m)) =>
     objVal getValue t
-  throwEvalTypeMsg("S2IE0004",[form])
+  throw_msg_eval_invalid_type(form)
 
 evaluateType1 form ==
   --evaluates the arguments passed to a constructor
@@ -152,13 +152,13 @@ evaluateType1 form ==
             [form])
     [.,:ml] := sig
     ml := replaceSharps(ml,form)
-    # argl ~= #ml => throwEvalTypeMsg("S2IE0003",[form,form])
+    #argl ~= #ml => throw_eval_msg_not_full([form, form])
     for x in argl for m in ml for argnum in 1.. repeat
       typeList := [v,:typeList] where v ==
         categoryForm?(m) =>
           m := evaluateType(SUBST(x, '%, m))
           evalCategory(x' := (evaluateType x), m) => x'
-          throwEvalTypeMsg("S2IE0004",[form])
+          throw_msg_eval_invalid_type(form)
         m := evaluateType m
         get_database(opOf(m), 'CONSTRUCTORKIND) = 'domain and
             (tree := mkAtree x) and  putTarget(tree,m) and ((bottomUp tree) is [m1]) =>
@@ -177,8 +177,26 @@ throw_eval_type_msg(key, msg, args) ==
   $noEvalTypeMsg => spadThrow()
   throw_msg(key, msg, args)
 
-throwEvalTypeMsg(key, args) ==
-    throw_eval_type_msg(key, getKeyedMsg(key), args)
+throw_eval_msg_not_full(l) == throw_eval_type_msg("S2IE0003", CONCAT(
+    '"Although %1b is the name of a constructor, a full type must be ",
+    '"specified in the context you have used it.  Issue %b )show %2 %d ",
+    '"for more information."), l)
+
+throw_type_msg(key, msg, args, eval?, pos) ==
+    eval? => throw_eval_type_msg(key, msg, args)
+    throw_msg_pos(key, msg, args, pos)
+
+throw_msg_invalid_type2(t, eval?, pos) == throw_type_msg("S2IE0004",
+    '"%1bp is not a valid type.", [t], eval?, pos)
+
+throw_msg_eval_invalid_type(t) == throw_msg_invalid_type2(t, true, nil)
+
+throw_msg_invalid_type(t) == throw_msg_invalid_type2(t, false, nil)
+
+throw_msg_unknown_type(t, eval?) == throw_type_msg("S2IL0015", CONCAT(
+    '"%1b is an unknown constructor and so is unavailable. Did you ",
+    '"mean to use %b -> %d but type something different instead?"), [t],
+    eval?, nil)
 
 makeOrdinal i ==
   ('(first second third fourth fifth sixth seventh eighth ninth tenth)).(i-1)
@@ -281,9 +299,13 @@ getArgValue1(a,t) ==
     t' and wrapped2Quote objVal t'
   systemErrorHere '"getArgValue"
 
+throw_msg_convert(l) == throw_msg("S2IE0013", CONCAT(
+    '"The argument to the side-effect producing operation %1b is not ",
+    '"allowed to be converted from type %2bp to type %3bp ."), l)
+
 getArgValue2(a,t,se?,opName) ==
   se? and (objMode(getValue a) ~= t) =>
-    throwKeyedMsg("S2IE0013", [opName, objMode(getValue a), t])
+        throw_msg_convert([opName, objMode(getValue a), t])
   getArgValue(a,t)
 
 getArgValueOrThrow(x, type) ==
@@ -308,7 +330,7 @@ getMappingArgValue(a,t,m is ['Mapping,:ml]) ==
 
 getArgValueComp2(arg, type, cond, se?, opName) ==
   se? and (objMode(getValue arg) ~= type) =>
-    throwKeyedMsg("S2IE0013", [opName, objMode(getValue arg), type])
+        throw_msg_convert([opName, objMode(getValue arg), type])
   getArgValueComp(arg, type, cond)
 
 getArgValueComp(arg,type,cond) ==

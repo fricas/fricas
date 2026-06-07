@@ -108,13 +108,8 @@ putDatabaseStuff msg ==
     setMsgText(msg,text)
 
 getMsgInfoFromKey msg ==
-    text :=
-        msgKey := getMsgKey? msg =>   --temp  oldmsgs use key tostoretext
-           getKeyedMsg msgKey
-        getMsgKey msg                  --temp oldmsgs
-    text := segmentKeyedMsg(text)
+    text := segmentKeyedMsg(getMsgKey(msg))
     substituteSegmentedMsg(text, getMsgArgL(msg))
-
 
 -----------------------
 --%character position marking

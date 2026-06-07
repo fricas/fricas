@@ -501,6 +501,9 @@ outputTranIteration itl ==
   null rest itl => outputTranIterate first itl
   ['CONCATB,outputTranIterate first itl,outputTranIteration rest itl]
 
+throw_msg_internal(l) == throw_msg("S2IX0008",
+    '"Internal system problem in function %1b : %2", l)
+
 outputTranIterate x ==
   x is ['STEP,n,init,step,:final] =>
     init' := outputTran init
@@ -518,7 +521,7 @@ outputTranIterate x ==
         op = 'UNTIL => "until"
         op
     ['CONCATB,op,outputTran p]
-  throwKeyedMsg("S2IX0008",['outputTranIterate,['"illegal iterate: ",x]])
+  throw_msg_internal(['outputTranIterate,['"illegal iterate: ",x]])
 
 outputConstructTran x ==
   x is [op,a,b] =>
@@ -727,7 +730,7 @@ appInfix(e,x,y,d) ==
   leftPrec:= getOpBindingPower(op,"Led","left")
   leftPrec = 1000 => return nil --no infix operator is allowed default value
   rightPrec:= getOpBindingPower(op,"Led","right")
-  #e < 2 => throwKeyedMsg("S2IX0008",['appInfix,
+  #e < 2 => throw_msg_internal(['appInfix,
       '"fewer than 2 arguments to an infix function"])
   opString:= GETL(op,"INFIXOP") or '","
   opWidth:= WIDTH opString

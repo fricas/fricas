@@ -530,6 +530,19 @@ bottomUpRecordElt(t, op, m, argl, env) ==
     $env : local := [[[spl, :pl], :rest(first(env))], :rest(env)]
     bottomUp(t)
 
+$msg_no_op1 := CONCAT(
+    '"Cannot find a definition or applicable library operation named ",
+    '"%1ob with argument type(s) %b %ceon %2P %ceoff %d %l ",
+    '"Perhaps you should use _"@_" to indicate the required return type, ",
+    '"or _"$_" to specify which version of the function you need.")
+
+$msg_no_op2 :=
+    '"Cannot find a no-argument definition or library operation named %1b ."
+
+$msg_no_app := CONCAT(
+    '"Cannot find application of object of type %1b to argument(s) of ",
+    '"type(s) %b %ceon %2 %ceoff %d .")
+
 bottomUpForm0(t,op,opName,argl,argModeSetList) ==
   op0 := op
   opName0 := opName
@@ -553,12 +566,10 @@ bottomUpForm0(t,op,opName,argl,argModeSetList) ==
       (u := bottomUpRecordElt(t, op, m, argl, $env)) => u
   m is ['Union,:.] and argModeSetList is [[['Variable,x]]] =>
       member(x,getUnionOrRecordTags m) and (u := bottomUpElt t) => u
-      not $genValue =>
-        amsl := printableArgModeSetList()
-        throwKeyedMsgSP("S2IB0008",['"the union object",amsl], op)
-      object := retract getValue op
-      object = 'failed =>
-        throwKeyedMsgSP("S2IB0008",['"the union object",amsl], op)
+      not($genValue) or (object := retract(getValue(op))) = 'failed =>
+            amsl := printableArgModeSetList()
+            throw_msg_pos("S2IB0008", $msg_no_op1,
+                          ['"the union object", amsl], op)
       putModeSet(op,[objMode(object)])
       putValue(op,object)
       (u := bottomUpElt t) => u
@@ -592,6 +603,9 @@ bottomUpForm0(t,op,opName,argl,argModeSetList) ==
     msgKey :=
         null amsl => "S2IB0013"
         "S2IB0012"
+    msg :=
+        null(amsl) => '"Cannot find application of object of type %1b ."
+        $msg_no_app
   else
     msgKey :=
         null amsl => "S2IB0011"
@@ -599,12 +613,16 @@ bottomUpForm0(t,op,opName,argl,argModeSetList) ==
             opName1 := n
             "S2IB0008g"
         "S2IB0008"
+    msg :=
+            null(amsl) => $msg_no_op2
+            isSharpVarWithNum(opName1) => "Unknown problem"
+            $msg_no_op1
 
   sayIntelligentMessageAboutOpAvailability(opName1, #argl)
 
   not $genValue =>
-    keyedMsgCompFailureSP(msgKey,[opName1, amsl], op0)
-  throwKeyedMsgSP(msgKey,[opName1, amsl], op0)
+        msg_comp_failure1(msgKey, msg, [opName1, amsl], op0)
+  throw_msg_pos(msgKey, msg, [opName1, amsl], op0)
 
 sayIntelligentMessageAboutOpAvailability(opName, nArgs) ==
   -- see if we can give some decent messages about the availability if

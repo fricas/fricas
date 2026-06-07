@@ -75,13 +75,13 @@ algCoerceInteractive(p,source,target) ==
   error ['"can't convert",p,'"of mode",source,'"to mode",target]
 
 spad2BootCoerce(x,source,target) ==
-  -- x : source and we wish to coerce to target
-  -- used in spad code for Any
-  null isValidType source => throwKeyedMsg("S2IE0004",[source])
-  null isValidType target => throwKeyedMsg("S2IE0004",[target])
-  x' := coerceInteractive(objNewWrap(x,source),target) =>
-    objValUnwrap(x')
-  throwMsgCannotCoerceWithValue(wrap(x), source, target)
+    -- x : source and we wish to coerce to target
+    -- used in spad code for Any
+    null(isValidType(source)) => throw_msg_invalid_type(source)
+    null(isValidType(target)) => throw_msg_invalid_type(target)
+    x' := coerceInteractive(objNewWrap(x, source), target) =>
+        objValUnwrap(x')
+    throwMsgCannotCoerceWithValue(wrap(x), source, target)
 
 --%  Functions for Coercion or Else We'll Get Rough
 

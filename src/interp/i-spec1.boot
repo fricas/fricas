@@ -87,6 +87,12 @@ voidValue() == '"()"
 
 --% Handlers for Anonymous Function Definitions
 
+throw_msg_partial_mode(m) == throw_msg("S2IS0058", CONCAT(
+    '"Partial type declarations are not allowed for anonymous user maps. ",
+    '"This also means that is you are using a %b +-> %d form in a context ",
+    '"where the type is to be deduced from target information, the target ",
+    '"type must not be partial."), [m])
+
 upADEF t ==
   t isnt [.,[vars,types,.,body],pred,.] => NIL
   -- do some checking on what we got
@@ -99,7 +105,8 @@ upADEF t ==
   -- unabbreviate types
   types := [(if t then evaluateType unabbrev t else NIL) for t in types]
   -- we do not allow partial types
-  if isPartialMode(m := first types) then throwKeyedMsg("S2IS0058",[m])
+  if isPartialMode(m := first types) then
+        throw_msg_partial_mode(m)
 
   -- we want everything to be declared or nothing. The exception is that
   -- we do not require a target type since we will compute one anyway.
@@ -115,7 +122,8 @@ upADEF t ==
             '" function.  You must either declare the type types of the",
             '" rest and all the arguments or you  must declare the types",
             '" of none of them."), [])
-    if isPartialMode type  then throwKeyedMsg("S2IS0058",[type])
+    if isPartialMode type  then
+            throw_msg_partial_mode(type)
 
   $compilingMap : local := true
 
@@ -124,7 +132,8 @@ upADEF t ==
 
   tar := getTarget t
   null m and tar is ['Mapping,.,:argTypes] and (#vars = #argTypes) =>
-    if isPartialMode tar then throwKeyedMsg("S2IS0058",[tar])
+    if isPartialMode tar then
+           throw_msg_partial_mode(tar)
     evalTargetedADEF(t,vars,rest tar,body)
   null m => evalUntargetedADEF(t,vars,types,body)
   evalTargetedADEF(t,vars,types,body)
@@ -424,7 +433,7 @@ upTARGET t ==
       [rhs])
   $declaredMode: local := NIL
   m:= evaluateType unabbrev rhs
-  not isLegitimateMode(m,NIL,NIL) => throwKeyedMsg("S2IE0004",[m])
+  not isLegitimateMode(m, NIL, NIL) => throw_msg_eval_invalid_type(m)
   $declaredMode:= m
   not atom(lhs) and putTarget(lhs,m)
   ms := bottomUp lhs
@@ -454,7 +463,7 @@ upCOERCE t ==
         err_msg_local_type(rhs)
   $declaredMode: local := NIL
   m := evaluateType unabbrev rhs
-  not isLegitimateMode(m,NIL,NIL) => throwKeyedMsg("S2IE0004",[m])
+  not isLegitimateMode(m, NIL, NIL) => throw_msg_eval_invalid_type(m)
   $declaredMode:= m
   -- 05/16/89 (RSS) following line commented out to give correct
   -- semantic difference between :: and @
@@ -567,12 +576,16 @@ upLoopIters itrl ==
       -- following is an optimization
       typeIsASmallInteger(get0(index, 'mode, $env)) =>
         RPLACA(iter,'ISTEP)
-    throwKeyedMsg('"Malformed iterator", [])
+    throw_msg("Malformed", '"Malformed iterator", [])
+
+throw_msg_index(ind) == throw_msg("S2IS0005",
+    '"The index variable in an iterator must be a symbol and %1 is not one.",
+    [ind])
 
 upLoopIterIN(iter,index,s) ==
   iterMs := bottomUp s
 
-  null IDENTP index =>  throwKeyedMsg("S2IS0005",[index])
+  null(IDENTP(index)) =>  throw_msg_index(index)
 
   if $genValue and first iterMs is ['Union,:.] then
     v := coerceUnion2Branch getValue s
@@ -594,7 +607,7 @@ upLoopIterIN(iter,index,s) ==
     RPLACA(iter, first newIter)
     RPLACD(iter, rest newIter)
 
-  iterMs isnt [['List,ud]] => throwKeyedMsg("S2IS0006",[index])
+  iterMs isnt [['List, ud]] => throw_msg_iter(index)
   putIntSymTab(index, 'mode, ud, $env)
   mkLocalVar('"the iterator expression",index)
 
@@ -603,7 +616,7 @@ report_bound(kind) ==
               [kind])
 
 upLoopIterSTEP(index,lower,step,upperList) ==
-  null IDENTP index => throwKeyedMsg("S2IS0005",[index])
+  null(IDENTP(index)) => throw_msg_index(index)
   ltype := IFCAR bottomUpUseSubdomain(lower)
   not (typeIsASmallInteger(ltype) or isEqualOrSubDomain(ltype,$Integer))=>
         report_bound('"lower")
@@ -762,6 +775,11 @@ upStreamIters itrl ==
     iter is ['STEP,index,lower,step,:upperList] =>
       upStreamIterSTEP(index,lower,step,upperList)
 
+throw_msg_iter(ind) == throw_msg("S2IS0006", CONCAT(
+    '"FriCAS cannot iterate with %1b over your form now.  Perhaps ",
+    '"you should try using a conversion to make sure your form is ",
+    '"a list or stream, for example."), [ind])
+
 upStreamIterIN(iter,index,s) ==
   iterMs := bottomUp s
 
@@ -779,7 +797,7 @@ upStreamIterIN(iter,index,s) ==
 
   (iterMs isnt [['List,ud]]) and (iterMs isnt [['Stream,ud]])
     and (iterMs isnt [['InfinitTuple, ud]]) =>
-      throwKeyedMsg("S2IS0006",[index])
+            throw_msg_iter(index)
   putIntSymTab(index, 'mode, ud, $env)
   mkLocalVar('"the iterator expression",index)
   s :=
@@ -1159,6 +1177,10 @@ replaceSymbols(modeList,l) ==
   [if m=$Symbol then getMinimalVarMode(objValUnwrap(getValue arg),
     $declaredMode) else m for m in modeList for arg in l]
 
+throw_msg_null(t) == throw_msg("S2IS0013",
+    '"FriCAS does not understand what you mean when you specify %b ",
+    '"[] %d as having the type %1bp .", [t])
+
 upNullList(op,l,tar) ==
   -- handler for [] (empty list)
   defMode :=
@@ -1168,7 +1190,7 @@ upNullList(op,l,tar) ==
   val := objNewWrap(NIL,defMode)
   tar and not isPartialMode(tar) =>
     null (val' := coerceInteractive(val,tar)) =>
-      throwKeyedMsg("S2IS0013",[tar])
+            throw_msg_null(tar)
     putValue(op,val')
     putModeSet(op,[tar])
   putValue(op,val)
@@ -1247,7 +1269,8 @@ upDeclare t ==
   mode := evaluateType unabbrev rhs
   mode = $Void => throw_msg_pos("S2IS0015",
       '"An identifier cannot be declared to have type %b Void %d:", [], op)
-  not isLegitimateMode(mode,nil,nil) => throwKeyedMsgSP("S2IE0004",[mode],op)
+  not isLegitimateMode(mode, nil, nil) =>
+        throw_msg_eval_invalid_type(mode, false, op)
   err_m := '"%1bp is a %2 , not a domain, and declarations require domains."
   categoryForm?(mode) =>
         throw_msg_pos("S2IE0011", err_m, [mode, 'category], op)

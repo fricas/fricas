@@ -115,35 +115,6 @@ wordFrom(l,i) ==
     k := k + 1
   [SUBSEQ(l, k0, k), k + 1]
 
-DEFPARAMETER($msg_hash, nil)
-
-cacheKeyedMsg1(in_file) ==
-    key := nil
-    line := '""
-    msg := '""
-    repeat
-        line := READ_-LINE(in_file, nil, nil)
-        null(line) =>
-            if key then HPUT($msg_hash, key, msg)
-            -- THROW('DONE, nil)
-            return nil
-        #line = 0 => "iterate"
-        line.0 = char('"S") =>
-            if key then HPUT($msg_hash, key, msg)
-            key := INTERN(line, "BOOT")
-            msg := '""
-        msg := CONCAT(msg, line)
-
-cacheKeyedMsg(db_name) ==
-    CATCH('DONE, handle_input_file(db_name, function cacheKeyedMsg1, []))
-
-getKeyedMsg(key) ==
-    STRINGP(key) => key
-    if not($msg_hash) then
-        $msg_hash := MAKE_HASHTABLE('EQ)
-        cacheKeyedMsg($defaultMsgDatabaseName)
-    HGET($msg_hash, key)
-
 --% Formatting and Printing Keyed Messages
 
 segmentKeyedMsg(msg) == string2Words msg
@@ -343,12 +314,6 @@ throw_msg_pos(key, msg, args, tree) ==
         srcPosDisplay(sp)
     throw_msg(key, msg, args)
 
-throwKeyedMsgSP(key, args, atree) ==
-    throw_msg_pos(key, getKeyedMsg(key), args, atree)
-
-throwKeyedMsg(key, args) ==
-    throw_msg(key, getKeyedMsg(key), args)
-
 throw_msg(key, msg, args) ==
     $noEvalTypeMsg => spadThrow()
     sayMSG '" "
@@ -473,9 +438,6 @@ msg_comp_failure1(key, msg, args, tree) ==
   THROW('mapCompiler,'tryInterpOnly)
 
 msg_comp_failure(key, msg, args) == msg_comp_failure1(key, msg, args, [])
-
-keyedMsgCompFailureSP(key, args, atree) ==
-    msg_comp_failure1(key, getKeyedMsg(key), args, atree)
 
 throwMsgCannotCoerceWithValue(val,t1,t2) ==
   val' :=

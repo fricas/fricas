@@ -247,8 +247,8 @@ lisplibError(cname,fname,type,cn,fn,typ,error) ==
           [fname, typ, [fn,$spadLibFT]])
 
 getPartialConstructorModemapSig(c) ==
-  (s := getConstructorSignature c) => rest s
-  throwEvalTypeMsg("S2IL0015",[c])
+    (s := getConstructorSignature(c)) => rest(s)
+    throw_msg_unknown_type(c, true)
 
 getConstructorOps(form, kind) ==
     kind is 'category => getCategoryOps(form)

@@ -94,8 +94,6 @@ reroot(dir) ==
                               $relative_directory_list)
     $library_directory_list := MAPCAR(function make_absolute_filename,
                                       $relative_library_directory_list)
-    $defaultMsgDatabaseName :=
-        make_absolute_filename('"share/msgs/s2-us.msgs")
 
 initroot() ==
     spadroot := getEnv('"FRICAS")

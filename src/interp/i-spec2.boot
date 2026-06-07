@@ -449,7 +449,9 @@ isPatMatch(l,pats) ==
 --% Handler for iterate
 
 upiterate t ==
-  null $repeatBodyLabel => throwKeyedMsg("S2IS0029",['"iterate"])
+  null $repeatBodyLabel => throw_msg("S2IS0029",
+        '"A(n) %1b statement may only be used within a %b repeat %d loop.",
+        ['"iterate"])
   $iterateCount := $iterateCount + 1
   code := ['THROW,$repeatBodyLabel,'(voidValue)]
   $genValue => THROW(eval $repeatBodyLabel,voidValue())
@@ -460,7 +462,9 @@ upiterate t ==
 
 upbreak t ==
   t isnt [op,.] => nil
-  null $repeatLabel => throwKeyedMsg("S2IS0029",['"break"])
+  null $repeatLabel => throw_msg("S2IS0029",
+        '"A(n) %1b statement may only be used within a %b repeat %d loop.",
+        ['"break"])
   $breakCount := $breakCount + 1
   code := ['THROW,$repeatLabel,'(voidValue)]
   $genValue => THROW(eval $repeatLabel,voidValue())
@@ -468,6 +472,9 @@ upbreak t ==
   putModeSet(op,[$Void])
 
 --% Handlers for LET
+
+throw_msg_invalid_lhs(l) == throw_msg("S2IS0027",
+    '"%1b is not valid on the left-hand side of an assignment expression.", l)
 
 upLET t ==
   -- analyzes and evaluates the righthand side, and does the variable
@@ -477,16 +484,16 @@ upLET t ==
   PAIRP lhs =>
     var:= getUnname first lhs
     var = 'construct => upLETWithPatternOnLhs t
-    var = 'QUOTE => throwKeyedMsg("S2IS0027",['"A quoted form"])
+    var = 'QUOTE => throw_msg_invalid_lhs(['"A quoted form"])
     upLETWithFormOnLhs(op,lhs,rhs)
   var:= getUnname lhs
   var = $immediateDataSymbol =>
     -- following will be immediate data, so probably ok to not
     -- specially format it
     obj := objValUnwrap coerceInteractive(getValue lhs,$OutputForm)
-    throwKeyedMsg("S2IS0027",[obj])
+    throw_msg_invalid_lhs([obj])
   var in '(% %%) =>               -- for history
-    throwKeyedMsg("S2IS0027",[var])
+        throw_msg_invalid_lhs([var])
   (IDENTP var) and not (var in '(true false elt QUOTE)) =>
     var ~= (var' := unabbrev(var)) =>  -- constructor abbreviation
         throw_msg("S2IS0028", CONCAT(
@@ -517,7 +524,7 @@ upLET t ==
     val:=evalLET(lhs,rhs)
     putValue(op,val)
     putModeSet(op,[objMode(val)])
-  throwKeyedMsg("S2IS0027",[var])
+  throw_msg_invalid_lhs([var])
 
 isTupleForm f ==
     -- have to do following since "Tuple" is an internal form name
@@ -644,12 +651,16 @@ evalLETchangeValue(name,value) ==
     else putIntSymTab(name,'value,value,$e)
   objVal value
 
+throw_msg_tuple() == throw_msg("S2IS0039", CONCAT(
+    '"If there is a tuple on the left-hand side of an assignment then ",
+    '"there must also be one on the right-hand side."), [])
+
 upLETWithFormOnLhs(op,lhs,rhs) ==
   -- bottomUp for assignment to forms (setelt, table or tuple)
   lhs' := getUnnameIfCan lhs
   rhs' := getUnnameIfCan rhs
   lhs' = 'Tuple =>
-    rhs' ~= 'Tuple => throwKeyedMsg("S2IS0039",NIL)
+    rhs' ~= 'Tuple => throw_msg_tuple()
     #(lhs) ~= #(rhs) => throw_msg("S2IS0038", CONCAT(
         '"Assignments with tuples must have the same size tuples on each",
         '" side of the %b := %d ."), [])
@@ -675,7 +686,7 @@ upLETWithFormOnLhs(op,lhs,rhs) ==
     ms := bottomUp seq
     putValue(op,getValue seq)
     putModeSet(op,ms)
-  rhs' = 'Tuple => throwKeyedMsg("S2IS0039",NIL)
+  rhs' = 'Tuple => throw_msg_tuple()
   tree:= seteltable(lhs,rhs) => upSetelt(op,lhs,tree)
   throw_msg("S2IS0060", CONCAT(
       '"The form on the left hand side of an assignment must be a",
@@ -835,7 +846,7 @@ evalQUOTE(op,[expr],[m]) ==
 uppretend t ==
   t isnt [op,expr,type] => NIL
   mode := evaluateType unabbrev type
-  not isValidType(mode) => throwKeyedMsg("S2IE0004",[mode])
+  not isValidType(mode) => throw_msg_eval_invalid_type(mode)
   bottomUp expr
   putValue(op,objNew(objVal getValue expr,mode))
   putModeSet(op,[mode])
@@ -1113,7 +1124,7 @@ upNullTuple(op,l,tar) ==
   val := objNewWrap(asTupleNew(0,NIL), defMode)
   tar and not isPartialMode(tar) =>
     null (val' := coerceInteractive(val,tar)) =>
-      throwKeyedMsg("S2IS0013",[tar])
+            throw_msg_null(tar)
     putValue(op,val')
     putModeSet(op,[tar])
   putValue(op,val)
