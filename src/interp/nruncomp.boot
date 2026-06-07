@@ -502,8 +502,8 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
   domainShell := GETREFV (6 + $NRTdeltaLength)
   for i in 0..4 repeat domainShell.i := base_shell.i
   $template := GETREFV (6 + $NRTdeltaLength)
-  $SetFunctions:= GETREFV SIZE domainShell
-  $MissingFunctionInfo:= GETREFV SIZE domainShell
+  $SetFunctions:= GETREFV(#domainShell)
+  $MissingFunctionInfo:= GETREFV(#domainShell)
   catNames := ['%, :[GENVAR() for u in rest(catvecListMaker)]]
   domname:='dv_$
 

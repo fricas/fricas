@@ -682,12 +682,12 @@ subMatch(l,i)==substringMatch(l,scanDict,i)
 substringMatch (l,d,i)==
        h := STR_ELT(l, i)
        u:=ELT(d,h)
-       ll:=SIZE l
+       ll := #l
        done:=false
        s1:='""
-       for j in 0.. SIZE u - 1 while not done repeat
+       for j in 0..(#u - 1) while not done repeat
           s:=ELT(u,j)
-          ls:=SIZE s
+          ls := #s
           done:=if ls+i > ll
                 then false
                 else

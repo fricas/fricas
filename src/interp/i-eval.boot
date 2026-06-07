@@ -78,7 +78,7 @@ mkEvalable form ==
           VECP x => MKQ x
           mkEvalable x
         x is ['QUOTE,:.] => x
-        x is ['_#,y] => ['SIZE,MKQ y]
+        x is ['_#, y] => ['LENGTH, MKQ(y)]
         MKQ x
     [op,:[mkEvalable x for x in argl]]
   form=$EmptyMode => $Integer

@@ -182,7 +182,7 @@ reportOpSymbol op1 ==
         '" which contain %1b in their names.  This is the same output you",
           '" would get by issuing %ceon %b )what operations %1 %d %ceoff"),
             [op1])
-    if SIZE PNAME op1 < 3 then
+    if #PNAME(op1) < 3 then
       x := query_user_msg("S2IZ0060", CONCAT(
           '"%l There are possibly a great many operation names containing",
           '" the substring %1b . Please confirm your request to have these",
@@ -363,7 +363,7 @@ form2String1 u ==
       null rest argl => [ '":", form2String1 first argl ]
       formDecl2String(argl.0,argl.1)
   op = "#" and PAIRP argl and LISTP first argl =>
-    STRINGIMAGE SIZE first argl
+        STRINGIMAGE(#first(argl))
   op = 'Join => formJoin2String argl
   op = "ATTRIBUTE" => form2String1 first argl
   op = "0" => 0
@@ -617,7 +617,7 @@ formTuple2String argl ==
 
 isInternalFunctionName(op) ==
   (not IDENTP(op)) or (op = "*") or (op = "**") => NIL
-  (1 = SIZE(op':= PNAME op)) or (char("*") ~= op'.0) => NIL
+  (1 = #(op':= PNAME op)) or (char("*") ~= op'.0) => NIL
   -- if there is a semicolon in the name then it is the name of
   -- a compiled spad function
   null(e := search_str('"_;", op', 1)) => NIL

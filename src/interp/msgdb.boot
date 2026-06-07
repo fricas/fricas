@@ -244,7 +244,7 @@ DEFPARAMETER($msgdbListPrims, '(%m %s %ce %rj "%m" "%s" "%ce" "%rj"))
 noBlankBeforeP word==
     INTEGERP word => false
     word in $msgdbNoBlanksBeforeGroup => true
-    if STRINGP word and SIZE word > 1 then
+    if STRINGP(word) and #word > 1 then
        word.0 = char '% and word.1 = char 'x => return true
        word.0 = char " " => return true
     (PAIRP word) and (first word in $msgdbListPrims) => true
@@ -257,7 +257,7 @@ DEFPARAMETER($msgdbNoBlanksAfterGroup, ['" ", " ",'"%" ,"%",_
 noBlankAfterP word==
     INTEGERP word => false
     word in $msgdbNoBlanksAfterGroup => true
-    if STRINGP word and (s := SIZE word) > 1 then
+    if STRINGP(word) and (s := #word) > 1 then
        word.0 = char '% and word.1 = char 'x => return true
        word.(s-1) = char " " => return true
     (PAIRP word) and (first word in $msgdbListPrims) => true
@@ -687,7 +687,7 @@ sayBrightlyLength1 x ==
 sayAsManyPerLineAsPossible l ==
   -- it is assumed that l is a list of strings
   l := [atom2String a for a in l]
-  m := 1 + "MAX"/[SIZE(a) for a in l]
+  m := 1 + "MAX"/[#a for a in l]
   -- w will be the field width in which we will display the elements
   m > $LINELENGTH =>
     for a in l repeat sayMSG a

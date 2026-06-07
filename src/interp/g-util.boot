@@ -622,14 +622,14 @@ string2Integer(s) ==
 
 substring?(part, whole, startpos) ==
 --This function should be replaced by STRING<
-  np := SIZE part
-  nw := SIZE whole
+  np := #part
+  nw := #whole
   np > nw - startpos => false
   and/[CHAR_-EQUAL(ELT(part, ip), ELT(whole, iw))
       for ip in 0..np-1 for iw in startpos.. ]
 
 charPosition(c,t,startpos) ==
-  n := SIZE t
+  n := #t
   startpos < 0 or startpos > n => n
   k:= startpos
   for i in startpos .. n-1 repeat

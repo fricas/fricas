@@ -1198,7 +1198,7 @@ monitor_get_value(n, fg) ==
         fg => MKQ($monitor_value)
         spadThrowBrightly('"cannot ask for value before execution")
     n = 9 => MKQ($monitor_caller)
-    n <= SIZE($monitor_args) => MKQ(ELT($monitor_args, n - 1))
+    n <= #$monitor_args => MKQ(ELT($monitor_args, n - 1))
     spadThrowBrightly(['"FUNCTION", "%b", $monitor_name, "%d",
                           '"does not have", "%b", n, "%d", '"arguments"])
 

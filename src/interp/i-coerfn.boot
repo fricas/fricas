@@ -630,7 +630,7 @@ L2Tuple(val, source is [.,S], target is [.,T]) ==
 L2DP(l, source is [.,S], target is [.,n,T]) ==
   -- need to know size of the list
   l = '_$fromCoerceable_$ => nil
-  n ~= SIZE l => coercionFailure()
+  n ~= #l => coercionFailure()
   (v := coerceInt(objNewWrap(LIST2VEC l,['Vector,S]),['Vector,T])) or
     coercionFailure()
   V2DP(objValUnwrap v, ['Vector, T], target)
@@ -638,7 +638,7 @@ L2DP(l, source is [.,S], target is [.,n,T]) ==
 V2DP(v, source is [.,S], target is [.,n,T]) ==
   -- need to know size of the vector
   v = '_$fromCoerceable_$ => nil
-  n ~= SIZE v => coercionFailure()
+  n ~= #v => coercionFailure()
   (v1 := coerceInt(objNewWrap(v,source),['Vector,T])) or
     coercionFailure()
   dpFun  := getFunctionFromDomain('directProduct, target, [['Vector,T]])

@@ -428,8 +428,8 @@ resolveTCat(t,c) ==
   (t is [t0]) and (sd := getImmediateSuperDomain(t0)) and sd ~= t0 =>
     resolveTCat(sd,c)
 
-  SIZE(td := deconstructT t) ~= 2=> NIL
-  SIZE(tc := deconstructT c) ~= 2 => NIL
+  #(td := deconstructT t) ~= 2=> NIL
+  #(tc := deconstructT c) ~= 2 => NIL
   ut := underDomainOf t
   null isValidType(uc := last tc) => NIL
   null canCoerceFrom(ut,uc) => NIL

@@ -122,7 +122,7 @@ processChPosesForOneLine msgList ==
         posLetter := rest ASSOC(poCharPosn getMsgPos msg, chPosList)
         oldPre := getMsgPrefix msg
         setMsgPrefix (msg,STRCONC(oldPre,_
-                     filler_spaces($preLength - 4 - SIZE(oldPre)), posLetter))
+                     filler_spaces($preLength - 4 - #oldPre), posLetter))
     leaderMsg := makeLeaderMsg chPosList
     NCONC(msgList,LIST leaderMsg)  --a back cons
 
@@ -354,7 +354,7 @@ listDecideHowMuch(pos,oldPos) ==
 getPreStL optPre ==
     null optPre => [filler_spaces(2)]
     spses :=
-      (extraPlaces := ($preLength - (SIZE optPre) - 3)) > 0 =>
+      (extraPlaces := ($preLength - #optPre - 3)) > 0 =>
             filler_spaces(extraPlaces)
       '""
     ['%b, optPre,spses,'":", '%d]
@@ -407,7 +407,7 @@ makeMsgFromLine line ==
     localNumOfLine  :=
         i := poLinePosn posOfLine
         stNum := STRINGIMAGE i
-        STRCONC(filler_spaces($preLength - 7 - SIZE stNum), stNum)
+        STRCONC(filler_spaces($preLength - 7 - #stNum), stNum)
     ['line,posOfLine,NIL,NIL, STRCONC('"Line", localNumOfLine),_
         textOfLine]
 

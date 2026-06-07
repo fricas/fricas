@@ -205,14 +205,6 @@
 
 (defun LIST2VEC (list) (coerce list 'vector))
 
-; 16.2 Accessing
-
-
-(defun SIZE (l)
-  (cond ((vectorp l) (length l))
-        ((consp l)   (list-length l))
-        (t           0)))
-
 ; 17.0 Operations on Character and Bit Vectors
 
 (defun NUM2CHAR (n) (code-char n))
