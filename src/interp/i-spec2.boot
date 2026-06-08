@@ -846,7 +846,7 @@ evalQUOTE(op,[expr],[m]) ==
 uppretend t ==
   t isnt [op,expr,type] => NIL
   mode := evaluateType unabbrev type
-  not isValidType(mode) => throw_msg_eval_invalid_type(mode)
+  not isValidType(mode) => throw_msg_invalid_type(mode)
   bottomUp expr
   putValue(op,objNew(objVal getValue expr,mode))
   putModeSet(op,[mode])
