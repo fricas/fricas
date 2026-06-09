@@ -19,9 +19,16 @@ FileCategory(Name, S) : Category == FCdefinition where
     IOMode ==> String  -- Union("input", "output", "closed")
 
     FCdefinition == SetCategory with
-        open : Name -> %
-          ++ open(s) returns the file s open for input.
 
+        openIfCan : Name -> Union(%, "failed")
+          ++ open(n) returns the file n open for input.  If n can
+          ++ not be open returns "failed".
+        open : Name -> %
+          ++ open(n) returns the file n open for input.
+        openIfCan : (Name, IOMode) -> Union(%, "failed")
+          ++ open(n, mode) returns a file n open for operation in the
+          ++ indicated mode: "input" or "output".  If n can
+          ++ not be open returns "failed".
         open : (Name, IOMode) -> %
           ++ open(s, mode) returns a file s open for operation in the
           ++ indicated mode: "input" or "output".
@@ -90,9 +97,19 @@ File(S : SetCategory) : FileCategory(FileName, S) with
 
         open fname ==
             open(fname, "input")
+
+        openIfCan(fname) ==
+            openIfCan(fname, "input")
+
         open(fname, mode) ==
             fstream := open(fname, mode)$BasicFile
             [fname, fstream, mode]
+
+        openIfCan(fname, mode) ==
+            res1 := openIfCan(fname, mode)$BasicFile
+            res1 case "failed" => "failed"
+            [fname, res1, mode]
+
         reopen!(f, mode) ==
             if f.fileIOmode = "output" then flush(f)
             fname := f.fileName
@@ -259,13 +276,22 @@ KeyedAccessFile(Entry) : KAFcategory == KAFcapsule where
         ---- From FileCategory ----
         open fname ==
             open(fname, "either")
-        open(fname, mode) ==
+        openIfCan(fname, mode) ==
             mode = "either" =>
-                exists? fname =>
-                    open(fname, "input")
-                reopen!(open(fname, "output"), "input")
-            [fname, open(fname, mode)$BasicKeyedAccessFile, mode, 0]
+                res1 := openIfCan(fname, "input")
+                res1 case % => res1
+                res1 := openIfCan(fname, "output")
+                res1 case "failed" => "failed"
+                reopen!(res1, "input")
+            res0 := openIfCan(fname, mode)$BasicKeyedAccessFile
+            res0 case "failed" => "failed"
+            [fname, res0, mode, 0]
 
+        open(fname, mode) ==
+            res1 := openIfCan(fname, mode)
+            res1 case "failed" =>
+                error ["Can not open: ", mode]
+            res1
         reopen!(f, mode) ==
             close! f
             if mode ~= "closed" then

@@ -571,6 +571,9 @@ with this hack and will try to convince the GCL crowd to fix this.
         (filename c-string)
         (need_dir int))
 
+(fricas-foreign-call |makedir| "makedir" int
+        (arg c-string))
+
 #+:fricas_has_remove_directory
 (fricas-foreign-call |remove_directory| "remove_directory" int
         (dir_name c-string))
@@ -684,8 +687,6 @@ with this hack and will try to convince the GCL crowd to fix this.
   (fricas-foreign-call file_kind "directoryp" int
                    (arg c-string))
 
-  (fricas-foreign-call |makedir| "makedir" int
-                   (arg c-string))
 )
 
 (defun |append_directory_name| (dir name)
@@ -768,6 +769,9 @@ with this hack and will try to convince the GCL crowd to fix this.
   (error "CHDIR not implemented"))
 
 ;;; Make directory
+#|
+;; We need consistent return value, for now we just use C version
+;; to ensure this.
 
 #+gcl
 (defun |makedir| (fname) (si::mkdir fname))
@@ -787,7 +791,7 @@ with this hack and will try to convince the GCL crowd to fix this.
   (let ((sym (or (find-symbol "MAKE-DIRECTORY" "EXT")
                  (find-symbol "MAKE-DIR" "EXT"))))
     (funcall sym (|pad_directory_name| (namestring fname)))))
-
+|#
 ;;;
 
 #+:sbcl
@@ -1156,6 +1160,9 @@ with this hack and will try to convince the GCL crowd to fix this.
                     ((eq direction '|input|) nil)
                     (t :create))))
         (open name :direction dk :if-exists ek :if-does-not-exist dnk)))
+
+(defun |open_stream2| (name direction append?)
+    (nth-value 0 (ignore-errors (|open_stream| name direction append?))))
 
 (in-package "BOOTTRAN")
 

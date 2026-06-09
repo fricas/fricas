@@ -259,9 +259,12 @@ BasicFile : Exports == Implementation where
   IOMode ==> String
   Exports ==> with
     open : (FileName, IOMode) -> %
-      ++ open opens the file.
+      ++ open(n, m) opens the file.
+    openIfCan : (FileName, IOMode) -> Union(%, "failed")
+      ++ openIfCan(n, m) opens the file.  If file can not be open
+      ++ it returns "failed".
     close! : % -> Void
-      ++ clos! closes the file.
+      ++ close!(f) closes the file f.
     read : % -> None
       ++ read sequentially reads one item from the file.
     readIfCan : % -> Union(None, "failed")
@@ -277,16 +280,26 @@ BasicFile : Exports == Implementation where
 
     nil ==> NIL$Lisp
 
-    open(fn : FileName, mode : IOMode) : % ==
+    openIfCan(fn : FileName, mode : IOMode) : Union(%, "failed") ==
         mode = "input"  =>
-            res1 : None := MAKE_INSTREAM(fn::String)$Lisp
-            NULL(res1)$Lisp => error ["Can not open for input", fn]
+            res1 : None := open_stream2(fn::String, 'input, false)$Lisp
+            NULL(res1)$Lisp => "failed"
             res1 pretend %
         mode = "output" =>
-            res1 : None := MAKE_OUTSTREAM(fn::String)$Lisp
-            NULL(res1)$Lisp => error ["Can not open for output", fn]
+            res1 : None := open_stream2(fn::String, 'output, false)$Lisp
+            NULL(res1)$Lisp => "failed"
             res1 pretend %
         error ["IO mode must be input or output", mode]
+
+    open(fn : FileName, mode : IOMode) : % ==
+        res := openIfCan(fn, mode)
+        res case "failed" =>
+            mode = "input" =>
+                error ["Can not open for input: ", fn]
+            mode = "output" =>
+                error ["Can not open for output: ", fn]
+            error ["IO mode must be input or output", mode]
+        res
 
     close!(f : %) : Void == CLOSE(f)$Lisp
 
@@ -314,6 +327,9 @@ BasicFile : Exports == Implementation where
 BasicKeyedAccessFile : Exports == Implementation where
   IOMode ==> String
   Exports ==> with
+    openIfCan : (FileName, IOMode) -> Union(%, "failed")
+      ++ openIfCan(n, m) opens the keyed access file.  If file can not
+      ++ be opened returns "failed".
     open : (FileName, IOMode) -> %
       ++ open opens the keyed access file.
     close! : % -> Void
@@ -334,10 +350,18 @@ BasicKeyedAccessFile : Exports == Implementation where
 
     import FileSerialization
 
-    open(fn : FileName, mode : IOMode) : % ==
+    openIfCan(fn : FileName, mode : IOMode) : Union(%, "failed") ==
         mode = "input" or mode = "output" =>
-            kaf_open(fn::String, mode = "output")$Lisp
+            res : None := kaf_open2(fn::String, mode = "output")$Lisp
+            NULL(res)$Lisp => "failed"
+            res pretend %
         error ["IO mode must be input or output", mode]
+
+    open(fn : FileName, mode : IOMode) : % ==
+        res1 := openIfCan(fn, mode)
+        res1 case "failed" =>
+            error ["Can not open: ", fn::String]
+        res1
 
     close!(f : %) : Void ==
         kaf_close(f)$Lisp
