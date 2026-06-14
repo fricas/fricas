@@ -101,6 +101,10 @@ Expression(R : Comparable) : Exports == Implementation where
             x : % + y : %        == algreduc(x +$Rep y, commonk(x, y))
             (x : % - y : %) : %    == algreduc(x -$Rep y, commonk(x, y))
             x : % / y : %        == algreduc(x /$Rep y, commonk(x, y))
+            x : % = y : % ==
+                -- we only need to care about the numerator of (x - y)
+                res := (numer(x)*denom(y) - numer(y)*denom(x))::Rep
+                zero?(reduc(res, commonk(x, y)))$Rep
 
             number?(x : %) : Boolean ==
                 if R has RetractableTo(Integer) then
@@ -139,7 +143,6 @@ Expression(R : Comparable) : Exports == Implementation where
                   simplifyPower(denominator x, n::Integer)
 
             smaller?(x : %, y : %)  == smaller?(x, y)$Rep
-            x : % = y : %        == (x - y) =$Rep 0$Rep
             numer x          == numer(x)$Rep
             denom x          == denom(x)$Rep
 
