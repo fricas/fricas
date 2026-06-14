@@ -387,7 +387,10 @@ Expression(R : Comparable) : Exports == Implementation where
             reduc(x, l) ==
                 for k in l repeat
                     p := minPoly k
-                    x := evl(numer x, k, p) /$Rep evl(denom x, k, p)
+                    d := degree p
+                    -- avoid division when possible
+                    if degree(numer x, k) >= d or degree(denom x, k) >= d then
+                        x := evl(numer x, k, p) /$Rep evl(denom x, k, p)
                 x
 
             evl0(p, k) ==
