@@ -144,7 +144,7 @@ int_loop () ==
 SpadInterpretStream(step_num, source, interactive?) ==
     pile?                    := not interactive?
 
-    $inclAssertions: local := ["AIX", "CommonLisp"] -- Jan 28/90
+    $inclAssertions : local := $sys_assertions
 
 
     $lastPos               : local := $nopos   ------------>!!!

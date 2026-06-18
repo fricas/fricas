@@ -126,3 +126,6 @@
 
 (defun |search_str| (pat str start)
        (search pat str :start2 start))
+
+(setf |$sys_assertions| (list '|CommonLisp|
+      #+:unix '|Unix|))
