@@ -29,10 +29,16 @@ FloatSpecialFunctions() : Exports == Implementation where
       ++ lambertW(x) is the Lambert W function.
     lambertW : Complex(DoubleFloat) -> Complex(DoubleFloat)
       ++ lambertW(x) is the Lambert W function.
+    dilog : Float -> Float
+      ++ dilog(z) is the dilogarithm.
     dilog : Complex(Float) -> Complex(Float)
-      ++ dilog(z) is the dilogarithm
+      ++ dilog(z) is the dilogarithm.
+    li2 : Float -> Float
+      ++ li2(z) is polylog(2, z).
     li2 : Complex(Float) -> Complex(Float)
-      ++ li2(z) is polylog(2, z)
+      ++ li2(z) is polylog(2, z).
+    riemannZeta : Float -> Float
+      ++ riemannZeta(z) is the Riemann Zeta function.
     riemannZeta : Complex(Float) -> Complex(Float)
       ++ riemannZeta(z) is the Riemann Zeta function.
     -- Functions below should be local, but conditional
@@ -356,6 +362,10 @@ FloatSpecialFunctions() : Exports == Implementation where
         finally
             bits(obits)
 
+    li2(z : RF) : RF ==
+        z > 1 => error "li2 for argument bigger than 1"
+        real(li2(complex(z, 0)))
+
     dilog_aux(z : CF, prec : I) : CF ==
         nz := norm(z)
         res : CF
@@ -378,6 +388,10 @@ FloatSpecialFunctions() : Exports == Implementation where
             dilog_aux(z, prec)
         finally
             bits(obits)
+
+    dilog(z : RF) : RF ==
+        z < 0 => error "dilog of negative number"
+        real(dilog(complex(z, 0)))
 
     -- Riemann Zeta. When Re(s) >= 1/2 we use algorithm 2 from
     -- P. Borwein, An efficient algorithm for the Riemann Zeta function
@@ -471,6 +485,9 @@ FloatSpecialFunctions() : Exports == Implementation where
             zeta_aux(z, prec)
         finally
             bits(obits)
+
+    riemannZeta(z : RF) : RF ==
+        real(riemannZeta(complex(z, 0)))
 
     -- Lambert W
 
@@ -1454,8 +1471,8 @@ DoubleFloatEllipticIntegrals : Exports == Implementation where
 )boot $tryRecompileArguments := true
 
 )abbrev package DFSFUN2 DoubleFloatSpecialFunctions2
-++ Description: This package implements \spadtype{DoubleFloat} versions
-++ of several special functions.
+++ Description: This package implements \spadtype{DoubleFloat} and
+++ \spadtype{Complex(DoubleFloat)} versions of several special functions.
 DoubleFloatSpecialFunctions2() : with
     Beta : (DoubleFloat, DoubleFloat) -> DoubleFloat
     Beta : (Complex(DoubleFloat), Complex(DoubleFloat)) -> Complex(DoubleFloat)
@@ -1469,15 +1486,31 @@ DoubleFloatSpecialFunctions2() : with
     polygamma : (NonNegativeInteger, Complex(DoubleFloat)) ->
                  Complex(DoubleFloat)
     erf : DoubleFloat -> DoubleFloat
+    erf : Complex(DoubleFloat) -> Complex(DoubleFloat)
     erfi : DoubleFloat -> DoubleFloat
+    erfi : Complex(DoubleFloat) -> Complex(DoubleFloat)
     fresnelC : DoubleFloat -> DoubleFloat
+    fresnelC : Complex(DoubleFloat) -> Complex(DoubleFloat)
     fresnelS : DoubleFloat -> DoubleFloat
+    fresnelS : Complex(DoubleFloat) -> Complex(DoubleFloat)
     Ei : DoubleFloat -> DoubleFloat
+    Ei : Complex(DoubleFloat) -> Complex(DoubleFloat)
     li : DoubleFloat -> DoubleFloat
+    li : Complex(DoubleFloat) -> Complex(DoubleFloat)
     Ci : DoubleFloat -> DoubleFloat
+    Ci : Complex(DoubleFloat) -> Complex(DoubleFloat)
     Si : DoubleFloat -> DoubleFloat
+    Si : Complex(DoubleFloat) -> Complex(DoubleFloat)
     Chi : DoubleFloat -> DoubleFloat
+    Chi : Complex(DoubleFloat) -> Complex(DoubleFloat)
     Shi : DoubleFloat -> DoubleFloat
+    Shi : Complex(DoubleFloat) -> Complex(DoubleFloat)
+    dilog : DoubleFloat -> DoubleFloat
+    dilog : Complex(DoubleFloat) -> Complex(DoubleFloat)
+    li2 : DoubleFloat -> DoubleFloat
+    li2 : Complex(DoubleFloat) -> Complex(DoubleFloat)
+    riemannZeta : DoubleFloat -> DoubleFloat
+    riemannZeta : Complex(DoubleFloat) -> Complex(DoubleFloat)
     airyAi : DoubleFloat -> DoubleFloat
     airyAi : Complex(DoubleFloat) -> Complex(DoubleFloat)
     airyAiPrime : DoubleFloat -> DoubleFloat
@@ -1828,37 +1861,97 @@ DoubleFloatSpecialFunctions2() : with
         finally
             bits(obits)
 
+    to_cdf(x) ==>
+        obits := bits()$Float
+        try
+            bits(68)
+            convert(x)@CDF
+        finally
+            bits(obits)
+
     bfx ==> convert(x)@Float
+
+    cfx ==> convert(x)@Complex(Float)
 
     erf(x : DoubleFloat) ==
         to_sf(erf(bfx))
 
+    erf(x : CDF) ==
+        to_cdf(erf(cfx))
+
     erfi(x : DoubleFloat) ==
         to_sf(erfi(bfx))
+
+    erfi(x : CDF) ==
+        to_cdf(erfi(cfx))
 
     fresnelC(x : DoubleFloat) ==
         to_sf(fresnelC(bfx))
 
+    fresnelC(x : CDF) ==
+        to_cdf(fresnelC(cfx))
+
     fresnelS(x : DoubleFloat) ==
         to_sf(fresnelS(bfx))
+
+    fresnelS(x : CDF) ==
+        to_cdf(fresnelS(cfx))
 
     Ei(x : DoubleFloat) ==
         to_sf(Ei(bfx))
 
+    Ei(x : CDF) ==
+        to_cdf(Ei(cfx))
+
     li(x : DoubleFloat) ==
         to_sf(li(bfx))
+
+    li(x : CDF) ==
+        to_cdf(li(cfx))
 
     Ci(x : DoubleFloat) ==
         to_sf(Ci(bfx))
 
+    Ci(x : CDF) ==
+        to_cdf(Ci(cfx))
+
     Si(x : DoubleFloat) ==
         to_sf(Si(bfx))
+
+    Si(x : CDF) ==
+        to_cdf(Si(cfx))
 
     Chi(x : DoubleFloat) ==
         to_sf(Chi(bfx))
 
+    Chi(x : CDF) ==
+        to_cdf(Chi(cfx))
+
     Shi(x : DoubleFloat) ==
         to_sf(Shi(bfx))
+
+    Shi(x : CDF) ==
+        to_cdf(Shi(cfx))
+
+    import FloatSpecialFunctions
+
+    dilog(x : DF) ==
+        to_sf(dilog(bfx))
+
+    dilog(x : CDF) ==
+        to_cdf(dilog(cfx))
+
+    li2(x : DF) ==
+        to_sf(li2(bfx))
+
+    li2(x : CDF) ==
+        to_cdf(li2(cfx))
+
+    riemannZeta(x : DF) ==
+        to_sf(riemannZeta(bfx))
+
+    riemannZeta(x : CDF) ==
+        to_cdf(riemannZeta(cfx))
 
     one_over_nine := 1$DF/(9::DF)
     one_over_three := 1$DF/(3::DF)
