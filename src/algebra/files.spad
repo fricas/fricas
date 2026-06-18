@@ -275,7 +275,11 @@ KeyedAccessFile(Entry) : KAFcategory == KAFcapsule where
 
         ---- From FileCategory ----
         open fname ==
-            open(fname, "either")
+            open(fname, "input")
+
+        openIfCan(fname) ==
+            openIfCan(fname, "input")
+
         openIfCan(fname, mode) ==
             mode = "either" =>
                 res1 := openIfCan(fname, "input")
@@ -323,7 +327,7 @@ KeyedAccessFile(Entry) : KAFcategory == KAFcapsule where
         ---- From TableAggregate ----
         empty() ==
             fn := new("", "kaf", "sdata")$Name
-            open fn
+            open(fn, "either")
         keys f ==
             reopen!(f, "input")
             keys(f.fileState)$BasicKeyedAccessFile
@@ -386,7 +390,7 @@ Library() : TableAggregate(String, Any) with
 
     == KeyedAccessFile(Any) add
          Rep := KeyedAccessFile(Any)
-         library f == open f
+         library(f) == open(f, "either")
          elt(f : %, v : Symbol) == elt(f, string v)
          setelt!(f : %, v : Symbol, val : Any) == setelt!(f, string v, val)
 
