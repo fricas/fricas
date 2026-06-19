@@ -386,13 +386,24 @@ Expression(R : Comparable) : Exports == Implementation where
                 operator(name op, n@NonNegativeInteger)
 
             reduc(x, l) ==
+                -- do reduction over algebraic kernels first,
+                -- and division at the end.
+                num := numer x
+                den := denom x
+                evaled := false
                 for k in l repeat
                     p := minPoly k
                     d := degree p
-                    -- avoid division when possible
-                    if degree(numer x, k) >= d or degree(denom x, k) >= d then
-                        x := evl(numer x, k, p) /$Rep evl(denom x, k, p)
-                x
+                    if degree(num, k) >= d or degree(den, k) >= d then
+                        num1 := evl(num, k, p)
+                        den1 := evl(den, k, p)
+                        num := numer(num1) * denom(den1)
+                        den := numer(den1) * denom(num1)
+                        evaled := true
+                if evaled then
+                    num /$Rep den
+                else
+                    x
 
             evl0(p, k) ==
                 numer univariate(p::Fraction(MP),
