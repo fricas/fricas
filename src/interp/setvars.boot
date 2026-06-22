@@ -140,8 +140,8 @@ set1(l,setTree) ==
       num := l.1
       (FIXP num) and (num >= (setData.setLeaf).0) and
         (null (upperlimit := setData.setLeaf.1) or num <= upperlimit) => num
-      selectOption(l.1,['default,:setData.setLeaf],nil)
-    if arg2 = 'DEFAULT
+      selectOption(l.1, ['default], nil)
+    if arg2 = 'default
       then SET(setData.setVar, setData.setDef)
       else if arg2 then SET(setData.setVar, arg2)
     -- if so set or not a valid choice, then show option information
@@ -154,7 +154,7 @@ set1(l,setTree) ==
   st = 'LITERALS =>
     -- validate the option, allowing the user to set the default
     if (arg2 := selectOption(l.1,['default,:setData.setLeaf],nil)) then
-      if arg2 = 'DEFAULT
+      if arg2 = 'default
         then SET(setData.setVar, translateYesNo2TrueFalse setData.setDef)
         else
           SET(setData.setVar, translateYesNo2TrueFalse arg2)
