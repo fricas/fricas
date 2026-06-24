@@ -1448,7 +1448,7 @@ hasCaty(d,cat,SL) ==
   -- 2. a list of pairs (argument to cat,condition) otherwise
   -- then the substitution SL is augmented, or the result is 'failed
   cat is ['CATEGORY,.,:y] => hasAttSig(d,subCopy(y,constructSubst d),SL)
-  cat is ['SIGNATURE,foo,sig] =>
+  cat is ['SIGNATURE, foo, sig, :.] =>
     hasSig(d,foo,subCopy(sig,constructSubst d),SL)
   cat is ['ATTRIBUTE,a] => BREAK()
   x:= hasCat(opOf d,opOf cat) =>
@@ -1513,7 +1513,7 @@ hasAttSig(d,x,SL) ==
   -- the result is an augmented SL, if d has x, 'failed otherwise
   for y in x until SL='failed repeat SL:=
     y is ['ATTRIBUTE,a] => BREAK()
-    y is ['SIGNATURE,foo,s] => hasSig(d,foo,s,SL)
+    y is ['SIGNATURE, foo, s, :.] => hasSig(d, foo, s, SL)
     unexpected_error(['"hasAttSig", '"unexpected form of unnamed category"])
   SL
 
@@ -1546,6 +1546,10 @@ hasSigOr(orCls, S0, SL) ==
 hasSig(dom,foo,sig,SL) ==
   -- tests whether domain dom has function foo with signature sig
   -- under substitution SL
+  foo :=
+      foo = 0 => "0"
+      foo = 1 => "1"
+      foo
   $domPvar: local := nil
   fun := constructor? first dom =>
     S0:= constructSubst dom
