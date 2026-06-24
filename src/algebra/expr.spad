@@ -101,11 +101,23 @@ Expression(R : Comparable) : Exports == Implementation where
             x : % + y : %        == algreduc(x +$Rep y, commonk(x, y))
             (x : % - y : %) : %    == algreduc(x -$Rep y, commonk(x, y))
             x : % / y : %        == algreduc(x /$Rep y, commonk(x, y))
-            x : % = y : % ==
-                denom(x) = denom(y) => numer(x) = numer(y)
-                -- we only need to care about the numerator of (x - y)
-                res := (numer(x)*denom(y) - numer(y)*denom(x))::Rep
-                zero?(reduc(res, commonk(x, y)))$Rep
+
+            if R is Integer then
+                x : % = y : % ==
+                    denom(x) = denom(y) => numer(x) = numer(y)
+                    lk := commonk(x, y)
+                    -- Rep is canonical when R is Integer and lk empty
+                    empty? lk => false
+                    -- we only need to care about the numerator of (x - y)
+                    res := (numer(x)*denom(y) - numer(y)*denom(x))::Rep
+                    zero?(reduc(res, lk))$Rep
+            else
+                -- fallback version, in case R is Expression or AlgebraicNumber
+                x : % = y : % ==
+                    denom(x) = denom(y) => numer(x) = numer(y)
+                    -- we only need to care about the numerator of (x - y)
+                    res := (numer(x)*denom(y) - numer(y)*denom(x))::Rep
+                    zero?(reduc(res, commonk(x, y)))$Rep
 
             number?(x : %) : Boolean ==
                 if R has RetractableTo(Integer) then
