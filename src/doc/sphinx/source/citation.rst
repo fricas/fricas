@@ -162,6 +162,12 @@ In the following we list publications mentioning FriCAS.
   (DOI: `10.1007/978-3-030-04480-0_11
   <https://doi.org/10.1007/978-3-030-04480-0_11>`_)
 
+* **Sam Blake**
+  (2020)
+  `A Simple Method for Computing Some Pseudo-Elliptic Integrals
+  in Terms of Elementary Functions
+  <https://arxiv.org/abs/2004.04910>`_
+
 * **Ralf Hemmecke**, **Peter Paule**, and  **Silviu Radu**
   (2021):
   `Construction of an Integral Basis for $M^\\infty(121)$
