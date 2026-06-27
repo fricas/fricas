@@ -819,9 +819,11 @@ allOrMatchingMms(mms,args1,tar,dc) ==
   -- otherwise return the original list
   null mms or null rest mms => mms
   x := NIL
+  o_sl := cons("%", TAKE(#rest(dc), $FormalMapVariableList))
+  n_sl := cons(dc, rest(dc))
   for mm in mms repeat
     [sig,:.] := mm
-    [res, :args] := SUBST(dc, "%", sig)
+    [res, :args] := SUBLISLIS(n_sl, o_sl, sig)
     args ~= args1 => nil
     x := CONS(mm,x)
   if x then x
