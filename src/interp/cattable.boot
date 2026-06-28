@@ -245,6 +245,15 @@ formalSubstitute(form:=[.,:argl],u) ==
 isFormalArgumentList argl ==
   and/[x=fa for x in argl for fa in $FormalMapVariableList]
 
+is_self_pred(cat, pred) ==
+    pred is ["has", "%", =cat] => true
+    pred is ["AND", :lp] =>
+        res := false
+        for p1 in lp while not(res) repeat
+            res := is_self_pred(cat, p1)
+        res
+    false
+
 mkCategoryExtensionAlist cform ==
   not CONSP cform => nil
   cop := first cform
@@ -252,11 +261,12 @@ mkCategoryExtensionAlist cform ==
   catlist := formalSubstitute(cform, first getConstructorExports(cform, true))
   extendsList:= nil
   for [cat,:pred] in catlist repeat
-    pred is ["has", "%", =cat] => "iterate"
+    is_self_pred(cat, pred) => "iterate"
     newList := getCategoryExtensionAlist0 cat
     finalList :=
       pred = 'T => newList
-      [[a,:quickAnd(b,pred)] for [a,:b] in newList]
+      [[a, :quickAnd(b, pred)] for [a, :b] in newList
+         | not(is_self_pred(a, pred))]
     extendsList := catPairUnion(extendsList, finalList)
   extendsList
 
