@@ -618,37 +618,26 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
 --         p case R => p
 --         leadingCoefficient p.ts
 
-      mymerge : (List VarSet, List VarSet) ->List VarSet
-      mymerge(l : List VarSet, m : List VarSet) : List VarSet  ==
-         empty? l => m
-         empty? m => l
-         first l = first m =>
-            empty? rest l =>
-                 setrest!(l, rest m)
-                 l
-            empty? rest m => l
-            setrest!(l, mymerge(rest l, rest m))
-            l
-         first l > first m =>
-            empty? rest l =>
-                setrest!(l, m)
-                l
-            setrest!(l, mymerge(rest l, m))
-            l
-         empty? rest m =>
-             setrest!(m, l)
-             m
-         setrest!(m, mymerge(l, rest m))
-         m
+      myinsert(v : VarSet, l : List VarSet) : List VarSet ==
+          empty? l => [v]
+          first l = v => l
+          v < first l => cons(v, l)
+          setrest!(l, myinsert(v, rest l))
+          l
 
-      variables p ==
-         p case R => empty()
-         lv : List VarSet := empty()
-         q := p.ts
-         while not zero? q repeat
-           lv := mymerge(lv, variables leadingCoefficient q)
-           q := reductum q
-         cons(p.v, lv)
+      -- helper that accumulates variables directly into the list 'acc'
+      collect_variables(p : %, acc : List VarSet) : List VarSet ==
+          p case R => acc
+          -- since traversing 'p' tends to encounter decreasing values,
+          -- 'myinsert' uses '<' to exploit this locality.
+          acc := myinsert(p.v, acc)
+          q := p.ts
+          while not zero? q repeat
+              acc := collect_variables(leadingCoefficient q, acc)
+              q := reductum q
+          acc
+
+      variables p == reverse! collect_variables(p, empty())
 
       mainVariable p ==
          p case R => "failed"
