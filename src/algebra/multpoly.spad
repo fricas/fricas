@@ -375,13 +375,13 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
          false
 
       p1 * p2  ==
-         p1 case R =>
-            one?(p1::R) => p2
-            p1::R * p2
+         p1 case R => p1::R * p2
          p2 case R =>
-            one?(p2::R) => p1
+            -- the same technique as '* : (R, %) -> %' above
+            zero?(p2::R) => 0
+            p2::R = m_one => p1
             mvar := p1.v
-            up := p1.ts * (p2::R)
+            up := p1.ts * p2
             if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
          p1.v = p2.v =>
             mvar := p1.v
