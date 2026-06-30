@@ -334,12 +334,21 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
               if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
 
       c * p  ==
-          c = 0 => 0
+          zero? c => 0
           c = m_one => p
           p case R => c * p::R
           mvar := p.v
           up := c*p.ts
           if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
+
+      p * c  ==
+          zero? c => 0
+          c = m_one => p
+          p case R => p::R * c
+          mvar := p.v
+          up := p.ts * c
+          if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
+
       p1 + p2  ==
          p1 case R and p2 case R => p1 +$R p2
          p1 case R => [p2.v, p1::D + p2.ts]$VPoly
@@ -376,13 +385,7 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
 
       p1 * p2  ==
          p1 case R => p1::R * p2
-         p2 case R =>
-            -- the same technique as '* : (R, %) -> %' above
-            zero?(p2::R) => 0
-            p2::R = m_one => p1
-            mvar := p1.v
-            up := p1.ts * p2
-            if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
+         p2 case R => p1 * p2::R
          p1.v = p2.v =>
             mvar := p1.v
             up := p1.ts*p2.ts
