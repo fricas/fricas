@@ -1511,7 +1511,9 @@ Up2P(u,source is [.,var,S],target is [.,T]) ==
   multfunc := getFunctionFromDomain("*",target,[target,target])
   for [e,:c] in u until not x repeat
     x:= coerceInt(objNewWrap(c,S),target) =>
-      term:= SPADCALL([1,var,[e,0,:one]],objValUnwrap(x),multfunc)
+      term :=
+          e = 0 => objValUnwrap(x)
+          SPADCALL([1, var, [e, 0, :one]], objValUnwrap(x), multfunc)
       pol:= SPADCALL(pol,term,plusfunc)
     coercionFailure()
   x => pol
