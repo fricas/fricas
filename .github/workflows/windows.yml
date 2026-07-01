@@ -13,10 +13,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
-      SBCL_VER: ${{ matrix.os == 'windows-2022' && '2.3.2' || '2.6.2' }}
-      ARCH: ${{ matrix.os == 'windows-2022' && 'x86-64' || 'arm64' }}
-      MSYSTEM: ${{ matrix.os == 'windows-2022' && 'UCRT64' || 'CLANGARM64' }}
-      INSTALL_PREFIX : ${{ matrix.os == 'windows-2022' && 'mingw-w64-ucrt-x86_64' || 'mingw-w64-clang-aarch64' }}
+      SBCL_VER       : ${{ endsWith(matrix.os, '-arm') && '2.6.2' || '2.3.2' }}
+      ARCH           : ${{ endsWith(matrix.os, '-arm') && 'arm64' || 'x86-64' }}
+      MSYSTEM        : ${{ endsWith(matrix.os, '-arm') && 'CLANGARM64' || 'UCRT64'}}
+      INSTALL_PREFIX : ${{ endsWith(matrix.os, '-arm') && 'mingw-w64-clang-aarch64' || 'mingw-w64-ucrt-x86_64' }}
     defaults:
       run:
         shell: msys2 {0}
@@ -33,14 +33,14 @@ jobs:
         wget https://github.com/fricas/fricas-nightly-builds/releases/download/build-tools/sbcl-${SBCL_VER}-${ARCH}-windows-binary.msi
         msiexec -i sbcl-${SBCL_VER}-${ARCH}-windows-binary.msi -passive
 
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: configure and make
       run: |
         export SBCL_HOME="/c/Program Files/Steel Bank Common Lisp/"
         export PATH="$SBCL_HOME":$PATH
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=sbcl --enable-gmp || cat config.log
+        ../fricas/configure --with-lisp=sbcl --enable-gmp || (cat config.log && false)
         make -j4 --output-sync
 
     - name: Create artifact archives

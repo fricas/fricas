@@ -13,10 +13,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     env:
-      ARCH: ${{ matrix.os == 'ubuntu-22.04' && 'x86-64' || 'arm64' }}
+      ARCH: ${{ endsWith(matrix.os, '-arm') && 'arm64' || 'x86-64' }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: install dependencies
       run: |
@@ -24,7 +24,7 @@ jobs:
         sudo apt-get install clisp libxpm-dev
 
     - name: configure
-      run: ./configure --with-lisp=clisp --with-x || cat config.log
+      run: ./configure --with-lisp=clisp --with-x || (cat config.log && false)
 
     - name: make
       run: make -j4 --output-sync

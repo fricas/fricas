@@ -13,10 +13,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     env:
-      ARCH: ${{ matrix.os == 'ubuntu-24.04' && 'x86-64' || 'arm64' }}
+      ARCH: ${{ endsWith(matrix.os, '-arm') && 'arm64' || 'x86-64' }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: install dependencies
       run: |
@@ -27,7 +27,7 @@ jobs:
       run: |
         export GCL_ANSI=t
         export GCL_MEM_MULTIPLE=0.07
-        ./configure --with-lisp=gcl --with-x || cat config.log
+        ./configure --with-lisp=gcl --with-x || (cat config.log && false)
         make -j4 --output-sync
 
     - name: Create artifact archives

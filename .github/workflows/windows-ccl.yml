@@ -17,14 +17,14 @@ jobs:
       with:
         install: make mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp gmp-devel zip unzip
 
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: configure and make
       run: |
         mkdir ../build && cd ../build
         wget https://github.com/Clozure/ccl/releases/download/v1.13/ccl-1.13-windowsx86.zip
         unzip ccl-1.13-windowsx86.zip
-        ../fricas/configure --with-lisp=`pwd`/ccl/wx86cl64.exe --enable-gmp || cat config.log
+        ../fricas/configure --with-lisp=`pwd`/ccl/wx86cl64.exe --enable-gmp || (cat config.log && false)
         make -j4 --output-sync
 
     - name: Create artifact archives

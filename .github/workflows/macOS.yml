@@ -13,11 +13,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
-      SBCL_VER: ${{ matrix.os == 'macos-15-intel' && '2.2.9' || '2.4.0' }}
-      ARCH: ${{ matrix.os == 'macos-15-intel' && 'x86-64' || 'arm64' }}
+      SBCL_VER : ${{ endsWith(matrix.os, '-intel') && '2.2.9' || '2.4.0' }}
+      ARCH     : ${{ endsWith(matrix.os, '-intel') && 'x86-64' || 'arm64' }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: download and install SBCL
       run: |
@@ -30,7 +30,7 @@ jobs:
     - name: configure
       run: |
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=sbcl --with-gmp=`brew --prefix` || cat config.log
+        ../fricas/configure --with-lisp=sbcl --with-gmp=`brew --prefix` || (cat config.log && false)
 
     - name: make
       run: cd ../build && gmake -j4 --output-sync
