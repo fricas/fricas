@@ -2037,6 +2037,8 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
 --    c
 
     merge(f, a, b) ==
+        empty? a => b
+        empty? b => a
         r := stupidnew(#a + #b, a, b)
         i := minIndex a
         m := maxIndex a
@@ -2172,6 +2174,34 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
             for k in s..n repeat
                 qelt(t, k) = x => return k
             minIndex(t) - 1
+
+        merge_unique(f, a, b) ==
+            empty? a => b
+            empty? b => a
+            r := stupidnew(#a + #b, a, b)
+            i := minIndex a
+            m := maxIndex a
+            j := minIndex b
+            n := maxIndex b
+            for k in minIndex(r).. while i <= m and j <= n repeat
+                a1 := qelt(a, i); b1 := qelt(b, j)
+                a1 = b1 =>
+                    qsetelt!(r, k, a1)
+                    i := i+1
+                    j := j+1
+                if f(a1, b1) then
+                    qsetelt!(r, k, a1)
+                    i := i+1
+                else
+                    qsetelt!(r, k, b1)
+                    j := j+1
+            for k in k.. for i in i..m repeat qsetelt!(r, k, elt(a, i))
+            for k in k.. for j in j..n repeat qsetelt!(r, k, elt(b, j))
+            k - 1 = maxIndex r => r
+            res := stupidnew((k - minIndex(r))::NonNegativeInteger, a, b)
+            for i in minIndex(r)..(k-1) repeat
+                qsetelt!(res, i, elt(r, i))
+            res
 
     if S has OrderedSet then
 
@@ -2432,41 +2462,42 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
            empty? p => q
            empty? q => p
            eq?(p, q) => p
-           if f(first p, first q)
-               then (r := list first p; p := rest p)
-               else (r := list first q; q := rest q)
-           t1 := first r
+           r := empty()
            while not empty? p and not empty? q repeat
                p1 := first p; q1 := first q
-               p1 = t1 => p := rest p
-               q1 = t1 => q := rest q
+               p1 = q1 =>
+                   r := concat(p1, r)
+                   p := rest p
+                   q := rest q
                if f(p1, q1)
-                   then (r := concat(p1, r); p := rest p; t1 := p1)
-                   else (r := concat(q1, r); q := rest q; t1 := q1)
+                   then (r := concat(p1, r); p := rest p)
+                   else (r := concat(q1, r); q := rest q)
            if empty? p then p := q
            empty? p => reverse! r
-           if first p = t1 then p := rest p
            concat!(reverse! r, p)
 
        merge_unique!(f, p, q) ==
            empty? p => q
            empty? q => p
            eq?(p, q) => p
-           if f(first p, first q)
-               then (r := t := p; p := rest p)
-               else (r := t := q; q := rest q)
-           t1 := first t
+           if first p = first q then
+               r := t := p
+               p := rest p
+               q := rest q
+           else
+               if f(first p, first q)
+                   then (r := t := p; p := rest p)
+                   else (r := t := q; q := rest q)
            while not empty? p and not empty? q repeat
                p1 := first p; q1 := first q
-               p1 = t1 => p := rest p
-               q1 = t1 => q := rest q
+               p1 = q1 =>
+                   t := rest t
+                   p := rest p
+                   q := rest q
                if f(p1, q1)
-                   then (setrest!(t, p); t := p; p := rest p; t1 := p1)
-                   else (setrest!(t, q); t := q; q := rest q; t1 := q1)
-           if empty? p then p := q
-           empty? p => r
-           if first p = t1 then p := rest p
-           setrest!(t, p)
+                   then (setrest!(t, p); t := p; p := rest p)
+                   else (setrest!(t, q); t := q; q := rest q)
+           setrest!(t, if empty? p then q else p)
            r
 
    new(n, s) ==

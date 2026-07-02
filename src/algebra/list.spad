@@ -167,41 +167,42 @@ List(S : Type) : Exports == Implementation where
             empty? p => q
             empty? q => p
             eq?(p, q) => p
-            if f(Qfirst p, Qfirst q)
-                then (r := [Qfirst p]; p := Qrest p)
-                else (r := [Qfirst q]; q := Qrest q)
-            t1 : S := Qfirst r
+            r := empty()
             while not empty? p and not empty? q repeat
                 p1 : S := Qfirst p; q1 : S := Qfirst q
-                p1 = t1 => p := Qrest p
-                q1 = t1 => q := Qrest q
+                p1 = q1 =>
+                    r := cons(p1, r)
+                    p := Qrest p
+                    q := Qrest q
                 if f(p1, q1)
-                    then (r := cons(p1, r); p := Qrest p; t1 := p1)
-                    else (r := cons(q1, r); q := Qrest q; t1 := q1)
+                    then (r := cons(p1, r); p := Qrest p)
+                    else (r := cons(q1, r); q := Qrest q)
             if empty? p then p := q
             empty? p => reverse! r
-            if Qfirst p = t1 then p := Qrest p
             concat!(reverse! r, p)
 
         merge_unique!(f, p, q) ==
             empty? p => q
             empty? q => p
             eq?(p, q) => p
-            if f(Qfirst p, Qfirst q)
-                then (r := t := p; p := Qrest p)
-                else (r := t := q; q := Qrest q)
-            t1 : S := Qfirst t
+            if Qfirst p = Qfirst q then
+                r := t := p
+                p := Qrest p
+                q := Qrest q
+            else
+                if f(Qfirst p, Qfirst q)
+                    then (r := t := p; p := Qrest p)
+                    else (r := t := q; q := Qrest q)
             while not empty? p and not empty? q repeat
                 p1 : S := Qfirst p; q1 : S := Qfirst q
-                p1 = t1 => p := Qrest p
-                q1 = t1 => q := Qrest q
+                p1 = q1 =>
+                    t := Qrest t
+                    p := Qrest p
+                    q := Qrest q
                 if f(p1, q1)
-                    then (qsetrest!(t, p); t := p; p := Qrest p; t1 := p1)
-                    else (qsetrest!(t, q); t := q; q := Qrest q; t1 := q1)
-            if empty? p then p := q
-            empty? p => r
-            if Qfirst p = t1 then p := Qrest p
-            qsetrest!(t, p)
+                    then (qsetrest!(t, p); t := p; p := Qrest p)
+                    else (qsetrest!(t, q); t := q; q := Qrest q)
+            qsetrest!(t, if empty? p then q else p)
             r
 
       if S has Hashable then
