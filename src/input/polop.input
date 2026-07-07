@@ -38,4 +38,34 @@ for na in [[11305, 23], [26565, 59], [40755, 359], [4849845, 669606]] repeat
     a := second(na)
     testEquals("reduce(max, coefficients(cn))", "a")
 
+testcase "noncomutative base ring"
+
+Q := FRAC(INT)
+mR := SQMATRIX(2, Q)
+pR := POLY(mR)
+m11 := matrix([[1, 0], [0, 0]])$mR
+m12 := matrix([[0, 1], [0, 0]])$mR
+m21 := matrix([[0, 0], [1, 0]])$mR
+m22 := matrix([[0, 0], [0, 1]])$mR
+
+p1 := monomial(m11, x, 2)$pR + monomial(m12, x, 1)$pR + m22
+
+testTrue("ground?(m22*p1)")
+p2 := p1*m22
+testEquals("degree(univariate(p2))", "1")
+testEquals("numberOfMonomials(p2)", "2")
+testEquals("numberOfMonomials(p2 - m22*p1)", "1")
+p3 := m21*p1
+testEquals("degree(univariate(p3))", "2")
+testEquals("numberOfMonomials(p3)", "2")
+testEquals("leadingCoefficient(p3)", "m21")
+testEquals("coefficient(p3, 1)", "m22")
+testEquals("coefficient(p3, 0)", "0")
+
+p4 := p2*p1
+testEquals("numberOfMonomials(p4)", "2")
+testEquals("coefficient(p4, 1)", "m12")
+testEquals("coefficient(p4, 0)", "m22")
+
+
 statistics()
