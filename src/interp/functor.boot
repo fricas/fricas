@@ -500,6 +500,9 @@ ICformat(u, e) ==
           res := compHasFormat(u, e)
           HPUT($ICformat_hash, u, res)
           res
+      u is ['NOT, v] or u is ['not, v] =>
+          l1 := ICformat(v, e)
+          ['NOT, l1]
       u is ['AND,:l] or u is ['and,:l] =>
         l:= REMDUP [ICformat(v, e) for [v,:l'] in tails l | not member(v,l')]
              -- we could have duplicates after, even if not before
