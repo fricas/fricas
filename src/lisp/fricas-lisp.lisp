@@ -756,7 +756,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     #+:ecl
     (si:chdir (|pad_directory_name| dir) t)
     #+:gcl
-    (system::chdir dir)
+    (if (not (system::chdir dir)) (error "CHDIR failed"))
     #+:lispworks
     (hcl:change-directory dir)
     #+:openmcl
