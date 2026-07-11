@@ -690,20 +690,23 @@ with this hack and will try to convince the GCL crowd to fix this.
 )
 
 (defun |append_directory_name| (dir name)
-  (concatenate 'string (|trim_directory_name| dir) "/"
-	       (if (char= #\/ (char name 0)) (subseq name 1) name)))
+    (concatenate 'string
+                 (|pad_directory_name| dir)
+                 (if (and (> (length name) 0) (char= #\/ (char name 0)))
+                     (subseq name 1) name)))
 
 (defun |trim_directory_name| (name)
     #+(or :unix :win32)
-    (if (when (> (length name) 1) (char= (char name (1- (length name))) #\/))
-        (subseq name 0 (1- (length name)))
-        name)
+    (let ((len (1- (length name))))
+      (if (and (> len 0) (char= (char name len) #\/))
+          (subseq name 0 len)
+          name))
     #-(or :unix :win32)
     (error "Not Unix and not Windows, what system it is?"))
 
 (defun |pad_directory_name| (name)
    #+(or :unix :win32)
-   (if (when (> (length name) 0) (char= (char name (1- (length name))) #\/))
+   (if (and (> (length name) 0) (char= (char name (1- (length name))) #\/))
        name
        (concatenate 'string name "/"))
    #-(or :unix :win32)
