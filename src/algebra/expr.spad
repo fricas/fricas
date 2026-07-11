@@ -155,7 +155,14 @@ Expression(R : Comparable) : Exports == Implementation where
                 simplifyPower(numerator x, n::Integer) /
                   simplifyPower(denominator x, n::Integer)
 
-            smaller?(x : %, y : %)  == smaller?(x, y)$Rep
+            -- This is lexicographic order, not fully compatible with '=',
+            -- i.e. for some e1 = e2, smaller?(e1, e2) may also return true.
+            -- But it is good enough for ordering in Kernel, because it checks
+            -- for duplicates first.
+            smaller?(x : %, y : %) ==
+                denom(x) = denom(y) => smaller?(numer(x), numer(y))
+                smaller?(denom(x), denom(y))
+
             numer x          == numer(x)$Rep
             denom x          == denom(x)$Rep
 
