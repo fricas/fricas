@@ -256,7 +256,7 @@ handle_event(XEvent * event)
                     char *pBuffer;
                     InputItem *item = gSavedInputAreaLink->reference.string;
 
-                    for (pBuffer = pSelection; *pBuffer; ++pBuffer)
+                    for (pBuffer = (char *) pSelection; *pBuffer; ++pBuffer)
                         add_buffer_to_sym(pBuffer, item);
 
                     XFree(pSelection);

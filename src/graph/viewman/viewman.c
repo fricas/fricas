@@ -167,15 +167,17 @@ main (void)
           break;
 
         case viewportClosing:
+          {
+          int close_by_spad = slot->closing;
 #ifdef DEBUG
           fprintf(stderr,"viewman: closing viewport\n");
 #endif
-          int close_by_spad = slot->closing;
           closeChildViewport(slot);
           /* notify Spad process that view2D/view3D process has been closed */
           if (close_by_spad)
               send_int(spadSock, 100);
           break;
+          }
 
         };  /* switch */
         /* if reading slot->viewIn ends */
