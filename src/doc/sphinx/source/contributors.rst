@@ -11,8 +11,8 @@ contributed to |FriCAS| since its fork from the Axiom code base in 2007
 * Baclawski, Krystian
 * Baid, Abhinav
 * Baker, Martin
-* Broadbery, Peter
 * Bourquin, Raoul
+* Broadbery, Peter
 * Chapoton, Frédéric
 * Cyganski, David
 * Daly, Tim
@@ -27,10 +27,10 @@ contributed to |FriCAS| since its fork from the Axiom code base in 2007
 * Joswig, Rainer
 * Kostyaev, Sergey
 * Lehner, Franz
-* Maltey, Francois
 * Maguire, Camm
-* van Oostrum, Piet
+* Maltey, Francois
 * Onions, Paul
+* van Oostrum, Piet
 * Ortiz-Zuazaga, Humberto
 * Pagani, Kurt
 * Page, Bill
@@ -44,8 +44,8 @@ contributed to |FriCAS| since its fork from the Axiom code base in 2007
 * Sarnitskiy, Grigory
 * Saushev, Aleksej
 * Schrempf, Konrad
-* Solovets, Alexander
 * Smith, Robert
+* Solovets, Alexander
 * Strong, Hill
 * Vanuxem, Gregory
 * Wilson, Stephen
