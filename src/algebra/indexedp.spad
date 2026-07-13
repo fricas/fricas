@@ -157,7 +157,29 @@ IndexedDirectProductObject(A : SetCategory, S : SetCategory
         monomial(r, s) == [[s, r]]
         map(f, x) == [[tm.k, f(tm.c)] for tm in x]
 
-    if S has Comparable then
+    SMALLER_DEF ==>
+           smaller?(x : %, y : %) : Boolean ==
+               repeat
+                   empty?(y) =>
+                       empty?(x) => return false
+                       return cmp_x_0
+                   empty?(x) => return cmp_0_y
+                   if x.first.k = y.first.k then
+                       if x.first.c = y.first.c then
+                           x := rest(x)
+                           y := rest(y)
+                       else
+                           return smaller?(x.first.c, y.first.c)
+                   else
+                       smaller?(x.first.k, y.first.k) => return cmp_0_y
+                       return cmp_x_0
+
+    if A has Comparable and S has Comparable then
+               SMALLER_DEF where
+                   cmp_x_0 ==> false
+                   cmp_0_y ==> true
+
+    if S has OrderedSet then
     --representations
     --declarations
        x, y : %
@@ -175,22 +197,6 @@ IndexedDirectProductObject(A : SetCategory, S : SetCategory
 
        -- sample(): % == [[sample()$S, sample()$A]$Term]$Rep
 
-       SMALLER_DEF ==>
-           smaller?(x : %, y : %) : Boolean ==
-               repeat
-                   empty?(y) =>
-                       empty?(x) => return false
-                       return cmp_x_0
-                   empty?(x) => return cmp_0_y
-                   if x.first.k = y.first.k then
-                       if x.first.c = y.first.c then
-                           x := rest(x)
-                           y := rest(y)
-                       else
-                           return smaller?(x.first.c, y.first.c)
-                   else
-                       smaller?(x.first.k, y.first.k) => return cmp_0_y
-                       return cmp_x_0
 
        if A has AbelianMonoid then
 
@@ -208,10 +214,6 @@ IndexedDirectProductObject(A : SetCategory, S : SetCategory
                empty?(x) =>
                    error "Can't take leadingCoefficient of empty product element"
                x.first.c
-           if A has Comparable then
-               SMALLER_DEF where
-                   cmp_x_0 ==> false
-                   cmp_0_y ==> true
 
        leadingSupport x  ==
           empty?(x) => error "Can't take leadingCoefficient of empty product element"
