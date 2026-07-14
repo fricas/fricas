@@ -51,13 +51,7 @@ AbelianGroup() : Category == CancellationAbelianMonoid with
 ++   \spad{rightIdentity("+":(%,%)->%,0)}\tab{30}\spad{ x+0=x }
 -- following domain must be compiled with subsumption disabled
 -- define SourceLevelSubset to be EQUAL
-AbelianMonoid() : Category == AbelianSemiGroup with
-      0 : constant -> %
-        ++ 0 is the additive identity element.
-      sample : constant -> %
-        ++ sample yields a value of type %
-      zero? : % -> Boolean
-        ++ zero?(x) tests if x is equal to 0.
+AbelianMonoid() : Category == Join(AbelianSemiGroup, SetWithZero) with
       "*": (NonNegativeInteger,%) -> %
         ++ n * x is left-multiplication by a non negative integer
       opposite? : (%,%) -> Boolean
@@ -65,9 +59,7 @@ AbelianMonoid() : Category == AbelianSemiGroup with
         ++ and \spad{y} is \spad{0}.
     add
       import from RepeatedDoubling(%)
-      zero? x == x = 0
       n : PositiveInteger * x : % == (n::NonNegativeInteger) * x
-      sample() == 0
       if not (% has Ring) then
           n : NonNegativeInteger * x : % ==
               zero? n => 0
@@ -903,59 +895,6 @@ Module(R : CommutativeRing) : Category == BiModule(R, R)
 ++    unitsKnown\tab{15}\spadfun{recip} only returns "failed" on non-units
 Monoid() : Category == Join(SemiGroup, MagmaWithUnit)
 
-
-)abbrev category OAGROUP OrderedAbelianGroup
-++ Author:
-++ Basic Functions:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ Description:
-++ Ordered sets which are also abelian groups, such that the addition preserves
-++ the ordering.
-
-OrderedAbelianGroup() : Category ==
-        Join(OrderedCancellationAbelianMonoid, AbelianGroup) with
-     positive? : % -> Boolean
-       ++ positive?(x) tests whether x is strictly greater than 0.
-     negative? : % -> Boolean
-       ++ negative?(x) tests whether x is strictly less than 0.
-     sign     : % -> Integer
-       ++ sign(x) is 1 if x is positive, -1 if x is negative, 0 if x equals 0.
-     abs      : % -> %
-       ++ abs(x) returns the absolute value of x.
-  add
-     positive? x == x>0
-     negative? x == x<0
-     sign x ==
-         positive? x => 1
-         negative? x => -1
-         zero? x => 0
-         error "x satisfies neither positive?, negative? or zero?"
-     abs x ==
-         positive? x => x
-         negative? x => -x
-         zero? x => 0
-         error "x satisfies neither positive?, negative? or zero?"
-
-
-)abbrev category OAMON OrderedAbelianMonoid
-++ Author:
-++ Basic Functions:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ Description:
-++ Ordered sets which are also abelian monoids, such that the addition
-++ preserves the ordering.
-
-OrderedAbelianMonoid() : Category ==
-        Join(OrderedAbelianSemiGroup, AbelianMonoid)
-
 )abbrev category OAMONS OrderedAbelianMonoidSup
 ++ Author:
 ++ Basic Functions:
@@ -975,7 +914,8 @@ OrderedAbelianMonoid() : Category ==
 ++   \spad{sup(a,b)-b \~~= "failed"}
 ++   \spad{x-a \~~= "failed" and x-b \~~= "failed" => x >= sup(a,b)}
 
-OrderedAbelianMonoidSup() : Category == OrderedCancellationAbelianMonoid with
+OrderedAbelianMonoidSup() : Category == Join(OrderedAbelianSemiGroup,
+                                             CancellationAbelianMonoid) with
     --operation
       sup : (%, %) -> %
         ++ sup(x, y) returns the least element from which both
@@ -997,78 +937,39 @@ OrderedAbelianMonoidSup() : Category == OrderedCancellationAbelianMonoid with
 ++ preserves the ordering.
 ++   \spad{ x < y => x+z < y+z}
 
-OrderedAbelianSemiGroup() : Category == Join(OrderedSet, AbelianSemiGroup)
+OrderedAbelianSemiGroup() : Category == Join(OrderedSet,
+                                             AbelianSemiGroup) with
+    if % has AbelianGroup then
+         abs      : % -> %
+           ++ abs(x) returns the absolute value of x.
+  add
 
+    if % has AbelianGroup then
+        abs x ==
+            positive? x => x
+            negative? x => -x
+            zero? x => 0
+            error "x satisfies neither positive?, negative? or zero?"
 
-)abbrev category OSGROUP OrderedSemiGroup
-++ Author: Gabriel Dos Reis
-++ Date Create May 25, 2008
-++ Description:  Semigroups with compatible ordering.
-
-OrderedSemiGroup() : Category == Join(OrderedSet, SemiGroup)
-
-
-)abbrev category OCAMON OrderedCancellationAbelianMonoid
-++ Author:
-++ Basic Functions:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ Description:
-++ Ordered sets which are also abelian cancellation monoids, such that the addition
-++ preserves the ordering.
-
-OrderedCancellationAbelianMonoid() : Category ==
-        Join(OrderedAbelianMonoid, CancellationAbelianMonoid)
-
-)abbrev category ORDFIN OrderedFinite
-++ Author:
-++ Basic Functions:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ Description:
-++ Ordered finite sets.
-
-OrderedFinite() : Category == Join(OrderedSet, Finite)
-
-)abbrev category OINTDOM OrderedIntegralDomain
-++ Author: JH Davenport (after L Gonzalez-Vega)
-++ Date Created: 30.1.96
-++ Basic Functions:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ Description:
-++ The category of ordered commutative integral domains, where ordering
-++ and the arithmetic operations are compatible.
-
-OrderedIntegralDomain() : Category ==
-  Join(IntegralDomain, OrderedRing)
-
-
-)abbrev category ORDMON OrderedMonoid
-++ Author:
-++ Basic Functions:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ Description:
-++ Ordered sets which are also monoids, such that multiplication
-++ preserves the ordering.
-++
-++ Axioms:
+)abbrev category OMAGMA OrderedMagma
+++ Author: Waldek Hebisch
+++ Description: Magmas with compatible ordering, where both left
+++ and right multiplication is strictly increasing.  Axioms:
+++ for all \spad{x}, \spad{y}, \spad{z}
 ++   \spad{x < y => x*z < y*z}
-++   \spad{x < y => z*x < z*y}
+++   \spad{x < y => z*x < z*y}.
+OrderedMagma() : Category == Join(OrderedSet, Magma)
 
-OrderedMonoid() : Category == Join(OrderedSemiGroup, Monoid)
+)abbrev category OMAGMAZ OrderedMagmaWithZero
+++ Author: Waldek Hebisch
+++ Description: Magmas with zero and compatible ordering.  Axioms:
+++ for all \spad{x}, \spad{y}, \spad{z > 0}
+++   \spad{x < y => x*z < y*z}
+++   \spad{x < y => z*x < z*y},
+++ for all \spad{x}, \spad{y}, \spad{z < 0}
+++   \spad{x < y => y*z < x*z}
+++   \spad{x < y => z*y < z*x}.
+OrderedMagmaWithZero : Category == Join(OrderedSet, MagmaWithZero)
 
 )abbrev category ORDRING OrderedRing
 ++ Author:
@@ -1081,12 +982,11 @@ OrderedMonoid() : Category == Join(OrderedSemiGroup, Monoid)
 ++ Description:
 ++ Ordered sets which are also rings, that is, domains where the ring
 ++ operations are compatible with the ordering.
-++
-++ Axiom:
-++   \spad{0 < a and b < c => ab < ac}
+-- This category is logically redundant (does not mean more than
+-- the Join below), but it gets a lot of use so we keep it for now.
 
-OrderedRing() : Category == Join(OrderedAbelianGroup, OrderedMonoid, Ring,
-         CharacteristicZero)
+OrderedRing() : Category == Join(Ring, OrderedAbelianSemiGroup,
+                                 OrderedMagmaWithZero, CharacteristicZero)
 
 )abbrev category COMPAR Comparable
 ++ Description:
@@ -1143,6 +1043,14 @@ OrderedSet() : Category == Join(Comparable, PartialOrder) with
       ++ max(x,y) returns the maximum of x and y relative to "<".
     min : (%, %) -> %
       ++ min(x,y) returns the minimum of x and y relative to "<".
+    if % has SetWithZero then
+        positive? : % -> Boolean
+          ++ positive?(x) tests whether x is strictly greater than 0.
+        negative? : % -> Boolean
+          ++ negative?(x) tests whether x is strictly less than 0.
+        sign : % -> Integer
+          ++ sign(x) is 1 if x is positive, -1 if x is negative, 0 if x
+          ++ equals 0.
   add
     -- transitional definitions
     smaller?(x, y) == x < y
@@ -1160,6 +1068,14 @@ OrderedSet() : Category == Join(Comparable, PartialOrder) with
     ((x : %) >  (y : %)) : Boolean == y < x
     ((x : %) >= (y : %)) : Boolean == not (x < y)
     ((x : %) <= (y : %)) : Boolean == not (y < x)
+    if % has SetWithZero then
+        positive? x == x>0
+        negative? x == x<0
+        sign x ==
+            positive? x => 1
+            negative? x => -1
+            zero? x => 0
+            error "x satisfies neither positive?, negative? or zero?"
 
 )abbrev category PDRING PartialDifferentialRing
 ++ Author:
@@ -1469,6 +1385,22 @@ SetCategory() : Category == Join(BasicType, CoercibleTo OutputForm) with
           sl := tex(tf)
           reduce(concat, sl)
 
+)abbrev category SETCATZ SetWithZero
+++ Author: Waldek Hebisch
+++ Description:  Sets with distinuished element \spad{0}.  This
+++ category is a common ancestor for AbelianMonoid and MagmaWithZero.
+SetWithZero : Category == SetCategory with
+      0 : constant -> %
+        ++ 0 is a distinguished element, in AbelianMonoid it is the
+        ++ additive identity element, in MagmaWithZero it is multiplicative
+        ++ zero.
+      sample : constant -> %
+        ++ sample yields a value of type %
+      zero? : % -> Boolean
+        ++ zero?(x) tests if x is equal to 0.
+  add
+    zero? x == x = 0
+    sample() == 0
 
 )abbrev category STEP StepThrough
 ++ Author:

@@ -12,7 +12,7 @@
 
 OrderingFunctions(dim, S) : T == C  where
   dim : NonNegativeInteger
-  S         : OrderedAbelianMonoid
+  S         : OrderedAbelianSemiGroup
   VS       == Vector S
 
   T ==  with
@@ -40,9 +40,10 @@ OrderingFunctions(dim, S) : T == C  where
 
  -- total ordering refined with lex
     totalLex(v1 : VS, v2 : VS) : Boolean ==
-      n1 : S := 0
-      n2 : S := 0
-      for i in 1..n repeat
+      n < 1 => false
+      n1 : S := qelt(v1, 1)
+      n2 : S := qelt(v2, 1)
+      for i in 2..n repeat
         n1 := n1+qelt(v1, i)
         n2 := n2+qelt(v2, i)
       n1<n2 => true
@@ -54,9 +55,10 @@ OrderingFunctions(dim, S) : T == C  where
 
  -- reverse lexicographical ordering
     reverseLex(v1 : VS, v2 : VS) : Boolean ==
-      n1 : S := 0
-      n2 : S := 0
-      for i in 1..n repeat
+      n < 1 => false
+      n1 : S := qelt(v1, 1)
+      n2 : S := qelt(v2, 1)
+      for i in 2..n repeat
         n1 := n1+qelt(v1, i)
         n2 := n2+qelt(v2, i)
       n1<n2 => true
@@ -83,7 +85,7 @@ OrderingFunctions(dim, S) : T == C  where
 ++ \spadtype{GeneralDistributedMultivariatePolynomial}.
 
 OrderedDirectProduct(dim : NonNegativeInteger,
-                     S : OrderedAbelianMonoid,
+                     S : OrderedAbelianSemiGroup,
                       f : (Vector(S), Vector(S))->Boolean) : T
                              == C where
    T == DirectProductCategory(dim, S)
@@ -108,16 +110,17 @@ OrderedDirectProduct(dim : NonNegativeInteger,
 
 HomogeneousDirectProduct(dim, S) : T == C where
    dim : NonNegativeInteger
-   S : OrderedAbelianMonoid
+   S : OrderedAbelianSemiGroup
 
    T == DirectProductCategory(dim, S)
    C == DirectProduct(dim, S) add
         Rep := Vector(S)
         v1 : % < v2 : % ==
+          dim < 1 => false
  -- reverse lexicographical ordering
-          n1 : S := 0
-          n2 : S := 0
-          for i in 1..dim repeat
+          n1 : S := qelt(v1, 1)
+          n2 : S := qelt(v2, 1)
+          for i in 2..dim repeat
             n1 := n1+qelt(v1, i)
             n2 := n2+qelt(v2, i)
           n1<n2 => true
@@ -147,16 +150,16 @@ HomogeneousDirectProduct(dim, S) : T == C where
 SplitHomogeneousDirectProduct(dimtot, dim1, S) : T == C where
    NNI ==> NonNegativeInteger
    dim1, dimtot : NNI
-   S : OrderedAbelianMonoid
+   S : OrderedAbelianSemiGroup
 
    T == DirectProductCategory(dimtot, S)
    C == DirectProduct(dimtot, S) add
         Rep := Vector(S)
         lessThanRlex(v1 : %, v2 : %, low : NNI, high : NNI) : Boolean ==
  -- reverse lexicographical ordering
-          n1 : S := 0
-          n2 : S := 0
-          for i in low..high repeat
+          n1 : S := qelt(v1, low)
+          n2 : S := qelt(v2, low)
+          for i in (low + 1)..high repeat
             n1 := n1+qelt(v1, i)
             n2 := n2+qelt(v2, i)
           n1<n2 => true
@@ -167,9 +170,11 @@ SplitHomogeneousDirectProduct(dimtot, dim1, S) : T == C where
           false
 
         (v1 : % < v2 : %) : Boolean ==
-          lessThanRlex(v1, v2, 1, dim1) => true
+          if dim1 > 0 then
+              lessThanRlex(v1, v2, 1, dim1) => true
           for i in 1..dim1 repeat
                 if qelt(v1, i) ~= qelt(v2, i) then return false
+          dimtot < dim1 + 1 => false
           lessThanRlex(v1, v2, dim1+1, dimtot)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.

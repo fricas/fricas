@@ -10,7 +10,6 @@
 ++ from an R module M and denominators being the nonzero elements of R.
 Localize(M : Module R,
          R : CommutativeRing) : Module R with
-      if M has OrderedAbelianGroup then OrderedAbelianGroup
       _/ : (%, R) -> %
          ++ x / d divides the element x by d.
       _/ : (M, R) -> %
@@ -36,11 +35,6 @@ Localize(M : Module R,
       x = y == y.den*x.num = x.den*y.num
       numer x == x.num
       denom x == x.den
-      if M has OrderedAbelianGroup then
-        x < y ==
---             if y.den::R < 0 then (x, y) := (y, x)
---             if x.den::R < 0 then (x, y) := (y, x)
-             y.den*x.num < x.den*y.num
       x+y == [y.den*x.num+x.den*y.num, x.den*y.den]
       n*x == [n*x.num, x.den]
       r*x == if r = x.den then [x.num, 1] else [r*x.num, x.den]
@@ -111,9 +105,8 @@ QuotientFieldCategory(S : IntegralDomain) : Category ==
     if S has RetractableTo Integer then
              RetractableTo Integer
              RetractableTo Fraction Integer
-    if S has OrderedSet then OrderedSet
     if S has Comparable then Comparable
-    if S has OrderedIntegralDomain then OrderedIntegralDomain
+    if S has OrderedRing then OrderedRing
     if S has RealConstant then RealConstant
     if S has ConvertibleTo InputForm then ConvertibleTo InputForm
     if S has CharacteristicZero then CharacteristicZero
@@ -609,8 +602,8 @@ LinearPolynomialEquationByFractions(R : PolynomialFactorizationExplicit) : with
 ++ nonnegative rational numbers.
 -- SubDomain aspect is not fully functional, needs support in
 -- compiler and interpreter
-NonNegativeRational : Join(OrderedAbelianMonoidSup, SemiRing,
-                           CommutativeStar, ConvertibleTo InputForm)
+NonNegativeRational : Join(OrderedAbelianMonoidSup, OrderedMagmaWithZero,
+                           SemiRing, CommutativeStar, ConvertibleTo(InputForm))
   == SubDomain(Fraction(Integer), #1 >= 0) add
 
     Q ==> Fraction(Integer)

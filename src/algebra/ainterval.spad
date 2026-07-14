@@ -47,19 +47,16 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
       ++ contains?(x+y,u+v).
     _* : (PositiveInteger, %) -> %
       ++ z*x creates the interval \spad{[z * inf x, z * sup x]}.
-    if R has OrderedAbelianMonoid then
-      AbelianMonoid
-      0 : %
-        ++ 0 is interval(0,0).
-      zero? : % -> Boolean
-        ++ zero?(x) returns true if x=interval(0,0).
+    if R has AbelianMonoid then AbelianMonoid
+    if R has SetWithZero then
+      SetWithZero
       positive? : % -> Boolean
         ++ positive?(x) returns \spad{true} iff u>0 for every
         ++ element u of x, i.e. 0<inf(x).
       negative? : % -> Boolean
         ++ negative?(x) returns \spad{true} iff u<0 for every
         ++ element u of x, i.e. sup(x)<0.
-    if R has OrderedAbelianGroup then
+    if R has AbelianGroup then
       _- : % -> %
         ++ -x creates the interval \spad{[- sup x, - inf x]}.
       _- : (%, %) -> %
@@ -71,8 +68,17 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
       abs : % -> %
         ++ abs(x) returns the tightest interval such that for all r
         ++ with contains?(x,r) it holds contains?(abs(x),abs(r)).
-    if R has Join(OrderedSemiGroup, SemiRng) then
-      SemiRng
+
+    if R has OrderedMagma or R has OrderedMagmaWithZero then
+        Magma
+        if R has MagmaWithZero then MagmaWithZero
+        if R has MagmaWithUnit then MagmaWithUnit
+        if R has SemiGroup then SemiGroup
+        if R has Monoid then Monoid
+        if R has SemiRng then SemiRng
+        if R has SemiRing then SemiRing
+
+    if R has OrderedMagma or R has OrderedMagmaWithZero then
       _* : (R, %) -> %
         ++ r*x creates the interval(r * inf x, r * sup x).
       _* : (%, %) -> %
@@ -82,13 +88,12 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
       _^ : (%, PositiveInteger) -> %
         ++ x^n creates an interval such that for any elements u with
         ++ contains?(x,u) it holds contains?(x^n,u^n).
-    if R has Join(OrderedMonoid, SemiRing) then
-      SemiRing
-      _^ : (%, NonNegativeInteger) -> %
-        ++ x^n returns interval(1,1) if x is not zero and n=0.
-        ++ Otherwise it creates an interval such that for any
-        ++ elements u and v with contains?(x,u) it holds
-        ++ contains?(x^n,u^n).
+      if R has MagmaWithUnit then
+          _^ : (%, NonNegativeInteger) -> %
+             ++ x^n returns interval(1,1) if n=0.
+             ++ Otherwise it creates an interval such that for any
+             ++ elements u and v with contains?(x,u) it holds
+             ++ contains?(x^n,u^n).
 
     if R has Join(OrderedRing, Field) then
       unit? : % -> Boolean
@@ -119,12 +124,18 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
     contains?(x : %, r : R) : Boolean == inf x <= r and r <= sup x
     contains?(x : %, y : %) : Boolean == inf x <= inf y and sup y <= sup x
 
-    if R has OrderedAbelianMonoid then
+    if R has SetWithZero then
+        0 : % == qinterval(0, 0)
         sample : % == 0
         zero?(x : %) : Boolean == zero? inf x and zero? sup x
-        ((z : NN) * (x : %)) : % == if zero? z then 0 else (z::PP) * x
         positive?(x : %) : Boolean == 0 < inf x
         negative?(x : %) : Boolean == sup x < 0
+
+    if R has MagmaWithUnit then
+        1 : % == qinterval(1, 1)
+
+    if R has AbelianMonoid then
+        ((z : NN) * (x : %)) : % == if zero? z then 0 else (z::PP) * x
         ((x : %) + (y : %)) : % ==
             zero? x => y
             zero? y => x
@@ -135,7 +146,7 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
             qinterval(inf x + r, sup x + r)
         opposite?(x : %, y : %) : Boolean == zero?(x+y)
 
-    if R has OrderedAbelianGroup then
+    if R has AbelianGroup then
         (-(x : %)) : % == qinterval(- sup x, - inf x)
         width(x : %) : R == sup x - inf x
         ((x : %) - (y : %)) : % ==
@@ -152,32 +163,41 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
             negative? x => -x
             qinterval(0, max(- inf x, sup x))
 
-    if R has OrderedSemiGroup then
+    if R has OrderedMagma or R has OrderedMagmaWithZero then
         ((r : R) * (x : %)) : % == interval(r * inf x, r * sup x)
 
-    if R has Join(OrderedMonoid, SemiRing) then
-        one?(x : %) : Boolean == one? inf x and one? sup x
-        leftRecip(x : %) : Union(%, "failed") == if one? x then x else "failed"
-        rightRecip(x : %) : Union(%, "failed") == if one? x then x else "failed"
+        if R has SemiRing then
+            one?(x : %) : Boolean == one? inf x and one? sup x
+            leftRecip(x : %) : Union(%, "failed") ==
+                if one? x then x else "failed"
+            rightRecip(x : %) : Union(%, "failed") ==
+                if one? x then x else "failed"
 
-    if R has Join(OrderedAbelianGroup, OrderedSemiGroup, SemiRng) then
+    if R has OrderedMagmaWithZero and R has AbelianGroup
+       and R has NonAssociativeSemiRng then
         ((x : %) ^ (n : PP)) : % ==
             contains?(x, 0$R) and even? n =>
                 qinterval(0, max(- inf(x), sup(x))^n)
             interval(inf(x)^n, sup(x)^n) -- will sort so that lower < upper
+    else if R has OrderedMagmaWithZero then
+        ((x : %) ^ (n : PP)) : % ==
+            contains?(x, 0$R) and even? n =>
+                qinterval(0, max(inf(x)^n, sup(x)^n))
+            interval(inf(x)^n, sup(x)^n) -- will sort so that lower < upper
+    else if R has OrderedMagma then
+        ((x : %) ^ (n : PP)) : % ==
+            qinterval(inf(x)^n, sup(x)^n)
 
-    if R has Join(OrderedAbelianMonoid, OrderedMonoid, SemiRing) then
-        ((x : %) ^ (n : NN)) : % ==
-            zero? n =>
-                zero? x => error "cannot compute 0^0"
-                1
-            x^(n::PP)
-
-    if R has Join(OrderedAbelianGroup, OrderedMonoid, SemiRing) then
+    if R has MagmaWithUnit and R has OrderedMagmaWithZero then
         ((x : %) * (y : %)) : % ==
             one? x => y
             one? y => x
             zero? x or zero? y => 0
+            ix := inf x; sx := sup x; iy := inf y; sy := sup y
+            products : List R := sort [ix * iy, ix * sy, sx * iy, sx * sy]
+            qinterval(first products, last products)
+    else if R has OrderedMagma or R has OrderedMagmaWithZero then
+        ((x : %) * (y : %)) : % ==
             ix := inf x; sx := sup x; iy := inf y; sy := sup y
             products : List R := sort [ix * iy, ix * sy, sx * iy, sx * sy]
             qinterval(first products, last products)
@@ -203,9 +223,3 @@ AInterval(R : OrderedAbelianSemiGroup) : AIntervalCategory R == add
     inf(x : %) : R == rep(x).Inf
     sup(x : %) : R == rep(x).Sup
     qinterval(i : R, s : R) : % == per [i,s]
-
-    if R has AbelianMonoid then
-        0 : % == per [0, 0]
-
-    if R has Monoid then
-        1 : % == per [1, 1]
