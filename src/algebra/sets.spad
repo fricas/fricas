@@ -23,8 +23,8 @@
 ++ the complexity of
 ++   \spad{s = t} is \spad{O(min(n, m))}
 ++   \spad{s < t} is \spad{O(max(n, m))}
-++   \spad{union(s, t)}, \spad{intersect(s, t)}, \spad{minus(s, t)}, \spad{symmetricDifference(s, t)} is \spad{O(max(n, m))}
-++   \spad{member?(x, t)} is \spad{O(n log n)}
+++   \spad{union(s, t)}, \spad{intersect(s, t)}, \spad{difference(s, t)}, \spad{symmetricDifference(s, t)} is \spad{O(max(n, m))}
+++   \spad{member?(x, t)} is \spad{O(log n)}
 ++   \spad{insert!(x, t)} and \spad{remove!(x, t)} is \spad{O(n)}
 Set(S : SetCategory) : FiniteSetAggregate S == add
    Rep := FlexibleArray(S)
@@ -72,11 +72,15 @@ Set(S : SetCategory) : FiniteSetAggregate S == add
        removeRepeats! sort! a
 
      insert!(x, s) ==
-       n := inc maxIndex s
-       k := minIndex s
-       while k < n and x > s.k repeat k := inc k
-       k < n and s.k = x => s
-       insert!(x, s, k)
+       empty? s => insert!(x, s, minIndex s)
+       t := maxIndex s
+       b := minIndex s
+       while b < t repeat
+         m := (b+t) quo 2
+         if x > s.m then b := m+1 else t := m
+       x = s.t => s
+       x > s.t => insert!(x, s, t + 1)
+       insert!(x, s, t)
 
      member?(x, s) == -- binary search
        empty? s => false
@@ -88,10 +92,13 @@ Set(S : SetCategory) : FiniteSetAggregate S == add
        x = s.t
 
      remove!(x : S, s : %) ==
-       n := inc maxIndex s
-       k := minIndex s
-       while k < n and x > s.k repeat k := inc k
-       k < n and x = s.k => delete!(s, k)
+       empty? s => s
+       t := maxIndex s
+       b := minIndex s
+       while b < t repeat
+         m := (b+t) quo 2
+         if x > s.m then b := m+1 else t := m
+       x = s.t => delete!(s, t)
        s
 
      -- the set operations are implemented as variations of merging
