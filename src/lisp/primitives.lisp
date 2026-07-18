@@ -898,3 +898,8 @@
   `(let ((|$BreakMode| '|trapSpadErrors|))
         (declare (special |$BreakMode|))
         (CATCH '|trapSpadErrors| ,form)))
+
+(defmacro WITHOUT_INTERRUPTS (&rest form)
+  `(#+:sbcl sb-sys:without-interrupts
+    #-:sbcl progn
+      ,@form))

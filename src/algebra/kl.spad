@@ -58,11 +58,12 @@ SortedCache(S : CachableSet) : Exports == Implementation where
 
     expandCache(x) ==
         if cache_size = cache_use then
-            ocache := cache
-            cache_size := 2*cache_size + 10
-            cache := new(cache_size, x)$(PrimitiveArray S)
+            ncache_size := 2*cache_size + 10
+            ncache := new(ncache_size, x)$(PrimitiveArray S)
             for k in 0..(cache_use - 1) repeat
-                cache(k) := ocache(k)
+                ncache(k) := cache(k)
+            cache := ncache
+            cache_size := ncache_size
         void
 
     insertBefore(l, x) ==
@@ -182,9 +183,10 @@ SortedCache(S : CachableSet) : Exports == Implementation where
 
     insertInCache(before, x, pos) ==
         y := cache(before)
-        if ((pos+1) = position y) then shiftCache(before, DIFF)
+        if ((pos+1) = position y) then
+            WITHOUT_INTERRUPTS(shiftCache(before, DIFF))$Lisp
         setPosition(x, pos + (((position y) - pos)::N quo 2))
-        insertBefore(before, x)
+        WITHOUT_INTERRUPTS(insertBefore(before, x))$Lisp
         x
 
 )abbrev domain MKCHSET MakeCachableSet
