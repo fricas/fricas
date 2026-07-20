@@ -140,7 +140,7 @@ FloatSpecialFunctions() : Exports == Implementation where
             result := (sign::RF)*c_pi/(Gamma(one - z)*sin(c_pi * z1))
             bits(l0)
             result
-        abs_z := real(abs(z))
+        abs_z := abs(z)
         l :: RF > 6*abs_z =>
             oz := max(order(abs_z), 5)::PI
             lz := length(oz)::PI
@@ -155,7 +155,7 @@ FloatSpecialFunctions() : Exports == Implementation where
             result := gamma_series(z, len, 3*wholePart(len) + 6)
             bits(l0)
             result
-        llog := max(order(real(abs(logGamma_a1(z)))), 5)::PI
+        llog := max(order(abs(logGamma_a1(z))), 5)::PI
         -- we sum l term, so need length(l) extra bits to
         -- compensate roundoff error
         -- we need llog extra bits in logGamma to avoid loss of
@@ -199,11 +199,11 @@ FloatSpecialFunctions() : Exports == Implementation where
             result := logGamma_lift(z, result)
             bits(l0)
             result
-        abs_z := real(abs(z))
+        abs_z := abs(z)
         l :: RF > 6*abs_z =>
             l := l + 5
-            if real(abs(z - one)) < ((1/4)::RF) or _
-               real(abs(z - one - one)) < ((1/4)::RF) then
+            if abs(z - one) < ((1/4)::RF) or _
+               abs(z - one - one) < ((1/4)::RF) then
                 l := 2*l
             bits(l)
             result := logGamma_lift(z, log(Gamma(z)))
@@ -243,11 +243,11 @@ FloatSpecialFunctions() : Exports == Implementation where
 
     rabs(r : RF) : RF == abs(r)
 
-    rabs(r : CF) : RF == real(abs(r))
+    rabs(r : CF) : RF == abs(r)
 
     rabs(r : DoubleFloat) : DoubleFloat == abs(r)
 
-    rabs(r : Complex(DoubleFloat)) : DoubleFloat == real(abs(r))
+    rabs(r : Complex(DoubleFloat)) : DoubleFloat == abs(r)
 
     digamma_euler_maclaurin(a : CF, n : I, m : I) : CF ==
         res : CF := 0
@@ -1459,7 +1459,7 @@ DoubleFloatEllipticIntegrals : Exports == Implementation where
               z*ellipticRF(1 - z*z, 1 - m*z*z, 1) + (n/3::DF)*
                 z*z*z*ellipticRJ(1 - z*z, 1 - m*z*z, 1, 1 - n*z*z)
 
-      rabs(x : Complex(DoubleFloat)) : DoubleFloat == real(abs(x))
+      rabs(x : Complex(DoubleFloat)) : DoubleFloat == abs(x)
 
       Funs where
           DF ==> RF
@@ -2043,7 +2043,7 @@ DoubleFloatSpecialFunctions2() : with
         x3 := two_over_three*(x*x2)
         x3s := x2*sqrt(two_over_three*x2)
         c13 := complex(one_over_three, 0)
-        abs_x := real(abs(x))
+        abs_x := abs(x)
         rx := real(x)
         -- Fuzz to force other case on opposite side of imaginary axis
         (-1.9::DF)*rx < abs_x =>
@@ -2062,7 +2062,7 @@ DoubleFloatSpecialFunctions2() : with
         x3 := two_over_three*(x*x2)
         x3s := x2*sqrt(two_over_three*x2)
         c23 := complex(two_over_three, 0)
-        abs_x := real(abs(x))
+        abs_x := abs(x)
         rx := real(x)
         ((-2.0)::DF)*rx < abs_x =>
             -ai_c3*x*bessKa_CDF(c23, x3, x3s)
@@ -2093,7 +2093,7 @@ DoubleFloatSpecialFunctions2() : with
         ai_c3*x2*besselK(one_over_three, two_over_three*x*x2)
 
     airyAi(x : CDF) : CDF ==
-        abs_x := real(abs(x))
+        abs_x := abs(x)
         abs_x < 1::DF =>
             xx := one_over_nine*x*x*x
             ai_c1*hyp_ser_CDF(complex(two_over_three, 0), xx, 24)
@@ -2124,7 +2124,7 @@ DoubleFloatSpecialFunctions2() : with
         -ai_c3*x*besselK(two_over_three, two_over_three*x*x2)
 
     airyAiPrime(x : CDF) : CDF ==
-        abs_x := real(abs(x))
+        abs_x := abs(x)
         abs_x < 1::DF =>
             xx := one_over_nine*x*x*x
             ai_c2*hyp_ser_CDF(complex(one_over_three, 0), xx, 14)
@@ -2166,7 +2166,7 @@ DoubleFloatSpecialFunctions2() : with
         real(hypergeometric0F1(a::CDF, x::CDF))
 
     hypergeometric0F1(a : CDF, x : CDF) : CDF ==
-        0$DF < real a and real(abs(x)) < 1$DF =>
+        0$DF < real a and abs(x) < 1$DF =>
             hyp_ser_CDF(a, x, 14)
         c_hyper0f1(a, x)$Lisp
 
@@ -2274,7 +2274,7 @@ FloatEllipticFunctions() : with
 
     rabs(r : Float) : Float == abs(r)
 
-    rabs(r : CF) : Float == real(abs(r))
+    rabs(r : CF) : Float == abs(r)
 
     Funs ==>
       landen1(m1 : NT, res : List NT) : List NT ==
