@@ -104,10 +104,12 @@ pushTimedName name ==
   PUSH(name,$timedNameStack)
 
 startTimingProcess name ==
+  null $timedNameStack => nil
   updateTimedName peekTimedName()
   pushTimedName name
 
 stopTimingProcess name ==
+  null $timedNameStack => nil
   (name ~= peekTimedName()) and null $InteractiveMode =>
         system_error("S2GL0015",
      '"Internal timings are not balanced: timing classes are %1b and %2b",

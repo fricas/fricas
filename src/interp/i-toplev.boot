@@ -198,7 +198,9 @@ DEFPARAMETER($inRetract, nil)
 processInteractive(form, posnForm) ==
     $timedNameStack : local := NIL
     $statsInfo : local := NIL
-    initializeTimedStack()
+    -- no need to collect stats if we are not going to print them.
+    if $printStorageIfTrue or $printTimeIfTrue then
+        initializeTimedStack()
     finally(
         object := processInteractive0(form, posnForm),
           while $timedNameStack repeat stopTimingProcess peekTimedName())
@@ -313,12 +315,12 @@ typeTimePrin x ==
   maprinSpecial(x,0,79)
 
 printTime() ==
-  $collectOutput => nil
+  $collectOutput or null $statsInfo => nil
   s := makeLongTimeString($interpreterTimedNames, $interpreterTimedClasses)
   say_msg("S2GL0013", '"%rjon Time: %1 %rjoff", [s])
 
 printStorage() ==
-  $collectOutput => nil
+  $collectOutput or null $statsInfo => nil
   storeString :=
     makeLongSpaceString($interpreterTimedNames, $interpreterTimedClasses)
   say_msg("S2GL0016", '"%rjon Storage: %1 %rjoff", [storeString])
