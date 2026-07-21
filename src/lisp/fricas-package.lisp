@@ -60,7 +60,11 @@
 )
 #+:ecl
 (progn
-    (require 'cmp)
+    ;; On windows, ECL by default does not ship "cmp" module,
+    ;; also C compiler is usually missing on end user's side,
+    ;; but bytecode compiler works.
+    #+:win32(ignore-errors (require 'cmp))
+    #-:win32(require 'cmp)
     (eval-when (:execute :compile-toplevel :load-toplevel)
          (proclaim '(optimize (safety 0))))
 )
