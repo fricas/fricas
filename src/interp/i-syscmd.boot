@@ -2102,10 +2102,10 @@ show_record_msg() == say_msg("S2IZ0044R", CONCAT(
     '" B, a domain of category SetCategory %u %l",
     '" This constructor is a primitive in FriCAS.",
     '" The selectors a,...,b of a Record type must be distinct. %l %l",
-    '" In order for more information to be displayed about %1b ,",
-    '" you must give it specific arguments. For example: %2b %l",
+    '" In order for more information to be displayed about Record,",
+    '" you must give it specific arguments. For example: %1b %l",
     '" You can also use the HyperDoc Browser."),
-    ['Record, '")show Record(a: Integer, b: String)"])
+    ['")show Record(a: Integer, b: String)"])
 
 show_mapping_msg() == say_msg("S2IZ0044M", CONCAT(
     '"Mapping(T, S, ...) %l",
@@ -2132,10 +2132,10 @@ show_union_msg1() == say_msg("S2IZ0045T", CONCAT(
     '" B, a domain of category SetCategory %u %l",
     '" This constructor is a primitive in FriCAS.",
     '" In tagged Union, tags a, ..., b must be distinct. %l %l",
-    '" In order for more information to be displayed about %1b ,",
-    '" you must give it specific arguments. For example: %2b %l",
+    '" In order for more information to be displayed about Union,",
+    '" you must give it specific arguments. For example: %1b %l",
     '" You can also use the HyperDoc Browser."),
-    [Union, '")show Union(a: Integer, b: String)"])
+    ['")show Union(a: Integer, b: String)"])
 
 show_union_msg2() == say_msg("S2IZ0045U", CONCAT(
     '"Untagged union: Union(A, ..., B) %l",
@@ -2143,10 +2143,10 @@ show_union_msg2() == say_msg("S2IZ0045U", CONCAT(
     '" A, a domain of category SetCategory %l ... %l",
     '" B, a domain of category SetCategory %u %l",
     '" In untagged form of Union, domains A, ..., B must be distinct.",
-    '" In order for more information to be displayed about %1b ,",
-    '" you must give it specific arguments. For example: %2b %l",
+    '" In order for more information to be displayed about Union,",
+    '" you must give it specific arguments. For example: %1b %l",
     '" You can also use the HyperDoc Browser."),
-    [Union, '")show Union(a: Integer, b: String)"])
+    ['")show Union(Integer, String)"])
 
 showSpad2Cmd l ==
   l = [NIL] => helpSpad2Cmd '(show)
