@@ -264,7 +264,7 @@ getFunctorOps(form) ==
 transformOperationAlist operationAlist ==
   --  this transforms the operationAlist which is written out onto LISPLIBs.
   --  The original form of this list is a list of items of the form:
-  --        ((<op> <signature>) (<condition> (ELT $ n)))
+  --        ((<op> <signature>) <condition> (ELT $ n))
   --  The new form is an op-Alist which has entries (<op> . signature-Alist)
   --      where signature-Alist has entries (<signature> . item)
   --        where item has form (<slotNumber> <condition> <kind>)
@@ -272,7 +272,7 @@ transformOperationAlist operationAlist ==
   --             NIL  => function
   --             CONST => constant ... and others
   newAlist:= nil
-  for [[op,sig,:.],condition,implementation] in operationAlist repeat
+  for [[op, sig], condition, implementation] in operationAlist repeat
     kind:=
       implementation is [eltEtc,.,n] and eltEtc in '(CONST ELT) => eltEtc
       implementation is [impOp,:.] =>

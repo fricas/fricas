@@ -38,9 +38,6 @@ $whereList := nil
 
 --% Formatting modemaps
 
-sayModemap m ==
-    sayMSG(formatModemap(displayTranModemap(m)))
-
 sayNewModemap(m) ==
     msg := formatModemap(displayTranModemap(m))
     msg := cleanUpSegmentedMsg(reverse(msg))
@@ -101,23 +98,6 @@ findSubstitutionOrder? alist == fn(alist,nil) where
 
 containedRight(x,alist)== or/[CONTAINED(x,y) for [.,:y] in alist]
 
-DEFPARAMETER($Dmarker, "<Dmarker>")
-
-removeIsDomainD pred ==
-  pred is ['isDomain, =$Dmarker, D] =>
-    [D,nil]
-  pred is ['AND,:preds] =>
-    D := nil
-    for p in preds while not D repeat
-      p is ['isDomain, =$Dmarker, D1] =>
-        D := D1
-        npreds := delete(['isDomain, $Dmarker, D1], preds)
-    D =>
-      1 = #npreds => [D,first npreds]
-      [D,['AND,:npreds]]
-    nil
-  nil
-
 formatModemap modemap ==
   [[dc,target,:sl],pred,:.]:= modemap
   if alist := canRemoveIsDomain? pred then
@@ -125,10 +105,6 @@ formatModemap modemap ==
     pred:= substInOrder(alist,removeIsDomains pred)
     target:= substInOrder(alist,target)
     sl:= substInOrder(alist,sl)
-  else if removeIsDomainD pred is [D,npred] then
-    pred := SUBST(D, $Dmarker, npred)
-    target := SUBST(D, $Dmarker, target)
-    sl := SUBST(D, $Dmarker, sl)
   predPart:= formatIf pred
   targetPart:= prefix2String target
   argTypeList:=
@@ -140,10 +116,7 @@ formatModemap modemap ==
   argPart:=
     #sl<2 => argTypeList
     ['"_(",:argTypeList,'"_)"]
-  fromPart:=
-    if dc = $Dmarker and D
-      then concat('%b,'"from",'%d,prefix2String D)
-      else concat('%b,'"from",'%d,prefix2String dc)
+  fromPart:= concat('%b, '"from", '%d, prefix2String(dc))
   firstPart:= concat('" ",argPart,'" -> ",targetPart)
   sayWidth firstPart + sayWidth fromPart > 74 => --allow 5 spaces for " [n]"
     fromPart:= concat('" ",fromPart)
