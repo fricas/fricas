@@ -275,7 +275,9 @@ NRTmakeCategoryAlist(et) ==
   pcAlist := [:[[x,:'T] for x in $uncondAlist],:$condAlist]
   $levelAlist: local := depthAssocList [CAAR x for x in pcAlist]
   opcAlist := NREVERSE SORTBY(function NRTcatCompare,pcAlist)
-  slot1 := [[a,:k] for [a,:b] in SUBLIS($pairlis,opcAlist)
+  opc_alist1 := [[SUBLIS($pairlis, a), :sub_in_cond($pairlis, b)]
+                    for [a, :b] in opcAlist]
+  slot1 := [[a, :k] for [a, :b] in opc_alist1
                    | (k := predicateBitIndex(b, et)) ~= -1]
   slot0 := [hasDefaultPackage opOf a for [a,:b] in slot1]
   sixEtc := [5 + i for i in 1..#$pairlis]

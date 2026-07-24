@@ -397,7 +397,7 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     fun := do_compile(SUBLIS($pairlis, [op', [lamOrSlam, argl, body']]), e)
     --The above statement stops substitutions getting in one another's way
 
-    operationAlist := SUBLIS($pairlis,$lisplibOperationAlist)
+    operationAlist := sub_in_oplist($pairlis, $lisplibOperationAlist)
     if $LISPLIB then
       augmentLisplibModemapsFromFunctor(parForm,operationAlist,parSignature)
     $functorStats := addStats($functorStats, $functionStats)
@@ -652,7 +652,8 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
     fun:=
       body':= replaceExitEtc(T.expr,catchTag,"TAGGEDreturn",$returnMode)
       finalBody:= ["CATCH",catchTag,body']
-      do_compile([$op, ["LAMBDA", [:argl, '%], finalBody]], oldE)
+      argl1 := [(a1 = "T" => "T$"; a1) for a1 in argl]
+      do_compile([$op, ["LAMBDA", [:argl1, '%], finalBody]], oldE)
     $functorStats:= addStats($functorStats,$functionStats)
 
 

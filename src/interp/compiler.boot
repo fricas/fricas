@@ -397,6 +397,7 @@ compSymbol(s,m,e) ==
     MEMQ(s,$functorLocalParameters) =>
         NRTgetLocalIndex(s, e)
         [s,v.mode,e] --s will be replaced by an ELT form in beforeCompile
+    s = "T" => ["T$", v.mode, e]
     [s,v.mode,e] --s has been SETQd
   m':= getmode(s,e) =>
     if not member(s,$formalArgList) and not MEMQ(s,$FormalMapVariableList) and
@@ -647,10 +648,14 @@ finish_setq_single(T, m, id, val, currentProplist) ==
 
   if (k := NRTassocIndex(id)) then
       form := ['SETELT, "%", k, x]
-  else form:=
-         $QuickLet => ["LET",id,x]
-         ["LET",id,x,
-            (isDomainForm(x, e') => ['ELT, id, 0]; first outputComp(id, e'))]
+  else
+      id1 :=
+          id = "T" => "T$"
+          id
+      form :=
+          $QuickLet => ["LET", id1, x]
+          ["LET", id1, x,
+             (isDomainForm(x, e') => ['ELT, id, 0]; first outputComp(id, e'))]
   [form,m',e']
 
 saveLocVarsTypeDecl(x, id, e) ==
@@ -698,7 +703,10 @@ setqMultiple(nameList,val,m,e) ==
     ass_list := []
     for y in nameList repeat
         e := put(y, "value", [genSomeVariable(), D, $noEnv], e)
-        ass_list := cons(["LET", y, ["SPADfirst", g2]], ass_list)
+        y1 :=
+            y = "T" => "T$"
+            y
+        ass_list := cons(["LET", y1, ["SPADfirst", g2]], ass_list)
         ass_list := cons(["LET", g2, ["CDR", g2]], ass_list)
     ass_list := nreverse(rest(ass_list))
     convert([["PROGN",x, x2, :ass_list, g], m', e], m)
