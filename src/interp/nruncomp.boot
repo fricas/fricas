@@ -110,7 +110,9 @@ NRTencode(x,y) == encode(x,y,true, true) where
           ['NRTEVAL, [($QuickCode => 'QREFELT; 'ELT), "%", v]]
       x = '% => x
       x = "$$" => x
-      ['QUOTE, x]
+      domain => ['QUOTE, x]
+      ['NRTEVAL, NRTreplaceAllLocalReferences(
+                             COPY_-TREE(lispize(compForm)))]
 
 --------------FUNCTIONS CALLED DURING CAPSULE FUNCTION COMPILATION-------------
 listOfBoundVars(form, e) ==
