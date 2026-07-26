@@ -350,7 +350,8 @@ compExpression(x,m,e) ==
   op := first x
   SYMBOLP(op) and (fn := GET(op, "comp_special")) =>
     FUNCALL(fn,x,m,e)
-  getmode(op, e) is ["Mapping", :ml] and (u := applyMapping(x, m, e, ml)) => u
+  SYMBOLP(op) and getmode(op, e) is ["Mapping", :ml] and
+      (u := applyMapping(x, m, e, ml)) => u
   compForm(x,m,e)
 
 compAtom(x, m, e) ==
