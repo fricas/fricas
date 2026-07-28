@@ -77,6 +77,7 @@ int MenuServerOpened = 1;
 /* X11 display and screen variables */
 
 Display *gXDisplay;
+Atom gxa_wm_protocols, gxa_wm_delete_window;
 int      gXScreenNumber;
 
 /*

@@ -398,6 +398,7 @@ extern HyperLink *quitLink; /** a special link to the protected quit page **/
 /* From hyper.c */
 extern int      gXScreenNumber;
 extern Display *gXDisplay;
+extern Atom gxa_wm_protocols, gxa_wm_delete_window;
 extern int gSwitch_to_mono;
 extern unsigned long * spadColors;
 extern int gIsEndOfOutput;

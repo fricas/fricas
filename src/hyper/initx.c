@@ -47,6 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <sys/signal.h>
 #include <setjmp.h>
+#include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <X11/Xresource.h>
 #include <X11/Xatom.h>
@@ -133,6 +134,8 @@ initializeWindowSystem(void)
         fprintf(stderr, "(HyperDoc) Cannot connect to the X11 server!\n");
         exit(-1);
     }
+    gxa_wm_protocols = XInternAtom(gXDisplay, "WM_PROTOCOLS", False);
+    gxa_wm_delete_window = XInternAtom(gXDisplay, "WM_DELETE_WINDOW", False);
 
     /* Get the screen */
 /*    fprintf(stderr,"initx:initializeWindowSystem:DefaultScreen\n");*/
@@ -470,6 +473,7 @@ open_window(Window w)
                                     x, y, width, height, gWindow->border_width,
                                     gBorderColor,
                                     WhitePixel(gXDisplay, gXScreenNumber));
+    XSetWMProtocols(gXDisplay, gWindow->fMainWindow, &gxa_wm_delete_window, 1);
 
     gWindow->fScrollWindow = XCreateSimpleWindow(gXDisplay, gWindow->fMainWindow,
                                          1, 1, 1, 1, 0,
