@@ -180,6 +180,11 @@ handle_event(XEvent * event)
       case DestroyNotify:
 /*        fprintf(stderr,"event:handle_event type=DestroyNotify\n");*/
         break;
+      case ClientMessage:
+        if (event->xclient.message_type == gxa_wm_protocols
+            && event->xclient.data.l[0] == gxa_wm_delete_window)
+            quitHyperDoc();
+        break;
       case Expose:
 /*        fprintf(stderr,"event:handle_event type=Expose\n");*/
         XGetWindowAttributes(gXDisplay, gWindow->fMainWindow, &wa);
