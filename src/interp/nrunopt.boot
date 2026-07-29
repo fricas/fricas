@@ -403,7 +403,10 @@ formatSlotDomain1(x, infovec) ==
     null val => [STRCONC('"#",STRINGIMAGE (x  - 5))]
     formatSlotDomain1(val, infovec)
   atom x => x
-  x is ['NRTEVAL,y] => (atom y => [y]; y)
+  x is ['NRTEVAL, y] =>
+      INTEGERP(y) or STRINGP(y) => ['QUOTE, y]
+      SYMBOLP(y) => [y]
+      y
   x is ['QUOTE, .] => x
   [first x,:[formatSlotDomain1(y, infovec) for y in rest x]]
 
