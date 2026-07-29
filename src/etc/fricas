@@ -63,6 +63,21 @@ have_rlwrap() {
     return 0
 }
 
+# set a terminal title on macos
+if [ "$(uname -s)" = "Darwin" ]; then
+	export PS1=
+    # macos Terminal title
+    set_title( )
+    {
+        case $TERM in
+            *term | xterm-color | xterm-256color | rxvt | vt100 | gnome* )
+                echo -n -e "\033]0;$*\007" ;;
+            *)  ;;
+        esac
+    }
+	set_title "Fricas ${FRICAS_VERSION} -- (${FRICAS_LISP_FLAVOR} ${FRICAS_LISP_VERSION})"
+fi
+
 # 1. Ensure the environment is set.
 
 # The aldor compiler is usually expected to be in PATH at the time of
