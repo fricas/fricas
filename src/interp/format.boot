@@ -457,6 +457,7 @@ formArguments2String(argl,ml) == [fn(x,m) for x in argl for m in ml] where
     -- catch things like # D
     (m = ["NonNegativeInteger"] or m = ["Integer"]) and not INTEGERP(x) =>
         form2String1 x
+    x is ["local", :.] => form2String1(x)
     isValidType(m) and PAIRP(m) and
       (get_database(first(m), 'CONSTRUCTORKIND) = 'domain) =>
         (x' := coerceInteractive(objNewWrap(x,m),$OutputForm)) =>
