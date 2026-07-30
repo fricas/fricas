@@ -69,9 +69,60 @@ p:=(1/2+n)::UTS(FRAC INT, 'n, 0)
 testEquals("[coefficient((p^(-1))$UTS(FRAC INT, 'n, 0), i) for i in 0..5]",
            "[2, -4, 8, -16, 32, -64]")
 
-testcase "branch points"
+testcase "inverse functions"
 
 app_eq?(xs1, xs2) == (order(xs1 - xs2, 20) = 20)@Boolean
+
+eI := EXPR(INT)
+uLS := ULS(eI, z, 0)
+uPX := UPXS(eI, z, 0)
+uTS := UTS(eI, z, 0)
+xP := EFUPXS(eI, uLS, uPX, EFULS(eI, uTS, uLS))
+
+z1 := puiseux('z)::uPX
+sz := sin(z1)
+testTrue("(ss := asin(sz); true)")
+testTrue("app_eq?(ss, z1)")
+testTrue("(ssu := asinIfCan(sz)$xP) case uPX")
+testTrue("app_eq?(ssu::uPX, z1)")
+testTrue("(ssu := asinIfCan(1/sz)$xP) case _"failed_"")
+testTrue("(ss := acsc(1/sz); true)")
+testTrue("app_eq?(ss, z1)")
+testTrue("(ssu := acscIfCan(sz)$xP) case _"failed_"")
+testTrue("(ssu := acscIfCan(1/sz)$xP) case uPX")
+testTrue("app_eq?(ssu::uPX, z1)")
+
+sz := sinh(z1)
+testTrue("(ss := asinh(sz); true)")
+testTrue("app_eq?(ss, z1)")
+testTrue("(ssu := asinhIfCan(sz)$xP) case uPX")
+testTrue("app_eq?(ssu::uPX, z1)")
+testTrue("(ssu := asinhIfCan(1/sz)$xP) case _"failed_"")
+testTrue("(ss := acsch(1/sz); true)")
+testTrue("app_eq?(ss, z1)")
+testTrue("(ssu := acschIfCan(sz)$xP) case _"failed_"")
+testTrue("(ssu := acschIfCan(1/sz)$xP) case uPX")
+testTrue("app_eq?(ssu::uPX, z1)")
+
+z2 := series('z, z = %pi/2)::UPXS(EXPR(INT), z, %pi/2)
+cz := cos(z2)
+testTrue("(ss := acos(cz); true)")
+testTrue("app_eq?(ss, z2)")
+testTrue("(ss := asec(1/cz); true)")
+testTrue("app_eq?(ss, z2)")
+
+z3 := series('z, z = %i*%pi/2)::UPXS(EXPR(Complex(INT)), z, %i*%pi/2)
+cz := cosh(z3)
+-- default simplification is too weak to discover that coefficient is 0
+cz := cz - coefficient(cz, 0)
+testTrue("(ss := acosh(cz); true)")
+testEquals("normalize(coefficient(ss - z3, 1))", "0")
+testEquals("normalize(coefficient(ss, 4))", "0")
+testTrue("(ss := asech(1/cz); true)")
+testEquals("normalize(coefficient(ss - z3, 1))", "0")
+testEquals("normalize(coefficient(ss, 4))", "0")
+
+testcaseNoClear "branch points"
 
 xx := puiseux('x)
 testTrue("(ss := asin(1 - xx); true)")
