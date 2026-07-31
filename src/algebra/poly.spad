@@ -943,12 +943,18 @@ SparseUnivariatePolynomialFunctions2(R : Ring, S : Ring) : with
 
 UnivariatePolynomial(x : Symbol, R : Ring):
   UnivariatePolynomialCategory(R) with
+    if R has ConvertibleTo(InputForm) then ConvertibleTo(InputForm)
     coerce : Variable(x) -> %
       ++ coerce(x) converts the variable x to a univariate polynomial.
     if R has Canonical then Canonical
    == SparseUnivariatePolynomial(R)   add
     Rep := SparseUnivariatePolynomial(R)
     coerce(p : %) : OutputForm  == outputForm(p, outputForm x)
+    if R has ConvertibleTo(InputForm) then
+        convert(p : %) : InputForm ==
+            xi := convert(x)@InputForm
+            map(c +-> xi, convert, p)$PolynomialCategoryLifting(
+                NonNegativeInteger, SingletonAsOrderedSet, R, %, InputForm)
     coerce(v : Variable(x)) : % == monomial(1, 1)
 
 )abbrev package UP2 UnivariatePolynomialFunctions2
