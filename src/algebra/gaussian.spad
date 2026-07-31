@@ -20,6 +20,7 @@ ComplexCategory(R : CommutativeRing) : Category ==
      real     :   % -> R           ++ real(x) returns real part of x.
      norm     :   % -> R           ++ norm(x) returns x * conjugate(x)
      if R has Comparable then Comparable
+     if R has ComparableRepresentation then ComparableRepresentation
      if R has IntegralDomain then
        IntegralDomain
        _exquo : (%,R) -> Union(%,"failed")
@@ -239,10 +240,11 @@ ComplexCategory(R : CommutativeRing) : Category ==
           l : PatternMatchResult(Float, %)) ==
            patternMatch(x, p, l)$ComplexPatternMatch(Float, R, %)
 
-       if R has Comparable then
-         smaller?(x, y) ==
-           real x = real y => smaller?(imag x, imag y)
-           smaller?(real x, real y)
+       if R has ComparableRepresentation then
+           smaller?(x, y) ==
+               smaller?(real(x), real(y)) => true
+               smaller?(real(y), real(x)) => false
+               smaller?(imag(x), imag(y))
 
        if R has IntegerNumberSystem then
          rational? x == zero? imag x
