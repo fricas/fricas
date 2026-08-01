@@ -1640,6 +1640,9 @@ HyperdocUtilities() : Exports == Implementation where
           ++ representation in Hyperdoc format of predicate p, appending
           ++ result in reverse order to acc.  If do_link is true then
           ++ constructor names produce Hyperdoc links.
+        outform_to_string : OutputForm -> String
+          ++ outform_to_string(o) produces printable string representation
+          ++ of o using \spadtype{Format1D}.
     Implementation ==> add
 
         get_db_info(x, y) ==> get_database(x, y)$Lisp
@@ -1724,10 +1727,13 @@ HyperdocUtilities() : Exports == Implementation where
                 convert([unquote(x1) for x1 in xl])
             x
 
+        outform_to_string(o : OutputForm) : String ==
+            concat(lines(formatExpression(o)$Format1D)$OutputBox)
+
         typed_val_to_string1(val : SE, t : SE) : String ==
             o : OutputForm :=
                 algCoerceInteractive(val, t, ['OutputForm])$Lisp
-            concat(lines(formatExpression(o)$Format1D)$OutputBox)
+            outform_to_string(o)
 
         typed_val_to_string(val : SE, t_op : Symbol, t_args : List(SE),
                             k : Integer) : String ==

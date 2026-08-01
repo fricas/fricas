@@ -1416,10 +1416,7 @@ outputString(start,linelength,str) ==
   else
     sayALGEBRA [blnks, str]
 
-outputDomainConstructor form ==
-  if VECTORP form then form := devaluate form
-  atom (u:= prefix2String form) => u
-  concatenateStringList([object2String(x) for x in u])
+outputDomainConstructor(form) == constructor_to_String(form)
 
 charybdis(u,start,linelength) ==
   EQ(keyp u,'EQUATNUM) and not (CDDR u) =>
