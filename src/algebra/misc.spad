@@ -1,0 +1,27 @@
+)abbrev domain IVARS IndexedVariables
+++ Author: W. Hebisch
+++ Description:
+++ \spadtype{IndexedVariables(ls)} implements variables which have names
+++ bases on symbols from list \spad{ls} with number appended.  This is
+++ useful in case when one needs several groups of variables with
+++ variables within groups distinguished by appended number.  Note:
+++ if symbol names differ only in trailing digits one can create
+++ elements of this domain which print the same, but are considered
+++ as distinct variables.
+IndexedVariables(ls : List(Symbol)) : OrderedSet with
+    variable : (Symbol, Integer) -> Union(%, "failed")
+      ++ variable(s, n) creates variable with name s and suffix n.
+  == add
+    m : Integer := #ls
+    to_i(x : %) : Integer == x pretend Integer
+    (x : %) = (y : %) == to_i(x) = to_i(y)
+    (x : %) < (y : %) == to_i(x) < to_i(y)
+    variable(s : Symbol, n : Integer) : Union(%, "failed") ==
+        k := position(s, ls)
+        k = 0 => "failed"
+        (m*n + k - 1) pretend %
+
+    coerce(x : %) : OutputForm ==
+        qr := divide(to_i(x), m)
+        s := ls(qr.remainder + 1)
+        hconcat(s::OutputForm, qr.quotient::OutputForm)
