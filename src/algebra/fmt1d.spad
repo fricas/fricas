@@ -100,11 +100,11 @@ format that can also be seen as an output format.
 )endif
 
 
-)abbrev domain FMT1D Format1D
+)abbrev domain FMT1DINT Format1DInternal
 ++ \spadtype{Format1D} provides a coercion from \spadtype{OutputForm}
 ++ to a one-dimensional format such that the output
 ++ can be pasted back as input.
-Format1D: Exports == Implementation where
+Format1DInternal(do_input : Boolean): Exports == Implementation where
   E   ==> OutputForm
   Z   ==> Integer
   N   ==> NonNegativeInteger
@@ -288,7 +288,10 @@ i.e., an underscore character.
     subscript(p: Z): H == (prec: Z, args: LE): BOX +->
         b1: BOX := formatExpression(args.1, MIN)
         b2: BOX := formatExpression(args.2, MIN)
-        formatFunction(box "subscript", [b1, parenthesize("[", "]", b2)])
+        if symbol?(args.1)$OutputFormTools then
+            hconcat([b1, parenthesize("[", "]", b2)])
+        else
+            formatFunction(box "subscript", [b1, parenthesize("[", "]", b2)])
 
 
 )if LiterateDoc
@@ -350,7 +353,10 @@ representation in \spadtype{OutputForm} back into the above form.
 
     matrix(left: S, right: S): H == (prec: Z, args: LE): BOX +->
         entries: BOX := nary(", ", MAX, FE MIN)(prec, rest args)
-        parenthesize(concat("matrix", left), right, entries)
+        lp :=
+            do_input => concat("matrix", left)
+            left
+        parenthesize(lp, right, entries)
 
 )if LiterateDoc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -507,3 +513,9 @@ Here we (wrongly) return \verb|+%Infinity| and \verb|-%Infinity| for
 \end{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 )endif
+
+)abbrev domain FMT1D Format1D
+Format1D == Format1DInternal(false)
+
+)abbrev domain FMT1DI Format1DInput
+Format1DInput == Format1DInternal(true)
