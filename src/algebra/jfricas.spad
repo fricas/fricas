@@ -1,0 +1,903 @@
+-------------------------------------------------------------------
+---
+--- jFriCAS -- The Jupyter-FriCAS bridge
+---
+--- Copyright (C) 2026  Ralf Hemmecke <ralf@hemmecke.org>
+--- Copyright (C) 2026  Kurt Pagani <nilqed@gmail.com>
+---
+-------------------------------------------------------------------
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions
+-- are met:
+--
+-- 1. Redistributions of source code must retain the above copyright
+-- notice, this list of conditions and the following disclaimer.
+--
+-- 2. Redistributions in binary form must reproduce the above
+-- copyright notice, this list of conditions and the following
+-- disclaimer in the documentation and/or other materials provided
+-- with the distribution.
+--
+-- 3. Neither the name of the copyright holder nor the names of its
+-- contributors may be used to endorse or promote products derived
+-- from this software without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+-- FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+-- COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+-- INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+-- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+-- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+-- STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+-- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+-- OF THE POSSIBILITY OF SUCH DAMAGE.
+-------------------------------------------------------------------
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{article}
+\usepackage{literatedoc}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{jFriCAS: A bridge between FriCAS and a Jupyter notebook}
+\author{Ralf Hemmecke}
+\date{01-Jun-2026}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\maketitle
+
+\begin{abstract}
+  This package provides the bridge between FriCAS and a Jupyter
+  notebook via the Hunchentoot webserver.
+\end{abstract}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The jFriCAS Jupyter notebook frontend for FriCAS was designed to be
+used also with the new formatting framework of FriCAS, in particular
+with the FormatMathJax domain. See \path{fmtjfricas.spad}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implementation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The JFriCAS package}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)abbrev package JFRICAS JFriCAS
+++ The JFriCAS package contains functions to start a webserver and to
+++ initialize ioHooks for the communication between FriCAS and the
+++ Jupyter frontend. It also manages the communication between FriCAS
+++ (via the Hunchentoot webserver) and the Jupyter notebook.
+JFriCAS: Exports == Implementation where
+  evalLisp(s) ==> EVAL(READ_-FROM_-STRING(s)$Lisp)$Lisp
+  NN ==> NonNegativeInteger
+  SEX ==> SExpression
+  Exports ==> with
+    initialize : () -> Void
+      ++ initialize() defines a number of functions for jFriCAS to work.
+    start: NN -> Void
+      ++ start(p) initializes jFriCAS and starts a new webserver
+      ++ instance on port p.
+
+    jfricasIOHandler : (Symbol, SEX) -> Void
+      ++ jFriCASIOHandler(s) reacts on certain ioHooks and writes out
+      ++ begin and end markers to stdout so that the corresponding
+      ++ fricaskernel.py can single out the various kinds of messages
+      ++ that comes from FriCAS.
+
+    kernel: () -> Void
+      ++ kernel() writes out a file kernel.json to the current
+      ++ directory. This file should be installed together
+      ++ fricaskernel.py (generated by the fricaskernel() function
+      ++ call) in your jupyter/python environment.
+    fricaskernel: () -> Void
+      ++ fricaskernel() writes out a file fricaskernel.py to the
+      ++ current directory. This file should be installed together
+      ++ kernel.json (generated by the kernel() function call) in your
+      ++ jupyter/python environment.
+
+    ioIndex: Integer -> String
+    defineHandler: (String, String) -> SEX
+    isInitialized: () -> Boolean
+    defineHandler: (String, String) -> SEX
+
+  Implementation ==> add
+    import from String
+
+    initialized? : Boolean := false
+    isInitialized() == initialized?
+
+    -- local
+    setIOHook(fun : (Symbol, SEX) -> Void): Void == set_spad_io_hook(fun)$Lisp
+
+    -- local
+    ioIndexZZ(): Integer ==
+        sex: SEX := evalLisp("|$IOindex|")@SEX
+        integer? sex => integer sex
+        -1
+
+    -- local
+    ioIndex(n: Integer): String ==
+        z: Integer := ioIndexZZ() + n
+        z > 0 => string z
+        "0"
+
+    sayMarker(markertype: String, n: Integer): Void ==
+        evalLisp("(|sayMSG| _"--FORMAT:" markertype ":" ioIndex(n) "_")")
+        void()
+
+    jfricasIOHandler(s: Symbol, sex: SEX): Void ==
+        key: String := string s
+
+        be: String := ""
+        -- We only care about ioHooks that start with "start" or "endOf".
+        if prefix?("start", key) then be := "BEG"
+        if prefix?("endOf", key) then be := "END"
+        be = "" => void() -- marker not known ==> do nothing
+
+        -- Some ioHooks (especially formats) end in "Output", like
+        -- "startAlgebraOutput", "endOfFormattedOutput", startTeXOutput" etc.
+        -- See i-output.boot.
+        if suffix?("Output", key) then key := delete(key, #key-5 .. #key)
+        key := delete(key, 1..5) -- remove "start"/"endOf"
+        markertype: String := be ":" key
+
+        -- Unfortunately, when Time or Storage is printed by FriCAS,
+        -- the $IOindex has already been increased, so we must
+        -- decrease it here to assign the right step counter to
+        -- the Time and Storage markers.
+        -- See processInteractive0 in i-toplev.boot.
+        key = "Time" or key = "Storage" => sayMarker(markertype, -1)
+
+        -- We don't include SysCmd here, because that would lead to
+        -- output of the form
+        --   --FORMAT:BEG:SysCmd:n
+        --   ...
+        --   --FORMAT:BEG:KeyedMsg:n
+        --   ...
+        --   --FORMAT:END:KeyedMsg:n
+        --   --FORMAT:END:SysCmd:n
+        -- and, therefore, a marker pair included in another marker pair.
+        -- We avoid that (and do not treat such a situation with our code.
+        -- Rather, we take every output that is not inside a marker pair
+        -- as belonging to the special content type 'ERROR'.
+        --
+        -- With the same argument, we also do not need to treat
+        -- PatternMsg (output belonging to the call of the 'error'
+        -- function) and ErrorMsg
+        import from List String
+        for f in [_
+                  "Type",_
+                  "Formatted",_
+                  "Algebra",_
+                  "Fortran",_
+                  "HTML",_
+                  "MathML",_
+                  "TeXmacs",_
+                  "TeX",_
+                  "KeyedMsg"] | f = key repeat return sayMarker(markertype, 0)
+
+        void()
+
+    -- local
+    defineHandler(name: String, handler: String): SEX ==
+      print(([name, " :: ", handler]$List(String))::OutputForm)
+      evalLisp
+        "(hunchentoot:define-easy-handler "_
+        "    (fricas-" name " :uri _"/" name "_") (code)"_
+        "  (setf (hunchentoot:content-type*) _"text/plain_")"_
+        "  (format nil _"~A~%_" " handler "))"
+
+    initialize() : Void ==
+        -- Following function jfricas-parseAndEvalStr calls FriCAS for
+        -- evaluation of code and returns true if there is an error
+        -- and nil otherwise.
+        --
+        -- The code might consist of multiple lines (i.e. contain
+        -- newline characters).
+        --
+        -- The output of fricas can then be found on stdout. So we
+        -- create a string-output-stream 'jfricas-stream' in order to
+        -- catch this output. It will contain als stuff that goes to
+        -- stderr. The interpretation of all this output is left to
+        -- fricaskernel.py.
+        evalLisp(_
+          "(defun |jfricas-parseAndEvalStr| (code) "_
+          "  (setf |$MARGIN| 0)"_
+          "  (setf |$print_equatnum| NIL)"_
+          "  (eq (catch 'SPAD_READER (catch '|top_level|"_
+          "        (|interpret_block| code)))"_
+          "      '|restart|))")
+
+        -- One stream that catches all output.
+        evalLisp "(defvar jfricas-stream (make-string-output-stream))"
+
+        -- In our function, we want to capture everything that goes to
+        -- Lisp standard output. By making Lisp standard output a
+        -- synonym for proxy_stdout, we ensure that binding
+        -- proxy_stdout redirects all output that goes through Lisp
+        -- standard output.
+        evalLisp "(defvar proxy_stdout *standard-output*)"
+
+        evalLisp _
+          "(setf *standard-output* (make-synonym-stream 'proxy_stdout))"
+
+        -- We need to re-initialize FriCAS streams so that they use
+        -- our version of standard output
+        formats: List String := ["Algebra", "Fortran", "Mathml", "Texmacs",
+                                 "Html", "OpenMath", "Tex", "Formatted"]
+        for f in formats repeat
+            evalLisp("(|setOutput" f "| '|%initialize%|)")
+
+        -- fricaskernel.py expects the output in form of a json record.
+        evalLisp(_
+          "(defun jfricas-eval (input)"_
+          "  (let* ("_
+          "         (proxy_stdout jfricas-stream)"_
+          "         (*error-output* proxy_stdout)"_
+          "         (err? (if (|jfricas-parseAndEvalStr| input) _"T_" _"F_"))"_
+          "        )"_
+          "    (format nil _"{ \_"stdout\_":~S,"_
+          "                    \_"error?\_":~S,"_
+          "                    \_"input\_":~S"_
+          "                  }_""_
+          "      (get-output-stream-string jfricas-stream)"_
+          "      err?"_
+          "      input)))")
+
+        -- The function jfricas-oneline-eval is only intended to call
+        -- FriCAS and return its result with one-line code.
+        evalLisp(_
+          "(defun fricas-eval (code)" _
+          "  (format nil _"~{~A~%~}_" (|parseAndEvalToString| code)))")
+
+        -- Make the url
+        -- http://localhost:PORT/jfricas?code=D(sin(x),x) available.
+        defineHandler("jfricas", "(jfricas-eval code)")
+
+        -- Make the url
+        -- http://localhost:PORT/fricas?code=D(sin(x),x) available.
+        defineHandler("fricas", "(fricas-eval code)")
+
+        setIOHook(jfricasIOHandler)
+
+
+    -- Start the hunchentoot webserver on port p.
+    start(p : NN) : Void ==
+        if not initialized? then
+            webserver: SEX := evalLisp("(member ':HUNCHENTOOT *features*)")::SEX
+            if not empty? destruct webserver then
+                initialize()
+                initialized? := true
+
+        port: String := string p
+        evalLisp("(make-instance 'hunchentoot:easy-acceptor "_
+                 "  :port " port "))")
+
+        evalLisp(_
+            "(hunchentoot::start"_
+            "  (make-instance 'hunchentoot:easy-acceptor :port " port "))")
+
+    kernel(): Void ==
+        tf: TextFile := open("kernel.json"::FileName, "output")$TextFile
+        w(s) ==> writeLine!(tf, s)
+        w "{"
+        w "  _"argv_": [_"python3_", _"-m_", _"jfricas.fricaskernel_", _"-f_", _"{connection_file}_"],"
+        w "  _"display_name_": _"FriCAS_","
+        w "  _"language_": _"spad_""
+        w "}"
+        close! tf
+        void()
+
+    fricaskernel(): Void ==
+        tf: TextFile := open("fricaskernel.py"::FileName, "output")$TextFile
+        w(s) ==> writeLine!(tf, s)
+
+        w "# -*- coding: utf-8 -*-"
+        w "###################################################################"
+        w "# This file is one part of the FriCAS to Jupyter notebook bridge. It"
+        w "# implements an IPython kernel such that pressing SHIFT-ENTER in a"
+        w "# Jupyter notebook cell takes the cell content and sends it via"
+        w "# jfricas.spad to a webserver (hunchentoot). Hunchentoot, in turn, is"
+        w "# supposed to be connected to a FriCAS process (see jfricas.spad)."
+        w "###################################################################"
+        w "#"
+        w "# Installation:"
+        w "#"
+        w "# This file is supposed to live in the directory contrib/jfricas of"
+        w "# the FriCAS source tree together with a file kernel.json."
+        w "# the installation can be done by calling:"
+        w "#"
+        w "## cd contrib/jfricas"
+        w "## jupyter kernelspec install ./ --name='jfricas' --user"
+        w "#"
+        w "# or"
+        w "#"
+        w "## jupyter kernelspec install ./ --name='jfricas'"
+        w "#"
+        w "# if it is installed in a virtual environment."
+        w "#"
+        w "# Check with"
+        w "#"
+        w "## jupyter kernelspec list"
+        w "###################################################################"
+        w ""
+        w "from ipykernel.kernelbase import Kernel"
+        w "from subprocess import Popen, run, PIPE, STDOUT"
+        w "import requests"
+        w "import json"
+        w "import os"
+        w ""
+        w "____version____ = '3.0.0'"
+        w ""
+        w "###################################################################"
+        w "# BEGIN user configuration options"
+        w "###################################################################"
+        w "shell__timeout = 15 # Timeout for shell commands in secs."
+        w "shell__result = None # store last sh result in python"
+        w "shell__result__fricas = '____shell__result:=[_"{0}_"]' # store sh result in FriCAS"
+        w ""
+        w "# Templates (TeX)"
+        w "pretex1 = r'\def\sp{^}\def\sb{__}\def\leqno(#1){}'"
+        w "pretex2 = r'\def\erf\{\mathrm{erf}}\def\sinh{\mathrm{sinh}}'"
+        w "pretex3 = r'\def\zag#1#2{{{ \left.{#1}\right|}\over{\left|{#2}\right.}}}'"
+        w "pretex = pretex1+pretex2+pretex3"
+        w ""
+        w "###################################################################"
+        w "# END user config"
+        w "###################################################################"
+        w ""
+        w "try:"
+        w "    import notebook.notebookapp"
+        w "    static__file__path = notebook.notebookapp.DEFAULT__STATIC__FILES__PATH"
+        w "except:"
+        w "    static__file__path = None"
+        w ""
+        w ""
+        w "# Function to find a free port"
+        w "def get__free__port():"
+        w "        import socket"
+        w "        s = socket.socket(socket.AF__INET, socket.SOCK__STREAM)"
+        w "        s.bind(('',0))"
+        w "        s.listen(1)"
+        w "        port = s.getsockname()[1]"
+        w "        s.close()"
+        w "        return port"
+        w ""
+        w "# Get new free port"
+        w "htport = str(get__free__port())"
+        w ""
+        w "# PID of FriCAS+HT"
+        w "pid = None"
+        w ""
+        w "# Connection to FriCAS via a webserver."
+        w "class httpFriCAS():"
+        w ""
+        w "    def ____init____(self, url = 'http://localhost:{0}/jfricas'.format(htport)):"
+        w "        # Store parameters"
+        w "        self.url = url"
+        w "        self.output = None"
+        w ""
+        w "    # Send code via a webserver to FriCAS and return a json output record."
+        w "    def fricas(self, code, fricaskernel):"
+        w "        # POST request"
+        w "        payload = {'code': code}"
+        w "#        fricaskernel.send__response(fricaskernel.iopub__socket, 'stream',"
+        w "#                                   {'name': 'stdout', 'text': 'CODE:'+code})"
+        w "        r = requests.post(self.url, data=payload)"
+        w "        data = r.text"
+        w "#        fricaskernel.send__response(fricaskernel.iopub__socket, 'stream',"
+        w "#                                   {'name': 'stdout', 'text': 'DATA:'+data})"
+        w "        data = data.replace('\r','\\r')"
+        w "        data = data.replace('\n','\\n')"
+        w "#        fricaskernel.send__response(fricaskernel.iopub__socket, 'stream',"
+        w "#                                   {'name': 'stdout', 'text': 'DaTa:'+data.rstrip('\\n')})"
+        w "        self.output = json.loads(data.rstrip('\\n'))"
+        w "        return(r)"
+        w ""
+        w ""
+        w "class FriCAS(Kernel):"
+        w "    implementation = 'spad'"
+        w "    implementation__version = ____version____"
+        w "    language = 'spad'"
+        w "    language__version = '0.1'"
+        w "    language__info = {'name': 'spad', 'mimetype': 'text/plain',"
+        w "                     'file__extension': '.input',}"
+        w "    banner = 'FriCAS Jupyter Kernel'"
+        w ""
+        w ""
+        w "    def ____init____(self, **kwargs):"
+        w "        Kernel.____init____(self, **kwargs)"
+        w "        self.server = httpFriCAS()"
+        w "        self.fricas__operations = fricas__operations"
+        w "        self.fricas__constructors = fricas__constructors"
+        w "        self.fricas__ids = sorted(fricas__operations + fricas__constructors)"
+        w ""
+        w ""
+        w "    # This is the primary method Jupyter calls when you press"
+        w "    # Shift+Enter on a cell."
+        w "    def do__execute(self, code, silent, store__history=True,"
+        w "                   user__expressions=None, allow__stdin=False):"
+        w ""
+        w "        ok__status = {"
+        w "            'status': 'ok',"
+        w "            # The base class increments the execution count"
+        w "            'execution__count': self.execution__count,"
+        w "            'payload': [],"
+        w "            'user__expressions': {},"
+        w "        }"
+        w ""
+        w "        # Pre-process input for special command that are not given"
+        w "        # to FriCAS, but handled otherwise."
+        w "        # Available are:"
+        w "        # )quit   -- tell user to quit via jupyter notebook means"
+        w "        # )pquit  -- tell user to quit via jupyter notebook means"
+        w "        # )python -- evaluate a python expression"
+        w "        # )!      -- send the cell content to a shell"
+        w "        # Note that there are other system commands in FriCAS like"
+        w "        # )help, )compile, )read."
+        w ""
+        w "        #----------------------------------------------------------"
+        w "        cmd = ')python'"
+        w "        if code.startswith(cmd):"
+        w "            # Python code in cell"
+        w "            self.output = str(eval(code[len(cmd):].lstrip()))"
+        w "            self.send__response(self.iopub__socket, 'stream',"
+        w "                               {'name': 'stdout', 'text': self.output})"
+        w "            return ok__status"
+        w ""
+        w "        #----------------------------------------------------------"
+        w "        cmd = ')!'"
+        w "        if code.startswith(cmd):"
+        w "            # Shell code in cell"
+        w "            global shell__result"
+        w "            cmd = str(code[len(cmd):].lstrip())"
+        w "            cp = run(cmd, stdout=PIPE, stderr=STDOUT,"
+        w "                          timeout=shell__timeout, shell=True)"
+        w "            self.output = cp.stdout.decode()"
+        w "            self.send__response(self.iopub__socket, 'stream',"
+        w "                               {'name': 'stdout', 'text': self.output})"
+        w ""
+        w "            # Store last shell result in global python variable"
+        w "            shell__result = self.output"
+        w ""
+        w "            # Store last shell result inside FriCAS (list of lines)"
+        w "            s = self.output.rstrip('\n').replace('_"', '___"')"
+        w "            s = shell__result__fricas.format(s.replace('\n', '_",__\n_"'))"
+        w "            self.server.fricas(s, self)"
+        w ""
+        w "            return ok__status"
+        w ""
+        w "        #----------------------------------------------------------"
+        w "        # send code to hunchentoot and get response from FriCAS"
+        w ""
+        w "        # It would be enough to send just the whole code string,"
+        w "        # because jfricas.spad takes care if the code consists of"
+        w "        # several lines. However, if, for example, the input cell"
+        w "        # contains the following code lines."
+        w "        #   2+3"
+        w "        #   [1,]"
+        w "        #   4+5"
+        w "        # and we send this to FriCAS as one block, then the evaluation"
+        w "        # stops at the second line and returns an error and output"
+        w "        # that contains a good evaluation of the first line and a"
+        w "        # error output for the second line."
+        w "        # Unfortunately, all the output comes in one chunk and it is"
+        w "        # hard to detect what the actuall error message is."
+        w "        # Therefore, we split the input into separate input blocks by the"
+        w "        # following rules"
+        w "        # (a) All whitespace is remove from the end of a line."
+        w "        # (b) A line ending in __ (underscore) makes the next line"
+        w "        #     belonging to the same block."
+        w "        # (c) A line starting with a non-whitespace character begins"
+        w "        #     a new input block."
+        w "        # (d) All lines that begin with a space character are associated"
+        w "        #     with the current block."
+        w "        # Then we handle one block after the other."
+        w "        lines = code.split('\n')"
+        w "        blocks = []"
+        w "        block = ''"
+        w "        for line in lines:"
+        w "            line = line.rstrip()"
+        w "            if not block:"
+        w "                block = line"
+        w "                continue"
+        w "            l = len(block) # assert(l>0)"
+        w "            if block[l-1] == '__' or (line and line[0] == ' '):"
+        w "                block += '\n' + line"
+        w "            else: # The new line is no continuation of the last block."
+        w "                blocks.append(block)"
+        w "                block = line"
+        w "        if block: blocks.append(block)"
+        w ""
+        w "        # Now we have all the blocks. We take care of a special case,"
+        w "        # namely if the user wants to quit FriCAS. In that case,"
+        w "        # return a message that the user should close the respective"
+        w "        # notebook by means of the Jupyter menu"
+        w "        # File -> Close and Shut Down Notebook."
+        w "        # We treat this like an error and abort further execution of code"
+        w "        # following the )quit line."
+        w ""
+        w "        quit__msg = 'Use the menu _"File -> Close and Shut Down Notebook_" to quit the notebook!'"
+        w ""
+        w "        for block in blocks:"
+        w "            if block.startswith(')'):"
+        w "                cmd = block[1:]"
+        w "                if cmd.startswith('p'): cmd = cmd[1:]"
+        w "                if cmd in ['q', 'qu', 'qui', 'quit']:"
+        w "                    self.send__response(self.iopub__socket, 'stream',"
+        w "                                       {'name': 'stderr', 'text': quit__msg})"
+        w "                    # We abort evaluation at a )quit situation."
+        w "                    return ok__status"
+        w ""
+        w "#            self.send__response(self.iopub__socket, 'stream',"
+        w "#                               {'name': 'stdout', 'text': '==beg=='+block+'==end=='})"
+        w "            r = self.server.fricas(block, self)"
+        w "            # Uncomment the follwing for debugging purposes."
+        w "#            self.send__response(self.iopub__socket, 'stream',"
+        w "#                              {'name': 'stdout', 'text': str(r.text)})"
+        w ""
+        w "            if r.ok and not silent:"
+        w "                if not self.handle__fricas__result(): # True=ok, False=error"
+        w "                    return {'status': 'error',"
+        w "                            'execution__count': self.execution__count,"
+        w "                            'payload': [],"
+        w "                            'user__expressions': {},"
+        w "                           }"
+        w ""
+        w "        return ok__status"
+        w ""
+        w ""
+        w "    def do__shutdown(self, restart):"
+        w "        'Changes in 5.0: <data> replaced by <text>'"
+        w "        output = '-- Bye. Kernel shutdown '"
+        w "        self.send__response(self.iopub__socket, 'stream',"
+        w "                           {'name': 'stdout', 'text': output})"
+        w ""
+        w "        try:"
+        w "            r = self.server.fricas(')quit', self)"
+        w "            pid.terminate() # terminate fricas+HT"
+        w "        except:"
+        w "            print('Go down anyway ...')"
+        w "        return {'restart': False}"
+        w ""
+        w ""
+        w "    # get__identifier__part is an auxiliary function"
+        w "    def get__identifier__part(self, code):"
+        w "        # A FriCAS identifier consists of alpha-numeric characters"
+        w "        # and one of the letters ! ? __. For code completion and code"
+        w "        # inspection we ignore other fancy operators, i.e,, to find"
+        w "        # the start of the identifier, we go simply backwards from the"
+        w "        # current position until we find a non-admissible character."
+        w "        admissible = 'abcdefghijklmnopqrstuvwxyz__!?0123456789'"
+        w "        n = len(code)-1"
+        w "        while n>=0 and code[n].lower() in admissible: n -= 1"
+        w "        return code[n+1:]"
+        w ""
+        w ""
+        w "    def do__complete(self, code, cursor__pos):"
+        w "        code = code[:cursor__pos]"
+        w "        token = self.get__identifier__part(code)"
+        w "        start = cursor__pos - len(token)"
+        w "        matches = [id for id in self.fricas__ids if id.startswith(token)]"
+        w "        return {'matches': matches,"
+        w "                'cursor__start': start,"
+        w "                'cursor__end': cursor__pos,"
+        w "                'metadata': dict(),"
+        w "                'status': 'ok'}"
+        w ""
+        w ""
+        w "    def do__inspect(self, code, cursor__pos, detail__level=0):"
+        w "        data = dict()"
+        w "        code = code[:cursor__pos]"
+        w "        token = self.get__identifier__part(code)"
+        w ""
+        w "        if not token:"
+        w "            return {'status' : 'ok', 'found' : False,"
+        w "                    'data' :  {}, 'metadata' : {}}"
+        w ""
+        w "        start = cursor__pos - len(token)"
+        w "        if token in self.fricas__operations:"
+        w "            r = self.server.fricas(')display operation {0}'.format(token), self)"
+        w "        elif token in self.fricas__constructors:"
+        w "            r = self.server.fricas(')show {0}'.format(token), self)"
+        w "        else:"
+        w "            return {'status' : 'ok', 'found' : False,"
+        w "                    'data' :  {},'metadata' : {}}"
+        w ""
+        w "        msg = ['No data from FriCAS']"
+        w "        if r.ok:"
+        w "            lines = self.server.output['stdout'].split('\n')"
+        w "            msg = [l for l in lines if not l.startswith('--FORMAT:')]"
+        w ""
+        w "        return {'status' : 'ok', 'found' : True,"
+        w "                'data' : {'text/plain' : '\n'.join(msg)},'metadata' : {}}"
+        w ""
+        w ""
+        w "    #--------------------------------------------------------------"
+        w "    # Auxiliary functions"
+        w "    #--------------------------------------------------------------"
+        w ""
+        w "    def addLinks(self, s):"
+        w "        '''Every word of the form Aaaa is replaced by"
+        w "        _"<a href=\_"_" + api + Aaaa + _".html\_">_"+Aaaa+_"</a>_"."
+        w "        '''"
+        w "        import re"
+        w "        api = r'https://fricas.github.io/api/'"
+        w "        con = r'([A-Z][A-Za-z0-9]*)'"
+        w "        sty = 'style=_"color:blue;text-decoration:none;_"'"
+        w "        repl = r'<a href=_"'+api+r'\1.html_" target=_"__blank_" '+sty+r'>\1</a>'"
+        w "        return re.sub(con, repl, s)"
+        w ""
+        w "    def formatTypeTimeStorage(self, lines):"
+        w "        brs = '<br />'"
+        w "        fmt = '<div style=_"text-align:right;_"><sub>{0}</sub></div>'"
+        w "        return fmt.format(brs.join(lines))"
+        w ""
+        w "    # The output is sectioned by lines that look like"
+        w "    # --FORMAT:BEG:format:n"
+        w "    # and"
+        w "    # --FORMAT:END:format:n"
+        w "    # where where 'format' is specifying the type of content like"
+        w "    # 'Formatted', 'Algebra', 'Type', 'Time', 'Storage', etc."
+        w "    # and n is the step number that will be used for Out[n] in Jupyter."
+        w "    # The <content> in"
+        w "    # --FORMAT:BEG:Formatted:n"
+        w "    # <content>"
+        w "    # --FORMAT:END:Formatted:n"
+        w "    # may contain the various formats that Formatted supports."
+        w "    # They should have been set via setFormat! or setFormats! from the"
+        w "    # package JFriCASSupport. In particular, each of those outputs comes"
+        w "    # included in"
+        w "    # --FORMAT:BEG:format"
+        w "    # and"
+        w "    # --FORMAT:END:format"
+        w "    # and are counted to belong to step number n from the Formatted:n"
+        w "    # wrapper."
+        w "    #"
+        w "    # We return a list of output records of the form"
+        w "    #   {'step': step, 'outputs': outputs}"
+        w "    # where outputs is a list with entries of the form"
+        w "    #   {content__type: content}"
+        w "    # that belong to the same step number n."
+        w "    def split__output(self, s):"
+        w "        stepped__outputs = [] # intermediate collection of data"
+        w "        outputs = []"
+        w "        lines = s.split('\n')"
+        w "        n = len(lines)"
+        w "        i = 0 # 0 <= i < n, index into lines array"
+        w "        step = 0 # current step, collected in stepped__outputs"
+        w ""
+        w "        while i < n:"
+        w "            content__type = 'text/plain' # default"
+        w "            line = (lines[i]).rstrip()"
+        w "            i += 1"
+        w ""
+        w "##            self.send__response(self.iopub__socket, 'stream',"
+        w "##                {'name': 'stdout', 'text': '\nLINE:'+line})"
+        w ""
+        w "            # Ignore empty lines and '--FORMAT:END:FORMATTED:' marker."
+        w "            if not line or line.startswith('--FORMAT:END:Formatted:'):"
+        w "                continue"
+        w ""
+        w "            # In the following we misuse the content__type field with"
+        w "            # the value 'ERROR' for context__type to signal that the"
+        w "            # output should be send as text to stderr."
+        w ""
+        w "            if not line.startswith('--FORMAT:BEG:'):"
+        w "                outputs.append({'ERROR': line + '\n'}) # lonely line"
+        w "                continue"
+        w ""
+        w "            y = line[13:] # line with '--FORMAT:BEG:' removed"
+        w "            p = y.find(':')"
+        w "            if p < 0:"
+        w "                f = y"
+        w "            else: # extract step number from the value after ':'"
+        w "                f = y[:p]"
+        w "                nstep = int(y[p+1:])"
+        w "                # If the new step number is different from the old"
+        w "                # one, we finish the current output collection and"
+        w "                # start a new one."
+        w "                if nstep != step:"
+        w "                    if outputs:"
+        w "                        stepped__outputs.append("
+        w "                            {'step': step, 'outputs': outputs})"
+        w "                    outputs = []"
+        w "                    step = nstep"
+        w "            content = '' # initialize"
+        w "            end__marker = '--FORMAT:END:' + y"
+        w ""
+        w "            # Formatted is only a wrapper for the formmatted output"
+        w "            # types that come with there own '--FORMAT:BEG: and"
+        w "            # '--FORMAT:END' markers, but without the step number."
+        w "            # '--FORMAT:BEG:Formatted:n' is only used to set the"
+        w "            # variable nstep."
+        w "            if line.startswith('--FORMAT:BEG:Formatted'): continue"
+        w ""
+        w "            if f in ['Type', 'Time', 'Storage']:"
+        w "                line = lines[i]"
+        w "                i += 2 # Step over the value line and the end marker."
+        w "                # 'Type: ' is removed, 'Time: ' and 'Storage: ' are kept."
+        w "                p = line.find(f + ': ') # assert p>0"
+        w "                if f == 'Type':"
+        w "                    content = [self.addLinks(line[p+6:])] # type"
+        w "                else:"
+        w "                    content = [line[p:]] # time/storage"
+        w "                outputs.append("
+        w "                    {'text/html': self.formatTypeTimeStorage(content)})"
+        w "                continue"
+        w ""
+        w "            # Map formats to content types (ignoring formats that"
+        w "            # default to content__type = 'text/plain')"
+        w "            if f == 'FormatMathJax':"
+        w "                content__type = 'text/latex'"
+        w "            elif f in ['MathML', 'HTML']:"
+        w "                content__type = 'text/html'"
+        w "            elif f == 'TeX': # Corresponds to TexFormat"
+        w "                content__type = 'text/latex'"
+        w "                content = '$ ' + pretex + ' $\n'"
+        w "            elif f in ['KeyedMsg']:"
+        w "                content__type = 'ERROR'"
+        w ""
+        w "##            self.send__response(self.iopub__socket, 'stream',"
+        w "##                {'name': 'stdout', 'text': '\nCT:'+content__type})"
+        w ""
+        w "            # Collect the lines into content until the end__marker is found"
+        w "            while i < n:"
+        w "                line = lines[i]"
+        w "                i += 1"
+        w "                if line == end__marker: break"
+        w "                content += line + '\n'"
+        w ""
+        w "##            self.send__response(self.iopub__socket, 'stream',"
+        w "##                {'name': 'stdout',"
+        w "##                 'text': '\nCONTENTTYPE:'+content__type+'\nCONTENT:'+content})"
+        w ""
+        w "            outputs.append({content__type: content})"
+        w ""
+        w "        # Append the final block of outputs after the loop finishes"
+        w "        if outputs:"
+        w "            stepped__outputs.append({'step': step, 'outputs': outputs})"
+        w ""
+        w "        return stepped__outputs"
+        w ""
+        w ""
+        w ""
+        w "    def handle__fricas__result(self):"
+        w "        # See jfricas.spad for the structure of out."
+        w "        # If an error occured, simply put every output to stderr."
+        w "        out = self.server.output"
+        w "        stepped__outputs = self.split__output(out['stdout'])"
+        w "        # Uncomment the following for debugging purposes."
+        w "##        self.send__response(self.iopub__socket, 'stream',"
+        w "##                           {'name': 'stdout', 'text':"
+        w "##                            'SteppedOutput: {0}'.format(stepped__outputs)})"
+        w ""
+        w "        if out['error?'] == 'T':"
+        w "            for so in stepped__outputs:"
+        w "                for data in so['outputs']:"
+        w "                    for k in data.keys():"
+        w "                        self.send__response(self.iopub__socket, 'stream',"
+        w "                            {'name': 'stderr', 'text': data[k]})"
+        w "            return False # signal error"
+        w ""
+        w "        for so in stepped__outputs:"
+        w "            if not so['outputs']: continue"
+        w "            is__first = True"
+        w "            # Now print the remaining output"
+        w "            for data in so['outputs']:"
+        w "                for k in data.keys():"
+        w "                    if k == 'ERROR':"
+        w "                        self.send__response(self.iopub__socket, 'stream',"
+        w "                            {'name': 'stderr', 'text': data[k]})"
+        w "                    elif is__first:"
+        w "                        self.send__response(self.iopub__socket, 'execute__result',"
+        w "                            {'execution__count': so['step'],"
+        w "                             'data': data,"
+        w "                             'metadata': {}})"
+        w "                        is__first = False"
+        w "                    else:"
+        w "                        self.send__response(self.iopub__socket,'display__data',"
+        w "                            {'data': data, 'metadata': {}})"
+        w ""
+        w "        return True"
+        w ""
+        w ""
+        w "if ____name____ == '____main____':"
+        w "    from ipykernel.kernelapp import IPKernelApp"
+        w "    import itertools"
+        w ""
+        w "    # Get all FriCAS identifiers for tab-completion into the variables"
+        w "    # fricas__operations and fricas__constructors."
+        w "    # We need this for do__complete and do__inspect."
+        w "    # We start a separate process tho get this information."
+        w "    pid0 = Popen(['fricas', '-nosman',"
+        w "                 '-eval', ')what operations',"
+        w "                 '-eval', ')what categories',"
+        w "                 '-eval', ')what domains',"
+        w "                 '-eval', ')what packages',"
+        w "                 '-eval', ')quit'],stdout=PIPE,"
+        w "                 env=dict(os.environ, FRICAS__INITFILE=''))"
+        w ""
+        w "    out = pid0.stdout.readlines()"
+        w "    lines = [s.decode('utf-8').rstrip() for s in out]"
+        w ""
+        w "    # Look for line that start the ')what operations' output."
+        w "    while not lines.pop(0).startswith('Operations whose names satisfy '): pass"
+        w ""
+        w "    fricas__operations = []"
+        w "    line = lines.pop(0) # skip empty line from beginning"
+        w "    line = lines.pop(0)"
+        w "    while line:"
+        w "        fricas__operations.append(line)"
+        w "        line = lines.pop(0)"
+        w "    # operations already come sorted from FriCAS"
+        w ""
+        w "    # Look for line that starts the ')what categories' output,"
+        w "    # Regular expression: /^-+ Categories -*$/"
+        w "    while not lines.pop(0).startswith('--------------'): pass"
+        w "    wordlist = [x.split() for x in lines if not x.startswith('--------------')]"
+        w "    # wordlist is a list of lists. Flatten it."
+        w "    fricas__constructors = list(itertools.chain.from__iterable(wordlist))"
+        w "    fricas__constructors.sort()"
+        w ""
+        w "    # A couple of ways to start FriCAS"
+        w "    # --------------------------------"
+        w "    # Uncomment or edit as you like."
+        w "    start = 'start(' + htport + ')$JFriCAS'"
+        w ""
+        w "    # Default:"
+        w "    ## pid = Popen(['fricas','-eval',start])"
+        w ""
+        w "    # Start the FriCAS process in a separate terminal."
+        w "    # That might be good for controlling FriCAS directly in case"
+        w "    # the Jupyter interface hangs or a process runs too long."
+        w "    # Of course, the start-fricas-in-terminal way also works"
+        w "    # with additional fricas options."
+        w "    ## pid = Popen(['gnome-terminal', '--title=jfricas', '--'] +"
+        w "    ##             ['fricas','-eval',start])"
+        w ""
+        w "    # Start the FriCAS process without opening the HyperDoc window."
+        w "    ## pid = Popen(['fricas','-eval',start] +"
+        w "    ##             ['-noht])"
+        w ""
+        w "    # Start the FriCAS process by calling only FRICASsys."
+        w "    # The following does currently not work."
+        w "    ## pid = Popen(['fricas','-nosman','-eval',start])"
+        w "    # but"
+        w "    pid = Popen(['gnome-terminal', '--title=jfricas', '--'] +"
+        w "                ['fricas','-nosman','-eval',start])"
+        w "    # does."
+        w ""
+        w "    # Start the kernel."
+        w "    IPKernelApp.launch__instance(kernel__class=FriCAS)"
+        close! tf
+        void()
+
+)if LiterateDoc
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif

@@ -82,6 +82,14 @@ DEFPARAMETER($erMsgToss, false)
 ioHook(x, :args) ==
    if $ioHook then FUNCALL($ioHook, x, args)
 
+call_spad_io_hook(x, :args) ==
+    SPADCALL(x, args, $io_hook_fun)
+
+set_spad_io_hook(fun) ==
+    $io_hook_fun := fun
+    $ioHook := FUNCTION call_spad_io_hook
+
+
 --% INTERPRETER TOP LEVEL
 
 -- Variables to control phases and their output
@@ -166,7 +174,7 @@ interpret_block(code) ==
     $lastPos : local := $nopos
     $EchoLines : local := false
     st := MAKE_-STRING_-INPUT_-STREAM(code)
-    intloopInclude0(st, 'webspad, 0)
+    intloopInclude0(st, "interpret_block", 0)
 
     -----------------------------------------------------------------
 

@@ -146,16 +146,13 @@ This variable is buffer-local."
    "  (when (member x '(|startAlgebraOutput| |endOfAlgebraOutput|"
    "                    |startQueryUser|     |endOfQueryUser|"
    "                    |startReadLine|      |endOfReadLine|"
-   "                    |startTypeTime|      |endOfTypeTime|"
+   "                    |startType|          |endOfType|"
+   "                    |startTime|          |endOfTime|"
    "                    |startTeXOutput|     |endOfTeXOutput|"
    "                    |startPrompt|        |endOfPrompt|"
    "                    |startKeyedMsg|      |endOfKeyedMsg|))"
    "    (princ (code-char 27))"
-   "    (let ((tyti (member (car args) '(S2GL0012 S2GL0013 S2GL0014))))"
-   "      (cond"
-   "        ((and (eq x '|startKeyedMsg|) tyti) (princ \"|startTypeTime|\"))"
-   "        ((and (eq x '|endOfKeyedMsg|) tyti) (princ \"|endOfTypeTime|\"))"
-   "        (t (prin1 x))))"
+   "    (prin1 x)"
    "    (princ #\\Newline)))"))
 (defvar fricas-annotate-regexp "\e\\([a-zA-Z\-]*\\)\n")
 (defvar fricas-TeX-preamble (concat "\\documentclass{article}"
@@ -1149,9 +1146,14 @@ str. Returns:
                  (fricas-insert-TeX)
                  (setq fricas-last-type 'fricas-undefined))
 
-                ((equal (car output-type) "\e|startTypeTime|\n")
+                ((equal (car output-type) "\e|startType|\n")
                  (setq fricas-last-type 'fricas-type-time))
-                ((equal (car output-type) "\e|endOfTypeTime|\n")
+                ((equal (car output-type) "\e|endOfType|\n")
+                 (setq fricas-last-type 'fricas-undefined))
+
+                ((equal (car output-type) "\e|startTime|\n")
+                 (setq fricas-last-type 'fricas-type-time))
+                ((equal (car output-type) "\e|endOfTime|\n")
                  (setq fricas-last-type 'fricas-undefined))
 
                 ((equal (car output-type) "\e|startKeyedMsg|\n")

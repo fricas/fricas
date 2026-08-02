@@ -294,7 +294,9 @@ printType(x, m) ==  -- m is the mode/type of the result
     $collectOutput =>
         $outputLines :=
             [justifyMyType msgText(type_msg, [type_string]), :$outputLines]
-    say_msg("S2GL0012", type_msg, [type_string])
+    ioHook("startType")
+    say_msg_local(type_msg, [type_string])
+    ioHook("endOfType")
 
 sameUnionBranch(uArg, m) ==
   uArg is [":", ., t] => t = m
@@ -317,13 +319,17 @@ typeTimePrin x ==
 printTime() ==
   $collectOutput or null $statsInfo => nil
   s := makeLongTimeString($interpreterTimedNames, $interpreterTimedClasses)
-  say_msg("S2GL0013", '"%rjon Time: %1 %rjoff", [s])
+  ioHook("startTime")
+  say_msg_local('"%rjon Time: %1 %rjoff", [s])
+  ioHook("endOfTime")
 
 printStorage() ==
   $collectOutput or null $statsInfo => nil
   storeString :=
     makeLongSpaceString($interpreterTimedNames, $interpreterTimedClasses)
-  say_msg("S2GL0016", '"%rjon Storage: %1 %rjoff", [storeString])
+  ioHook("startStorage")
+  say_msg_local('"%rjon Storage: %1 %rjoff", [storeString])
+  ioHook("endOfStorage")
 
 --%  Interpreter Middle-Level Driver + Utilities
 

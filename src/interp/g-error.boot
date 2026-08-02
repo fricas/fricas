@@ -161,6 +161,7 @@ sayErrorly(errorLabel, msg) ==
   sayErrorly1(errorLabel, msg)
 
 sayErrorly1(errorLabel, msg) ==
+  ioHook("startErrorMsg")
   sayBrightly '" "
   if $testingSystem then sayMSG $testingErrorPrefix
   sayBrightly ['"   >> ",errorLabel,'":"]
@@ -168,6 +169,7 @@ sayErrorly1(errorLabel, msg) ==
   msg is ['mathprint, mathexpr] =>
     mathprint mathexpr
   sayBrightly msg
+  ioHook("endOfErrorMsg")
 
 systemError(x) == errorSupervisor($SystemError, x)
 

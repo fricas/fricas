@@ -1284,67 +1284,72 @@ spadPrint(x,m) ==
   output(x,m)
   if not $collectOutput then TERPRI(get_algebra_stream())
 
-fortranFormat expr ==
-    ff := '(FortranFormat)
-    formatFn :=
-        getFunctionFromDomain("convert", ff, [$OutputForm, $Integer])
-    displayFn := getFunctionFromDomain("display", ff, [ff])
-    SPADCALL(SPADCALL(expr, $IOindex, formatFn), displayFn)
-    if not $collectOutput then TERPRI(get_fortran_stream())
-    FORCE_-OUTPUT(get_fortran_stream())
+say_new_line_force(stream) ==
+  say_new_line(stream)
+  FORCE_-OUTPUT(stream)
 
+fortranFormat expr ==
+  ioHook("startFortranOutput")
+  fmt := '(FortranFormat)
+  formatFn := getFunctionFromDomain("convert", fmt, [$OutputForm, $Integer])
+  displayFn := getFunctionFromDomain("display", fmt, [fmt])
+  SPADCALL(SPADCALL(expr, $IOindex, formatFn), displayFn)
+  if not $collectOutput then say_new_line(get_fortran_stream())
+  FORCE_-OUTPUT(get_fortran_stream())
+  ioHook("endOfFortranOutput")
+  NIL
 
 texFormat expr ==
   ioHook("startTeXOutput")
-  tf := '(TexFormat)
-  formatFn :=
-    getFunctionFromDomain("convert",tf,[$OutputForm,$Integer])
-  displayFn := getFunctionFromDomain("display",tf,[tf])
-  SPADCALL(SPADCALL(expr,$IOindex,formatFn),displayFn)
-  TERPRI(get_tex_stream())
-  FORCE_-OUTPUT(get_tex_stream())
+  fmt := '(TexFormat)
+  formatFn := getFunctionFromDomain("convert", fmt, [$OutputForm, $Integer])
+  displayFn := getFunctionFromDomain("display", fmt, [fmt])
+  SPADCALL(SPADCALL(expr, $IOindex, formatFn), displayFn)
+  say_new_line_force(get_tex_stream())
   ioHook("endOfTeXOutput")
   NIL
 
 mathmlFormat expr ==
-  mml := '(MathMLFormat)
-  mmlrep := '(String)
-  formatFn := getFunctionFromDomain("coerce",mml,[$OutputForm])
-  displayFn := getFunctionFromDomain("display",mml,[mmlrep])
-  SPADCALL(SPADCALL(expr,formatFn),displayFn)
-  TERPRI(get_mathml_stream())
-  FORCE_-OUTPUT(get_mathml_stream())
+  ioHook("startMathMLOutput")
+  fmt := '(MathMLFormat)
+  rep := '(String)
+  formatFn := getFunctionFromDomain("coerce", fmt, [$OutputForm])
+  displayFn := getFunctionFromDomain("display", fmt, [rep])
+  SPADCALL(SPADCALL(expr, formatFn), displayFn)
+  say_new_line_force(get_mathml_stream())
+  ioHook("endOfMathMLOutput")
   NIL
 
 texmacsFormat expr ==
   ioHook("startTeXmacsOutput")
-  mml := '(TexmacsFormat)
-  mmlrep := '(String)
-  formatFn := getFunctionFromDomain("coerce",mml,[$OutputForm])
-  displayFn := getFunctionFromDomain("display",mml,[mmlrep])
-  SPADCALL(SPADCALL(expr,formatFn),displayFn)
-  TERPRI(get_texmacs_stream())
-  FORCE_-OUTPUT(get_texmacs_stream())
+  fmt := '(TexmacsFormat)
+  rep := '(String)
+  formatFn := getFunctionFromDomain("coerce", fmt, [$OutputForm])
+  displayFn := getFunctionFromDomain("display", fmt, [rep])
+  SPADCALL(SPADCALL(expr, formatFn), displayFn)
+  say_new_line_force(get_texmacs_stream())
   ioHook("endOfTeXmacsOutput")
   NIL
 
 htmlFormat expr ==
-  htf := '(HTMLFormat)
-  htrep := '(String)
-  formatFn := getFunctionFromDomain("coerce", htf, [$OutputForm])
-  displayFn := getFunctionFromDomain("display", htf, [htrep])
-  SPADCALL(SPADCALL(expr,formatFn),displayFn)
-  TERPRI(get_html_stream())
-  FORCE_-OUTPUT(get_html_stream())
+  ioHook("startHTMLOutput")
+  fmt := '(HTMLFormat)
+  rep := '(String)
+  formatFn := getFunctionFromDomain("coerce", fmt, [$OutputForm])
+  displayFn := getFunctionFromDomain("display", fmt, [rep])
+  SPADCALL(SPADCALL(expr, formatFn), displayFn)
+  say_new_line_force(get_html_stream())
+  ioHook("endOfHTMLOutput")
   NIL
 
 formattedFormat expr ==
-  ty := '(FormattedOutput)
-  formatFn := getFunctionFromDomain("convert", ty, [$OutputForm, $Integer])
-  displayFn := getFunctionFromDomain("display", ty , [ty])
-  SPADCALL(SPADCALL(expr,$IOindex,formatFn),displayFn)
-  say_new_line(get_formatted_stream())
-  FORCE_-OUTPUT(get_formatted_stream())
+  ioHook("startFormattedOutput")
+  fmt := '(FormattedOutput)
+  formatFn := getFunctionFromDomain("convert", fmt, [$OutputForm, $Integer])
+  displayFn := getFunctionFromDomain("display", fmt, [fmt])
+  SPADCALL(SPADCALL(expr, $IOindex, formatFn), displayFn)
+  say_new_line_force(get_formatted_stream())
+  ioHook("endOfFormattedOutput")
   NIL
 
 do_formatters(x, was_type) ==

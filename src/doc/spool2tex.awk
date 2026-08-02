@@ -72,8 +72,7 @@ inxtc==0 {
     next
 }
 
-/^-- \\begin{MessageOutput}/ {
-    if(inSysCmdOutput==1) {next} # skip inside SysCmdOutput
+/^-- \\begin{TypeOutput}/ {
     getline
     if ($1 == "Type:") {
         # Treat a line whose first non-space characters are "Type:".
@@ -85,16 +84,17 @@ inxtc==0 {
             print "\\formatResultType{" $0 "}"
         }
         # read until \\end{MessageOutput} and discard
-        while (substr($0,1,22) != "-- \\end{MessageOutput}") {
+        while (substr($0,1,22) != "-- \\end{TypeOutput}") {
             getline
         }
         next
     }
-    if ($0 != "-- \\end{MessageOutput}") {
-        print "\\begin{MessageOutput}"
-        print $0
-        inMessageOutput=1
-    }
+}
+
+/^-- \\begin{MessageOutput}/ {
+    if(inSysCmdOutput==1) {next} # skip inside SysCmdOutput
+    printf("%s\n",substr($0,4))
+    inMessageOutput=1
     next
 }
 

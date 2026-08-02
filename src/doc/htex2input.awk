@@ -8,6 +8,8 @@ BEGIN {
         ((eq x '|endOfKeyedMsg|) (SAY \"-- \\\\end{MessageOutput}\")) \
         ((eq x '|startSysCmd|) (SAY \"-- \\\\begin{SysCmdOutput}\")) \
         ((eq x '|endOfSysCmd|) (SAY \"-- \\\\end{SysCmdOutput}\")) \
+        ((eq x '|startType|) (SAY \"-- \\\\begin{TypeOutput}\")) \
+        ((eq x '|endOfType|) (SAY \"-- \\\\end{TypeOutput}\")) \
         ((eq x '|startPatternMsg|) (SAY \"-- \\\\begin{MessageOutput}\")) \
         ((eq x '|endOfPatternMsg|) (SAY \"-- \\\\end{MessageOutput}\")) \
         ((eq x '|startAlgebraOutput|) (SAY \"-- \\\\begin{AlgebraOutput}\")) \
