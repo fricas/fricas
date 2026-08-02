@@ -215,7 +215,7 @@ commandAmbiguityError(kind,x,u) ==
 abbreviations l ==
   ioHook("startSysCmd", "abbrev")
   abbreviationsSpad2Cmd l
-  ioHook("endSysCmd", "abbrev")
+  ioHook("endOfSysCmd", "abbrev")
 
 abbreviationsSpad2Cmd l ==
   null l => helpSpad2Cmd '(abbreviations)
@@ -776,7 +776,7 @@ credits() == print_text_file STRCONC($spadroot, '"/lib/credits")
 
 display l ==
   ioHook("startSysCmd", "display")
-  UNWIND_-PROTECT(displaySpad2Cmd l, ioHook("endSysCmd", "display"))
+  UNWIND_-PROTECT(displaySpad2Cmd l, ioHook("endOfSysCmd", "display"))
 
 displaySpad2Cmd l ==
   $e: local := $EmptyEnvironment
@@ -2090,7 +2090,7 @@ read_or_compile(quiet, i_name) ==
 show l ==
   ioHook("startSysCmd", "show")
   showSpad2Cmd l
-  ioHook("endSysCmd", "show")
+  ioHook("endOfSysCmd", "show")
 
 show_record_msg() == say_msg("S2IZ0044R", CONCAT(
     '"Record(a:A,...,b:B) %l",
@@ -2590,7 +2590,7 @@ removeUndoLines u == --called by writeInputLines
 what l ==
   ioHook("startSysCmd", "what")
   whatSpad2Cmd l
-  ioHook("endSysCmd", "what")
+  ioHook("endOfSysCmd", "what")
 
 whatSpad2Cmd l ==
   $e:local := $EmptyEnvironment
@@ -3018,4 +3018,3 @@ ncParseFromString0(s, macros) ==
     ncParseFromString1(s)
 
 ncParseFromString(s) == ncParseFromString0(s, $pfMacros)
-

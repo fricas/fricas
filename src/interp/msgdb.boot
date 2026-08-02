@@ -286,7 +286,7 @@ sayPatternMsg(msg,args) ==
   msg := segmentKeyedMsg msg
   msg := substituteSegmentedMsg(msg,args)
   sayMSG flowSegmentedMsg(msg,$LINELENGTH,3)
-  ioHook("endPatternMsg", msg)
+  ioHook("endOfPatternMsg", msg)
 
 throwPatternMsg(key,args) ==
   sayMSG '" "

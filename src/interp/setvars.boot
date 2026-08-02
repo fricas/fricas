@@ -97,7 +97,7 @@ translateTrueFalse2YesNo x ==
 
 set l ==
   ioHook("startSysCmd", "set")
-  UNWIND_-PROTECT(set1(l, $setOptions), ioHook("endSysCmd", "set"))
+  UNWIND_-PROTECT(set1(l, $setOptions), ioHook("endOfSysCmd", "set"))
 
 set1(l,setTree) ==
   null l => displaySetVariableSettings(setTree,"")

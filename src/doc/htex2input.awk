@@ -7,9 +7,9 @@ BEGIN {
   (cond ((eq x '|startKeyedMsg|) (SAY \"-- \\\\begin{MessageOutput}\")) \
         ((eq x '|endOfKeyedMsg|) (SAY \"-- \\\\end{MessageOutput}\")) \
         ((eq x '|startSysCmd|) (SAY \"-- \\\\begin{SysCmdOutput}\")) \
-        ((eq x '|endSysCmd|) (SAY \"-- \\\\end{SysCmdOutput}\")) \
+        ((eq x '|endOfSysCmd|) (SAY \"-- \\\\end{SysCmdOutput}\")) \
         ((eq x '|startPatternMsg|) (SAY \"-- \\\\begin{MessageOutput}\")) \
-        ((eq x '|endPatternMsg|) (SAY \"-- \\\\end{MessageOutput}\")) \
+        ((eq x '|endOfPatternMsg|) (SAY \"-- \\\\end{MessageOutput}\")) \
         ((eq x '|startAlgebraOutput|) (SAY \"-- \\\\begin{AlgebraOutput}\")) \
         ((eq x '|endOfAlgebraOutput|) (SAY \"-- \\\\end{AlgebraOutput}\")))))"
     print "setDefault!((label: String): OutputBox +-> vconcat([box \"-- \\begin{TeXOutput}\",defaultPrologue(label)$FormatLaTeX],1,-1)$OutputBox, (label: String): OutputBox +-> vconcat([defaultEpilogue(label)$FormatLaTeX, box \"-- \\end{TeXOutput}\"],1,-1)$OutputBox)$Formatter(FormatLaTeX);"
