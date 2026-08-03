@@ -1,0 +1,72 @@
+name: FriCAS CI on Windows on ECL
+
+on: [workflow_dispatch, workflow_call]
+permissions: {}
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-11-arm]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    env:
+      ECL_VER : 26.5.5
+      ARCH           : ${{ endsWith(matrix.os, '-arm') && 'arm64' || 'x86-64' }}
+      MSYSTEM        : ${{ endsWith(matrix.os, '-arm') && 'CLANGARM64' || 'UCRT64' }}
+      INSTALL_PREFIX : ${{ endsWith(matrix.os, '-arm') && 'mingw-w64-clang-aarch64' || 'mingw-w64-ucrt-x86_64' }}
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{env.MSYSTEM}}
+        install: >-
+          ${{env.INSTALL_PREFIX}}-gcc ${{env.INSTALL_PREFIX}}-gmp
+          ${{env.INSTALL_PREFIX}}-libffi ${{env.INSTALL_PREFIX}}-gc
+          ${{env.INSTALL_PREFIX}}-libatomic_ops
+          make zip unzip patch diffutils
+
+    - uses: actions/checkout@v7
+
+    - name: download and install ECL
+      run: |
+        wget https://github.com/fricas/fricas-nightly-builds/releases/download/build-tools/ecl-${ECL_VER}-${ARCH}.zip
+        unzip ecl-${ECL_VER}-${ARCH}.zip -d /
+        ## uncomment the following to build binary for newer versions of ECL
+        # wget https://ecl.common-lisp.dev/static/files/release/ecl-${ECL_VER}.tgz
+        # tar xf ecl-${ECL_VER}.tgz && cd ecl-${ECL_VER}
+        # ./configure --prefix=c:/ecl/ --enable-unicode=no --with-asdf=no
+        # make -j4 --output-sync
+        # make install
+
+    - name: configure and make
+      run: |
+        mkdir ../build && cd ../build
+        export PATH=/c/ecl/:$PATH
+        ../fricas/configure --with-lisp=/c/ecl/ecl.exe || (cat config.log && false)
+        make -j4 --output-sync
+
+    - name: Create artifact archives
+      run: |
+        cp -rp ../build/target/*/ FriCAS-windows-${ARCH}
+        rm FriCAS-windows-${ARCH}/bin/{fricas,fricas-readline}
+        cp /c/ecl/ecl.dll ${MINGW_PREFIX}/bin/lib{gc-1,ffi-8,gmp-10,winpthread-1}.dll FriCAS-windows-${ARCH}/bin/
+        test "${MSYSTEM}" = "UCRT64" && cp ${MINGW_PREFIX}/bin/libgcc_s_seh-1.dll FriCAS-windows-${ARCH}/bin/
+        # zip -r FriCAS-windows-${ARCH}/ecl-${ECL_VER}-${ARCH}.zip /c/ecl/
+        zip -r FriCAS-windows-ECL-${ARCH}-${{ github.sha }}.zip FriCAS-windows-${ARCH}
+
+    - name: Upload Windows binary
+      uses: actions/upload-artifact@v7
+      with:
+        archive: false
+        path: FriCAS-windows-ECL-${{env.ARCH}}-${{ github.sha }}.zip
+
+    - name: make check
+      run: |
+        export PATH=/c/ecl/:$PATH
+        cd ../build && make check -j4 --output-sync
