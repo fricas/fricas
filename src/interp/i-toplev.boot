@@ -98,7 +98,7 @@ reroot(dir) ==
 initroot() ==
     spadroot := getEnv('"FRICAS")
     if not(spadroot) then
-        bin_parent_dir := STRCONC(DIRECTORY_-NAMESTRING(first(getCLArgs())),
+        bin_parent_dir := STRCONC(file_directory(first(getCLArgs())),
                                   '"/../")
         if fricas_probe_file(STRCONC(bin_parent_dir, '"algebra/interp.daase"))
         then spadroot := bin_parent_dir
