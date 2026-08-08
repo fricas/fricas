@@ -21,7 +21,7 @@ jobs:
     - name: install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install ecl libxpm-dev
+        sudo apt-get install ecl libxpm-dev patchelf
 
     - name: configure
       run: ./configure --with-lisp=ecl --with-x || (cat config.log && false)
@@ -31,6 +31,10 @@ jobs:
 
     - name: Create artifact archives
       run: |
+        ## to load cmp.fas, export ECLDIR=$FRICAS/bin/
+        cp /usr/lib/$(dpkg-architecture -q DEB_HOST_MULTIARCH)/ecl-*/cmp.fas target/*/bin/
+        cp -L `ldd target/*/bin/FRICASsys | cut -d ' ' -f 3 | grep 'ecl\|gc\|ffi\|gmp'` target/*/lib/
+        patchelf --set-rpath '$ORIGIN/../lib' target/*/bin/FRICASsys target/*/lib/libecl.so*
         tar -cjf FriCAS-linux-ECL-${{ env.ARCH }}-${{ github.sha }}.tar.bz2 target/
 
     - name: Upload Linux binary
