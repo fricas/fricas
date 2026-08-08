@@ -39,11 +39,17 @@ $genValue := false
 -- For use from compiled code
 
 quoteNontypeArgs(t) ==
+    STRINGP(t) => t
     t is [.] => t
     op := opOf t
-    loadIfNecessary op
     args := rest t
+    op = "Record" or isTaggedUnion(t) =>
+        [op, :[[":", ["QUOTE", n], quoteNontypeArgs(a)]
+               for [":", n, a] in args]]
+    op = "Union" or op = "Mapping" =>
+        [op, :[quoteNontypeArgs(a) for a in args]]
     cs := rest(get_database(op, 'COSIG))
+    op = "Enumeration" => [op, :[["QUOTE", a] for a in arls]]
     nargs := [if c then quoteNontypeArgs(a) else ["QUOTE", a]
                 for a in args for c in cs]
     [op, :nargs]
