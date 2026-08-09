@@ -634,9 +634,11 @@ setqSingle(id,val,m,E) ==
       stackMessage ['"No mode in assignment to: ", id]
   finish_setq_single(T, m, id, val, currentProplist)
 
+cons_value(v, m) == ["value", v, m, $EmptyEnvironment]
+
 finish_setq_single(T, m, id, val, currentProplist) ==
   T' := [x, m', e'] := convert(T, m) or return nil
-  newProplist:= consProplistOf(id,currentProplist,"value",removeEnv [val,:rest T])
+  newProplist := [cons_value(val, T.mode), :currentProplist]
   e':= (PAIRP id => e'; addBinding(id,newProplist,e'))
   if isDomainForm(val,e') then
     if isDomainInScope(id,e') then
@@ -1033,8 +1035,8 @@ getSuccessEnvironment(a,e) ==
   a is ["is",id,m] =>
     IDENTP id and isDomainForm(m,$EmptyEnvironment) =>
          currentProplist:= getProplist(id,e)
-         [.,.,e] := T := comp(m,$EmptyMode,e) or return nil -- duplicates compIs
-         newProplist:= consProplistOf(id,currentProplist,"value",[m,:rest removeEnv T])
+         [., m2, e] := T := comp(m, $EmptyMode,e) or return nil
+         newProplist:= [cons_value(m, m2), :currentProplist]
          addBinding(id,newProplist,e)
     e
   a is ["case",x,m] and IDENTP x =>
@@ -1165,8 +1167,6 @@ compIs(["is",a,b],m,e) ==
 -- Type in returned triple is m when m is not $EmptyMode,
 -- otherwise it is type from T
 coerce(T,m) ==
-  $InteractiveMode => unexpected_error(['"coerce",
-      '"function coerce called from the interpreter."])
   -- FIXME: Hardcoded assumption about Rep
   rplac(CADR(T), substitute("%", $Rep, CADR(T)))
   T':= coerceEasy(T,m) => T'
@@ -1438,6 +1438,5 @@ compileSpad2Cmd args ==
     spadPrompt()
 
 compilerDoit(lib, path) ==
-    $InteractiveMode : local := nil
     $LISPLIB : local := lib
     spadCompile(path)

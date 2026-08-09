@@ -2295,8 +2295,7 @@ reportOpsFromUnitDirectly unitForm ==
       if isRecordOrUnion then
           constructorFunction := get_oplist_maker(top) or
             systemErrorHere '"reportOpsFromUnitDirectly"
-          [funlist, .] := FUNCALL(constructorFunction, "%", unitForm,
-                                  $CategoryFrame)
+          funlist := FUNCALL(constructorFunction, "%", unitForm)
           sigList := [[[a, b], true] for [a, b, c] in funlist]
       else
           sigList := get_op_alist(unitForm)

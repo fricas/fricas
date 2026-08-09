@@ -341,7 +341,6 @@ searchCurrentEnv(x,currentEnv) ==
   IFCDR signal
 
 augProplist(proplist,prop,val) ==
-  $InteractiveMode => augProplistInteractive(proplist,prop,val)
   while (proplist is [[ =prop,:.],:proplist']) repeat proplist:= proplist'
   val=(u:= LASSOC(prop,proplist)) => proplist
   null val =>
@@ -360,7 +359,6 @@ addBinding(var,proplist,e is [[curContour,:tailContour],:tailEnv]) ==
   if $envHashTable then
     for u in proplist repeat
       HPUT($envHashTable, [var, CAR u], true)
-  $InteractiveMode => addBindingInteractive(var,proplist,e)
   if curContour is [[ =var,:.],:.] then curContour:= rest curContour
                  --Previous line should save some space
   [[[lx,:curContour],:tailContour],:tailEnv] where lx:= [var,:proplist]

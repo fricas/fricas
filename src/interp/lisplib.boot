@@ -88,26 +88,6 @@ loadLibNoUpdate(cname, fullLibName) ==
     loadLibNoUpdate1(cname, fullLibName)
     stopTimingProcess 'load
 
-loadIfNecessary u == loadLibIfNecessary(u,true)
-
-loadIfNecessaryAndExists u == loadLibIfNecessary(u,nil)
-
-loadLibIfNecessary(u,mustExist) ==
-  u = '$EmptyMode => u
-  null atom u => loadLibIfNecessary(first u,mustExist)
-  value:=
-    functionp(u) or macrop(u) => u
-    GET(u, 'LOADED) => u
-    loadLib u => u
-  null $InteractiveMode and ((null (y:= getProplist(u,$CategoryFrame)))
-    or (null LASSOC('isFunctor,y)) and (null LASSOC('isCategory,y))) =>
-      y:= get_database(u, 'CONSTRUCTORKIND) =>
-         y = 'category =>
-            updateCategoryFrameForCategory u
-         updateCategoryFrameForConstructor u
-      throw_msg("S2IL0005", '"%1bp is not a known type.", [u])
-  value
-
 convertOpAlist2compilerInfo(opalist) ==
    "append"/[[formatSig(op,sig) for sig in siglist]
                 for [op,:siglist] in opalist] where
@@ -125,13 +105,10 @@ updateCategoryFrameForConstructor(constructor) ==
        addModemap(constructor, dc, sig, pred, impl,
            put(constructor, 'mode, ['Mapping,:sig], $CategoryFrame)))
 
-updateCategoryFrameForCategory(category) ==
-   di := get_database(category, 'CONSTRUCTORMODEMAP)
-   if di then
-       [[dc,:sig],[pred,impl]] := di
-       $CategoryFrame :=
-           addModemap(category, dc, sig, pred, impl, $CategoryFrame)
-   $CategoryFrame := put(category, 'isCategory, 'T, $CategoryFrame)
+updateCategoryFrameForCategory(cat) ==
+    di := get_database(cat, 'CONSTRUCTORMODEMAP)
+    [[dc, :sig], [pred, impl]] := di
+    $CategoryFrame := addModemap(cat, dc, sig, pred, impl, $CategoryFrame)
 
 loadFunctor u ==
   null atom u => loadFunctor first u

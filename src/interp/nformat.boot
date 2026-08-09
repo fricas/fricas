@@ -1,7 +1,5 @@
 )package "BOOT"
 
-$use_old_value_print := false
-
 any_to_string(u) == WRITE_-TO_-STRING(u)
 
 $outform_to_string_fun := [0, nil]

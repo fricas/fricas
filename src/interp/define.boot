@@ -658,7 +658,7 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
 
 
 --  7. give operator a 'value property
-    [fun,['Mapping,:signature'],oldE] -- oldE:= put($op,'value,removeEnv val,e)
+    [fun, ['Mapping, :signature'], oldE]
 
 getSignatureFromMode(form,e) ==
   getmode(opOf form,e) is ['Mapping,:signature] =>

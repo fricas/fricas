@@ -258,11 +258,7 @@ devaluate(d) ==
       -- FIXP(ELT(first d, 0)) => d
       DNameToSExpr(SPADCALL(rest d, (first d).1))
   not REFVECP d => d
-  greater_SI(QVSIZE d, 5) and QREFELT(d, 3) is ['Category] => QREFELT(d, 0)
-  greater_SI(QVSIZE d, 0) =>
-    d':=QREFELT(d,0)
-    isFunctor d' => d'
-    d
+  greater_SI(QVSIZE d, 0) => QREFELT(d, 0)
   d
 
 devaluateList l == [devaluate d for d in l]

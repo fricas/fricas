@@ -104,28 +104,26 @@ addModemap1(op,mc,sig,pred,fn,e) ==
   if mc='Rep then
      sig:= substitute("%", 'Rep, sig)
   currentProplist:= getProplist(op,e) or nil
-  newModemapList:=
-    mkNewModemapList(mc,sig,pred,fn,LASSOC('modemap,currentProplist),e,nil)
+  newModemapList:= mkNewModemapList(mc, sig, pred, fn,
+                                    LASSOC('modemap, currentProplist), e)
   newProplist:= augProplist(currentProplist,'modemap,newModemapList)
   unErrorRef op
         --There may have been a warning about op having no value
   addBinding(op, newProplist, e)
 
-mkNewModemapList(mc,sig,pred,fn,curModemapList,e,filenameOrNil) ==
-  entry:= [map:= [mc,:sig],[pred,fn],:filenameOrNil]
+mkNewModemapList(mc, sig, pred, fn, curModemapList, e) ==
+  entry := [map := [mc, :sig], [pred, fn]]
   member(entry,curModemapList) => curModemapList
-  (oldMap:= assoc(map,curModemapList)) and oldMap is [.,[opred, =fn],:.] =>
+  (oldMap := assoc(map, curModemapList)) and oldMap is [., [opred, =fn]] =>
     $forceAdd => mergeModemap(entry,curModemapList,e)
     opred=true => curModemapList
     if pred~=true and pred~=opred then pred:= ["OR",pred,opred]
-    [if x=oldMap then [map,[pred,fn],:filenameOrNil] else x
-
-  --if new modemap less general, put at end; otherwise, at front
-      for x in curModemapList]
+    [if x = oldMap then [map, [pred, fn]] else x
+          for x in curModemapList]
   mergeModemap(entry,curModemapList,e)
 
 mergeModemap(entry is [[mc,:sig],[pred,:.],:.],modemapList,e) ==
-  for (mmtail:= [[[mc',:sig'],[pred',:.],:.],:.]) in tails modemapList repeat
+  for (mmtail:= [[[mc', :sig'], [pred', :.]], :.]) in tails modemapList repeat
     mc=mc' or isSuperDomain(mc',mc,e) =>
       newmm:= nil
       mm:= modemapList
@@ -150,19 +148,19 @@ isSuperDomain(domainForm,domainForm',e) ==
   LASSOC(opOf domainForm',get(domainForm,"SubDomain",e))
 
 addNewDomain(domain,e) ==
-  augModemapsFromDomain(domain,domain,e)
-
-augModemapsFromDomain(name,functorForm,e) ==
-  member(IFCAR name or name, $DummyFunctorNames) => e
-  name = $Category or isCategoryForm(name) => e
-  member(name, getDomainsInScope e) => e
-  if u := get_database(opOf(functorForm), 'SUPERDOMAIN) then
-    e:= addNewDomain(first u,e)
-    --need code to handle parameterized SuperDomains
-  if innerDom:= listOrVectorElementMode name then e:= addDomain(innerDom,e)
-  if name is ["Union",:dl] then for d in stripUnionTags dl
-                         repeat e:= addDomain(d,e)
-  augModemapsFromDomain1(name,functorForm,e)
+    op := opOf(domain)
+    member(op, $DummyFunctorNames) => e
+    domain = $Category or isCategoryForm(domain) => e
+    member(domain, getDomainsInScope(e)) => e
+    if u := get_database(op, 'SUPERDOMAIN) then
+        e := addNewDomain(first(u), e)
+        --need code to handle parameterized SuperDomains
+    if innerDom := listOrVectorElementMode(domain) then
+        e := addDomain(innerDom, e)
+    if domain is ["Union", :dl] then
+        for d in stripUnionTags dl repeat
+            e := addDomain(d, e)
+    augModemapsFromDomain1(domain, domain,e)
 
 augModemapsFromDomain1(name, functorForm, e) ==
     get_oplist_maker(IFCAR(functorForm)) =>
@@ -176,10 +174,10 @@ augModemapsFromDomain1(name, functorForm, e) ==
     stackMessage([functorForm, '" is an unknown mode"])
     e
 
-substituteCategoryArguments(argl,catform) ==
-  argl := substitute("$$", "%", argl)
-  arglAssoc := [[INTERNL1("#", STRINGIMAGE i), :a] for i in 1.. for a in argl]
-  SUBLIS(arglAssoc,catform)
+substituteCategoryArguments(argl, catform) ==
+    argl := substitute("$$", "%", argl)
+    arglAssoc := [[fa, :a] for fa in $FormalMapVariableList for a in argl]
+    SUBLIS(arglAssoc, catform)
 
 augModemapsFromCategory(domainName, functorForm, categoryForm, e) ==
   [fnAlist,e]:= evalAndSub(domainName, functorForm, categoryForm, e)
@@ -191,7 +189,7 @@ augModemapsFromCategory(domainName, functorForm, categoryForm, e) ==
 
 evalAndSub(domainName, functorForm, form, e) ==
   $tmp_e : local := e
-  --next lines necessary-- see MPOLY for which $ is actual arg. --- RDJ 3/83
+  --next lines necessary-- see MPOLY for which % is actual arg. --- RDJ 3/83
   if CONTAINED("$$",form) then
       e := put("$$", "mode", get("%", "mode", e), e)
   $tmp_e : local := e
@@ -227,7 +225,7 @@ substNames(domainName, functorForm, opalist) ==
 
 compCat(form is [functorName,:argl],m,e) ==
   fn := get_oplist_maker(functorName) or return nil
-  [funList,e]:= FUNCALL(fn,form,form,e)
+  funList := FUNCALL(fn, form, form)
   catForm:=
     ["Join",'(SetCategory),["CATEGORY","domain",:
       [["SIGNATURE",op,sig] for [op,sig,.] in funList | op~="="]]]
@@ -248,7 +246,7 @@ add_builtin_modemaps(name,form is [functorName,:.],e) ==
   $InteractiveMode => BREAK()
   e:= putDomainsInScope(name,e) --frame
   fn := get_oplist_maker(functorName)
-  [funList,e]:= FUNCALL(fn,name,form,e)
+  funList := FUNCALL(fn, name, form)
   for [op,sig,opcode] in funList repeat
     if opcode is [sel,dc,n] and sel='ELT then
           nsig := substitute("$$$",name,sig)

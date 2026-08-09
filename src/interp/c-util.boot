@@ -113,10 +113,6 @@ unErrorRef s == unStackWarning ['%b,s,'%d,'"has no value"]
 
 --% ENVIRONMENT FUNCTIONS
 
-consProplistOf(var,proplist,prop,val) ==
-    $InteractiveMode => BREAK()
-    [[prop,:val],:proplist]
-
 intersectionEnvironment(e,e') ==
   ce:= makeCommonEnvironment(e,e')
   ic := intersectionContour(deltaContour(e, ce), deltaContour(e', ce), ce)
@@ -292,19 +288,6 @@ prTriple T ==
    SAY '"Mode:"
    pp T.1
 
-TrimCF() ==
-  new:= nil
-  old:= CAAR $CategoryFrame
-  for u in old repeat
-    if not ASSQ(first u,new) then
-      uold:= rest u
-      unew:= nil
-      for v in uold repeat if not ASSQ(first v,unew) then unew:= [v,:unew]
-      new:= [[first u,:NREVERSE unew],:new]
-  $CategoryFrame:= [[NREVERSE new]]
-  nil
-
-
 --% PREDICATES
 
 
@@ -414,8 +397,6 @@ wrapSEQExit l ==
 
 
 --% UTILITY FUNCTIONS
-
-removeEnv t == [t.expr,t.mode,$EmptyEnvironment]  -- t is a triple
 
 makeNonAtomic x ==
   atom x => [x]

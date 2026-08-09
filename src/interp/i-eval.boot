@@ -75,7 +75,6 @@ mkEvalable form ==
     op="Union"  => mkEvalableUnion  form
     op="Mapping"=> mkEvalableMapping form
     op="Enumeration" => form
-    loadIfNecessary op
     kind := get_database(op, 'CONSTRUCTORKIND)
     cosig := get_database(op, 'COSIG) =>
       [op,:[val for x in argl for typeFlag in rest cosig]] where val ==

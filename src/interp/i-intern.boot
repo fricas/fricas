@@ -622,7 +622,7 @@ rempropI(x,prop) ==
 
 remprop(x,prop,e) ==
     u := assoc(prop, pl := getProplist(x, e)) =>
-        e := addBinding(x, assoc_del(first(u), pl), e)
+        e := addBindingInteractive(x, assoc_del(first(u), pl), e)
     e
 
 fastSearchCurrentEnv(x,currentEnv) ==
@@ -631,7 +631,6 @@ fastSearchCurrentEnv(x,currentEnv) ==
     u := QLASSQ(x, first currentEnv) => u
 
 put(x,prop,val,e) ==
-  $InteractiveMode and not EQ(e,$CategoryFrame) => BREAK()
   --e must never be $CapsuleModemapFrame
   null atom x => put(first x,prop,val,e)
   newProplist:= augProplistOf(x,prop,val,e)

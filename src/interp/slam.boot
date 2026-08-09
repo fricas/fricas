@@ -264,15 +264,13 @@ clearCache x ==
     say_msg("S2IX0007", '"Compiled code for %1bp has been cleared.", [x])
 
 compileInteractive fn ==
-  if $InteractiveMode then startTimingProcess 'compilation
+  startTimingProcess('compilation)
   if $reportCompilation then
     sayBrightlyI bright '"Generated LISP code for function:"
     pp fn
-  optfn :=
-     $InteractiveMode => timedOptimization fn
-     fn
+  optfn := timedOptimization(fn)
   result := comp_quietly(optfn)
-  if $InteractiveMode then stopTimingProcess 'compilation
+  stopTimingProcess('compilation)
   result
 
 clearAllSlams x ==

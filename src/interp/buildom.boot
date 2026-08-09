@@ -273,7 +273,7 @@ UnionCategory(:x) == constructorCategory ["Union",:x]
 constructorCategory (title is [op,:.]) ==
   constructorFunction := get_oplist_maker(op) or
               systemErrorHere '"constructorCategory"
-  [funlist, .] := FUNCALL(constructorFunction, "%", title, $CategoryFrame)
+  funlist := FUNCALL(constructorFunction, "%", title)
   oplist:= [[[a,b],true,c] for [a,b,c] in funlist]
   cat:=
       JoinInner([SetCategory(), mkCategory(oplist, nil, nil, nil)])
@@ -281,15 +281,15 @@ constructorCategory (title is [op,:.]) ==
   cat
 
 --mkMappingFunList(nam,mapForm,e) == [[],e]
-mkMappingFunList(nam,mapForm,e) ==
+mkMappingFunList(nam, mapForm) ==
   dc := GENSYM()
   sigFunAlist:=
     [['_=,[['Boolean],nam ,nam],['ELT,dc,6]],
      ['_~_=, [['Boolean], nam, nam], ['ELT, dc, 9]],
        ['coerce, [$OutputForm, nam], ['ELT, dc, 7]]]
-  [substitute(nam, dc, substitute("%", 'Rep, sigFunAlist)), e]
+  substitute(nam, dc, substitute("%", 'Rep, sigFunAlist))
 
-mkRecordFunList(nam,['Record,:Alist],e) ==
+mkRecordFunList(nam, ['Record, :Alist]) ==
   len:= #Alist
 
   dc := GENSYM()
@@ -308,9 +308,9 @@ mkRecordFunList(nam,['Record,:Alist],e) ==
               for i in 0.. for [.,a,A] in Alist],:
                 [['copy,[nam,nam],['XLAM,["$1"],['RECORDCOPY,
                   "$1",len]]]]]
-  [substitute(nam, dc, substitute("%", 'Rep, sigFunAlist)), e]
+  substitute(nam, dc, substitute("%", 'Rep, sigFunAlist))
 
-mkNewUnionFunList(name,form is ['Union,:listOfEntries],e) ==
+mkNewUnionFunList(name, form is ['Union, :listOfEntries]) ==
   dc := name
   if name = 'Rep then name := '%
   --2. create coercions from subtypes to subUnion
@@ -331,9 +331,9 @@ mkNewUnionFunList(name,form is ['Union,:listOfEntries],e) ==
                         ['check_union2, ['QEQCAR, "#1", i], type, form, "#1"]]]
                     ['XLAM,["#1"],['PROG2,['LET,gg,"#1"],['QCDR,gg],
                       ['check_union2, ['QEQCAR, gg, i], type, form, gg]]]
-  [cList,e]
+  cList
 
-mkEnumerationFunList(nam,['Enumeration,:SL],e) ==
+mkEnumerationFunList(nam, ['Enumeration, :SL]) ==
   len:= #SL
   dc := nam
   cList :=
@@ -343,10 +343,10 @@ mkEnumerationFunList(nam,['Enumeration,:SL],e) ==
         ['_^_=,[['Boolean],nam ,nam],['ELT,dc,7]],
           ['coerce,[nam, ['Symbol]], ['ELT, dc, 8]],
             ['coerce,[['OutputForm],nam],['ELT,dc, 9]]]
-  [substitute(nam, dc, cList),e]
+  substitute(nam, dc, cList)
 
-mkUnionFunList(op,form is ['Union,:listOfEntries],e) ==
-  first listOfEntries is [":",.,.] => mkNewUnionFunList(op,form,e)
+mkUnionFunList(op, form is ['Union, :listOfEntries]) ==
+  first listOfEntries is [":",.,.] => mkNewUnionFunList(op, form)
   --1. create representations of subtypes
   predList:= mkPredList listOfEntries
   g:=GENSYM()
@@ -385,5 +385,4 @@ mkUnionFunList(op,form is ['Union,:listOfEntries],e) ==
   op:=
     op = 'Rep => '%
     op
-  cList:= substitute(op,g,cList)
-  [cList,e]
+  substitute(op, g, cList)

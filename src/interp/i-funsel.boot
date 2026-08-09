@@ -870,7 +870,7 @@ findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
   fun:= NIL
   makeFunc := get_oplist_maker(dcName) or
       systemErrorHere '"findFunctionInCategory"
-  [funlist, .] := FUNCALL(makeFunc, "%", dc, $CategoryFrame)
+  funlist := FUNCALL(makeFunc, "%", dc)
   -- get list of implementations and remove sharps
   maxargs := -1
   impls := nil
