@@ -49,7 +49,7 @@ quoteNontypeArgs(t) ==
     op = "Union" or op = "Mapping" =>
         [op, :[quoteNontypeArgs(a) for a in args]]
     cs := rest(get_database(op, 'COSIG))
-    op = "Enumeration" => [op, :[["QUOTE", a] for a in arls]]
+    op = "Enumeration" => [op, :[["QUOTE", a] for a in args]]
     nargs := [if c then quoteNontypeArgs(a) else ["QUOTE", a]
                 for a in args for c in cs]
     [op, :nargs]
