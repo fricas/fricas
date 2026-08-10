@@ -206,6 +206,7 @@ make_input_file_from_page(HyperDocPage *page)
           else
             print_graph_paste(pfile, com, buf, page->name, node->type);
         }
+        free(com);
       }
     if (!starting_file && make_patch_files) {
       ret_val = fclose(pfile);
