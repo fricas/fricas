@@ -111,14 +111,29 @@ testTrue("(a = b)@Boolean")
 bu := 2::Union(Integer, "failed")
 b := coerce(bu)$AnyFunctions1(typeOf(bu))
 testTrue("not((a = b)@Boolean)")
-au := "failed"::Union(Integer, "failed")
 bu := "failed"::Union(Integer, "failed")
-a := coerce(au)$AnyFunctions1(typeOf(au))
 b := coerce(bu)$AnyFunctions1(typeOf(bu))
+testTrue("not((a = b)@Boolean)")
+au := "failed"::Union(Integer, "failed")
+a := coerce(au)$AnyFunctions1(typeOf(au))
 testTrue("(a = b)@Boolean")
+pU := Union(i : Integer, t : Boolean)
+a := coerce(1::pU)$AnyFunctions1(pU)
+b := coerce(1::pU)$AnyFunctions1(pU)
+testTrue("(a = b)@Boolean")
+b := coerce(2::pU)$AnyFunctions1(pU)
+testTrue("not((a = b)@Boolean)")
+b := coerce(false::pU)$AnyFunctions1(pU)
+testTrue("not((a = b)@Boolean)")
 a := "failed"::"failed"
 b := "failed"::"failed"
 testTrue("(a = b)@Boolean")
+eN := Enumeration(e1, e2)
+a := (e1::eN)
+b := (e1::eN)
+testTrue("(a = b)@Boolean")
+b := (e2::eN)
+testTrue("not((a = b)@Boolean)")
 
 -- issue 279
 X : Set Any := ["x"]
@@ -126,12 +141,13 @@ Y : Set Any := ["x"]
 testTrue("(X = Y)@Boolean")
 
 -- issue 352
+testcase "factoring in Complex"
 f5 := 5::Factored(Complex(Integer))
 testTrue("(#factors(f5) = 2)@Boolean")
 testTrue("not(prime?(5::Complex(Integer)))")
 testTrue("prime?(7::Complex(Integer))")
 
--- missing solution
+testcase "missing solution"
 ex1 := log((7/3)^(2*x - 7)) + log((3/7)^(4*x - 5))
 testEquals("solve(ex1)", "[x = -1]")
 
