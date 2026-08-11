@@ -87,6 +87,9 @@ compile_defun(name, body) ==
 eval_defun(name, body) ==
    EVAL(MACROEXPANDALL(body))
 
+comp_form(form) ==
+    COMP0(form, FUNCTION print_defun)
+
 comp_and_define(form) ==
    COMP0(form, FUNCTION print_and_eval_defun)
 
@@ -139,8 +142,6 @@ COMP_2(args, comp370_apply) ==
     name
 
 COMP0(fun, comp370_apply) == [COMP_2(nf, comp370_apply) for nf in COMP_1(fun)]
-
-COMP(fun) == COMP0(fun, $comp370_apply)
 
 maybe_devaluate(a, ca) ==
     ca => ["devaluate", a]
@@ -493,8 +494,6 @@ expandCOLLECTV(l) ==
     ["PROGN", ["SPADLET", res, ["GETREFV", lv]],
               ["REPEAT", :iters, ["SETELT", res, counter_var, body]],
                  res]
-
-DEFPARAMETER($comp370_apply, nil)
 
 COMP370(fn, comp370_apply) ==
     not(fn is [fname, [ltype, args, :body]]) => BREAK()

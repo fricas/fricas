@@ -259,7 +259,6 @@ boo_comp1(x) ==
     $insideWhereIfTrue : local := false
     $insideCategoryIfTrue : local := false
     $insideCapsuleFunctionIfTrue : local := false
-    $e : local := $EmptyEnvironment
     $genSDVar : local :=  0
     $previousTime : local := get_run_time()
     compTopLevel(x, $EmptyMode,  [[[]]])
@@ -342,7 +341,6 @@ S_process(x) ==
     $insideWhereIfTrue : local := false
     $insideCategoryIfTrue : local := false
     $insideCapsuleFunctionIfTrue : local := false
-    $e : local := $EmptyEnvironment
     $genSDVar : local := 0
     $previousTime : local := get_run_time()
     $s : local := nil

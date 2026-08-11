@@ -105,11 +105,6 @@ updateCategoryFrameForConstructor(constructor) ==
        addModemap(constructor, dc, sig, pred, impl,
            put(constructor, 'mode, ['Mapping,:sig], $CategoryFrame)))
 
-updateCategoryFrameForCategory(cat) ==
-    di := get_database(cat, 'CONSTRUCTORMODEMAP)
-    [[dc, :sig], [pred, impl]] := di
-    $CategoryFrame := addModemap(cat, dc, sig, pred, impl, $CategoryFrame)
-
 loadFunctor u ==
   null atom u => loadFunctor first u
   loadLibIfNotLoaded u
@@ -177,9 +172,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   FRESH_-LINE(get_algebra_stream())
   sayMSG(filler_chars(72, '"-"))
   merge_info_from_objects([get_database(op, 'ABBREVIATION)], [], false)
-  if $lisplibKind = 'category
-    then updateCategoryFrameForCategory op
-     else updateCategoryFrameForConstructor op
   res
 
 initializeLisplib libName ==
@@ -320,18 +312,18 @@ isDomainConstructorForm(D,e) ==
     u is [.,["Mapping",target,:.],:.] and
       isCategoryForm(EQSUBSTLIST(argl, $FormalMapVariableList, target))
 
-isFunctor x ==
-  op:= opOf x
-  not IDENTP op => false
-  $InteractiveMode =>
-    MEMQ(op,'(Union SubDomain Mapping Record)) => true
-    MEMQ(get_database(op, 'CONSTRUCTORKIND),'(domain package))
-  u:= get(op,'isFunctor,$CategoryFrame)
-    or MEMQ(op,'(SubDomain Union Record)) => u
-  constructor? op =>
-    prop := get(op,'isFunctor,$CategoryFrame) => prop
-    if get_database(op, 'CONSTRUCTORKIND) = 'category
-      then updateCategoryFrameForCategory op
-      else updateCategoryFrameForConstructor op
-    get(op,'isFunctor,$CategoryFrame)
-  nil
+-- getOperationAlist in modemap.boot and previously funfind in trace.boot
+-- depend on return value, otherwise it is treated as a boolean.
+isFunctor(x) ==
+    op := opOf(x)
+    not(IDENTP(op)) => false
+    -- logically wrong, but the compiler expects this
+    op = "Mapping" => false
+    MEMQ(op, '(Record SubDomain Union)) => true
+    $InteractiveMode =>
+        MEMQ(get_database(op, 'CONSTRUCTORKIND), '(domain package))
+    not(MEMQ(get_database(op, 'CONSTRUCTORKIND), '(domain package))) => false
+    u := get(op,'isFunctor,$CategoryFrame) => u
+    updateCategoryFrameForConstructor(op)
+    get(op, 'isFunctor, $CategoryFrame)
+

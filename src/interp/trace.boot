@@ -744,10 +744,6 @@ untraceMapSubNames traceNames ==
       untrace2(name, [])
       $lastUntraced:= SETDIFFERENCE($lastUntraced,subs)
 
-funfind(functor, opname) ==
-  ops:= isFunctor functor
-  [u for u in ops | u is [[ =opname,:.],:.]]
-
 isDomainOrPackage dom ==
   REFVECP dom and #dom>0 and isFunctor opOf dom.(0)
 

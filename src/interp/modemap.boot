@@ -234,7 +234,6 @@ compCat(form is [functorName,:argl],m,e) ==
   [form,catForm,e]
 
 addModemap(op, mc, sig, pred, fn, e) ==
-    $InteractiveMode => e
     if known_info_in_env(pred, e) then pred := true
     $insideCapsuleFunctionIfTrue = true =>
         $CapsuleModemapFrame :=

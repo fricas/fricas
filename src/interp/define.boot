@@ -791,7 +791,7 @@ spadCompileOrSetq (form is [nam,[lam,vl,body]]) ==
            output_lisp_form(['MAKEPROP, MKQ(nam), MKQ('SPADreplace),
                              MKQ(macform)])
            sayBrightly ['"     ",:bright nam,'"is replaced by",:bright body]
-  $insideCapsuleFunctionIfTrue => first COMP form
+  $insideCapsuleFunctionIfTrue => first(comp_form(form))
   compileConstructor form
 
 compileConstructor form ==
@@ -805,9 +805,9 @@ compileConstructor1 (form:=[fn,[key,vl,:bodyl]]) ==
 -- counts
   auxfn := INTERNL1(fn, '";")
   output_lisp_form(["DECLAIM", ["NOTINLINE", auxfn]])
-  if key = 'category_functor
-      then u := comp_and_define(form)
-      else u := COMP form
+  u :=
+      key = 'category_functor => comp_and_define(form)
+      comp_form(form)
   clearConstructorCache fn      --clear cache for constructor
   first u
 
