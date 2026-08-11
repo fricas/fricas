@@ -109,7 +109,6 @@ unsigned char  _INTR, _QUIT, _ERASE, _KILL, _EOF, _EOL, _RES1, _RES2;
 int ptsNum, ptcNum;
 char ptsPath[20], ptcPath[20];
 
-char **new_envp;                /* new environment for FriCAS */
 int child_pid;                  /* child's process id */
 struct termios oldbuf;           /* the original settings */
 struct termios childbuf;         /* terminal structure for user i/o */
@@ -319,18 +318,13 @@ sman_catch_signals(void)
 }
 
 static void
-fix_env(char **envp, int spadnum)
+fix_env(int spadnum)
 {
-  int len, i;
-  char *sn;
-  for(len = 0; envp[len] != NULL; len++);
-  new_envp = (char **) malloc((len + 3) * sizeof(char *));
-  new_envp[0] = "SPADSERVER=TRUE";
-  sn = (char *) malloc(20 * sizeof(char));
-  sprintf(sn, "SPADNUM=%d", spadnum);
-  new_envp[1] = sn;
-  for(i=0; i<=len; i++)
-    new_envp[i+2] = envp[i];
+  char sn[32];
+
+  setenv("SPADSERVER", "TRUE", 1);
+  snprintf(sn, sizeof(sn), "%d", spadnum);
+  setenv("SPADNUM", sn, 1);
 }
 
 static void
@@ -426,11 +420,16 @@ fork_you(int death_action)
 }
 
 static void
-exec_command_env(char *command,char ** env)
+exec_command(char *command)
 {
-  char new_command[512];
-  sprintf(new_command, "exec %s", command);
-  execle("/bin/sh","/bin/sh", "-c", new_command, NULL, env);
+  int len = 1024;
+  char new_command[len];
+  int ret = snprintf(new_command, len, "exec %s", command);
+  if (ret >= len) {
+    fprintf(stderr, "argument to exec is too long\n");
+    exit(-1);
+  }
+  execl("/bin/sh", "/bin/sh", "-c", new_command, (char *) NULL);
 }
 
 static SpadProcess *
@@ -441,7 +440,7 @@ spawn_of_hell(char *command, int death_action)
     proc->command = command;
     return proc;
   }
-  exec_command_env(command, new_envp);
+  exec_command(command);
   return NULL;
 }
 
@@ -580,7 +579,7 @@ fork_FriCAS(void)
     tmp_pointer = (char *)
       strrchr(augmented_ws_path,'/');      /*pointer to last /  */
     *(++tmp_pointer) = '\0';
-    exec_command_env(augmented_ws_path, new_envp);
+    exec_command(augmented_ws_path);
 
     /*    fprintf(stderr, "Cannot execute the %s system.\n", ws_path); */
 
@@ -590,7 +589,7 @@ fork_FriCAS(void)
 }
 
 static void
-start_the_FriCAS(char **envp)
+start_the_FriCAS()
 {
   server_num = make_server_number();
   clean_up_old_sockets();
@@ -602,7 +601,7 @@ start_the_FriCAS(char **envp)
     perror("start_the_FriCAS: ptyopen failed");
     exit(-1);
   }
-  fix_env(envp, server_num);
+  fix_env(server_num);
   fork_FriCAS();
   close(ptsNum);
 }
@@ -793,7 +792,7 @@ monitor_children(void)
 }
 
 int
-main(int argc, char *argv[],char *envp[])
+main(int argc, char *argv[])
 {
   if (tpd == 1) fprintf(stderr,"sman:main entered\n");
   bsdSignal(SIGINT,  SIG_IGN,RestartSystemCalls);
@@ -802,7 +801,7 @@ main(int argc, char *argv[],char *envp[])
 
   init_term_io();
   init_spad_process_list();
-  start_the_FriCAS(envp);
+  start_the_FriCAS();
   if (open_server(SessionIOName) == -2) {
     fprintf(stderr, "Fatal error opening I/O socket\n");
     clean_up_sockets();
