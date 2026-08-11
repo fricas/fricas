@@ -368,10 +368,10 @@ print_to_string(TextNode *command)
 /*
 see the code in ht-util.boot
         $funnyQuote := char 127
-        $funnyBacks := char 128
+        $funnyBacks := char 31
 */
-#define funnyEscape(c)  ((c) == '"' ? '\177' : ((c) == '\\' ? '\200' : c))
-#define funnyUnescape(c) ((c) == '\177' ? '"' : ((c) == '\200' ? '\\' : c))
+#define funnyEscape(c)  ((c) == '"' ? '\177' : ((c) == '\\' ? '\037' : c))
+#define funnyUnescape(c) ((c) == '\177' ? '"' : ((c) == '\037' ? '\\' : c))
 #define storeChar(ch) \
   do { if (sizeBuf) { (*sizeBuf)++;} else {*c++ = (ch);} } while(0)
 #define storeString(str) for (s=str;*s;s++) {storeChar(*s);}

@@ -144,6 +144,13 @@ parseAndEvalToHypertex str ==
   for s in lines repeat
     sockSendString($MenuServer, s)
 
+parseAndEvalBlockToHypertex str ==
+    lines := parseAndEvalBlockToStringEqNum(str)
+    len := LENGTH lines
+    sockSendInt($MenuServer, len)
+    for s in lines repeat
+        sockSendString($MenuServer, s)
+
 parseAndEvalToString str ==
     $IOindex: local := nil
     parseAndEvalToStringEqNum(str)
@@ -154,6 +161,13 @@ parseAndEvalToStringEqNum str ==
   v := CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str))
   v = 'restart => ['"error"]
   NREVERSE $outputLines
+
+parseAndEvalBlockToStringEqNum str ==
+    $collectOutput:local := true
+    $outputLines: local := nil
+    v := CATCH('SPAD_READER, CATCH('top_level, interpret_block str))
+    v = 'restart => ['"error"]
+    NREVERSE $outputLines
 
 parseAndEvalStr string ==
   $InteractiveMode :fluid := true

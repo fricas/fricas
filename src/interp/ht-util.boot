@@ -135,7 +135,7 @@ htDoneButton(func, htPage) ==
 quoteString string == CONCAT('"_"", string, '"_"")
 
 $funnyQuote := char 127
-$funnyBacks := char 128
+$funnyBacks := char 31
 
 htEscapeString str ==
   str := SUBSTITUTE($funnyQuote, char '_", str)
