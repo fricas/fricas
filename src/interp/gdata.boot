@@ -664,7 +664,6 @@ merge_info_from_asy(asy, object, only, make_database?, expose,
             cname := opOf(dbstruct.$constructorform_ind)
             if expose then setExposeAddConstr2([cname], noquiet)
             if not(make_database?) then
-                installConstructor(cname)
                 updateDatabase(cname)
                 -- following can break category database build
                 if kind = 'category then
@@ -707,7 +706,6 @@ merge_info_from_nrlib1(in_f, key, object, make_database?, expose,
     MAKEPROP(abbrev, 'ABBREVIATIONFOR, key)
     add_operations(key, oldmaps)
     if not(make_database?) then
-        installConstructor(key)
         if kind = 'category then
             dbstruct.$ancestors_ind :=
                  SUBLISLIS($FormalMapVariableList, rest(constructorform),

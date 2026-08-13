@@ -224,8 +224,8 @@ compDefineCategory2(form, signature, body, m, e,
     $extraParms: local := nil
              --Set in DomainSubstitutionFunction, used further down
 --  1.1  augment e to add declaration $: <form>
-    $op: local := nil
-    [$op, :argl] := form
+    [op, :argl] := form
+    $op : local := op
     e := addBinding("%", [['mode, :form]], e)
 
 --  2. obtain signature
@@ -236,7 +236,7 @@ compDefineCategory2(form, signature, body, m, e,
 --   3. replace arguments by $1,..., substitute into body,
 --     and introduce declarations into environment
     sargl:= TAKE(# argl, $TriangleVariableList)
-    sform := [$op, :sargl]
+    sform := [op, :sargl]
     $functorForm : local := sform
     $formalArgList:= [:sargl,:$formalArgList]
     aList:= [[a,:sa] for a in argl for sa in sargl]
@@ -251,7 +251,6 @@ compDefineCategory2(form, signature, body, m, e,
       [.,.,e]:= compMakeDeclaration([":",x,t],m,e)
 
 --   4. compile body in environment of type declarations for arguments
-    op':= $op
     -- following line causes cats with no with or Join to be fresh copies
     if opOf(formalBody)~='Join and opOf(formalBody)~='mkCategory then
            formalBody := ['Join, formalBody]
@@ -269,7 +268,7 @@ compDefineCategory2(form, signature, body, m, e,
     body:=
         ['PROG1, ['LET, g:= GENSYM(), body],
                  ['SETELT, g, 0, mkConstructor(sform)]]
-    fun := do_compile([op', ['category_functor, sargl, body]], e)
+    fun := do_compile([op, ['category_functor, sargl, body]], e)
 
 --  5. give operator a 'modemap property
     pairlis:= [[a,:v] for a in argl for v in $FormalMapVariableList]
@@ -284,11 +283,11 @@ compDefineCategory2(form, signature, body, m, e,
     if $LISPLIB then
       $lisplibForm:= form
       $lisplibKind:= 'category
-      modemap:= [[parForm,:parSignature],[true,op']]
+      modemap := [[parForm, :parSignature], [true, op]]
       $lisplibModemap:= modemap
       $lisplibAncestors := computeAncestorsOf(sform, nil)
-      $lisplibAbbreviation := constructor? $op
-      domainShell := eval [op', :MAPCAR('MKQ, sargl)]
+      $lisplibAbbreviation := constructor?(op)
+      domainShell := eval([op, :MAPCAR('MKQ, sargl)])
       augLisplibModemapsFromCategory(sform, formalBody, signature',
                                      domainShell)
     [fun, '(Category), e]
@@ -324,14 +323,14 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     $insideFunctorIfTrue: local:= true
     $genSDVar: local:= 0
     originale := e
-    $op: local := nil
-    [$op,:argl]:= form
+    [op, :argl] := form
+    $op : local := op
     $formalArgList:= [:argl,:$formalArgList]
     $pairlis := [[a,:v] for a in argl for v in $FormalMapVariableList]
     $mutableDomain: local :=
       -- all defaulting packages should have caching turned off
-       isCategoryPackageName $op or
-         (if BOUNDP '$mutableDomains then MEMQ($op,$mutableDomains)
+       isCategoryPackageName(op) or
+         (if BOUNDP('$mutableDomains) then MEMQ(op, $mutableDomains)
             else false )   --true if domain has mutable state
     signature':=
       [first signature, :[getArgumentModeOrMoan(a, form, e) for a in argl]]
@@ -386,7 +385,6 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
                                      first signature', dollar, e)
  -- must do above to bring categories into scope --see line 5 of genDomainView
 --  4. compile body in environment of type declarations for arguments
-    op':= $op
     rettype:= signature'.target
     T := compFunctorBody(body, rettype, e, base_shell)
 
@@ -394,23 +392,22 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     lamOrSlam :=
         $mutableDomain => 'mutable_domain_functor
         'domain_functor
-    fun := do_compile(SUBLIS($pairlis, [op', [lamOrSlam, argl, body']]), e)
+    fun := do_compile(SUBLIS($pairlis, [op, [lamOrSlam, argl, body']]), e)
     --The above statement stops substitutions getting in one another's way
 
     operationAlist := sub_in_oplist($pairlis, $lisplibOperationAlist)
     if $LISPLIB then
       augmentLisplibModemapsFromFunctor(parForm,operationAlist,parSignature)
     $functorStats := addStats($functorStats, $functionStats)
-    reportOnFunctorCompilation($functorStats)
+    reportOnFunctorCompilation($functorStats, op)
 
 --  5. give operator a 'modemap property
+    $insideFunctorIfTrue := false
     if $LISPLIB then
-      modemap:= [[parForm,:parSignature],[true,op']]
+      modemap:= [[parForm, :parSignature], [true, op]]
       $lisplibModemap:= modemap
       $lisplibCategory := modemap.mmTarget
-      $lisplibAbbreviation := constructor? $op
-    $insideFunctorIfTrue:= false
-    if $LISPLIB then
+      $lisplibAbbreviation := constructor?(op)
       $lisplibKind:=
         target is ["CATEGORY",key,:.] and key~="domain" => 'package
         'domain
@@ -424,7 +421,7 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
         $byteVec :local := nil
         $NRTslot1PredicateList :=
           [simpBool x for x in $NRTslot1PredicateList]
-        output_lisp_form(['MAKEPROP, MKQ $op, ''infovec,
+        output_lisp_form(['MAKEPROP, MKQ(op), ''infovec,
                           getInfovecCode(NRTslot1Info, e)])
       $lisplibOperationAlist:= operationAlist
       $lisplibMissingFunctions:= $CheckVectorList
@@ -443,15 +440,14 @@ compFunctorBody(body, m, e, base_shell) ==
     body
   T
 
-reportOnFunctorCompilation(functorStats) ==
+reportOnFunctorCompilation(functorStats, op) ==
   displayMissingFunctions()
   if $semanticErrorStack then sayBrightly '" "
   displaySemanticErrors()
   if $warningStack then sayBrightly '" "
   displayWarnings()
   [byteCount, elapsedSeconds] := functorStats
-  sayBrightly ['%l,:bright '"  Cumulative Statistics for Constructor",
-    $op]
+  sayBrightly(['%l, :bright('"  Cumulative Statistics for Constructor"), op])
   timeString := normalizeStatAndStringify elapsedSeconds
   sayBrightly ['"      Time:",:bright timeString,'"seconds"]
   sayBrightly '" "
@@ -597,29 +593,29 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
     $CapsuleDomainsInScope: local:= get("$DomainsInScope","special",e)
     $iterate_tag : local := []
     $returnMode:= m
-    $op: local := nil
-    [$op,:argl]:= form
+    [op,:argl]:= form
+    $op : local := op
     $formalArgList:= [:argl,:$formalArgList]
 
     --let target and local signatures help determine modes of arguments
     argModeList:=
-      identSig:= hasSigInTargetCategory(argl,form,first signature,e) =>
+      identSig:= hasSigInTargetCategory(op, argl, form, first(signature), e) =>
         (e:= checkAndDeclare(argl,form,identSig,e); rest identSig)
       [getArgumentModeOrMoan(a,form,e) for a in argl]
     signature':= [first signature,:argModeList]
-    if null identSig then  --make $op a local function
-      oldE := put($op,'mode,['Mapping,:signature'],oldE)
+    if null identSig then  --make op a local function
+        oldE := put(op, 'mode, ['Mapping, :signature'], oldE)
 
     --obtain target type if not given
     if null first signature' then signature':=
       identSig => identSig
-      getSignature($op,rest signature',e) or return nil
+      getSignature(op, rest(signature'), e) or return nil
 
     --replace ##1,.. in signature by arguments
     e:= giveFormalParametersValues(argl,e)
 
     $signatureOfForm:= signature' --this global is bound in compCapsuleItems
-    $functionLocations := [[[$op, signature']], :$functionLocations]
+    $functionLocations := [[[op, signature']], :$functionLocations]
     e:= addDomain(first signature',e)
 
     --4. introduce needed domains into extendedEnv
@@ -629,20 +625,20 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
     rettype := resolve(signature'.target, $returnMode)
 
     localOrExported :=
-      null member($op,$formalArgList) and
-        getmode($op,e) is ['Mapping,:.] => 'local
+      null member(op, $formalArgList) and
+            getmode(op, e) is ['Mapping, :.] => 'local
       'exported
 
     --6a skip if compiling only certain items but not this one
     -- could be moved closer to the top
     formattedSig := formatUnabbreviated ['Mapping,:signature']
     sayBrightly ['"   compiling ",localOrExported,
-      :bright $op,'": ",:formattedSig]
+      :bright(op), '": ", :formattedSig]
 
     T := CATCH('compCapsuleBody, compOrCroak(body,rettype,e))
            or [$ClearBodyToken, rettype, e]
 
-    NRTassignCapsuleFunctionSlot($op, signature', $domainShell, e)
+    NRTassignCapsuleFunctionSlot(op, signature', $domainShell, e)
     if $newCompCompare=true then
          SAY '"The old compiler generates:"
          prTriple T
@@ -653,7 +649,7 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
       body':= replaceExitEtc(T.expr,catchTag,"TAGGEDreturn",$returnMode)
       finalBody:= ["CATCH",catchTag,body']
       argl1 := [(a1 = "T" => "T$"; a1) for a1 in argl]
-      do_compile([$op, ["LAMBDA", [:argl1, '%], finalBody]], oldE)
+      do_compile([op, ["LAMBDA", [:argl1, '%], finalBody]], oldE)
     $functorStats:= addStats($functorStats,$functionStats)
 
 
@@ -665,16 +661,16 @@ getSignatureFromMode(form,e) ==
     #form~=#signature => stackAndThrow ['"Wrong number of arguments: ",form]
     EQSUBSTLIST(rest form,take(#rest form,$FormalMapVariableList),signature)
 
-hasSigInTargetCategory(argl,form,opsig,e) ==
+hasSigInTargetCategory(op, argl, form, opsig, e) ==
   mList:= [getArgumentMode(x,e) for x in argl]
     --each element is a declared mode for the variable or nil if none exists
   potentialSigList:=
     REMDUP
       [sig
         for [[opName,sig,:.],:.] in $domainShell.(1) |
-          fn(opName,sig,opsig,mList,form)] where
-            fn(opName,sig,opsig,mList,form) ==
-              opName=$op and #sig=#form and (null opsig or opsig=first sig) and
+          fn(op, opName, sig, opsig, mList, form)] where
+            fn(op, opName, sig, opsig, mList, form) ==
+              opName=op and #sig=#form and (null opsig or opsig=first sig) and
                 (and/[compareMode2Arg(x,m) for x in mList for m in rest sig])
   c:= #potentialSigList
   1=c => first potentialSigList

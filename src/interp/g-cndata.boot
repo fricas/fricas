@@ -68,7 +68,6 @@ mkUserConstructorAbbreviation(c,a,type) ==
   constructorAbbreviationErrorCheck(c, a, type)
   clearClams()
   clearConstructorCache(c)
-  installConstructor(c)
 
 abbQuery(x) ==
     abb := get_database(x, 'ABBREVIATION) =>
@@ -77,9 +76,6 @@ abbQuery(x) ==
     say_msg("S2IZ0003",
         '"%1b is neither a constructor name nor a constructor abbreviation.",
             [x])
-
-installConstructor(cname) ==
-  item := [cname, get_database(cname, 'ABBREVIATION), nil]
 
 constructorAbbreviationErrorCheck(c,a,typ) ==
   siz := #(s := PNAME a)

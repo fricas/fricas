@@ -348,8 +348,7 @@ haddProp(ht,op,prop,val) ==
     assoc(prop,u) => val     --value is already there--must = val; exit now
     RPLACD(u, [first u, :rest u])
     RPLACA(u,[prop,:val])
-    $op: local := op
-    listTruncate(u,20)        --save at most 20 instantiations
+    listTruncate(u, 20, op)        --save at most 20 instantiations
     val
   HPUT(ht,op,[[prop,:val]])
   val
@@ -409,7 +408,7 @@ reportInstantiations() ==
           '"         ",mTotal,'" dropped","%l",
            '"         ",nForms,'" distinct domains instantiated/dropped"]
 
-listTruncate(l,n) ==
+listTruncate(l, n, op) ==
   u:= l
   n := dec_SI n
   while n ~= 0 and null atom u repeat
@@ -417,7 +416,7 @@ listTruncate(l,n) ==
       u := QCDR u
   if null atom u then
     if null atom rest u and $reportInstantiations = true then
-      recordInstantiation($op,CAADR u,true)
+      recordInstantiation(op, CAADR(u), true)
     RPLACD(u,nil)
   l
 

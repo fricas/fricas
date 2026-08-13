@@ -80,7 +80,6 @@ loadLibNoUpdate1(cname, fullLibName) ==
     say_msg("S2IL0002", '"Loading %1 for %2 %3b", [fullLibName, kind, cname])
   load_quietly(fullLibName)
   clearConstructorCache cname
-  installConstructor(cname)
   MAKEPROP(cname,'LOADED,fullLibName)
 
 loadLibNoUpdate(cname, fullLibName) ==
