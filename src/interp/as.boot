@@ -414,7 +414,7 @@ asyMkpred predlist ==
 
 asytranForm(form,levels,local?) ==
   u := asytranForm1(form,levels,local?)
-  null u => hahah()
+  null u => BREAK()
   u
 
 asytranForm1(form,levels,local?) ==

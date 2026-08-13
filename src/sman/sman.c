@@ -422,10 +422,9 @@ fork_you(int death_action)
 static void
 exec_command(char *command)
 {
-  int len = 1024;
-  char new_command[len];
-  int ret = snprintf(new_command, len, "exec %s", command);
-  if (ret >= len) {
+  char new_command[1024];
+  int ret = snprintf(new_command, sizeof(new_command), "exec %s", command);
+  if (ret >= sizeof(new_command)) {
     fprintf(stderr, "argument to exec is too long\n");
     exit(-1);
   }

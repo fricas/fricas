@@ -211,7 +211,7 @@ make_input_file_from_page(HyperDocPage *page)
     if (!starting_file && make_patch_files) {
       ret_val = fclose(pfile);
       if (ret_val == -1) {
-        fprintf(stderr, "couldn't close file %s\n", b);
+        fprintf(stderr, "couldn't close file %s\n", c);
         exit(-1);
       }
     }
