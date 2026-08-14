@@ -230,6 +230,7 @@ handleKind(df is ['DEF, form, sig, body]) ==
 boo_comp_cats() ==
     $compiler_output_stream := MAKE_-BROADCAST_-STREAM()
     $bootStrapMode : local := true
+    $previousTime : local := get_run_time()
     SAY(["boo_comp_cats"])
     hcats := []
     for def in $globalDefs repeat
@@ -238,15 +239,11 @@ boo_comp_cats() ==
             SAY(["doing", form, sig])
             not("and"/[categoryForm? ty for ty in rest(sig)]) =>
                 hcats := cons(def, hcats)
-            boo_comp1(def)
-    for def in hcats repeat boo_comp1(def)
+            do_comp1(def)
+    for def in hcats repeat do_comp1(def)
 
-boo_comp1(x) ==
-    $Index : local := 0
-    $MACROASSOC : local := []
+do_comp1(x) ==
     $compUniquelyIfTrue : local := nil
-    $postStack : local := nil
-    $topOp : local := nil
     $semanticErrorStack : local := []
     $warningStack : local := []
     $exitModeStack : local := []
@@ -260,7 +257,7 @@ boo_comp1(x) ==
     $insideCategoryIfTrue : local := false
     $insideCapsuleFunctionIfTrue : local := false
     $genSDVar : local :=  0
-    $previousTime : local := get_run_time()
+    $s : local := nil
     compTopLevel(x, $EmptyMode,  [[[]]])
     if $semanticErrorStack then displaySemanticErrors()
 
@@ -317,34 +314,15 @@ DEFVAR($PrintOnly, false)
 DEFVAR($RawParseOnly, false)
 DEFVAR($PostTranOnly, false)
 DEFVAR($FlatParseOnly, false)
-DEFVAR($TranslateOnly, false)
 DEFVAR($noEarlyMacroexpand, false)
 DEFVAR($SaveParseOnly, false)
 DEFVAR($globalDefs, nil)
 DEFVAR($MacroTable)
 
 S_process(x) ==
-    $Index : local := 0
-    $MACROASSOC : local := nil
-    $compUniquelyIfTrue : local := false
     $postStack : local := nil
     $topOp : local := nil
-    $semanticErrorStack : local := nil
-    $warningStack : local := nil
-    $exitModeStack : local := []
-    $returnMode : local := $EmptyMode
-    $leaveLevelStack : local := []
-    $iterate_tag : local := []
-    $iterate_count : local := 0
-    $CategoryFrame : local := [[[]]]
-    $insideFunctorIfTrue : local := false
-    $insideWhereIfTrue : local := false
-    $insideCategoryIfTrue : local := false
-    $insideCapsuleFunctionIfTrue : local := false
-    $genSDVar : local := 0
     $previousTime : local := get_run_time()
-    $s : local := nil
-    $x : local := nil
     null(x) => nil
     $SaveParseOnly =>
         x := walkForm(x)
@@ -357,13 +335,11 @@ S_process(x) ==
         walkForm x
     null(nform) => nil
     x := parseTransform(postTransform(nform))
-    $TranslateOnly => $Translation := x
     $postStack =>
         displayPreCompilationErrors()
         userError '"precompilation failed"
     $PrintOnly =>
         FORMAT(true, '"~S   =====>~%", $currentLine)
         PRETTYPRINT(x)
-    u := compTopLevel(x, $EmptyMode, $InteractiveFrame)
-    if $semanticErrorStack then displaySemanticErrors()
+    do_comp1(x)
     TERPRI()
