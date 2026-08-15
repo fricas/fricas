@@ -560,7 +560,7 @@ Guide) do
 
    make book
 
-This build |PACKAGE_BOOK| into ``src/doc/book.pdf``.
+This builds |PACKAGE_BOOK| into ``src/doc/book.pdf``.
 
 The |home page| can be built via
 ::
@@ -1005,6 +1005,8 @@ Known problems
 
 - CLISP built with threads support may fail to compile FriCAS.
 
+- CLISP 2.49 is incompatible with Windows 11.
+
 - On new Linux kernel build using Clisp may take very long time.  This
   is caused by frequent calls to ``fsync`` performed without need by
   Clisp.
@@ -1094,11 +1096,11 @@ Known problems
 
 .. _Aldor: https://github.com/aldorlang/aldor
 .. _Axiom: https://www.nongnu.org/axiom/
-.. _CLISP: http://clisp.cons.org
-.. _Clozure CL: http://ccl.clozure.com/manual/chapter2.2.html
+.. _CLISP: https://clisp.sourceforge.io/
+.. _Clozure CL: https://ccl.clozure.com/
 .. _CMUCL: https://cmucl.org
 .. _CTAN: https://www.ctan.org/
-.. _ECL: http://ecls.sourceforge.net
+.. _ECL: https://ecl.common-lisp.dev/main.html
 .. _Emacs: https://www.gnu.org/software/emacs/
 .. _frimacs: https://github.com/pdo/frimacs
 .. _GCL: https://www.gnu.org/software/gcl

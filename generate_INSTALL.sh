@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# This script generates a plain text files from the source install.rst
+# This script generates a plain text file from the source install.rst
 # without employing any fancy reStructuredText grammar.
 # Of course, this means the markup used in install.rst has to be simple.
 
@@ -20,7 +20,7 @@
 cat <<'EOF' > INSTALL
 # This file is generated via "sh generate_INSTALL.sh" from
 # "src/doc/sphinx/source/install.rst".
-# See rendered form at https://fricas.github.io/install.html.
+# See rendered form at https://fricas.github.io/install.html
 
 EOF
 
