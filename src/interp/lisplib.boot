@@ -43,6 +43,7 @@ $lisplibKind := nil
 $lisplibModemapAlist := []
 $lisplibModemap := nil
 $lisplibOperationAlist := []
+$lisplibMissingFunctions := []
 
 --% Standard Library Creation Functions
 
@@ -172,7 +173,10 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
       compile_lib(make_filename2(name, $spadLibFT))
   FRESH_-LINE(get_algebra_stream())
   sayMSG(filler_chars(72, '"-"))
-  merge_info_from_objects([get_database(op, 'ABBREVIATION)], [], false)
+  if $bootstrap_db then
+      merge_constructor_info()
+  else
+      merge_info_from_objects([get_database(op, 'ABBREVIATION)], [], false)
   res
 
 initializeLisplib libName ==

@@ -160,7 +160,8 @@ compDefineCategory1(df is ['DEF, form, sig, body], m, e, prefix, fal) ==
       capsule
     nil
   [d, m, e] := compDefineCategory2(form, sig, body, m, e, prefix, fal)
-  if categoryCapsule and not $bootStrapMode then [.,.,e] :=
+  if categoryCapsule and
+      (not($bootStrapMode) or $bootstrap_db) then [., ., e] :=
     $insideCategoryPackageIfTrue: local := true  --see NRTmakeSlot1
     $categoryPredicateList: local :=
         makeCategoryPredicates(form,$lisplibCategory)
@@ -287,9 +288,10 @@ compDefineCategory2(form, signature, body, m, e,
       $lisplibModemap:= modemap
       $lisplibAncestors := computeAncestorsOf(sform, nil)
       $lisplibAbbreviation := constructor?(op)
-      domainShell := eval([op, :MAPCAR('MKQ, sargl)])
-      augLisplibModemapsFromCategory(sform, formalBody, signature',
-                                     domainShell)
+      if not($bootStrapMode) then
+          domainShell := eval([op, :MAPCAR('MKQ, sargl)])
+          augLisplibModemapsFromCategory(sform, formalBody, signature',
+                                         domainShell)
     [fun, '(Category), e]
 
 mkConstructor form ==
@@ -392,7 +394,9 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     lamOrSlam :=
         $mutableDomain => 'mutable_domain_functor
         'domain_functor
-    fun := do_compile(SUBLIS($pairlis, [op, [lamOrSlam, argl, body']]), e)
+    fun :=
+        $bootstrap_db => true
+        do_compile(SUBLIS($pairlis, [op, [lamOrSlam, argl, body']]), e)
     --The above statement stops substitutions getting in one another's way
 
     operationAlist := sub_in_oplist($pairlis, $lisplibOperationAlist)
@@ -403,7 +407,7 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
 
 --  5. give operator a 'modemap property
     $insideFunctorIfTrue := false
-    if $LISPLIB then
+    if $LISPLIB or $bootstrap_db then
       modemap:= [[parForm, :parSignature], [true, op]]
       $lisplibModemap:= modemap
       $lisplibCategory := modemap.mmTarget

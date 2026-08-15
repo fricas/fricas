@@ -602,15 +602,27 @@ make_databases(dir_lst, br_data) ==
     for dir in dir_lst repeat
         merge_info_from_objects([], [['dir, true_name(
                                       STRCONC('"./~a", dir))]], true)
+    finish_make_databases(br_data, true)
+
+make_databases2() ==
+    $has_category_hash := MAKE_HASHTABLE('EQUAL)
+    $operation_hash := MAKE_HASHTABLE('EQL)
+    $all_operations := []
+    make_special_constructors()
+    finish_make_databases(false, false)
+
+finish_make_databases(br_data, normal) ==
     if br_data then
         save_browser_data()
         write_browsedb()
     write_operationdb()
     write_categorydb()
-    for con in allConstructors() repeat
-        finish_con_dbstruct(con)
+    if normal then
+        for con in allConstructors() repeat
+            finish_con_dbstruct(con)
     write_interpdb()
-    createInitializers()
+    if normal then
+        createInitializers()
     move_database('"interp", true)
     move_database('"operation", true)
     move_database('"browse", br_data)
@@ -683,6 +695,30 @@ merge_info_from_asy(asy, object, only, make_database?, expose,
                                             dbstruct.$cosig_ind)
             if noquiet then
                 say_load_msg(cname, object)
+
+merge_constructor_info() ==
+    form := removeZeroOne($lisplibForm)
+    key := first(form)
+    dbstruct := GET(key, 'DATABASE)
+    null(dbstruct) => BREAK()
+    $all_constructors := ADJOIN(key, $all_constructors)
+    -- Aabbreviation should be set earlier
+    abbr := STRING(dbstruct.$abbreviation_ind)
+    kind := $lisplibKind
+    dbstruct.$ancestors_ind := SUBLISLIS($FormalMapVariableList, rest(form),
+                  removeZeroOne($lisplibAncestors))
+    ops := getConstructorOps($lisplibForm, kind)
+    dbstruct.$operationalist_ind := removeZeroOne(ops)
+    dbstruct.$constructorcategory_ind := removeZeroOne($lisplibCategory)
+    dbstruct.$constructorkind_ind := kind
+    dbstruct.$constructormodemap_ind := removeZeroOne($lisplibModemap)
+    dbstruct.$cosig_ind := compute_cosig(dbstruct.$constructormodemap_ind)
+    dbstruct.$object_ind := STRCONC(abbr, '".NRLIB/", abbr)
+    dbstruct.$modemaps_ind := removeZeroOne($lisplibModemapAlist)
+    dbstruct.$niladic_ind := null(rest(form))
+    if kind = 'category then
+        updateDatabase(key)
+    updateCategoryTable(key, kind)
 
 merge_info_from_nrlib1(in_f, key, object, make_database?, expose,
                        noquiet) ==

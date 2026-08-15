@@ -179,6 +179,32 @@ processGlobals1() ==
             SETDATABASE(con, 'CONSTRUCTORKIND, "domain")
         SETDATABASE(con, 'NILADIC, isNiladic head1)
 
+boo_comp2(def, cat?) ==
+    $LISPLIB : local := cat?
+    $file_apply : local := (cat? => FUNCTION print_defun; nil)
+    $lisplibAbbreviation : local := nil
+    $lisplibAncestors : local := []
+    $lisplibCategory : local := nil
+    $lisplibForm : local := nil
+    $lisplibKind : local := nil
+    $lisplibModemap : local := []
+    $lisplibOperationAlist : local := []
+    do_comp1(def)
+    if not(cat?) then
+        merge_constructor_info()
+
+$bootstrap_db := false
+
+process_globals3() ==
+    $bootStrapMode : local := true
+    $bootstrapDomains : local := true
+    $bootstrap_db : local := true
+    $killOptimizeIfTrue : local := true
+    for def0 in $globalDefs repeat
+        def := COPY_-TREE(def0)
+        ["DEF", form, sig, body] := def
+        boo_comp2(def, sig is [["Category"], :.])
+
 processGlobals () ==
     $InteractiveMode : local := nil
     $globalDefs := REVERSE $globalDefs
@@ -202,6 +228,7 @@ processGlobals () ==
         else
             SAY(['"unhandled target", form])
     boo_comp_cats()
+    process_globals3()
 
 
 handleKind(df is ['DEF, form, sig, body]) ==
@@ -235,7 +262,8 @@ boo_comp_cats() ==
     $previousTime : local := get_run_time()
     SAY(["boo_comp_cats"])
     hcats := []
-    for def in $globalDefs repeat
+    for def0 in $globalDefs repeat
+        def := COPY_-TREE(def0)
         ["DEF", form, sig, body] := def
         if sig is [["Category"], :.] then
             SAY(["doing", form, sig])
