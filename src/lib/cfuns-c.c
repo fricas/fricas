@@ -166,8 +166,6 @@ writablep(char *path, int need_dir)
     return ( 1 ); /* MSYS/MinGW */
 }
 
-#ifdef HOST_HAS_DIRECTORY_OPERATIONS
-
 #include <dirent.h>
 
 static char * fricas_copy_string(char *str)
@@ -300,5 +298,3 @@ remove_directory(char * name)
         return res;
     }
 }
-
-#endif

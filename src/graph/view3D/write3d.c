@@ -48,6 +48,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "all_3d.H1"
 #include "strutil.h"
+#include "cfuns-c.H1"
 
 #define StellarColors 9
 
@@ -62,18 +63,12 @@ writeViewport (int thingsToWrite)
   XWindowAttributes vwInfo;
   FILE              *viewDataFile;
   char              viewDirName[280], viewDataFilename[280],
-                    viewBitmapFilename[280], viewPixmapFilename[280],
-                    command[300];
+                    viewBitmapFilename[280], viewPixmapFilename[280];
 
   XGetWindowAttributes(dsply,viewport->titleWindow,&vwInfo);
   fricas_sprintf_to_buf2(viewDirName, "%s%s", filename, ".VIEW");
-  fricas_sprintf_to_buf3(command, "%s%s%s", "rm -r ", viewDirName,
-                         " >  /dev/null 2>&1");
-  code = system(command);
-  fricas_sprintf_to_buf3(command, "%s%s%s", "mkdir ", viewDirName,
-                         " > /dev/null 2>&1");
-  system(command);
-  if (0) {
+  if (directoryp(viewDirName) == 1) remove_directory(viewDirName);
+  if (makedir(viewDirName)) {
     fprintf(stderr,"   Error: Cannot create %s\n",viewDirName);
     return(-1);
   } else {

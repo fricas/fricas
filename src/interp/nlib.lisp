@@ -78,10 +78,7 @@
 ;; ($ERASE filearg) -> 0 if succeeds else 1
 (defun |erase_lib|(filearg)
   (if (|fricas_probe_file| filearg)
-      #+:fricas_has_remove_directory
           (|remove_directory| filearg)
-      #-:fricas_has_remove_directory
-          (delete-directory filearg)
       1))
 
 #+(or :abcl :clisp :cmu :ecl :gcl :lispworks :poplog)

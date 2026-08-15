@@ -532,17 +532,13 @@ AC_CHECK_HEADERS([dirent.h],[
 ], [])
 
 if test x$fricas_has_directory_operations = xyes ; then
-    AC_DEFINE([HOST_HAS_DIRECTORY_OPERATIONS], [1],
-              [Host has POSIX directory operations])
     if test x$fricas_has_dirfd_fchdir  = xyes ; then
         AC_DEFINE([HOST_HAS_DIRFD_FCHDIR], [1],
               [Host has dirfd and fchdir])
     fi
 else
-  AC_MSG_WARN([Can not find directory operations])
+  AC_MSG_ERROR([Can not find directory operations])
 fi
-
-AC_SUBST(fricas_has_directory_operations)
 
 fricas_c_runtime=
 AC_SUBST(fricas_c_runtime)

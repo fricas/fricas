@@ -43,7 +43,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <sys/types.h>
 #include <signal.h>
+#include <dirent.h>
 
 #include "fricas_c_macros.h"
 
@@ -347,59 +349,41 @@ init_term_io(void)
   _EOL = oldbuf.c_cc[VEOL];
 }
 
-static char *
-strPrefix(char *prefix,char * s)
-{
-  while (*prefix != '\0' && *prefix == *s) {
-    prefix++;
-    s++;
-  }
-  if (*prefix == '\0') return s;
-  return NULL;
-}
-
 static void
-check_spad_proc(char *file, char *prefix)
+check_spad_proc(char *file)
 {
-  char *num;
-  int pid;
-  if ((num = strPrefix(prefix, file))) {
-    pid = atoi(num);
-    if (pid > 2) {
-      kill(pid, 0);
-      if (kill(pid, 0) == -1 && errno == ESRCH) {
-        unlink(file);
-      }
+    if (file[2] > '9' || file[2] < '0') return;
+    char *check = 0;
+    errno = 0;
+    long res = strtol(file + 2, &check, 10);
+    if (errno || (*check != '\0')) return;
+    pid_t pid = res; /* check for overflow */
+    if ((res > 2) && (res == pid)) {
+        int ret = kill(pid, 0);
+        if (ret == -1 && errno == ESRCH) {
+            char full_path[128];
+            snprintf(full_path, sizeof(full_path), "/tmp/%s", file);
+            unlink(full_path);
+        }
     }
-  }
 }
 
 static void
 clean_up_old_sockets(void)
 {
-  char com[512], tmp_file[128];
-  FILE *file;
-  int len;
-  sprintf(tmp_file, "/tmp/socks.%d", server_num);
-  sprintf(com, "ls /tmp/.d* /tmp/.s* /tmp/.i* /tmp/.h* 2> %s > %s",
-          tmp_file, tmp_file);
-  system(com);
-  file = fopen(tmp_file, "r");
-  if (file == NULL) {
-    fprintf(stderr, "Can't open socket listing file\n");
-    return;
-  }
-  while(fgets(com, 512, file) != NULL) {
-    len = strlen(com);
-    if (len) com[len-1] = '\0';
-    else break;
-    check_spad_proc(com, "/tmp/.d");
-    check_spad_proc(com, "/tmp/.s");
-    check_spad_proc(com, "/tmp/.i");
-    check_spad_proc(com, "/tmp/.h");
-  }
-  fclose(file);
-  unlink(tmp_file);
+    DIR *dir = opendir("/tmp");
+    if (dir == NULL) return;
+    struct dirent *entry;
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_name[0] == '.') {
+            char c = entry->d_name[1];
+            if (c == 'd' || c == 's' || c == 'i' || c == 'h') {
+                check_spad_proc(entry->d_name);
+            }
+        }
+    }
+    closedir(dir);
 }
 
 static SpadProcess *
