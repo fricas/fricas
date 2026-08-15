@@ -73,7 +73,6 @@ initEnvHashTable(l) ==
             HPUT($envHashTable, [first u, first v], true)
 
 compTopLevel(x,m,e) ==
-  $killOptimizeIfTrue: local:= false
   $forceAdd: local:= false
   $compTimeSum: local := 0
   $resolveTimeSum: local := 0
@@ -1377,6 +1376,9 @@ compileSpad2Cmd args ==
     -- Assume we entered from the "compiler" function, so args ~= nil
     -- and is a file with file extension .spad.
 
+    $no_lisp_compile : local := false
+    $killOptimizeIfTrue : local := false
+
     path := first(args)
     not(has_extention?(path, '"spad")) => throw_msg("S2IZ0082", CONCAT(
       '"The FriCAS system compiler can only compile files with file",
@@ -1398,6 +1400,8 @@ compileSpad2Cmd args ==
       old _
       nobreak _
       nolibrary _
+      nolispcompile _
+      noopt _
       noquiet _
       vartrace _
       quiet _
@@ -1423,6 +1427,9 @@ compileSpad2Cmd args ==
 
         fullopt = 'library     => lib := true
         fullopt = 'nolibrary   => lib := false
+
+        fullopt = 'nolispcompile => $no_lisp_compile := true
+        fullopt = 'noopt => $killOptimizeIfTrue := true
 
         -- Ignore quiet/nonquiet if "constructor" is given.
         fullopt = 'quiet       => "ignored now"

@@ -154,6 +154,8 @@ walkForm(tree) ==
 
 --------------------------------------------------------------------
 
+$killOptimizeIfTrue := false
+
 isNiladic(head1) ==
     SYMBOLP head1 => true
     head1 is [., ["@Tuple"]]
