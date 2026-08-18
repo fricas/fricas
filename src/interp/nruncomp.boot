@@ -31,8 +31,6 @@
 
 )package "BOOT"
 
-$bootstrapDomains := false
-
 -----------------------------NEW buildFunctor CODE-----------------------------
 NRTaddDeltaCode(kvec) ==
 --NOTES: This function is called from buildFunctor to initially
@@ -130,8 +128,6 @@ listOfBoundVars(form, e) ==
 
 optDeltaEntry(op, sig, dc, eltOrConst, e) ==
   $killOptimizeIfTrue = true => nil
-  $bootstrapDomains = true =>
-    nil
   ndc :=
     dc = '% => $functorForm
     atom dc and (dcval := get(dc, 'value, e)) => dcval.expr

@@ -197,7 +197,6 @@ $bootstrap_db := false
 
 process_globals3() ==
     $bootStrapMode : local := true
-    $bootstrapDomains : local := true
     $bootstrap_db : local := true
     $killOptimizeIfTrue : local := true
     for def0 in $globalDefs repeat

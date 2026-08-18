@@ -218,7 +218,6 @@ $NoValue := "$NoValue"
 $NoValueMode := 'NoValueMode
 $DummyFunctorNames := ['Mapping]
 $EmptyVector := VECTOR()
-$Index := 0
 $true := ['QUOTE, true]
 $false := false
 $suffix := nil

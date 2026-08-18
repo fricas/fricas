@@ -407,10 +407,6 @@ flatten(l,key) ==
   first l is [k,:r] and k=key => [:r,:flatten(rest l,key)]
   [first l,:flatten(rest l,key)]
 
-genDomainVar() ==
-  $Index:= $Index+1
-  INTERNL1('"#D", STRINGIMAGE($Index))
-
 genVariable() ==
   INTERNL1('"#G", STRINGIMAGE($genSDVar := $genSDVar + 1))
 

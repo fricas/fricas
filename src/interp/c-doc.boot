@@ -153,32 +153,25 @@ transDoc(conname,doclist) ==
 --skip over unexposed constructors when checking system files
   $x: local := nil
   rlist := REVERSE doclist
-  for [$x,:lines] in rlist repeat
-    $attribute? : local := $x is [.,[key]] and key = 'attribute
+  for [x, :lines] in rlist repeat
+    $x := x
+    $attribute? : local := x is [., [key]] and key = 'attribute
     null lines =>
       $attribute? => nil
       checkDocError ['"Not documented!!!!"]
-    u := checkTrim($x,(STRINGP lines => [lines]; $x = 'constructor => first lines; lines))
+    u := checkTrim(x, (STRINGP lines => [lines];
+                       x = 'constructor => first(lines);
+                           lines))
     $argl : local := nil    --set by checkGetArgs
     longline :=
-      $x = 'constructor =>
+      x = 'constructor =>
         v :=checkExtract('"Description:",u) or u and
               checkExtract('"Description:",
                 [STRCONC('"Description: ",first u),:rest u])
         transformAndRecheckComments('constructor,v or u)
-      transformAndRecheckComments($x,u)
-    acc := [[$x,longline],:acc]  --processor assumes a list of lines
+      transformAndRecheckComments(x, u)
+    acc := [[x, longline], :acc]  --processor assumes a list of lines
   NREVERSE acc
-
-checkExtractItemList l ==  --items are separated by commas or end of line
-  acc := nil               --l is list of remaining lines
-  while l repeat           --stop when you get to a line with a colon
-    m := MAXINDEX first l
-    k := charPosition(char '_:,first l,0)
-    k <= m => return nil
-    acc := [first l,:acc]
-    l := rest l
-  "STRCONC"/[x for x in NREVERSE acc]
 
 transformAndRecheckComments(name,lines) ==
   $checkingXmptex? := false
