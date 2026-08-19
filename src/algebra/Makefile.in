@@ -353,14 +353,15 @@ CATLIST= AHYP AINTCAT ATCS ATADDVA ATAPPRO ATARBEX ATARBPR \
 SPADLIST=${SPADLIST1} ${SPADLIST2} ${SPADLIST3} ${SPADLIST4} \
         ${SPADLIST5} ${SPADLIST6} ${SPADLIST7} ${SPADLIST8}
 
-# List of core domains
-DOMLIST= ALIST BOOLEAN CHAR DFLOAT FRAC HASHSTAT \
-        IARRAY1 ISTRING IVECTOR \
-        INT LIST NNI OUTFORM PI PRIMARR REF SEX SINT STRING SYMBOL VECTOR \
-        MATRIX ARRAY1 IIARRAY2 ARRAY2 U32VEC U32MAT U16VEC U16MAT U8VEC \
-        U8MAT I32VEC I32MAT I16VEC I16MAT I8VEC I8MAT PRIMMAT2 \
-        DFVEC DFMAT COMPLEX CDFVEC CDFMAT \
-        SOREXPV U64INT
+# Domains that must be recompiled for inlining to fully work
+DOMLIST2= ARRAY1 ARRAY2 CDFMAT CDFVEC CHAR DFLOAT DFMAT DFVEC \
+         I16MAT I16VEC I32MAT I32VEC I8MAT I8VEC IIARRAY2 INT \
+         LIST MATRIX PRIMARR PRIMMAT2 SINT VECTOR U16MAT \
+         U16VEC U32MAT U32VEC U8MAT U8VEC
+
+# List of core domains (needed for inlining to work)
+DOMLIST= ALIST BOOLEAN COMPLEX FRAC HASHSTAT IARRAY1 ISTRING IVECTOR \
+        NNI OUTFORM PI REF SEX STRING SYMBOL SOREXPV U64INT ${DOMLIST2}
 
 # List of categories which provide default implementations
 CATDOMS= A1AGG ABELGRP ABELMON ABELSG ACF ACFS AGG AINTCAT \
@@ -477,15 +478,16 @@ stamp-oboo3: stamp-db
            rm -rf *.NRLIB ; \
            echo "Stage 3 object bootstrap (normal mode)" ; \
            echo > oboo3.input ; \
-           for A in ${DOMLIST} ; do \
+           for A in ${DOMLIST2} ; do \
               echo ')compile "'$$A'.spad"' >> oboo3.input ; \
            done; \
            ( echo ')read "oboo3.input"' | \
               DAASE=./r7 ${INTERPSYS} ) || exit 1 ; \
 	   echo "Stage 3 object copy" ; \
-	   for A in ${DOMLIST} ; do \
+           for A in ${DOMLIST2} ; do \
 	      cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
 	   done ; \
+           rm -rf MATRIX.NRLIB ; \
 	   touch stamp-oboo3 ; \
 	fi
 
