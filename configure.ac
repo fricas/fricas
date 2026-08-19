@@ -384,8 +384,10 @@ AC_ARG_ENABLE([gmp],
             [case $enableval in
                yes) GMP_WRAP_SO_TARGET=gmp_wrap_so ;;
                no) GMP_WRAP_SO_TARGET="" ;;
-               *) AC_MSG_ERROR([--enable-gmp only allows yes or no as an argument]) ;;
-             esac])
+               auto) GMP_WRAP_SO_TARGET="auto" ;;
+               *) AC_MSG_ERROR([--enable-gmp only allows yes or no or auto as an argument]) ;;
+             esac],
+            [test -z "$GMP_WRAP_SO_TARGET" && GMP_WRAP_SO_TARGET="auto"])
 ## Check if GMP is really compatible with the Lisp flavour
 if test -n "$GMP_WRAP_SO_TARGET" ; then
    if test $fricas_lisp_flavor = sbcl ; then
@@ -393,21 +395,29 @@ if test -n "$GMP_WRAP_SO_TARGET" ; then
    elif test $fricas_lisp_flavor = openmcl ; then
       case $(uname -m) in
         arm*|i386|i486|i586|i686|x86_64)
-         GMP_WRAP_SO_TARGET=gmp_wrap_so
+         true
            ;;
         *)
-         AC_MSG_ERROR([GMP is valid only when using Clozure CL on AMD/Intel
+         if test "$GMP_WRAP_SO_TARGET" = "auto" ; then
+            GMP_WRAP_SO_TARGET=""
+         else
+            AC_MSG_ERROR([GMP is valid only when using Clozure CL on AMD/Intel
                        or ARM processors])
+         fi
       esac
    else
-      AC_MSG_ERROR([GMP is valid only when using sbcl or Clozure CL])
+      if test "$GMP_WRAP_SO_TARGET" = "auto" ; then
+         GMP_WRAP_SO_TARGET=""
+      else
+         AC_MSG_ERROR([GMP is valid only when using sbcl or Clozure CL])
+      fi
    fi
 fi
-AC_SUBST(GMP_WRAP_SO_TARGET)
 AC_SUBST(GMP_CPPFLAGS)
 AC_SUBST(GMP_LDFLAGS)
 AC_SUBST(GMP_LIBDIR)
-GMP_EXT=so
+GMP_LIB=""
+GMP_EXT=""
 ## If it is possible to enable the gmp wrapper, we have to check
 ## whether gmp is actually installed.
 AS_IF([test -n "$GMP_WRAP_SO_TARGET"],[
@@ -416,20 +426,30 @@ AS_IF([test -n "$GMP_WRAP_SO_TARGET"],[
   fricas_save_LDFLAGS=$LDFLAGS
   # ask for shared library in AC_CHECK_LIB
   LDFLAGS="$LDFLAGS $GMP_LDFLAGS -fPIC $SOLIB_FLAGS"
-  AC_CHECK_LIB(gmp, __gmpz_init, [true], [AC_MSG_ERROR(
-    [GNU MP not found])])
+  AC_CHECK_LIB(gmp, __gmpz_init, [true],
+      [test "$GMP_WRAP_SO_TARGET" != "auto" && AC_MSG_ERROR(
+          [GNU MP not found])])
   CPPFLAGS="$CPPFLAGS $GMP_CPPFLAGS"
-  AC_CHECK_HEADERS([gmp.h], [], [AC_MSG_ERROR(
-    [gmp.h not found])])
+  AC_CHECK_HEADERS([gmp.h], [],
+      [test "$GMP_WRAP_SO_TARGET" != "auto" && AC_MSG_ERROR(
+          [gmp.h not found])])
   # reset CPPFLAGS and LDFLAGS
   CPPFLAGS=$fricas_save_CPPFLAGS
   LDFLAGS=$fricas_save_LDFLAGS
-  GMP_LIB=-lgmp
-  case $target in
+  if test x"$ac_cv_header_gmp_h" = xyes && test x"$ac_cv_lib_gmp___gmpz_init" = xyes ; then
+      GMP_WRAP_SO_TARGET=gmp_wrap_so
+      GMP_LIB=-lgmp
+      case $target in
           *darwin*) GMP_EXT=dylib ;;
           *) GMP_EXT=so ;;
-  esac
+      esac
+  else
+      AC_MSG_WARN([GMP support is enabled by default for $fricas_lisp_flavor, \
+but GMP library or header are not found. Skipping GMP support.])
+      GMP_WRAP_SO_TARGET=""
+  fi
 ])
+AC_SUBST(GMP_WRAP_SO_TARGET)
 AC_SUBST(GMP_LIB)
 AC_SUBST(GMP_EXT)
 

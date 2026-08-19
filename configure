@@ -683,10 +683,10 @@ fricas_quiet_flags
 fricas_gcl_rsym_hack
 GMP_EXT
 GMP_LIB
+GMP_WRAP_SO_TARGET
 GMP_LIBDIR
 GMP_LDFLAGS
 GMP_CPPFLAGS
-GMP_WRAP_SO_TARGET
 SOLIB_FLAGS
 LIBSPAD_SO_TARGET
 fricas_lisp_version
@@ -4861,8 +4861,11 @@ then :
   enableval=$enable_gmp; case $enableval in
                yes) GMP_WRAP_SO_TARGET=gmp_wrap_so ;;
                no) GMP_WRAP_SO_TARGET="" ;;
-               *) as_fn_error $? "--enable-gmp only allows yes or no as an argument" "$LINENO" 5 ;;
+               auto) GMP_WRAP_SO_TARGET="auto" ;;
+               *) as_fn_error $? "--enable-gmp only allows yes or no or auto as an argument" "$LINENO" 5 ;;
              esac
+else $as_nop
+  test -z "$GMP_WRAP_SO_TARGET" && GMP_WRAP_SO_TARGET="auto"
 fi
 
 ## Check if GMP is really compatible with the Lisp flavour
@@ -4872,21 +4875,29 @@ if test -n "$GMP_WRAP_SO_TARGET" ; then
    elif test $fricas_lisp_flavor = openmcl ; then
       case $(uname -m) in
         arm*|i386|i486|i586|i686|x86_64)
-         GMP_WRAP_SO_TARGET=gmp_wrap_so
+         true
            ;;
         *)
-         as_fn_error $? "GMP is valid only when using Clozure CL on AMD/Intel
+         if test "$GMP_WRAP_SO_TARGET" = "auto" ; then
+            GMP_WRAP_SO_TARGET=""
+         else
+            as_fn_error $? "GMP is valid only when using Clozure CL on AMD/Intel
                        or ARM processors" "$LINENO" 5
+         fi
       esac
    else
-      as_fn_error $? "GMP is valid only when using sbcl or Clozure CL" "$LINENO" 5
+      if test "$GMP_WRAP_SO_TARGET" = "auto" ; then
+         GMP_WRAP_SO_TARGET=""
+      else
+         as_fn_error $? "GMP is valid only when using sbcl or Clozure CL" "$LINENO" 5
+      fi
    fi
 fi
 
 
 
-
-GMP_EXT=so
+GMP_LIB=""
+GMP_EXT=""
 ## If it is possible to enable the gmp wrapper, we have to check
 ## whether gmp is actually installed.
 
@@ -4966,7 +4977,7 @@ if test "x$ac_cv_lib_gmp___gmpz_init" = xyes
 then :
   true
 else $as_nop
-  as_fn_error $? "GNU MP not found" "$LINENO" 5
+  test "$GMP_WRAP_SO_TARGET" != "auto" && as_fn_error $? "GNU MP not found" "$LINENO" 5
 fi
 
   CPPFLAGS="$CPPFLAGS $GMP_CPPFLAGS"
@@ -4978,20 +4989,30 @@ then :
   printf "%s\n" "#define HAVE_GMP_H 1" >>confdefs.h
 
 else $as_nop
-  as_fn_error $? "gmp.h not found" "$LINENO" 5
+  test "$GMP_WRAP_SO_TARGET" != "auto" && as_fn_error $? "gmp.h not found" "$LINENO" 5
 fi
 
 done
   # reset CPPFLAGS and LDFLAGS
   CPPFLAGS=$fricas_save_CPPFLAGS
   LDFLAGS=$fricas_save_LDFLAGS
-  GMP_LIB=-lgmp
-  case $target in
+  if test x"$ac_cv_header_gmp_h" = xyes && test x"$ac_cv_lib_gmp___gmpz_init" = xyes ; then
+      GMP_WRAP_SO_TARGET=gmp_wrap_so
+      GMP_LIB=-lgmp
+      case $target in
           *darwin*) GMP_EXT=dylib ;;
           *) GMP_EXT=so ;;
-  esac
+      esac
+  else
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: GMP support is enabled by default for $fricas_lisp_flavor, \
+but GMP library or header are not found. Skipping GMP support." >&5
+printf "%s\n" "$as_me: WARNING: GMP support is enabled by default for $fricas_lisp_flavor, \
+but GMP library or header are not found. Skipping GMP support." >&2;}
+      GMP_WRAP_SO_TARGET=""
+  fi
 
 fi
+
 
 
 
