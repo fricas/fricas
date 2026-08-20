@@ -443,10 +443,6 @@ stamp-db: $(patsubst %, %.spad, ${NSPADLIST})
           for A in ${NSPADLIST} ; do \
               echo ")compile $$A.spad" >> komp_all.input ; \
           done ; \
-          rm -f boot_doms.input ; \
-          for A in ${CATDOMS} ${DOMLIST} ; do \
-              echo ")compile $$A.spad )noopt" >> boot_doms.input ; \
-          done ; \
           ${MKDIR_P} r1/algebra ; \
           cp $(fricas_src_datadir)/algebra/*.daase r1/algebra ; \
           rm -rf axp ; \
@@ -469,21 +465,36 @@ stamp-oboo3: stamp-db
 	@echo doing stamp-oboo3
 	@if [ ! -f stamp-oboo3 ] ; then \
            echo "Bootstrap object copy" ; \
-           for A in ${CATLIST} ${DOMLIST} ; do \
+           for A in ${CATLIST} ; do \
               cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
            done; \
+           rm -rf *.NRLIB ; \
+           $(ECHO_B) 'oboo3-doms: ' > oboo3.mak ; \
+           for A in ${DOMLIST2} ; do \
+               $(ECHO_B) $${A}.NRLIB/$${A}.lsp" " >> oboo3.mak ; \
+           done; \
+           echo >> oboo3.mak ; \
+           $(ECHO_B) 'oboo3-bootstrap: ' >> oboo3.mak ; \
+           for A in ${CATDOMS} ${DOMLIST} ; do \
+               $(ECHO_B) $${A}.NRLIB/$${A}.lsp" " >> oboo3.mak ; \
+           done; \
+           echo >> oboo3.mak ; \
+           for A in ${CATDOMS} ${DOMLIST} ; do \
+               echo $${A}.NRLIB/$${A}.lsp: $${A}.spad >> oboo3.mak ; \
+               $(ECHO_T) 'printf "%s\n%s" ")boot \$$$$tryRecompileArguments := false" ")compile $$< $$(OPTS)" | DAASE=./r7 ${INTERPSYS}' >> oboo3.mak ; \
+           done; \
+           ${MAKE} OPTS=")noopt" -f oboo3.mak oboo3-bootstrap && \
+           for A in ${CATDOMS} ${DOMLIST} ; do \
+               cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
+           done; \
            for A in ${CATDOMS} ; do \
-              cp $${A}-.NRLIB/$${A}-.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT)  || exit 1 ; \
+              cp $${A}-.NRLIB/$${A}-.$(FASLEXT) ${OUT}/$${A}-.$(FASLEXT) \
+                 || exit 1 ; \
            done; \
            rm -rf *.NRLIB ; \
            echo "Stage 3 object bootstrap (normal mode)" ; \
-           echo > oboo3.input ; \
-           for A in ${DOMLIST2} ; do \
-              echo ')compile "'$$A'.spad"' >> oboo3.input ; \
-           done; \
-           ( echo ')read "oboo3.input"' | \
-              DAASE=./r7 ${INTERPSYS} ) || exit 1 ; \
-	   echo "Stage 3 object copy" ; \
+           ${MAKE} OPTS="" -f oboo3.mak oboo3-doms && \
+           echo "Stage 3 object copy" ; \
            for A in ${DOMLIST2} ; do \
 	      cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
 	   done ; \
@@ -607,8 +618,8 @@ $(OUTSRC)/%.spad: $(srcdir)/%.spad
 clean-local:
 	-rm -f stamp*
 	-rm *.$(FASLEXT) *.lib *.fn [A-VX-Z]*.data W*.data
-	-rm -f abbrevs.input oboo3.input boot.mak *.daase
-	-rm -f boot_doms.input comdb.text komp_all.input libdb.text
+	-rm -f abbrevs.input oboo3.mak boot.mak *.daase
+	-rm -f comdb.text komp_all.input libdb.text
 	-rm -r *.NRLIB
 	-rm -r axp r[1-8f] DEPENDENTS.DAASE USERS.DAASE
 	-rm -f spad.mak
