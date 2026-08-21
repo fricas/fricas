@@ -17,7 +17,7 @@ Binary distribution
 - ``fricas-x.y.z.amd64.tar.bz2`` (64-bit binary for amd64 (x86_64) Linux)
 - ``fricas-x.y.z-windows-x86-64.zip`` (64-bit binary for Windows)
 
-On MacOS you should consider using
+On Mac OS you should consider using
 `Homebrew <https://formulae.brew.sh/formula/fricas/>`_.
 
 
@@ -33,7 +33,7 @@ Source distribution
 - ``x.y.z.tar.gz`` and ``x.y.z.zip`` source as in git repository
 
 FriCAS x.y.z should build on Linux and many Unix like systems (for
-example Mac OSX and Cygwin).
+example Mac OS and Cygwin).
 
 Official |git repository| (read-only access). Fork it on github if
 you like.
@@ -66,6 +66,7 @@ the FriCAS developers, but by other volunteers.
 * `NetBSD package <https://pkgsrc.se/math/fricas>`_
 * `MacPorts <https://ports.macports.org/port/fricas/>`_
 * `Homebrew <https://formulae.brew.sh/formula/fricas>`_
+* `Conda <https://anaconda.org/conda-forge/fricas>`_
 
 
 Nightly builds

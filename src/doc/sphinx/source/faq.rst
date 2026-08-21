@@ -22,11 +22,11 @@ It can plot functions and has an integrated help system.
 2. What is the relation between FriCAS and Axiom?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-FriCAS forked from Axiom in 2007. FriCAS seeks different development
-methodology and after fork removed several unused parts (without
+FriCAS forked from Axiom in 2007. FriCAS seeks a different development
+methodology. After the fork, several unused parts are removed (without
 removing functionality). FriCAS fixed a lot of bugs and added new
-functionality. As of April 2013, in the src/algebra subdirectory,
-which hosts mathematical functionality about 25% of code was added
+functionality. As of August 2026, in the src/algebra subdirectory,
+which hosts mathematical functionality, about 40% of code was added
 after the fork.
 
 See also
@@ -40,14 +40,14 @@ The prefix *Fri* is a deliberate misspelling of Free -- FriCAS sounds
 like Free CAS.
 
 There is also a second meaning: the Polish word "frykas" (which sounds
-similar to FriCAS) denotes generally tasty food (dainty); the French
+similar to FriCAS) generally denotes tasty food (dainty); the French
 word "fricassee" and the German "Frikassee" name a particular food.
 
 
 4. Where can I find online information about FriCAS?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The main entrance point to documentation about FriCAS is
+The main entry point to documentation about FriCAS is
 https://fricas.github.io.
 
 The mailing list
@@ -78,7 +78,7 @@ https://github.com/fricas/fricas/issues.
 The older bugtrackers at
 `SourceForge <https://sourceforge.net/tracker/?atid=972421&group_id=200168>`_
 and
-the `FriCAS wiki <`https://wiki.fricas.org/IssueTracker>`_
+the `FriCAS wiki <https://wiki.fricas.org/IssueTracker>`_
 should not be used anymore.
 
 
@@ -89,7 +89,7 @@ Currently trying to run plain ``fricas`` command in a pipe hangs
 (this is a bug, but fix requires substantial change).
 Instead, one needs to pass ``-nosman`` option.
 
-There several ways to let FriCAS process commands from a file.
+There are several ways to let FriCAS process commands from a file.
 ::
 
    fricas -nosman < tst.input > tst.output
@@ -100,7 +100,7 @@ Whereas the first two versions do not show the input in ``tst.output``,
 the last command does. However, in the latter case it is hard to
 distinguish input from output.
 
-Note: Similarly to the command line, pipe mode requires each function
+Note: Similar to the command line, pipe mode requires each function
 to be defined in a single line.
 
 
@@ -115,7 +115,7 @@ clicking on 'Operations' click on an operation name and then click on
 'Implementations'.
 
 In a direct way you can just type the function name with a full
-specification from which domain, for example::
+specification of its domain, for example::
 
   antiCommutator $ Polynomial(Integer)
 
@@ -155,7 +155,7 @@ you may have to manually run
 
    xrdb -m ~/.Xresources
 
-If you work with a 4K-display and want to make the font bigger, you
+If you work on a 4K-display and want to make the font bigger, you
 can add the following to your ``.Xresources`` file.
 ::
 
@@ -184,18 +184,29 @@ your computer. Use ``xfontsel`` to find out.
 11. Why does FriCAS behave differently after loading new code?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When FriCAS loads new code, current variables become invalid.
-This happens when you use
+When FriCAS loads new code, values of variables may become invalid.
+In particular, in the past, expression stored in a variable before
+loading could lead to wrong result when used after load.  This
+problem with expressions should be fixed now, but in general there
+is still possibility that value stored in a variable may become
+invalid after load.
+
+The problem can happen when you use
 ::
 
    )lib SOMELIB
 
-or automatically when you compile a file via
+or when you compile a file via
 ::
 
    )compile foo.spad
 
-You have to load and compile code before you start your computation.
+FriCAS automatically loads domains on demand, such automatic loads
+do not cause a problem.
+
+If you experience mysterious problems after ')lib' or ')compile',
+you should try loading and compiling code before you start your
+computation.
 
 
 12. Is there exception handling in FriCAS?
@@ -221,7 +232,7 @@ an error.
 13. Can I run a function under a time constraint?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Checkout the
+Check out the
 `TimeoutPackage <https://fricas.github.io/api/TimeoutPackage.html>`_.
 
 
@@ -236,8 +247,8 @@ The file ``fspace.spad`` needs a special bootstrap sequence:
    )boot $bootStrapMode := false
    )compile fspace.spad
 
-When developing similar changes you need to recompile all things which
-depend on the change and which you want to use, directly or
+When developing similar changes, you need to recompile everything that
+depends on the change and that you want to use, directly or
 indirectly.
 
 Full build takes care of bootstrapping and recompiles everything, so
@@ -266,7 +277,7 @@ This list has been slightly adapted to match the new name FriCAS.
 1. The fricas command fails.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This is likely one of two problems.
+This is likely due to one of two problems.
 
 1. FriCAS uses clef as its command line editor. This has functionality
 similar to GNU Readline but was written independently. The fricas
@@ -402,7 +413,7 @@ it further as required by the context.
 
 One could argue that it is unfair to single ``%pi`` out from other
 constants, but it occurs frequently enough in school examples
-(specially for graphs) so it was worth a special hack. In a
+(especially for graphs) so it was worth a special hack. In a
 non-interactive environment (library), HACKPI would not exist.
 
 
@@ -567,7 +578,7 @@ The command::
 will cause the display of only 10 levels of trace information for the
 recursive execution of a user function fib.
 
-``)math`` causes -- the function arguments and return value to be displayed
+``)math`` -- causes the function arguments and return value to be displayed
 in the FriCAS monospace two-dimensional math format.
 
 ``)nonquietly`` -- causes the display of additional messages when a function
@@ -641,7 +652,7 @@ The command::
 traces four operations from the domain Integer. Since + and - are special
 characters, it is necessary to escape them with an underscore.
 
-Also See: ``)boot``, ``)lisp`` , and ``)ltrace``. Please refer to the
+Also See: ``)boot``, ``)lisp``, and ``)ltrace``. Please refer to the
 FriCAS Book section "FriCAS System Commands" for more detailed information.
 
 

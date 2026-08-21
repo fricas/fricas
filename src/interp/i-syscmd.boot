@@ -523,7 +523,7 @@ compileAsharpCmd args ==
     terminateSystemCommand()
     spadPrompt()
 
-file_must_exit(path) ==
+file_must_exist(path) ==
     if not(PROBE_-FILE(path)) then throw_msg("S2IL0003",
         '"The file %1b is needed but does not exist.", [path])
 
@@ -537,7 +537,7 @@ compileAsharpCmd1 args ==
         throw_msg("S2IZ0083", CONCAT(
             '"The Aldor compiler can only compile files with file extensions",
             '" _".as_" or _".ao_"."), [])
-    file_must_exit(path)
+    file_must_exist(path)
 
     $edit_file := path
 
@@ -687,7 +687,7 @@ compileAsharpLispCmd args ==
     -- and is a file with file extension .lsp
 
     path := first(args)
-    file_must_exit(path)
+    file_must_exist(path)
 
     optList :=  '( _
       quiet _
@@ -724,7 +724,7 @@ compileSpadLispCmd args ==
     libname := first args
     basename := file_basename(libname)
     path := make_fname(libname, basename, '"lsp")
-    file_must_exit(path)
+    file_must_exist(path)
 
     optList :=  '( _
       quiet _
@@ -1454,7 +1454,7 @@ historySpad2Cmd() ==
         say_msg("S2IH0008", '"The history facility is now on.", NIL)
       x := query_user_msg("S2IH0009", CONCAT(
          '"Turning on the history facility will clear the contents of",
-         '"the workspace.  Please enter %b y %d or %b yes %d if you really",
+         '" the workspace.  Please enter %b y %d or %b yes %d if you really",
          '" want to do this:"), [])
       x =>
         histFileErase histFileName()

@@ -712,7 +712,7 @@ Except for the file ``$HOME/.jupyter/jupyter_notebook_config.py`` that
 maybe necessary to create, the following description will put most of
 the things under the directory ``$FDIR``.
 We assume that FriCAS is installed into ``$FRICASINSTALL``.
-jFriCAS_ and Jupyter_ will go into ``$JFRICASINSTALL``
+jFriCAS and Jupyter_ will go into ``$JFRICASINSTALL``
 You can change any of these paths.
 ::
 
@@ -741,6 +741,7 @@ Now we put a file ``fricaskernel.py`` into a place where python can
 find it and install ``kernel.json`` so that Jupyter_ can find the
 FriCAS_ kernel.
 ::
+
    PYSITE=$(python3 -c "import site; print(site.getsitepackages()[0])")
    JF=$PYSITE/jfricas
    mkdir -p $JF

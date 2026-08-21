@@ -1383,7 +1383,7 @@ compileSpad2Cmd args ==
     not(has_extention?(path, '"spad")) => throw_msg("S2IZ0082", CONCAT(
       '"The FriCAS system compiler can only compile files with file",
         '" extension _".spad_"."), nil)
-    file_must_exit(path)
+    file_must_exist(path)
 
     $edit_file := path
     say_msg("S2IZ0038",

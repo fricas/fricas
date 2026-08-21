@@ -163,7 +163,7 @@ In the following we list publications mentioning FriCAS.
   <https://doi.org/10.1007/978-3-030-04480-0_11>`_)
 
 * **Sam Blake**
-  (2020)
+  (2020):
   `A Simple Method for Computing Some Pseudo-Elliptic Integrals
   in Terms of Elementary Functions
   <https://arxiv.org/abs/2004.04910>`_
@@ -187,10 +187,12 @@ In the following we list publications mentioning FriCAS.
   <https://doi.org/10.17398/2605-5686.36.1.25>`_)
 
 * **Jan Dymara**, **Tadeusz Januszkiewicz**
+  (2023):
   `Tautological characteristic classes I
   <https://arxiv.org/abs/2307.05765v1>`_
 
 * **Jan Dymara**, **Tadeusz Januszkiewicz**
+  (2024):
   `Tautological characteristic classes II: the Witt class
   <https://arxiv.org/abs/2403.05255v1>`_
 
@@ -217,7 +219,7 @@ In the following we list publications mentioning FriCAS.
 
 * **Ralf Hemmecke**, **Peter Paule**, and  **Silviu Radu**
   (2026):
-  `Computer-assisted Construction of Ramanujan-Sato Series for 1 over π,
+  `Computer-assisted Construction of Ramanujan-Sato Series for 1 over π
   <https://doi.org/10.1007/s11139-026-01352-2>`_
 
 * **Harry Desmond**
@@ -228,17 +230,17 @@ In the following we list publications mentioning FriCAS.
 
 * `Sage <http://www.sagemath.org>`_ provides an
   `interface to FriCAS
-  <http://doc.sagemath.org/html/en/reference/interfaces/sage/interfaces/fricas.html>`_.
+  <https://doc.sagemath.org/html/en/reference/interfaces/sage/interfaces/fricas.html>`_
 
-* `swMath
-  <http://swmath.org/software/5860>`_
+* `swMath zbMATH
+  <https://zbmath.org/software/5860>`_
   lists FriCAS
 
 * `Computer Algebra Independent Integration Tests
-  <http://www.12000.org/my_notes/CAS_integration_tests/index.htm>`_
+  <https://www.12000.org/my_notes/CAS_integration_tests/index.htm>`_
 
 * `Old collection of online articles connected to FriCAS and Axiom
-  <http://wiki.fricas.org/public/refs/articles.html>`_
+  <https://wiki.fricas.org/public/refs/articles.html>`_
 
 
 Related articles

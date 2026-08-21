@@ -258,7 +258,7 @@ compileADEFBody(t,vars,types,body,computedResultType) ==
 
 upAlgExtension t ==
   -- handler for algebraic extension declaration.  These are of
-  --  the form "a | a**2+1", and have the effect that "a" is declared
+  --  the form "a | a^2+1", and have the effect that "a" is declared
   --  to be a simple algebraic extension, with respect to the given
   --  polynomial, and given the value "a" in this type.
   t isnt [op,var,eq] => nil
