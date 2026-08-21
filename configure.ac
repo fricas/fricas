@@ -207,12 +207,6 @@ AC_ARG_ENABLE([lisp-core],
              esac])
 AC_SUBST(FRICAS_SAVE_EXEC)
 
-AC_ARG_WITH([lisp-flavor],
-            [AS_HELP_STRING([--with-lisp-flavor=F],
-                           [obsolete and ignored])],
-            [AC_MSG_WARN([--with-lisp-flavor is ignored now])]
-           )
-
 AC_MSG_CHECKING([Lisp implementation])
 rm -f config_cl.out
 echo '(load "'"$fricas_top_srcdir"'/config.lisp")' | $fricas_lisp

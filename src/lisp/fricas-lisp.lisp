@@ -43,7 +43,6 @@
   (setq extensions:*intexp-maximum-exponent* (- most-positive-fixnum 64))
   (setf *read-default-float-format* 'double-float))
 
-#-:sbcl
 (eval-when (:execute :load-toplevel)
     (set-initial-parameters))
 
