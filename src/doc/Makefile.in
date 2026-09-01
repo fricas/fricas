@@ -320,6 +320,12 @@ VIEWPORTNAMESviewports = ${VIEWPORTFILES}
 # files in ${GEN_VIEWPORTFILES_PHT} involve the generation of
 # graphics, the files in ${GEN_NONVIEWPORTFILES_PHT} do not.
 GEN_VIEWPORTFILES_PHT = ${patsubst %, %.pht, ${VIEWPORTNAMES${MAYBE_VIEWPORTS}}}
+
+# Each of these runs its own sman, which serves sockets under the fixed
+# names /tmp/.i<n> and /tmp/.h<n> and sweeps /tmp for stale ones at startup,
+# so two at once can tread on each other.  GNU make 4.4 and later restrict
+# this to the named targets, older make serialises the whole file.
+.NOTPARALLEL: ${GEN_VIEWPORTFILES_PHT}
 GEN_NONVIEWPORTFILES_PHT = ${patsubst %, %.pht, \
     ${filter-out ${VIEWPORTFILES}, ${HT_PASTEFILES} ${HTEX_PASTEFILES}}}
 
