@@ -445,7 +445,8 @@ extend List(S: Type): with {
 		k;
 	}
 
-	generator (l: %) : Generator S == generate {
+	generator (ll: %) : Generator S == generate {
+	        ll := l;
 		while l repeat {
 			yield first l;
 			l := rest l;
@@ -541,11 +542,10 @@ extend Vector(S: Type): with {
 		}
 		v
 	}
-
-	generator(v: %): Generator S == {
+	generator(v: %): Generator S == generate {
 		n := (#v)@SI;
 		i := one();
-		generate while leq(i, n) repeat {
+		while leq(i, n) repeat {
 			yield v.i;
 			i := inc i;
 		}
