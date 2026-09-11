@@ -309,6 +309,7 @@
         ((eq tag '|With|)       (find-deps-with     e args))
         ((eq tag '|While|)      (find-deps-while    e args))
         ((eq tag '|Yield|)      (find-deps-yield    e args))
+        ((eq tag '|Free|)       (find-deps-free    e args))
         (t                      (format t "Unknown form ~a~%" stmt)
                                 (throw '|UndefinedTag| stmt))))))
 
@@ -530,6 +531,12 @@
 (defun find-deps-local (env args)
   (find-deps env (cadr args)))
 
+; (Free D)
+;   syntax: free X
+;   D == an identifier or declaration
+(defun find-deps-free (env args)
+  (find-deps env (cadr args)))
+
 ; (Not A)
 ;   syntax: not A
 ;   A == some expression
@@ -663,8 +670,8 @@
 
         ((member (car path)
                  '(|Add| |And| |Assign| |Comma| |CoerceTo| |Define|
-                   |For| |If| |Import| |Inline| |Label| |Lambda|
-                   |Not| |Or| |PretendTo| |Qualify| |Repeat|
+                   |For| |Generate| |If| |Import| |Inline| |Label|
+		   |Lambda| |Not| |Or| |PretendTo| |Qualify| |Repeat|
                    |RestrictTo| |Sequence| |Test| |While|))
          (full-or-init-internal (cdr path) item item-or-nil))
 

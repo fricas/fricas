@@ -208,6 +208,7 @@ formatOpSignature(op,sig) ==
 formatOpSymbol(op,sig) ==
   null sig => op
   quad := specialChar 'quad
+  NUMBERP sig => ["numbersig", sig]
   n := #sig
   (op = 'elt) and (n = 3) => op
   STRINGP op or GETL(op,"Led") or GETL(op,"Nud") =>
