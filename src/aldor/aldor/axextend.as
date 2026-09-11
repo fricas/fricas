@@ -446,7 +446,7 @@ extend List(S: Type): with {
 	}
 
 	generator (ll: %) : Generator S == generate {
-	        ll := l;
+	        l := ll;
 		while l repeat {
 			yield first l;
 			l := rest l;
