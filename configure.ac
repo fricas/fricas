@@ -475,7 +475,13 @@ case $fricas_lisp_flavor in
        fricas_quiet_flags='--noinform --noprint --no-sysinit --no-userinit'
        fricas_eval_flags='--eval'
        sbcl_memory_size=`echo "(princ (sb-ext:dynamic-space-size))" | $fricas_lisp $fricas_quiet_flags`
-       test $sbcl_memory_size -gt 4294967296 || fricas_quiet_flags="--dynamic-space-size 4096 $fricas_quiet_flags"
+       case $(uname -m) in
+         *64*)
+           test $sbcl_memory_size -gt 4294967296 || fricas_quiet_flags="--dynamic-space-size 4096 $fricas_quiet_flags"
+           ;;
+         *)
+           test $sbcl_memory_size -gt 1610612736 || fricas_quiet_flags="--dynamic-space-size 1536 $fricas_quiet_flags"
+       esac
        fricas_image_flags='--core'
        ;;
     cmucl)
