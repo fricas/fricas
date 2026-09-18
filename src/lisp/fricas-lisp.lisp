@@ -639,41 +639,52 @@ with this hack and will try to convince the GCL crowd to fix this.
 )
 
 #+(and :clisp :ffi)
-(defun |sockGetStringFrom| (purpose)
-    (ffi:with-foreign-object (buf '(ffi:c-array-max ffi:character 10000))
-        (sock_get_string_buf purpose buf 10000)
-        (ffi:foreign-value buf)))
+(defun |sockGetStringFrom0| (purpose)
+  (let ((ret nil))
+    (ffi:with-foreign-object (buf '(ffi:c-array-max ffi:character 2048))
+        (setq ret (sock_get_string_buf purpose buf 2048))
+        (values ret (ffi:foreign-value buf)))))
 
 #+:openmcl
-(defun |sockGetStringFrom| (purpose)
-    (ccl:%stack-block ((buf 10000))
-        (sock_get_string_buf purpose buf 10000)
-        (ccl:%get-cstring buf)))
+(defun |sockGetStringFrom0| (purpose)
+  (let ((ret nil))
+    (ccl:%stack-block ((buf 2048))
+        (setq ret (sock_get_string_buf purpose buf 2048))
+        (values ret (ccl:%get-cstring buf)))))
 
 #+:cmu
-(defun |sockGetStringFrom| (purpose)
-    (alien:with-alien ((buf (alien:array c-call:char 10000)))
-        (sock_get_string_buf purpose (alien:addr (alien:deref buf 0)) 10000)
-        (alien:cast buf c-call:c-string)))
+(defun |sockGetStringFrom0| (purpose)
+  (let ((ret nil))
+    (alien:with-alien ((buf (alien:array c-call:char 2048)))
+        (setq ret (sock_get_string_buf purpose (alien:addr (alien:deref buf 0)) 2048))
+        (values ret (alien:cast buf c-call:c-string)))))
 
 #+:sbcl
-(defun |sockGetStringFrom| (purpose)
-  (sb-alien:with-alien ((buf (sb-alien:array sb-alien:char 8192)))
-    (sock_get_string_buf purpose (sb-alien:addr (sb-alien:deref buf 0)) 8192)
-    (sb-alien:cast buf sb-alien:c-string)))
+(defun |sockGetStringFrom0| (purpose)
+  (let ((ret nil))
+    (sb-alien:with-alien ((buf (sb-alien:array sb-alien:char 2048)))
+      (setq ret (sock_get_string_buf purpose (sb-alien:addr (sb-alien:deref buf 0)) 2048))
+      (values ret (sb-alien:cast buf sb-alien:c-string)))))
 
 #+:ecl
-(defun |sockGetStringFrom| (purpose)
-    (ffi:with-foreign-object (buf '(:array :unsigned-char 10000))
-        (sock_get_string_buf purpose buf 10000)
-        (ffi:convert-from-foreign-string buf)))
+(defun |sockGetStringFrom0| (purpose)
+  (let ((ret nil))
+    (ffi:with-foreign-object (buf '(:array :unsigned-char 2048))
+        (setq ret (sock_get_string_buf purpose buf 2048))
+        (values ret (ffi:convert-from-foreign-string buf)))))
 
 #+:lispworks
-(defun |sockGetStringFrom| (purpose)
-    (fli:with-dynamic-foreign-objects ((buf (:ef-mb-string :limit 10000)))
-        (sock_get_string_buf purpose buf 10000)
-        (fli:convert-from-foreign-string buf)))
+(defun |sockGetStringFrom0| (purpose)
+  (let ((ret nil))
+    (fli:with-dynamic-foreign-objects ((buf (:ef-mb-string :limit 2048)))
+        (setq ret (sock_get_string_buf purpose buf 2048))
+        (values ret (fli:convert-from-foreign-string buf)))))
 
+#-:gcl
+(defun |sockGetStringFrom| (purpose)
+  (multiple-value-bind (ret str) (|sockGetStringFrom0| purpose)
+    (if (= ret 0) str
+        (concatenate 'string str (|sockGetStringFrom| purpose)))))
 
 ;;; -------------------------------------------------------
 ;;; File and directory support

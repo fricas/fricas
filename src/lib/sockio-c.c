@@ -508,9 +508,9 @@ get_string_buf(Sock *sock, char *buf, int buf_len)
 {
   int val;
   if(!str_len) str_len = get_int(sock);
-    if (str_len > buf_len) {
-      val = fill_buf(sock, buf, buf_len, "buffered string");
-      str_len = str_len - buf_len;
+    if (str_len >= buf_len) {
+      val = fill_buf(sock, buf, buf_len - 1, "buffered string");
+      str_len = str_len - buf_len + 1;
       if (val == -1)
         return NULL;
       return buf;
