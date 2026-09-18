@@ -527,6 +527,7 @@ get_string_buf(Sock *sock, char *buf, int buf_len)
 int
 sock_get_string_buf(int purpose, char * buf, int buf_len)
 {
+  memset(buf, 0, buf_len);
   if (accept_if_needed(purpose) != -1)
     return NULL != get_string_buf(purpose_table[purpose], buf, buf_len);
   return 0;

@@ -658,8 +658,8 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+:sbcl
 (defun |sockGetStringFrom| (purpose)
-  (sb-alien:with-alien ((buf (sb-alien:array sb-alien:char 10000)))
-    (sock_get_string_buf purpose (sb-alien:addr (sb-alien:deref buf 0)) 10000)
+  (sb-alien:with-alien ((buf (sb-alien:array sb-alien:char 8192)))
+    (sock_get_string_buf purpose (sb-alien:addr (sb-alien:deref buf 0)) 8192)
     (sb-alien:cast buf sb-alien:c-string)))
 
 #+:ecl
