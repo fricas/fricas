@@ -22,11 +22,10 @@ int main(int argc, const char *argv[]) {
   CFStringAppend(path, prefix);
   CFStringAppendCString(path, "/", encoding);
   CFStringAppend(path, resources);
-  CFStringAppendCString(path, "/usr/local/", encoding);
 
   setenv("FRICAS_PREFIX", CFStringGetCStringPtr(path, encoding), 1);
 
-  system("open -a Terminal.app -n"
+  system("open -a Terminal.app -F -n"
          " \"${FRICAS_PREFIX}/bin/fricas\"");
   return 0;
 }
