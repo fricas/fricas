@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 ;;; fricas.el --- specialized emacs major mode for interacting with FriCAS
 
 ;; Author: Francois Maltey <fmaltey@nerim.fr>
