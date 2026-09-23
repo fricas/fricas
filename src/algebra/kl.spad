@@ -55,9 +55,17 @@ SortedCache(S : CachableSet) : Exports == Implementation where
     cache_size : N := 0
     cache_use : N := 0
 
+    compactCache() : Void ==
+        cache_size = 0 => void()
+        WITHOUT_INTERRUPTS(cache_use := COMPACT_WEAK_ARRAY(cache, cache_use, cache.0)$Lisp)$Lisp
+        void()
+
     expandCache(x : S) : Void ==
         if cache_size = cache_use then
-            ncache_size := 2*cache_size + 10
+            compactCache()
+            ncache_size := cache_use + min(max(cache_use, 1000), 10000)
+            ncache_size < # cache =>
+                cache_size := ncache_size
             elem := if cache_use = 0 then x else cache.0
             ncache := new(ncache_size, elem)$(PrimitiveArray S)
             for k in 0..(cache_use - 1) repeat
@@ -172,6 +180,7 @@ SortedCache(S : CachableSet) : Exports == Implementation where
     insertInCache(before, x, pos) ==
         y := cache(before)
         expandCache(x)
+        before := get_index(y, before)::N
         if ((pos+1) = position y) then
             WITHOUT_INTERRUPTS(shiftCache(before, DIFF))$Lisp
         setPosition(x, pos + (((position y) - pos)::N quo 2))

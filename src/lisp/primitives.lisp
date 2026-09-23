@@ -903,3 +903,46 @@
   `(#+:sbcl sb-sys:without-interrupts
     #-:sbcl progn
       ,@form))
+
+(defun FULLGC ()
+    ;; only defined for 4 lisps, the purpose is to recycle weak pointers.
+    #+:cmu
+    (ext:gc :full t)
+    #+:sbcl
+    (sb-ext:gc :full t)
+    #+(or :clisp :ecl)
+    (reclaim))
+
+(defun MAKE_WEAK_POINTER (object)
+    #+(or :clisp :cmu :ecl)
+    (ext:make-weak-pointer object)
+    #+:sbcl
+    (sb-ext:make-weak-pointer object)
+    #-(or :clisp :cmu :ecl :sbcl)
+    object)
+
+(defun WEAK_POINTER_VALUE (weak-pointer)
+    #+(or :clisp :cmu :ecl)
+    (ext:weak-pointer-value weak-pointer)
+    #+:sbcl
+    (sb-ext:weak-pointer-value weak-pointer)
+    #-(or :clisp :cmu :ecl :sbcl)
+    weak-pointer)
+
+(defun COMPACT_WEAK_ARRAY (array size default_element)
+    ;; return the size of array after compact
+    #+(or :clisp :cmu :ecl :sbcl)
+    (progn
+        (dotimes (i size)
+            (setf (aref array i) (MAKE_WEAK_POINTER (aref array i))))
+        (FULLGC)
+        (do ((i 0 (1+ i)) (j 0))
+            ((= i size) j)
+            (multiple-value-bind (value valid)
+                (WEAK_POINTER_VALUE (aref array i))
+              (setf (aref array i) default_element)
+              (if valid (progn (setf (aref array j) value)
+                               (setq j (1+ j)))))))
+
+    #-(or :clisp :cmu :ecl :sbcl)
+    size)
