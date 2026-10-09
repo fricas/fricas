@@ -616,11 +616,12 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
     import from IntegerPrimesPackage(Z)
     import from IntegerFactorizationPackage(Z)
 
-    eisensteinIrreducible?(f : UP) : Boolean ==
+    eisenstein_test(f : UP, n : N) : Boolean ==
       rf := reductum f
       c : Z := content rf
       zero? c => false
       unit? c => false
+      n > 0 and (c > n or -c > n) => false
       lc := leadingCoefficient f
       tc := lc
       while not zero? rf repeat
@@ -630,6 +631,14 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
         if (p.exponent = 1) and (not zero? (lc rem p.factor)) and
          (not zero? (tc rem ((p.factor)^2))) then return true
       false
+
+    eisensteinIrreducible?(f : UP) : Boolean ==
+        eisenstein_test(f, 0)
+
+    -- This tries to use Eisenstein only when it is likely to be
+    -- cheaper than actual factorization
+    eisensteinIrreducible2?(f : UP) : Boolean ==
+        eisenstein_test(f, 1000*degree(f)^4)
 
     numberOfFactors(ddlist : DDList) : N ==
       n : N := 0
@@ -802,7 +811,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
     -- for a functional decomposition of f.
     henselfact(f : UP, pdecomp : Boolean, d : Set N) : List UP ==
       if brillhartIrreducible? f or
-       (useeisensteincriterion => eisensteinIrreducible? f ; false)
+          (useeisensteincriterion => eisensteinIrreducible2?(f); false)
       then return [f]
       cf : Union(LR, "failed")
       if pdecomp and tryfunctionaldecomposition then
@@ -883,7 +892,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
                 rg := max(2, r+level-levels)::N
                 b := (2*leadingCoefficient(g)*singleFactorBound(g, rg)) :: P
                 if b>pk and (not brillhartIrreducible?(g)) and
-                  (useeisensteincriterion => not eisensteinIrreducible?(g) ;
+                  (useeisensteincriterion => not eisensteinIrreducible2?(g);
                   true)
                 then
                   -- g may be reducible
@@ -947,7 +956,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
         f := reverse f
         reverse? := true
       brillhartIrreducible? f or
-       (useeisensteincriterion => eisensteinIrreducible?(f) ; false) =>
+       (useeisensteincriterion => eisensteinIrreducible2?(f); false) =>
         if reverse? then [ reverse f ] else [ f ]
       if leadingCoefficient(f)<0 then
         f := -f
