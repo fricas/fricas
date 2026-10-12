@@ -1,6 +1,9 @@
 
 
 SUBDIRS = @fricas_src_subdirs@
+# XVFB is either empty or equal to xvfb-run.
+# See configure.ac.
+XVFB=@XVFB@
 
 subdir = src/
 
@@ -31,7 +34,9 @@ all-hyper: all-lib all-sman all-graph
 	$(mkinstalldirs) $(fricas_target_datadir)
 	cd hyper && ${MAKE}
 all-doc: all-hyper all-fricassys
-	cd doc && ${MAKE}
+# XVFB is needed for building HyperDoc graphics examples,
+# run the whole make process inside one xvfb-run process.
+	cd doc && ${XVFB} ${MAKE}
 copy-helpfiles:
 	cd doc && ${MAKE} copy-helpfiles
 all-lib:
