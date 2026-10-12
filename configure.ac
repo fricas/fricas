@@ -780,7 +780,10 @@ if test x"$fricas_has_xpm" = xyes; then
                     AC_CHECK_PROGS([XVFB_RUN], [xvfb-run])
                     if test -n "$XVFB_RUN"; then
                         MAYBE_VIEWPORTS=viewports
-                        XVFB="xvfb-run -a -s '-screen 0 1024x768x24'"
+                        # Xvfb resets when its last client disconnects and
+                        # drops the connections still in setup; a viewport
+                        # opened at that moment fails and its paste hangs.
+                        XVFB="xvfb-run -a -s '-screen 0 1024x768x24 -noreset'"
                     else
                         AC_MSG_NOTICE([HyperDoc graphics must be built separately.])
                     fi
