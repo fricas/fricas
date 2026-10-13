@@ -102,7 +102,10 @@
 subdir = src/doc/
 
 # MAYBE_VIEWPORTS is either empty or equal to viewports.
+# XVFB is either empty or equal to xvfb-run.
+# See configure.ac.
 MAYBE_VIEWPORTS=@MAYBE_VIEWPORTS@
+XVFB=@XVFB@
 
 ###################################################################
 # A few variables that must be set before starting 'make'.
@@ -497,11 +500,11 @@ ${GEN_VIEWPORTFILES_PHT}: %.pht: %.ht ${INPUT_EXTRA_INPUT} ${SMAN} \
     $(fricas_target_bindir)/hypertex$(EXEEXT) stamp-initial-ht-db
 	echo $<
 	unset DAASE; HTPATH=.; export HTPATH; \
-	  FRICAS_INITFILE='' ${SMAN} -noihere -paste $<
+	  FRICAS_INITFILE='' ${XVFB} ${SMAN} -noihere -paste $<
 
 mobius.VIEW: ${inputsrcdir}/mobius.input
 	(unset DAASE; FRICAS=${FRICAS}; export FRICAS; \
-	    echo ')read $<' | FRICAS_INITFILE='' \
+	    echo ')read $<' | FRICAS_INITFILE='' ${XVFB} \
 	    ${FRICAS}/bin/fricas -noht -noclef)
 
 # This target will only be taken if
@@ -663,7 +666,7 @@ tmp/vp-knot3.input: knot3.input ${INPUT_EXTRA_INPUT}
 
 ${HTEX_VIEWPORTS_STAMP}: tmp/stamp-%: tmp/vp-%.input ${INPUT_EXTRA_INPUT}
 	unset DAASE; FRICAS=${FRICAS}; export FRICAS; \
-		echo ")read $<" | FRICAS_INITFILE='' \
+		echo ")read $<" | FRICAS_INITFILE='' ${XVFB} \
 		  ${FRICAS}/bin/fricas -noht -noclef > /dev/null
 	${STAMP} $@
 
