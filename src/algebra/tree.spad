@@ -1,6 +1,8 @@
 )abbrev domain TREE Tree
 ++ Author: W. H. Burge
 ++ Date Created: 17 Feb 1992
+++ Date Updated: 17 Sep 2026 J. Grabmeier: depth, numberOfNodes, new coerce to
+++   OutputForm
 ++ Basic Operations:
 ++ Related Domains:
 ++ Also See:
@@ -10,7 +12,8 @@
 ++ References:
 ++ Description: \spadtype{Tree(S)} is a basic domain of tree structures.
 ++ Each tree is either empty or has a {\it node} consisting of a value and
-++ a list of (sub)trees.
+++ a list of (sub)trees.  Corecion to \spadtype{OutputForm} is provided
+++ by the package \spadtype{TreeOutput}, see it for more documentation.
 Tree(S : SetCategory) : T==C where
  T== Join(RecursiveAggregate(S), finiteAggregate, shallowlyMutable) with
      tree : (S, List %) -> %
@@ -20,12 +23,21 @@ Tree(S : SetCategory) : T==C where
        ++ tree(ls) creates a tree from a list of elements of s.
      tree : S -> %
        ++ tree(nd) creates a tree with value nd, and no children.
+     depth: % -> NonNegativeInteger
+       ++ depth(t) returns the length of the longest path from root to a leaf.
+       ++ Should be moved to \spad{RecursiveAggregate}.
+     numberOfNodes: (%, NonNegativeInteger) -> NonNegativeInteger
+       ++ numberOfNode(t,d) counts the number of nodes of t with depth d
+       ++ including leaves with smaller depth.
      if S has Hashable then Hashable
 
  C== add
     Rep := Union(node:Record(value: S, args: List %),empty:"empty")
 
     import from Record(value: S, args: List %)
+    NNI ==> NonNegativeInteger
+
+    coerce(t : %) : OutputForm == to_output(t pretend Tree(S))$TreeOutput(S)
 
     empty? t == t case empty
     empty()  == ["empty"]
@@ -78,6 +90,14 @@ Tree(S : SetCategory) : T==C where
       n := distance1(t1, t2)
       n >= 0 => n
       distance1(t2, t1)
+    depth(t: %): NonNegativeInteger ==
+      empty? t => 0
+      leaf? t => 0
+      1 + max [depth(ch) for ch in children t]
+    numberOfNodes(t: %, d: NonNegativeInteger): NonNegativeInteger ==
+      leaf? t => 1
+      zero? d => 1
+      reduce("+", [numberOfNodes(ch, (d-1) :: NNI) for ch in children t], 0 )
     node?(t1, t2) ==
       t1 = t2 => true
       t2 case empty => false
@@ -121,12 +141,6 @@ Tree(S : SetCategory) : T==C where
     copy t ==
         empty? t => empty()
         tree(value t, [copy c for c in children t])
-
-    coerce(t : %) : OutputForm ==
-        empty? t => empty()@List(S)::OutputForm
-        nodeForm := (value t)::OutputForm
-        empty? children t => nodeForm
-        prefix(nodeForm, [coerce(c) for c in children t])
 
 )abbrev category BTCAT BinaryTreeCategory
 ++ Author: W. H. Burge
@@ -475,3 +489,150 @@ PendantTree(S : SetCategory) : T == C where
 --LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 --NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 --SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+)abbrev package TREEOUT TreeOutput
+++ Author: Johannes Grabmeier
+++ Description: This package implements new output for trees.  Output
+++ depends on two paramenters, maximal depth and maximal number
+++ of leaves.  Maximal depth can be queried using \spad{outputDepth()}
+++ and set to d using \spad{outputDepth(d)}.  Similarly maximal
+++ number of leaves can be queried using \spad{outputNofLeaves()}
+++ and set to n using \spad{outputNofLeaves(n)}.  Default depth
+++ is 2 and default number of leaves is 1000.
+++ The trees are output until reaching maximal depth d. Leaves are
+++ depicted by <v> while the other nodes of depth d list the labels of
+++ their children: v-[v1 v2 ... vk].  Note further, that the tree grows
+++ from left to right and for the edges left to right is depicted from
+++ top to bottom.
+++ Also, maximal number of leaves that are output is restriced by
+++ \spad{outputNofLeaves()}.
+TreeOutput(S : SetCategory) : Exports == Implementation where
+  NNI ==> NonNegativeInteger
+  Exports ==> with
+    outputDepth : () -> NNI
+       ++ outputDepth() gives the depth until which a tree is depicted.
+    outputDepth : NNI -> NNI
+       ++ outputDepth(d) sets the depth until which a tree is depicted
+       ++ to d. It overwrites the default value 2.
+    outputNofLeaves : () -> NNI
+       ++ outputNofLeaves() gives the maximal number of leaves, up to then
+       ++ a tree is depicted.
+    outputNofLeaves : NNI -> NNI
+       ++ outputNofLeaves(d) sets internal \spad{nofLeaves} up to then
+       ++ a tree is depicted. It overwrites the default value 1000.
+    to_output : Tree(S) -> OutputForm
+       ++ to_output(t) convert tree t to \spadtype{OutputForm}.
+  Implementation ==> add
+
+    O_arr2 ==> TwoDimensionalArray(OutputForm)
+
+    OutputField ==> _
+        Record(arrP : O_arr2, cP : List(Integer))
+    nofLeaves : Reference(NNI) := ref(1000)
+    outputNofLeaves() : NNI == deref(nofLeaves)
+    outputNofLeaves(n : NNI) : NNI ==
+        nofLeaves := ref(n)
+        n
+    depth : Reference(NNI) := ref(2)
+    outputDepth() : NNI  == deref(depth)
+    outputDepth(d : NNI) : NNI ==
+        depth := ref(d)
+        d
+
+    arrayToOutputForm : O_arr2 -> OutputForm
+      ++ arrayToOutputForm(ar) local help function for nice output of an
+      ++ array which holds a picture of the tree up to the actual depth.
+    arrayToOutputForm(ar : O_arr2) : OutputForm ==
+        lili : List(List(OutputForm)) := listOfLists(transpose(ar))
+        lr : List(OutputForm) := [vconcat([lie for lie in li]) for li in lili]
+        hconcat(lr)
+
+    join(lf : List OutputField, v : S):  OutputField ==
+        empty?(lf) => error "join: first argument should not be empty."
+        empty?(rest(lf)) => first(lf)
+        rightColumns : O_arr2 := copy(first(lf).arrP)
+        p1 : Integer := first(first(lf).cP)
+        lp : List(Integer) := [p1]
+        r1 : Integer := maxRowIndex(rightColumns)
+        lm : List(Integer) := [r1 + 1]
+        m  : Integer := 0
+        m' : Integer := r1 + 1
+        mC : Boolean := true
+        for f2 in rest lf repeat
+            r1 : Integer := maxRowIndex(rightColumns)
+            if mC then
+                m := m'
+                m' := m + first(f2.cP)
+                mC := false
+            else
+                m := m'
+                m' := r1 + 1
+                mC := true
+            lp := concat(lp, r1 + first(f2.cP) + 1)
+            c1 : Integer := maxColIndex(rightColumns)
+            r2 : Integer := maxRowIndex(f2.arrP)
+            c2 : Integer := maxColIndex(f2.arrP)
+            r  : Integer := r1 + r2 + 1
+            c  : Integer := max(c1, c2)
+            if c1 < c then
+                rightColumns := horizConcat(rightColumns, new(r1::NNI,
+                    (c - c1)::NNI, message(" ")$OutputForm)$O_arr2)
+            if c2 < c then
+                f2.arrP := horizConcat(copy(f2.arrP), new(r2::NNI,
+                    (c - c2)::NNI, message(" ")$OutputForm))
+            --- add an empty line to rightColumns
+            rightColumns := vertConcat(rightColumns,
+                new(1, c::NNI, message(" ")$OutputForm))
+            --- combine rightColumns and f2.arrP
+            rightColumns := vertConcat(rightColumns, f2.arrP)
+        --- create new leftColumns
+        cv : OutputForm := v::OutputForm
+        leftColumns : O_arr2 := new(r::NNI, 4, message(" ")$OutputForm)
+        leftColumns(m, 1) := cv
+        for i in first(lp)..last(lp) repeat
+            leftColumns(i, 3) := message("|")$OutputForm
+        leftColumns(m, 2) := message("-")$OutputForm
+        leftColumns(m, 3) := message("+")$OutputForm
+        for p in lp repeat leftColumns(p, 3) := message("+")$OutputForm
+        for p in lp repeat leftColumns(p, 4) := message("-")$OutputForm
+        [horizConcat(leftColumns, rightColumns), [m, r, 4 + c]]
+
+    treeToArray(t : Tree(S), d: NNI): OutputField ==
+        v : S := value(t)
+        lcv : List(OutputForm) := [v :: OutputForm]
+        ar : O_arr2 := empty()
+        leaf?(t) =>
+            ar := new(1, 3, message(">")$OutputForm)
+            ar(1, 1) := message("<")$OutputForm
+            ar(1, 2) := v::OutputForm
+            [ar, [1, 1, 3]]
+        d = deref(depth) =>  --- t is not a leaf. want v-[v1 v2 .. vk]
+            cV : List(S) := [value(ch) for ch in children(t)]
+            lcv' : List(OutputForm) :=
+                [message("-")$OutputForm, message("[")$OutputForm]
+            lcv := concat(lcv, lcv')
+            for cv in cV repeat
+                cv' : OutputForm := cv::OutputForm
+                lcv := concat(lcv, cv')
+                if not (cv = last(cV)) then
+                    lcv := concat(lcv, message(" ")$OutputForm)
+            lcv := concat(lcv, message("]")$OutputForm)
+            ar := new(1, #lcv, message(" ")$OutputForm)
+            for j in 1..#lcv for ch in lcv repeat ar(1, j) := ch
+            [ar, [1, 1, #lcv]]
+        lcd : List(Tree(S)) := children(t)
+        join([treeToArray(cd, d + 1) for cd in lcd], v)
+
+    to_output(t: Tree(S)) : OutputForm ==
+        saveDepth : NNI := deref depth
+        d : NNI := 0
+        out : OutputForm := empty()
+        while numberOfNodes(t,d+1) < deref(nofLeaves) and d < depth(t)
+              and d < deref(depth) repeat d := d + 1
+        depth := ref(d)
+        out := arrayToOutputForm(treeToArray(t, 0).arrP)
+        outputDepth(saveDepth)
+        out
+
+
