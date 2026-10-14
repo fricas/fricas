@@ -1,0 +1,154 @@
+)expose LINDTREE
+
+TO ==> TreeOutput(NNI)
+
+--- examples from the code
+
+sST := subsetTree(6,4)
+map(li+->pathToSubset(6,4,li), enumerate(sST))
+outputDepth(6)$TO
+sST
+sST' := sST :: Tree(NNI)
+isLeafIndexingTree? sST'
+retract(sST')@LeafIndexingTree
+outputDepth(0)$TO
+sST
+outputDepth(2)$TO
+
+P(10,4)
+uNPT := unorderedNumberPartitionTree(10,4)
+unp := unrank(uNPT, 5)
+pathToUnorderedNumberPartition(10,4,unp)
+rank(uNPT,unp)
+map(li+->pathToUnorderedNumberPartition(10,4,li), enumerate(uNPT))
+
+stirling2(6,4)
+uSPT := unorderedSetPartitionTree(6,4)
+randomPath(uSPT)
+map(li+->pathToUnorderedSetPartition(6,4,li), enumerate(uSPT))
+
+stirling1(5,2)
+pCT := permutationCyclesTree(5,2)
+map(li+->pathToPermutationCycles(5,2,li), enumerate(pCT))
+
+lFT := logicFunctionTree 3
+enumerate lFT
+
+--- further details
+
+--------------------------------------------------------------------------------
+--- logic functions
+--------------------------------------------------------------------------------
+n := 3
+lF := logicFunctionTree n
+2^(2^n)
+# leaves lF
+randomPath(lF)
+--- first entry s of path [s,t] gives number of minterms of the logic function
+---   1 <= s <= 2^n
+--- second entry t of path [s,t] gives number the number of the s-subset
+---   of {1,...,2^n}, 1 <= t <= binomial(2^n, s)
+[unrank(lF,i) for i in 0..10]
+enLF := enumerate(lF)
+[rank(lF, li) for li in enLF]
+--------------------------------------------------------------------------------
+--- k-subsets of {1,..,n}, k-combinations
+--------------------------------------------------------------------------------
+n := 8; k := 4
+sS := subsetTree(n,k)
+binomial(n,k)
+# leaves sS
+randomPath(sS)
+--- the entries of the path give the number of the next branch (edge) to a child
+--- recursion is (n,k) = (n-1,k-1) + (n-1,k)
+--- termination is (n,n) = [n,n-1,..,2,1], [n], (n,1) = [i] for i in 1..n
+--- first edge drop element n, second edge: no n
+--- bijections: first edge drop n second edge: do nothing i.e.
+---   (n-1,k-1) -> (n,k), s = [s1,...,s(k-1)] +-> [s1,...,s(k-1),n]
+---   (n,k-1) -> (n,k), s +-> s
+[unrank(sS,i) for i in 0..10]
+enSS := enumerate(sS)
+[rank(sS, li) for li in enSS]
+[pathToSubset(n,k,li) for li in enSS]
+# removeDuplicates %
+n := 15; k := 4
+sS := subsetTree(n,k)
+binomial(n,k)
+# leaves sS
+numberOfNodes(sS,12)
+--- although this figure 1123 > 1000, output is provided
+--- till minimum of set output depth and maximal depth d of sS with
+--- numberOfNodes(sS, d) < 1000.
+numberOfNodes(sS, 11)
+outputDepth(6)$TO
+sS
+outputDepth(12)$TO
+sS
+
+--------------------------------------------------------------------------------
+--- unordered k-number partitions of n
+--------------------------------------------------------------------------------
+n := 15; k := 6
+unP := unorderedNumberPartitionTree(n,k)
+--- P counts the number of unordered k-number partitions of n
+P(n,k)
+# leaves unP
+randomPath(unP)
+--- the entries of the path give the number of the next branch (edge) to a child
+--- recursion is P(n,k) = P(n-k,k) + P(n-1,k-1),
+--- termination is P(n,n) = {[1,1,..,1]}, P(n,1) = {[n]}
+--- first edge -[1,1,,1], second edge: drop: ..,1]
+--- bijections: first edge -[1,1,,1], second edge: drop ..,1], i.e.
+---   P(n,k,>1) -> P(n-k,k), p +-> p-[1,1,..,1]
+---   P(n,k,1) -> P(n-1,k-1), p = [p1,p2,..,.p(k-1),1]  +-> [p1,p2,..,.p(k-1)]
+[unrank(unP,i) for i in 0..10]
+enUnP := enumerate(unP)
+[rank(unP, li) for li in enUnP]
+[pathToUnorderedNumberPartition(n,k,li) for li in enUnP]
+# removeDuplicates %
+--------------------------------------------------------------------------------
+--- unordered k - set partitions of {1,..,n}  = k  clusters of {1,..,n}
+--------------------------------------------------------------------------------
+n := 6; k := 2
+usP := unorderedSetPartitionTree(n,k)
+stirling2(n,k)
+# leaves usP
+randomPath(usP)
+--- the entries of the path give the number of the next branch (edge) to a child
+--- recursion is {n,k} = {n-1,k-1} + k{n-1,k},
+--- termination is {n,n} = {{1},{2},..,{n}}, {n,1} = {{1,2,..,n}}
+--- first edge drop 1-element set {n}, i-th edge 2 <= j <= k+1: drop n from the i-th subset
+---   where it is included, bijections:
+---   {n-1,k-1} -> {n,k}, c = {c1,c2, ..., c(k-1)} +-> {c1,c2, ..., c(k-1), {n}}
+---   case i: {n-1,k) -> {n,k}, c = {c1,c2, ..., ck} +-> {c1,c2, ..., c(i-1), ci union {n}, c(i+1),..,ck
+[unrank(usP,i) for i in 0..10]
+enUsP := enumerate(usP)
+[rank(usP, li) for li in enUsP]
+[pathToUnorderedSetPartition(n,k,li) for li in enUsP]
+# removeDuplicates %
+
+--------------------------------------------------------------------------------
+--- permutations of {1,..,n} consisting of exactly k cycles
+--------------------------------------------------------------------------------
+n := 5; k := 3
+pC := permutationCyclesTree(n,k)
+stirling1(n,k)
+# leaves pC
+randomPath(pC)
+--- the entries of the path give the number of the next branch (edge) to a child
+--- recursion is [n,k] = [n-k,k] + (n-1)[n-1,k-1],
+--- termination is [n,n] = [(1),(2),..,(n)], [2,1] = [(1,2)]
+--- first edge drop cycle (n),  second edge: drop n out of the cycle, where i is
+---   mapped to n, 1 <= i <= n-1
+--- bijections:
+---   [n-1,k-1] -> [n,k], c1*c2*..*c(k-1) +-> c1*c2*..*c(k-1)*(n)
+---   case 1 <= i <= n-1 : [n-1,k] -> [n,k], c1*c2*..*ck +-> c1*c2*..*cj'*..*cl
+---   where cj=(...i,n,l,,,)  is the cycle where i is mapped to n and
+---   where cj'=(...i,l,,,)  is the cycle where n is cancelled.
+
+[unrank(pC,i) for i in 0..10]
+enPC := enumerate(pC)
+[rank(pC, li) for li in enPC]
+[pathToPermutationCycles(n,k,li) for li in enPC]
+# removeDuplicates %
+

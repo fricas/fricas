@@ -636,3 +636,567 @@ TreeOutput(S : SetCategory) : Exports == Implementation where
         out
 
 
+)abbrev domain LINDTREE LeafIndexingTree
+++ Author: Johannes Grabmeier
+++ Date Created: 12.08.2026
+++ Basic Operations: rank, unrank, enumerate, subsetTree,
+++   unorderedNumberPartitionTree, permutationCyclesTree,
+++   unorderedSetPartitionTree, logicFunctionTree
+++ Related Domains: Tree
+++ Also See:
+++ AMS Classifications:
+++ Keywords: rank, unrank
+++ Examples:
+++   sST := subsetTree(6,4)
+++   map(li+->pathToSubset(6,4,li), enumerate(sST))
+++
+++   P(10,4)
+++   uNPT := unorderedNumberPartitionTree(10,4)
+++   unp := unrank(uNPT, 5)
+++   pathToUnorderedNumberPartition(10,4,unp)
+++   rank(uNPT,unp)
+++   map(li+->pathToUnorderedNumberPartition(10,4,li), enumerate(uNPT))
+++
+++   stirling2(6,4)
+++   uSPT := unorderedSetPartitionTree(6,4)
+++   randomPath(uSPT)
+++   map(li+->pathToUnorderedSetPartition(6,4,li), enumerate(uSPT))
+++
+++   stirling1(5,2)
+++   pCT := permutationCyclesTree(5,2)
+++   map(li+->pathToPermutationCycles(5,2,li), enumerate(pCT))
+++
+++   lFT := logicFunctionTree 3
+++   enumerate lFT
+++ References:
+++   Edward A. Bender S. Gill Williamson:  Foundations of Combinatorics
+++   with Applications
+++ Description: \spadtype{LeafIndexingTree} is a tree where
+++ the children of each node are totally ordered from left
+++ to right, smaller means left. The root node has an arbitrary label
+++ (= value). Each other node has as label the number of leaves in the
+++ subtree of its parent node y, consisting of all the childrens left
+++ to the edge x-y. These edges are labeled from left to right
+++ by 1,2,... Assume that there are exactly l leaves.
+++ This setting determines a bijection between {0,1,...,l-1}
+++ and the leaves, respectively the paths given as list of edge numbers
+++ from the root node to the leaves: \spad{rank} and \spad{unrank}.
+++ Output is inherited from \spad{Tree(NNI)} and implemented in
+++ the package \spadtype{TreeOutput}.  See its documentation for
+++ more details.
+LeafIndexingTree() : T == C where
+  NNI  ==> NonNegativeInteger
+  T ==> Join(RecursiveAggregate(NNI), finiteAggregate, shallowlyMutable,
+             RetractableFrom(Tree(NNI)), Eltable(PositiveInteger, %),
+             Hashable) with
+    ------------------------------------------------------------------
+    --- creation and modification of leaf indexing trees
+    ------------------------------------------------------------------
+    leafIndexingTree : NNI -> %
+      ++ leafIndexingTree(v) creates a leaf indexing tree with value v, and
+      ++ no children.
+    leafIndexingTree : List(%) -> %
+      ++ leafIndexingTree(lt) considers lt as the list of children and adds
+      ++ a parent node with value 0 to create a new tree with
+      ++ this root. Before it changes the values of the child trees
+      ++ value(lt(1)) = 0, value(lt(2)) = #leaves(lt(1)),
+      ++ value(lt(3))= #leaves(lt(1)) + #leaves(lt(2)) and so on.
+    leafIndexingTree : (NNI,  List(%)) -> %
+      ++ leafIndexingTree(v, lt) considers lt as the list of children and adds
+      ++ a parent node with value v to create a new tree with
+      ++ this root. Before it changes the values of the child trees
+      ++ value(lt(1)) = 0, value(lt(2)) = #leaves(lt(1)),
+      ++ value(lt(3))= #leaves(lt(1)) + #leaves(lt(2)) and so on.
+    setValue : (%, NNI) -> %
+      ++ setValue(t, v) sets v as the new value of tree t.
+    leafIndexingTree : Tree(NNI) -> %
+      ++ leafIndexingTree(t) modifies t to become a leaf indexing tree
+      ++ by setting the values for the required counting.
+    setCountingValues : List(%) -> List(%)
+      ++ setCountingValues(lt) sets all values to satisfy the counting
+      ++ conditions of a leaf indexing tree.
+    ------------------------------------------------------------------
+    --- information on leaf indexing trees
+    ------------------------------------------------------------------
+    numberOfChildren : % -> NNI
+      ++ numberOfChildren(t) returns the number of children of the root
+      ++ of tree t.
+    numberOfNodes : (%, NNI) -> NNI
+      ++ numberOfNode(t, d) counts the number of nodes of t with depth d
+      ++ including leaves with smaller depth.
+    numberOfLeaves : % -> NNI
+      ++ numberOfLeaves(t) counts the number of leaves of t.
+    depth : % -> NNI
+      ++ depth(t) returns the length of the longest path from root to a leaf.
+      ++ Should be moved to \spad{RecursiveAggregate}.
+    childrenValues : % -> List(NNI)
+      ++ childrenValues(t) considers the k children t(0), .., t(k-1) and
+      ++ returns the partial sums v(t0)+..+v(t(i-1))  for 1 <= i <= k.
+    nextEdge : (NNI, List(NNI)) -> NNI
+      ++ nextEdge(r: NNI, lvs: List NNI) returns the largest i
+      ++ such that lvs(i) <= r. It is required, but unchecked,
+      ++ that the entries of lvs are strictly increasing from left to right.
+      ++ The labelling of the edges starts with 1.
+    unrank : (%, NNI) -> List(NNI)
+      ++ unrank(t, r) returns the path from top node of t
+      ++ to the leaf, numbered by r. Argument r must satisfy
+      ++ 0 <= r < numberOfLeaves(t).
+    rank : (%, List(NNI)) -> NNI
+      ++ rank(t, path) returns the rank of the leaf at the end of the path.
+      ++ This is the number starting with 0 from left to right in the
+      ++ natural ordering of the leaves given by the ordering of the
+      ++ children at each node.
+    randomPath : % -> List(NNI)
+      ++ randomPath(t) constructs path from the root of t to one
+      ++ leaf. Each leaf has equal chance to be selected by random.
+    enumerate : % -> List(List(NNI))
+      ++ enumerate(t) constructs all paths from the root of t to its
+      ++ leaves.  If a node has c children, then its edges to these
+      ++ children are labelled by 1..v.  To get the corresponding
+      ++ combinatorial objects, one has to apply the appropriate
+      ++ \spad{pathTo...} function.
+    isPathToLeaf? : (%, List(NNI)) -> Boolean
+      ++ isPathToLeaf?(t, ln) checks whether
+      ++ ln is a path from t to a leave of t, in particular
+      ++ two neighboured entries must satisfy a parent-child
+      ++ relationship. Note, that the m leaves are in 1-1-correspondence
+      ++ with such paths, as the graph is a tree. And also
+      ++ with the set {0,..m-1} the ranks.
+    isLeafIndexingTree? : Tree(NNI) -> Boolean
+      ++ isLeafIndexingTree?(t) checks, if the given tree is a leaf indexing
+      ++ tree. This has to be checked by inspecting all nodes y, whether
+      ++ either the node is a leaf or if each value of a child x is the
+      ++ number of leaves which can be reached starting from the node via the
+      ++ edges left to the the edge y-x. The value of the root does not play
+      ++ a role, so it can be abitrary,
+    ------------------------------------------------------------------
+    --- creation and construction of leaf indexing trees for some
+    --- combinatorial structures
+    ------------------------------------------------------------------
+    permutationCyclesTree : (NNI, NNI)  -> %
+      ++ permutationCyclesTree(n, k), abbreviated by [n, k] gives the tree for
+      ++ the permutations of {1,2,..,n} with exactly k cycles.  Their number
+      ++ is \spad{stirling1(n,k)}.
+      ++ The constructing recursion is [n,k] = [n-k,k] + (n-1)[n-1,k-1],
+      ++ termination is [n,n] = [(1),(2),..,(n)], [2,1] = [(1,2)]
+      ++ first edge drop cycle (n), if possible, next (n-1) edges: drop n out
+      ++ of the cycle, where i is mapped to n, 1 <= i <= n-1.
+      ++ Bijections:
+      ++ [n-1,k-1] -> [n,k], c1*c2*..*c(k-1) +-> c1*c2*..*c(k-1)*(n)
+      ++ case 1 <= i <= n-1 : [n-1,k] -> [n,k], c1*c2*..*ck +-> _
+      ++ c1*c2*..*cj'*..*cl  where cj=(...i,n,l,,,)  is the cycle where i is
+      ++ mapped to n while cj'=(...i,l,,,)  is the cycle where n is cancelled.
+    pathToPermutationCycles : (NNI, NNI, List(NNI)) ->  List(List(NNI))
+      ++ pathToPermutationCycles(n,k,lp) constructs the permutation of {1,..,n}
+      ++ with k cycles, represented by the path from the root of its tree to
+      ++ a leave.
+    unorderedSetPartitionTree : (NNI, NNI)  -> %
+      ++ unorderedSetPartitionTree(n,k), abbreviated by {n,k}, gives the tree
+      ++ for the unordered set partitions of n in exactly k non-empty subsets,
+      ++ a k-clustering. Recursion is {n,k} = {n-1,k-1} + k{n-1,k},
+      ++ termination is {n,n} = {{1},{2},..,{n}}, {n,1} = {{1,2,..,n}}
+      ++ First edge drop 1-element set {n}, next k edges 2 <= i <= k+1: drop n
+      ++ from the i-th subset where it is included, bijections:
+      ++    {n-1,k-1} -> {n,k}, c = {c1,c2, ..., c(k-1)} +->
+      ++    {c1,c2, ..., c(k-1), {n}}
+      ++ case i: {n-1,k) -> {n,k}, c = {c1,c2, ..., ck} +->
+      ++     {c1,c2, ..., c(i-1), ci union {n}, c(i+1),..,ck}
+    pathToUnorderedSetPartition : (NNI, NNI, List(NNI)) ->  List(List(NNI))
+      ++ pathToUnorderedSetPartition(n,k,lp) constructs the unordered set
+      ++ partition of n in k non-empty subsets, represented by the path from
+      ++ the root of its tree to a leave.
+    grtr : (List(List(NNI)), List(List(NNI))) -> Boolean
+      ++ grtr(path1, path2) is used to sort lists of unordered set partitions.
+      ++ First, according to the lexicographical order of the lengths of
+      ++ the subsets, then according to the entries in descending order.
+    P : (NNI, NNI) -> NNI
+      ++ P(n,k) returns the number of unordered k - number partitions of n, e.g.
+      ++ \spad{P(7,3) = 4 = #{[5,1,1],[4,2,1],[3,3,1],[3,2,2]}}
+    unorderedNumberPartitionTree : (NNI, NNI) -> %
+      ++ unorderedNumberPartitionTree(n,k), abbreviated by P(n,k), gives the
+      ++ tree forthe unordered number partitions of n in exactly k summands
+      ++ > 0. Therr number can be computed by \spad{P(n,k)}.
+      ++ Recursion is P(n,k) = P(n-k,k) + P(n-1,k-1),
+      ++ Termination is P(n,n) = {[1,1,..,1]}, P(n,1) = {[n]}.
+      ++ First edge -[1,1,,1], if smallest element >= 2, otherwise second edge
+      ++ drop: ..,1]. Bijections:
+      ++   P(n,k,>1) -> P(n-k,k), p +-> p-[1,1,..,1]
+      ++   P(n,k,1) -> P(n-1,k-1), p = [p1,p2,..,.p(k-1),1]  +->
+      ++ [p1,p2,..,.p(k-1)]
+    pathToUnorderedNumberPartition : (NNI, NNI, List(NNI)) -> List(NNI)
+      ++ pathToUnorderedNumberPartition(n,k,lp) constructs the unordered
+      ++ number partition of n with k components, represented by the path from
+      ++ the root of its tree to a leave.
+    logicFunctionTree : NNI -> %
+      ++ logicFunctionTree(n) constructs the tree with depth 2
+      ++ for all logic function in n variables, represented
+      ++ in canonocial DNF-form as a sum of (s-1) of the 2^n minterms for
+      ++ 1 <= s <= 2^n+1 (children). For each (s-1) at the next
+      ++ level we choose the (t-1)-th (s-1)-subset of the 2^n minterms,
+      ++ for 1 <= t <= binomial(2^n, s). The path from the root
+      ++ to such a leaf is [s,t].
+      ++ Note, a conversion function \spad{pathToLogicFunction} is still
+      ++ missing as we need p-restricted integer and a domain
+      ++ \spad{LogicFunction} not yet in the system.
+      ++ Use with care as there are \spad{2^(2^n)} of them.
+    logicFunctionTree : (NNI, NNI) -> %
+      ++ logicFunctionTree(n,k) constructs the tree of all logic
+      ++ functions in n variables and exactly k minterms.
+      ++ Use with care as there are \spad{binomial(2^n,k)} of them.
+    subsetTree : (NNI, NNI)  -> %
+      ++ subsetTree(n, k) constructs the tree with depth k
+      ++ for all k-subsets of an n-element set as {1,2,..,n}.
+      ++ Its elements are sorted in decreasing order.
+      ++ A path (p1,p2,..,pk) from root to a leave represents
+      ++ the subset {s1 := n-p1+1,  s2 := s1-p2+1, ...}.
+    pathToSubset : (NNI, NNI, List(NNI)) -> List(Integer)
+      ++ pathToSubset(n, k,  lp) constructs a k-subset of {1,...,n}
+      ++ which corresponds to a leaf of subsetTree(n,k). Elements
+      ++ are in descending Order
+
+  C == Tree(NNI) add
+    ------------------------------------------------------------------
+    --- representation
+    ------------------------------------------------------------------
+    Rep := Tree(NNI)
+    rep(x : %) : Rep == x::Rep
+    per(r : Rep) : % == r::%
+    ------------------------------------------------------------------
+    --- local constants and functioms
+    ------------------------------------------------------------------
+    setCountingValues(lt : List(%)): List(%) ==
+        v : NNI := 0
+        modlt : List Tree NNI := [copy t :: Tree NNI for t in lt]
+        for t in lt for i in 1.. repeat
+            setvalue!(modlt.i, v)
+            v := v + #leaves(t)
+        [retract(t) for t in modlt]
+
+    Delta0 : (NNI, NNI) ->  NNI
+      ++ Delta0(n,k) returns partial sums of binomial(2^n, k).
+    Delta0(n : NNI, s : NNI) : NNI ==
+        reduce("+", [binomial(2^n,i)::NNI for i in 0..s-1], 0)
+
+    insert: (NNI, NNI, List(List(NNI))) -> List(List(NNI))
+      ++ insert(n,i,lpc) is used for inserting n into a cycle such
+      ++ that is becomes \spad{(...,i,n,...)}.
+    insert(i : NNI, n : NNI, lln : List(List(NNI))) : List(List(NNI)) ==
+        found? : Boolean := false
+        ln : List NNI := []
+        j : NNI := 0
+        while not found? for ln in lln repeat
+            j := j + 1
+            p : NNI := position(i, ln)::NNI
+            found? := not zero?(p)
+        ln := concat(concat(first(ln, p), n), rest(ln, p))
+        lln(j) := ln
+        lln
+
+    grtrIntern(la : List(NNI), lb : List(NNI)) : Boolean ==
+        #la > #lb => true
+        #lb > #la => false
+        la > lb
+
+    grtr(lla : List(List(NNI)), llb : List(List(NNI))) : Boolean ==
+        slla : List(NNI) := [#la for la in lla]
+        sllb : List(NNI) := [#lb for lb in llb]
+        slla > sllb => true
+        slla < sllb => false
+        decided? : Boolean := false
+        for la in lla for lb in llb while not decided? repeat
+            decided? := (la > lb)
+            if decided? then return true
+            if not decided? then decided? := (lb > la)
+            if decided? then return false
+        decided?
+    ------------------------------------------------------------------
+    --- from RecursiveAggregate
+    ------------------------------------------------------------------
+    cyclic?(t : %): Boolean == false
+
+    ------------------------------------------------------------------
+    --- from RetractableFrom Tree NNI
+    ------------------------------------------------------------------
+    coerce(t : %) : Tree(NNI) == rep(t)
+    retractIfCan(t : Tree(NNI)) : Union(%, "failed") ==
+        not isLeafIndexingTree?(t) => "failed"
+        per(t)
+
+    ------------------------------------------------------------------
+    --- from Eltable(PositiveInteger, %)
+    ------------------------------------------------------------------
+    elt(t : %, p : PositiveInteger) : % ==
+        leaf?(t) => error "elt: tree is a leaf"
+        p > numberOfChildren(t) => error "elt: second argument too big"
+        children(t)(p)
+    ------------------------------------------------------------------
+    --- from %
+    ------------------------------------------------------------------
+    ------------------------------------------------------------------
+    --- creation and modification of leaf indexing trees
+    ------------------------------------------------------------------
+    leafIndexingTree(v : NNI) : % == per(tree(v))
+
+    leafIndexingTree(lt : List(%)) : % ==
+        v : NNI := 0
+        modlt : List(Tree(NNI)) := [copy(t::Tree(NNI)) for t in lt]
+        for t in lt for i in 1.. repeat
+            setvalue!(modlt(i), v)
+            v := v + #leaves(t)
+        per(tree(0, modlt))
+
+    leafIndexingTree(w : NNI, lt : List(%)) : % ==
+        v : NNI := 0
+        modlt : List(Tree(NNI)) := [copy(t::Tree(NNI)) for t in lt]
+        for t in lt for i in 1.. repeat
+            setvalue!(modlt(i), v)
+            v := v + # leaves t
+        per(tree(w, modlt))
+
+    setValue(t : %, v : NNI) : %  ==
+        leafIndexingTree(v, children(t))
+
+    leafIndexingTree(t : Tree(NNI)) : % ==
+        empty?(t) => retract(t)
+        leaf?(t) => retract(t)
+        leafIndexingTree(setCountingValues([leafIndexingTree(ch) for ch in _
+            children(t)$Tree(NNI)]))
+
+    setchildren!(t : %, lch : List %) : % ==
+        leafIndexingTree(value(t), setCountingValues(lch))
+
+    copy(t : %) : % == leafIndexingTree(value(t), children(t))
+
+    isLeafIndexingTree?(t : Tree(NNI)) :  Boolean ==
+        lct : List(Tree(NNI)) := children(t)
+        empty?(lct) => true
+        leaf?(t) => true
+        cV : List NNI := childrenValues(t)
+        valuesFit? : Boolean := true
+        vF : NNI := 0
+        for cv in cV for c in lct while valuesFit? repeat
+            lc : NNI := numberOfLeaves(c)
+            valuesFit? := (vF = cv)
+            vF := vF + lc
+        not valuesFit? => false
+        while valuesFit? for c in lct repeat
+            valuesFit? := isLeafIndexingTree?(c)
+        valuesFit?
+
+    childrenValues(t : %) : List(NNI) ==
+        leaf?(t) => []
+        [value(c) for c in children(t)]
+
+    numberOfChildren(t : %) : NNI == #children(t)
+
+    numberOfLeaves(t : %) : NNI == #leaves(t)
+
+    ------------------------------------------------------------------
+    --- information on leaf indexing trees
+    ------------------------------------------------------------------
+    nextEdge(r : NNI, lvs : List(NNI)) : NNI ==
+        r = 0 => 1
+        p : NNI := 1
+        for vs in rest lvs while vs <= r repeat
+            p := p+1
+        p
+
+    rank(t : %, path : List(NNI)) :  NNI ==
+        --- check that path really is a path
+        r : NNI := 0
+        node : % := copy(t)
+        for z in path repeat
+            node := children(node)(z)
+            r := r + value(node)
+        r
+
+    unrank(t : %, r : NNI) : List(NNI) ==
+        r >= numberOfLeaves(t) => error "unrank: second argument too large."
+        path : List(NNI) := []
+        finished? : Boolean := false
+        node : % := copy(t)
+        z : NNI := 0
+        while not finished? for i in 1.. repeat
+            finished? := leaf?(node)
+            if not finished? then
+                z := nextEdge(r, childrenValues(node))
+                node := children(node)(z)
+                finished? := leaf?(node)
+                if not finished? then
+                    r := (r - value(node))::NNI
+                path := concat(path, z)
+        path
+
+    enumerate(t : %) : List(List(NNI)) ==
+        [unrank(t, i) for i in 0..numberOfLeaves(t) - 1]
+
+    randomPath(t : %) : List(NNI)  ==
+        r : NNI := random(#leaves(t))
+        unrank(t, r)
+
+    isPathToLeaf?(t : %, ln : List(NNI)) : Boolean ==
+        nd : % := t
+        empty?(ln) => leaf?(nd)
+        isChild? : Boolean := true
+        while isChild? for p in ln repeat
+            isChild? := (1 <= p) and (p <= numberOfChildren(nd))
+            if isChild? then nd := children(nd)(p)
+        leaf?(nd)
+
+    ------------------------------------------------------------------
+    --- creation and construction of leaf indexing trees for some
+    --- combinatorial structures
+    ------------------------------------------------------------------
+    logicFunctionTree(n : NNI, k : NNI) : % ==
+        treeslevel1 : List(%) := [leafIndexingTree(0,
+               [leafIndexingTree(t :: NNI)
+             for t in 0..binomial(2^n, k) - 1])]
+        leafIndexingTree(0, treeslevel1)
+
+    logicFunctionTree(n : NNI) : % ==
+        treeslevel1 : List(%) := [tree(Delta0(n,s), [tree(t::NNI)
+            for t in 0..binomial(2^n, s) - 1]) for s in 0..2^n]
+        leafIndexingTree(0, treeslevel1)
+
+    modify(li : List(Integer)) : List(Integer) ==
+        mli : List(Integer) := []
+        for i in li repeat
+            concat(mli, if zero?(i) then -1 else i)
+        mli
+
+    P(n : NNI, k : NNI) : NNI ==
+        k > n => 0
+        k = 1 => 1
+        k = n => 1
+        P((n - k)::NNI, k) + P((n - 1)::NNI, (k-1)::NNI)
+
+    permutationCyclesTree(n : NNI, k : NNI) :  % ==
+        k > n => empty()
+        k = 0 and k < n => tree(0)
+        k = n => tree(0)
+        k = 1 and n = 2 => tree(0)
+        lch : List(%) := []
+        if k > 1 then
+            lch := [per(tree(0, children permutationCyclesTree((n - 1)::NNI,
+                         (k - 1)::NNI)))]
+        for j in 1..n - 1 repeat
+            lch := concat(lch, per(tree(0, children(
+                          permutationCyclesTree((n - 1)::NNI, k)))))
+        leafIndexingTree(lch)
+
+    pathToPermutationCycles(n : NNI, k : NNI, lp : List(NNI)
+                           ) : List(List(NNI))  ==
+        n' : NNI := n
+        --- lr contains preimages of actual n or 0, if 1-cycle (n)
+        lr : List NNI := []
+        for p in lp repeat
+            if k > 1 then
+                if p = 1 then
+                    n := (n - 1)::NNI
+                    k := (k - 1)::NNI
+                    lr := cons(0, lr)
+                else
+                    n := (n - 1)::NNI
+                    lr := cons((p - 1)::NNI, lr)
+            else
+                if n > 2 then
+                    n := (n - 1)::NNI
+                    lr := cons(p, lr)
+        pc : List(List(NNI)) := []
+        if n = k then pc := [[i] for i in 1..n]
+        if k = 1 and n = 2 then pc :=  [[1, 2]]
+        for p in lr for s in n + 1..n' repeat
+            if p = 0 then
+                pc := concat(pc, [s])
+            else
+                pc := insert(p, s, pc)
+        pc
+
+    unorderedSetPartitionTree(n : NNI, k : NNI) : % ==
+        k > n => empty()
+        k = 1 => leafIndexingTree(0)
+        k = n => leafIndexingTree(0)
+        lch : List(%) := [leafIndexingTree(0, children(
+            unorderedSetPartitionTree((n - 1)::NNI, (k - 1)::NNI)))]
+        for  j in 1..k repeat
+            lch := concat(lch, leafIndexingTree(0, children(
+                unorderedSetPartitionTree((n - 1)::NNI, k))))
+        leafIndexingTree(lch)
+
+    pathToUnorderedSetPartition(n : NNI, k : NNI, lp : List(NNI)
+                               ) : List(List(NNI)) ==
+        n' : NNI := n
+        empty?(lp) => [[i for i in n..1 by -1 ]]
+        lr : List(NNI) := []
+        for p in lp repeat
+            if p = 1 then
+                n := (n - 1)::NNI
+                k := (k - 1)::NNI
+                lr := cons(0, lr)
+            if p >= 2 then
+                n := (n - 1)::NNI
+                lr := cons((p - 1)::NNI, lr)
+        cl : List(List(NNI)) := []
+        if n = k then cl :=  [[i] for i in 1..n]
+        if k = 1 then cl :=  [[i for i in 1..n]]
+        for p in lr for s in n + 1..n' repeat
+            if p = 0 then
+                cl := concat(cl, [s])
+            else
+                cl(p) := cons(s, cl(p))
+        cl := [sort((a, b) +-> a > b, cli) for cli in cl]
+        sort(grtrIntern, cl)$(List List NNI)
+
+    unorderedNumberPartitionTree(n : NNI, k : NNI) : % ==
+        k > n => empty()
+        k = 1 => leafIndexingTree(0)
+        k = n => leafIndexingTree(0)
+        n >= k + k => leafIndexingTree([
+            unorderedNumberPartitionTree((n - k)::NNI, k),
+              unorderedNumberPartitionTree((n - 1)::NNI, (k - 1)::NNI)])
+        leafIndexingTree([unorderedNumberPartitionTree((n - 1)::NNI,
+                                                       (k - 1)::NNI)])
+
+    pathToUnorderedNumberPartition(n : NNI, k : NNI, lp : List(NNI)
+                                  ) : List(NNI) ==
+        lr : List(NNI) := []
+        for p in lp repeat
+            if n >= k + k and p = 1 then
+                n := (n - k)::NNI
+                lr := cons(1, lr)
+            else --- n < kk  or p >= 2
+                n := (n - 1)::NNI
+                k := (k - 1)::NNI
+                lr := cons(0, lr)
+        unp : List(NNI) := []
+        if n = k then unp :=  new(n,1)$List(NNI)
+        if k = 1 then unp :=  [n::NNI]
+        for r in lr repeat
+            if r = 0 then unp := concat(unp, 1)
+            if r = 1 then unp := [u + 1 for u in unp]
+        unp
+
+    subsetTree(n : NNI, k : NNI) : % ==
+        k > n or n = 0 => empty()
+        k = 0 => leafIndexingTree(0)
+        k = 1 => leafIndexingTree([leafIndexingTree(i) for i in 0..n-1])
+        k = n => leafIndexingTree(0)
+        leafIndexingTree([subsetTree((n - 1)::NNI, (k - 1)::NNI),
+                          subsetTree((n - 1)::NNI, k)])
+
+    pathToSubset(n : NNI, k : NNI,  lp : List(NNI)
+                ) : List(Integer) ==
+        ls : List(Integer) := []
+        n = k => [i::Integer for i in n..1 by -1]
+        for p in lp for j in 1.. repeat
+            if k = 1 then
+                ls := concat(ls, (n - p + 1)::NNI)
+            else if p = 1 then
+                ls := concat(ls, n)
+                n := (n - 1)::NNI
+                k := (k - 1)::NNI
+            else if p = 2 and j = #lp then
+                ls := concat(ls, [i for i in k..1 by -1])
+            else
+                n := (n-1)::NNI
+        ls

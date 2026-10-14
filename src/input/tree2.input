@@ -1,0 +1,41 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "trees"
+
+)expose LINDTREE
+
+testcase "leaf indexing trees"
+
+testEquals("#enumerate(subsetTree(7,4))", "binomial(7, 4)")
+testEquals("#enumerate(unorderedSetPartitionTree(7, 3))", "stirling2(7, 3)")
+testEquals("reduce(+, [#enumerate(unorderedNumberPartitionTree(9, k))"
+           " for k in 1..5])",
+              "#entries(complete(partitions(5, 9, 9)))")
+testEquals("#enumerate(permutationCyclesTree(6, 3))", "abs(stirling1(6, 3))")
+testEquals("#enumerate(logicFunctionTree(3))", "256")
+
+mk3(t) == leafIndexingTree([t for i in 1..3])
+
+t0 := leafIndexingTree(0)
+t1 := mk3(t0)
+t2 := mk3(t1)
+t3 := mk3(t2)
+testTrue("isLeafIndexingTree?(t3::Tree(NNI))")
+testTrue("isLeafIndexingTree?(t0::Tree(NNI))")
+nit := tree(42, [tree(1)$Tree(NNI) for i in 1..3])$Tree(NNI)
+testTrue("not(isLeafIndexingTree?(nit))")
+it1 := leafIndexingTree(nit)
+testTrue("isLeafIndexingTree?(it1)")
+testEquals("depth(t3)", "3")
+testEquals("numberOfChildren(t3)", "3")
+testEquals("numberOfNodes(t3, 3)", "27")
+testEquals("numberOfNodes(t3, 2)", "9")
+testEquals("numberOfLeaves(t3)", "27")
+testEquals("#enumerate(t3)", "27")
+testEquals("rank(t3, unrank(t3, 17))", "17")
+testTrue("isPathToLeaf?(t3, unrank(t3, 12))")
+testTrue("isPathToLeaf?(t3, randomPath(t3))")
+testEquals("unrank(t3, 5)", "enumerate(t3)(6)")
+
+statistics()
