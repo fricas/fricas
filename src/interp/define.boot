@@ -32,6 +32,7 @@
 )package "BOOT"
 
 DEFPARAMETER($newCompCompare, false)
+DEFPARAMETER($add_base_ops, nil)
 $insideCategoryPackageIfTrue := false
 $insideCapsuleFunctionIfTrue := false
 $insideCategoryIfTrue := false
@@ -356,6 +357,7 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
        --this is used below to set $lisplibSlot1 global
     $NRTbase: local := 6 -- equals length of domainShell
     $NRTaddForm: local := nil   -- see compAdd; NRTmakeSlot1
+    $add_base_ops: local := nil -- [op, sig] exported by the add base, see compAdd
     $NRTdeltaLength: local := 0 -- length of $NRTdeltaList
     $NRTdeltaList: local := nil --list of misc. elts used in compiled fncts
     -- parallel to $NRTdeltaList, list of COMP-ed forms for $NRTdeltaList
@@ -403,6 +405,12 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     if $LISPLIB then
       augmentLisplibModemapsFromFunctor(parForm,operationAlist,parSignature)
     $functorStats := addStats($functorStats, $functionStats)
+    -- )set compiler missing off stores false
+    if $compilerMissingFunctions and
+         not($insideCategoryPackageIfTrue = true) then
+        $CheckVectorList :=
+            find_missing_functions($lisplibOperationAlist, base_shell,
+                                   target, form)
     reportOnFunctorCompilation($functorStats, op)
 
 --  5. give operator a 'modemap property
@@ -457,25 +465,88 @@ reportOnFunctorCompilation(functorStats, op) ==
   sayBrightly '" "
   'done
 
+-- Exported operations which are not implemented.  An export is
+-- implemented if the capsule defines it, if the add base exports it
+-- (according to the category of the add base) or if a default package
+-- of one of the categories of the domain implements it.  Returns a list
+-- of [[op, sig], :pred] where pred is the condition of the export.
+-- Conditions are not yet compared: a conditional export counts as
+-- implemented if any implementation exists.
+find_missing_functions(op_alist, base_shell, target, form) ==
+    cats := add_category_ancestors([target, :first(base_shell.4),
+             :[first x for x in CADR(base_shell.4)]])
+    -- inside the domain its own form means the same as %
+    implemented := [[op, substitute('%, form, sig)]
+                      for [[op, sig], ., impl] in op_alist
+                        | not(impl is [., ., NIL])]
+    res := nil
+    for [[op, sig0], pred, impl] in op_alist repeat
+        not(impl is [., ., NIL]) => nil
+        sig := substitute('%, form, sig0)
+        member([op, sig], implemented) => nil
+        member([op, sig], $add_base_ops) => nil
+        impossible_pred?(pred, cats) => nil
+        or/[provided_by_default(op, sig, cat) or
+              provided_by_default(op, sig0, cat) for cat in cats] => nil
+        res := [[[op, sig0], :pred], :res]
+    NREVERSE res
+
+-- Can the condition pred never hold?  True if it requires "% has c"
+-- where c is not among the categories (and attributes) cats of the
+-- domain, not even conditionally.
+impossible_pred?(pred, cats) ==
+    pred is [op, "%", c] and MEMQ(op, '(has HasCategory)) =>
+        if c is ["QUOTE", c1] then c := c1
+        not(member(c, cats))
+    pred is [op, :l] and MEMQ(op, '(AND and)) =>
+        or/[impossible_pred?(p, cats) for p in l]
+    pred is [op, :l] and MEMQ(op, '(OR or)) =>
+        and/[impossible_pred?(p, cats) for p in l]
+    false
+
+-- cats together with their ancestors from the database (ancestors of
+-- conditional categories are not in the category object).  In the
+-- database #1, #2, ... are the arguments of the category.
+add_category_ancestors(cats) ==
+    res := nil
+    for cat in cats | cat is [name, :args] and IDENTP(name) repeat
+        res := [cat, :res]
+        pairs := [[v, :a] for v in $FormalMapVariableList for a in args]
+        for [acat, :.] in get_database(name, 'ANCESTORS) repeat
+            res := [SUBLIS(pairs, acat), :res]
+    REMDUP(res)
+
+-- Is [op, sig] implemented in the default package of category cat?
+-- In the default package % is the domain and #2, #3, ... are the
+-- arguments of the category.
+provided_by_default(op, sig, cat) ==
+    not(cat is [name, :args]) or not(IDENTP(name)) => false
+    not(pkg := hasDefaultPackage(name)) => false
+    pairs := [[v, :a] for v in rest($FormalMapVariableList) for a in args]
+    entries := LASSOC(op, get_database(pkg, 'OPERATIONALIST))
+    or/[x is [s, idx, :.] and idx and SUBLIS(pairs, s) = sig
+          for x in entries]
+
+-- Operations exported by the add base, from its category m.
+add_base_operations(m, e) ==
+    u := compMakeCategoryObject(m, e) or return nil
+    [first(x) for x in (first u).1]
+
 displayMissingFunctions() ==
+  null $compilerMissingFunctions => nil
   null $CheckVectorList => nil
-  loc := nil
-  exp := nil
-  for [[op,sig,:.],:pred] in $CheckVectorList  | null pred repeat
-    null member(op,$formalArgList) and
-      getmode(op,$env) is ['Mapping,:.] =>
-        loc := [[op,sig],:loc]
-    exp := [[op,sig],:exp]
-  if loc then
-    sayBrightly ['%l,:bright '"  Missing Local Functions:"]
-    for [op,sig] in loc for i in 1.. repeat
-      sayBrightly ['"      [",i,'"]",:bright op,
-        '": ",:formatUnabbreviatedSig sig]
-  if exp then
-    sayBrightly ['%l,:bright '"  Missing Exported Functions:"]
-    for [op,sig] in exp for i in 1.. repeat
-      sayBrightly ['"      [",i,'"]",:bright op,
-        '": ",:formatUnabbreviatedSig sig]
+  sayBrightly ['%l, :bright '"  Warning: Missing Exported Functions:"]
+  uncond := nil
+  for [[op, sig], :pred] in $CheckVectorList for i in 1.. repeat
+    cond :=
+        TruthP pred =>
+            uncond := true
+            nil
+        ['" if ", :pred2English pred]
+    sayBrightly ['"      [", i, '"]", :bright op,
+        '": ", :formatUnabbreviatedSig sig, :cond]
+  if uncond and $compilerMissingFunctions = 'error then
+    userError ['"missing exported functions in", :bright $op]
 
 --% domain view code
 
@@ -856,6 +927,7 @@ compAdd(['add,$addForm,capsule],m,e) ==
   not(isCategoryForm(m1)) or m1 = '(Category) =>
       userError(concat('"need domain before 'add', got", addForm,
                        '"of type", m1))
+  $add_base_ops := add_base_operations(m1, e)
   compCapsule(capsule,m,e)
 
 compTuple2Record u == ['Record,:[[":",i,x] for i in 1.. for x in rest u]]
