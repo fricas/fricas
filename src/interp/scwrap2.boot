@@ -165,6 +165,10 @@ DEFVAR($restore_list, nil)
 
 DEFVAR($compiler_output_stream, nil)
 
+-- Bound in compDefineLisplib, see note_slot_refs in lisplib.boot.
+DEFVAR($max_slot_ref, nil)
+DEFVAR($domain_vector_length, nil)
+
 DEFPARAMETER($file_apply, nil)
 
 output_lisp_form(form) ==
@@ -176,6 +180,7 @@ output_lisp_defparameter(x, y) ==
     EVAL(form)
 
 print_defun(name, body) ==
+    if $max_slot_ref then note_slot_refs(body)
     print_full2(body, $compiler_output_stream)
 
 DEFVAR($nopiles, false)
