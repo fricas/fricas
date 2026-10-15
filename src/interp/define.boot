@@ -324,8 +324,7 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     $Representation: local := nil
          --Set in doIt, accessed in the compiler - compNoStacking
     $functorLocalParameters: local := nil
-    $CheckVectorList: local := nil
-                  --prevents CheckVector from printing out same message twice
+    $CheckVectorList: local := nil -- missing functions, see find_missing_functions
     $insideFunctorIfTrue: local:= true
     $genSDVar: local:= 0
     originale := e
@@ -444,7 +443,6 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
         output_lisp_form(['MAKEPROP, MKQ(op), ''infovec,
                           getInfovecCode(NRTslot1Info, e)])
       $lisplibOperationAlist:= operationAlist
-      $lisplibMissingFunctions:= $CheckVectorList
     if null argl then
         lisplibWrite('"NILADIC", true, $libFile)
     [fun, ['Mapping, :signature'], originale]

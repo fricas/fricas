@@ -308,11 +308,9 @@ SetFunctionSlots(sig, body, flag, kvec) ==
              body := ['CONS,'IDENTITY,['FUNCALL,a,b]]
           body:= [($QuickCode => 'QSETREFV; 'SETELT),v,index,body]
           if REFVECP $SetFunctions and TruthP flag then u.index:= true
-                 --used by CheckVector to determine which ops are missing
           if v = '% then  -- i.e. we are looking at the principal view
             not REFVECP $SetFunctions => nil
                     --packages don't set it
-            $MissingFunctionInfo.index:= flag
             TruthP $SetFunctions.index => (body:= nil; return nil)
                      -- the function was already assigned
             $SetFunctions.index:=
@@ -342,13 +340,6 @@ SigSlotsMatch(sig,pattern,implem) ==
   sig' := SUBSTQ($definition, '%, CADR(sig))
   sig' = pat' => true
   nil
-
-makeMissingFunctionEntry(alist,i) ==
-  tran SUBLIS(alist,$MissingFunctionInfo.i) where
-    tran x ==
-      x is ["HasCategory",a,["QUOTE",b]] => ['has,a,b]
-      x is [op,:l] and op in '(AND OR NOT) => [op,:[tran y for y in l]]
-      x
 
 --%  Under what conditions may views exist?
 
