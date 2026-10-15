@@ -33,6 +33,9 @@
 
 DEFPARAMETER($newCompCompare, false)
 DEFPARAMETER($add_base_ops, nil)
+DEFPARAMETER($capsule_conds, nil)
+DEFPARAMETER($capsule_def_conds, nil)
+DEFPARAMETER($missing_functions_alist, nil)
 $insideCategoryPackageIfTrue := false
 $insideCapsuleFunctionIfTrue := false
 $insideCategoryIfTrue := false
@@ -358,6 +361,8 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     $NRTbase: local := 6 -- equals length of domainShell
     $NRTaddForm: local := nil   -- see compAdd; NRTmakeSlot1
     $add_base_ops: local := nil -- [op, sig] exported by the add base, see compAdd
+    $capsule_conds: local := nil -- conditions of enclosing ifs, see doItIf
+    $capsule_def_conds: local := nil -- [[op, sig], :conds] of capsule functions
     $NRTdeltaLength: local := 0 -- length of $NRTdeltaList
     $NRTdeltaList: local := nil --list of misc. elts used in compiled fncts
     -- parallel to $NRTdeltaList, list of COMP-ed forms for $NRTdeltaList
@@ -406,11 +411,14 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
       augmentLisplibModemapsFromFunctor(parForm,operationAlist,parSignature)
     $functorStats := addStats($functorStats, $functionStats)
     -- )set compiler missing off stores false
-    if $compilerMissingFunctions and
-         not($insideCategoryPackageIfTrue = true) then
-        $CheckVectorList :=
+    $CheckVectorList :=
+        $compilerMissingFunctions and
+          not($insideCategoryPackageIfTrue = true) =>
             find_missing_functions($lisplibOperationAlist, base_shell,
-                                   target, form)
+                                   target, form, e)
+        nil
+    $missing_functions_alist :=
+        [[op, :$CheckVectorList], :$missing_functions_alist]
     reportOnFunctorCompilation($functorStats, op)
 
 --  5. give operator a 'modemap property
@@ -468,40 +476,147 @@ reportOnFunctorCompilation(functorStats, op) ==
 -- Exported operations which are not implemented.  An export is
 -- implemented if the capsule defines it, if the add base exports it
 -- (according to the category of the add base) or if a default package
--- of one of the categories of the domain implements it.  Returns a list
--- of [[op, sig], :pred] where pred is the condition of the export.
--- Conditions are not yet compared: a conditional export counts as
--- implemented if any implementation exists.
-find_missing_functions(op_alist, base_shell, target, form) ==
+-- of one of the categories of the domain implements it.  For capsule
+-- functions defined inside "if" the condition of the export must imply
+-- the condition of one of the definitions.  Returns a list of
+-- [[op, sig], pred, impl_pred] where pred is the condition of the
+-- export and impl_pred (if not nil) the condition under which it is
+-- implemented.
+find_missing_functions(op_alist, base_shell, target, form, e) ==
     cats := add_category_ancestors([target, :first(base_shell.4),
              :[first x for x in CADR(base_shell.4)]])
+    params := rest(form)
     -- inside the domain its own form means the same as %
     implemented := [[op, substitute('%, form, sig)]
                       for [[op, sig], ., impl] in op_alist
                         | not(impl is [., ., NIL])]
     res := nil
-    for [[op, sig0], pred, impl] in op_alist repeat
-        not(impl is [., ., NIL]) => nil
+    for [[op, sig0], pred0, impl] in op_alist repeat
         sig := substitute('%, form, sig0)
+        pred := simplify_pred(pred0, cats, params, e)
+        pred = false => nil
+        inherited :=
+            member([op, sig], $add_base_ops) or
+              or/[provided_by_default(op, sig, cat) or
+                    provided_by_default(op, sig0, cat) for cat in cats]
+        not(impl is [., ., NIL]) =>
+            -- the cases not covered by the capsule may be covered by the
+            -- add base or a default
+            inherited => nil
+            impl_pred := capsule_impl_pred(op, sig, form)
+            impl_pred = true => nil
+            implies_pred?(pred, impl_pred, cats) => nil
+            res := [[[op, sig0], pred, impl_pred], :res]
         member([op, sig], implemented) => nil
-        member([op, sig], $add_base_ops) => nil
-        impossible_pred?(pred, cats) => nil
-        or/[provided_by_default(op, sig, cat) or
-              provided_by_default(op, sig0, cat) for cat in cats] => nil
-        res := [[[op, sig0], :pred], :res]
+        inherited => nil
+        res := [[[op, sig0], pred, nil], :res]
     NREVERSE res
 
--- Can the condition pred never hold?  True if it requires "% has c"
--- where c is not among the categories (and attributes) cats of the
--- domain, not even conditionally.
-impossible_pred?(pred, cats) ==
-    pred is [op, "%", c] and MEMQ(op, '(has HasCategory)) =>
-        if c is ["QUOTE", c1] then c := c1
-        not(member(c, cats))
+-- The condition under which the capsule defines [op, sig]: true if one
+-- definition is unconditional or if nothing is recorded (the slot was
+-- filled in another way), otherwise the disjunction of the conditions.
+capsule_impl_pred(op, sig, form) ==
+    conds := [MKPF(c, 'AND) for [[o, s], :c] in $capsule_def_conds
+                | o = op and substitute('%, form, s) = sig]
+    null conds => true
+    or/[null c for [[o, s], :c] in $capsule_def_conds
+          | o = op and substitute('%, form, s) = sig] => true
+    MKPF(conds, 'OR)
+
+-- Simplify the condition pred of an export: atoms "x has c" are
+-- decided where possible; "% has c" is false if c is not among the
+-- categories cats of the domain, "D has c" for a concrete domain D is
+-- decided from the category of D.  Returns true, false or a condition.
+simplify_pred(pred, cats, params, e) ==
+    TruthP pred => true
     pred is [op, :l] and MEMQ(op, '(AND and)) =>
-        or/[impossible_pred?(p, cats) for p in l]
+        l := [simplify_pred(p, cats, params, e) for p in l]
+        MEMQ(false, l) => false
+        l := [p for p in l | p ~= true]
+        null l => true
+        MKPF(l, 'AND)
     pred is [op, :l] and MEMQ(op, '(OR or)) =>
-        and/[impossible_pred?(p, cats) for p in l]
+        l := [simplify_pred(p, cats, params, e) for p in l]
+        MEMQ(true, l) => true
+        l := [p for p in l | p ~= false]
+        null l => false
+        MKPF(l, 'OR)
+    pred is [op, p] and MEMQ(op, '(NOT not)) =>
+        p := simplify_pred(p, cats, params, e)
+        p = true => false
+        p = false => true
+        ['not, p]
+    pred is [op, x, c] and MEMQ(op, '(has HasCategory)) =>
+        if c is ["QUOTE", c1] then c := c1
+        x = "%" =>
+            member(c, cats) => ['has, x, c]
+            false
+        ground_form?(x, params) => ground_has(x, c, e, pred)
+        ['has, x, c]
+    pred
+
+-- Does form x contain neither % nor a parameter of the functor?
+ground_form?(x, params) ==
+    x = "%" or MEMQ(x, params) => false
+    atom x => true
+    and/[ground_form?(y, params) for y in x]
+
+-- Decide "x has c" for a concrete domain x from its category: true if c
+-- is an unconditional ancestor, pred (undecided) if it is a conditional
+-- one, false otherwise.
+ground_has(x, c, e, pred) ==
+    T := comp_no_warn(x, $EmptyMode, e) or return pred
+    u := compMakeCategoryObject(T.mode, e) or return pred
+    anc := (first u).4
+    uncond := add_category_ancestors([T.mode, :first(anc),
+                :[first y for y in CADR(anc) | TruthP CADR(y)]])
+    member(c, uncond) => true
+    member(c, [first y for y in CADR(anc)]) => pred
+    false
+
+-- Is "p implies q" provable?  The atoms are treated as independent
+-- propositions, except that "x has A" implies "x has B" if B is an
+-- ancestor of A.  All assignments of truth values are checked; with too
+-- many atoms the answer is true (no warning).
+implies_pred?(p, q, cats) ==
+    p = false or q = true => true
+    atoms := REMDUP([:pred_atoms(p), :pred_atoms(q)])
+    #atoms > 12 => true
+    axioms := "append"/[[[a, :b] for b in atoms | atom_implies?(a, b)]
+                          for a in atoms]
+    n := #atoms
+    counterexample := false
+    for k in 0..(ASH(1, n) - 1) while not(counterexample) repeat
+        vals := [[a, :LOGBITP(i, k)] for a in atoms for i in 0..]
+        or/[QCDR(assoc(a, vals)) and not(QCDR(assoc(b, vals)))
+              for [a, :b] in axioms] => nil
+        if eval_pred(p, vals) and not(eval_pred(q, vals)) then
+            counterexample := true
+    not(counterexample)
+
+pred_atoms(p) ==
+    p = true or p = false => nil
+    p is [op, :l] and MEMQ(op, '(AND and OR or)) =>
+        "append"/[pred_atoms(x) for x in l]
+    p is [op, x] and MEMQ(op, '(NOT not)) => pred_atoms(x)
+    [p]
+
+eval_pred(p, vals) ==
+    p = true => true
+    p = false => false
+    p is [op, :l] and MEMQ(op, '(AND and)) => and/[eval_pred(x, vals) for x in l]
+    p is [op, :l] and MEMQ(op, '(OR or)) => or/[eval_pred(x, vals) for x in l]
+    p is [op, x] and MEMQ(op, '(NOT not)) => not(eval_pred(x, vals))
+    QCDR(assoc(p, vals))
+
+-- "x has A" implies "x has B" if B is an ancestor of A.
+atom_implies?(a, b) ==
+    a = b => false
+    a is [op1, x, ca] and MEMQ(op1, '(has HasCategory)) and
+      b is [op2, =x, cb] and MEMQ(op2, '(has HasCategory)) =>
+        if ca is ["QUOTE", ca1] then ca := ca1
+        if cb is ["QUOTE", cb1] then cb := cb1
+        member(cb, add_category_ancestors([ca]))
     false
 
 -- cats together with their ancestors from the database (ancestors of
@@ -532,19 +647,27 @@ add_base_operations(m, e) ==
     u := compMakeCategoryObject(m, e) or return nil
     [first(x) for x in (first u).1]
 
+-- Number of missing functions found when constructor name was compiled
+-- last (used by the regression tests).
+missing_functions_count(name) == #LASSOC(name, $missing_functions_alist)
+
 displayMissingFunctions() ==
   null $compilerMissingFunctions => nil
   null $CheckVectorList => nil
   sayBrightly ['%l, :bright '"  Warning: Missing Exported Functions:"]
   uncond := nil
-  for [[op, sig], :pred] in $CheckVectorList for i in 1.. repeat
+  for [[op, sig], pred, impl_pred] in $CheckVectorList for i in 1.. repeat
     cond :=
         TruthP pred =>
-            uncond := true
+            if null impl_pred then uncond := true
             nil
         ['" if ", :pred2English pred]
+    impl :=
+        impl_pred => ['" (implemented only if ", :pred2English impl_pred,
+                      '")"]
+        nil
     sayBrightly ['"      [", i, '"]", :bright op,
-        '": ", :formatUnabbreviatedSig sig, :cond]
+        '": ", :formatUnabbreviatedSig sig, :cond, :impl]
   if uncond and $compilerMissingFunctions = 'error then
     userError ['"missing exported functions in", :bright $op]
 
@@ -691,6 +814,8 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
 
     $signatureOfForm:= signature' --this global is bound in compCapsuleItems
     $functionLocations := [[[op, signature']], :$functionLocations]
+    $capsule_def_conds := [[[op, signature'], :$capsule_conds],
+                           :$capsule_def_conds]
     e:= addDomain(first signature',e)
 
     --4. introduce needed domains into extendedEnv
@@ -1063,10 +1188,14 @@ isMacro(x,e) ==
 doItIf(item is [., p, x, y], $predl, e) ==
     olde := e
     [p', ., e] := comp(p, $Boolean, e) or userError ['"not a Boolean:", p]
+    saved_conds := $capsule_conds
     if x ~= "noBranch" then
+        $capsule_conds := [p, :saved_conds]
         compSingleCapsuleItem(x, $predl, getSuccessEnvironment(p, e))
     if y ~= "noBranch" then
+        $capsule_conds := [['not, p], :saved_conds]
         compSingleCapsuleItem(y, $predl, getInverseEnvironment(p, olde))
+    $capsule_conds := saved_conds
     RPLACA(item, "COND")
     RPLACD(item, [[p', x], ['(QUOTE T), y]])
     olde

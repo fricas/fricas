@@ -1,0 +1,20 @@
+)abbrev domain MISSCOND MissingCond
+++ Test domain for the check for missing functions with conditional
+++ exports and implementations (R has Field implies R has Ring):
+++   foo1: exported if Ring,  implemented if Ring   -> ok
+++   foo2: exported if Ring,  implemented if Field  -> missing if not Field
+++   foo3: exported if Field, implemented if Ring   -> ok
+++   foo4: exported if Field, not implemented       -> missing
+MissingCond(R : SetCategory) : with
+    if R has Ring then
+        foo1 : () -> Integer
+        foo2 : () -> Integer
+    if R has Field then
+        foo3 : () -> Integer
+        foo4 : () -> Integer
+  == add
+    if R has Ring then
+        foo1() == 1
+        foo3() == 3
+    if R has Field then
+        foo2() == 2
