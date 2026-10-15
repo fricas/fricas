@@ -152,6 +152,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   $libFile: local := NIL
   $lisplibCategory: local := nil
   $compiler_output_stream : local := nil
+  $comp_arg_cache : local := MAKE_HASHTABLE('EQ) -- see comp_arg
   --for categories, is rhs of definition; otherwise, is target of functor
   --will eventually become the "constructorCategory" property in lisplib
   --set in compDefineCategory1 if category, otherwise in finalizeLisplib
