@@ -1,0 +1,25 @@
+)abbrev package CADEEP CompArgDeep
+++ Long products of overloaded operations (issue #169).
+CompArgDeep(C): Exports == Implementation where
+  C: IntegralDomain
+  Exports ==> with
+    if C has Field then
+        kleinJBounds: (C, C, Boolean) -> List C
+  Implementation ==> add
+    if C has Field then
+        kleinJBounds(ql: C, qh: C, pos?: Boolean): List C ==
+            tt2l := ql; tt2h := qh
+            tt3l := ql; tt3h := qh
+            ss2l := ql; ss2h := qh
+            ssl  := ql; ssh  := qh
+            uul := 56*tt2l*tt3l*(ql^2*tt2l^2+tt3l^2) + ss2l
+            uuh := 56*tt2h*tt3h*(qh^2*tt2h^2+tt3h^2) + ss2h
+            vvl := 2*(ql^4*tt2l^4 + tt3l^4) + 140*ql^2*tt2l^2*tt3l^2
+            vvh := 2*(qh^4*tt2h^4 + tt3h^4) + 140*qh^2*tt2h^2*tt3h^2
+            if pos? then
+                wl := 32*(ql*uul+vvl)^3 / qh*ss2h*ssh^8
+                wh := 32*(qh*uuh+vvh)^3 / ql*ss2l*ssl^8
+              else
+                wl := 32*(ql*uul-vvl)^3 / ql*ss2l*ssl^8
+                wh := 32*(qh*uuh-vvh)^3 / qh*ss2h*ssh^8
+            [wl, wh]
