@@ -221,11 +221,15 @@ comp_arg_same_state(s1, s2) ==
     #s1 = #s2 and and/[EQ(x1, x2) for x1 in s1 for x2 in s2]
 
 -- If after is [:new, :before], return new, otherwise "failed".
+-- A loop, not a recursion: the stacks can get very long (issue #169).
 comp_arg_new_items(after, before) ==
-    EQ(after, before) => nil
-    ATOM(after) => "failed"
-    (new := comp_arg_new_items(rest(after), before)) = "failed" => "failed"
-    [first(after), :new]
+    new := nil
+    l := after
+    while not(EQ(l, before)) and CONSP(l) repeat
+        new := [first(l), :new]
+        l := rest(l)
+    EQ(l, before) => NREVERSE(new)
+    "failed"
 
 comp_arg(y, m, e) ==
     null($comp_arg_cache) or not(BOUNDP('$compStack))
