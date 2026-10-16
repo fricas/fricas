@@ -659,15 +659,21 @@ displayMissingFunctions() ==
         TruthP pred =>
             if null impl_pred then uncond := true
             nil
-        ['" if ", :pred2English pred]
+        ['" if ", :pred_words pred]
     impl :=
-        impl_pred => ['" (implemented only if ", :pred2English impl_pred,
+        impl_pred => ['" (implemented only if ", :pred_words impl_pred,
                       '")"]
         nil
     sayBrightly ['"      [", i, '"]", :bright op,
         '": ", :formatUnabbreviatedSig sig, :cond, :impl]
   if uncond and $compilerMissingFunctions = 'error then
     userError ['"missing exported functions in", :bright $op]
+
+-- pred2English gives a list of words, or a single word for a condition
+-- that is a plain variable, e.g. "if frobenius? then" in ModMonic.
+pred_words(pred) ==
+  LISTP(words := pred2English pred) => words
+  [words]
 
 --% domain view code
 
