@@ -254,7 +254,7 @@ DescendCode(code, flag, viewAssoc, EnvToPass, kvec, e) ==
         CONTAINED('%, body) and isDomainForm(body, e) =>
           --instantiate domains which depend on $ after constants are set
           code := [($QuickCode => 'QSETREFV; 'SETELT),
-                    [($QuickCode => 'QREFELT; 'ELT), '%, 5],
+                    dom_slot_ref(5),
                       #$locals - #u, code]
           $epilogue:=
             TruthP flag => [code,:$epilogue]

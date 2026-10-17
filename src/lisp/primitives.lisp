@@ -642,26 +642,17 @@
   `(the fixnum (length (the #-ecl simple-string
                             #+ecl string ,x))))
 
-;; (QREFELT % k) with a constant k reads slot k of the domain vector.  On
-;; SBCL we omit the bounds check for this form, and only for it; all other
-;; uses of QREFELT keep the check.  Omitting it is safe:
-;;  - At run time % is always the domain vector created by the constructor
-;;    in the same file by (GETREFV n): functions receive it as their last
-;;    argument, and NRTEVAL slot entries are evaluated with % bound to it
-;;    (nrtEval, evalSlotDomain).  The length n never changes.
-;;  - The Spad compiler checks that every (QREFELT % k) it writes has k < n
-;;    and stops with an error otherwise (check_slot_refs in lisplib.boot).
-;;  - SBCL still checks that % is a simple-vector.
-;; So the omitted check could never fail.  We omit it because SBCL spends
-;; time quadratic in the number of bounds checks in long functions with many
-;; slot references (domain constructors in particular), which made compiling
-;; the algebra much slower.
-(defmacro qrefelt (vec ind)
+(defmacro qrefelt (vec ind) `(svref ,vec ,ind))
+;; (DOM_SLOT % k) reads slot k of the domain vector %.  The Spad compiler
+;; writes it only with a constant k that is in range by construction (see
+;; dom_slot_ref in nruncomp.boot), so on SBCL we omit the bounds check.
+;; SBCL spends time quadratic in the number of bounds checks in long
+;; functions with many slot references (domain constructors in
+;; particular), which made compiling the algebra much slower.
+(defmacro DOM_SLOT (vec ind)
     #+:sbcl
-    (if (and (symbolp vec) (string= (symbol-name vec) "%") (integerp ind))
-        `(locally (declare (optimize (sb-c:insert-array-bounds-checks 0)))
-             (svref ,vec ,ind))
-        `(svref ,vec ,ind))
+    `(locally (declare (optimize (sb-c:insert-array-bounds-checks 0)))
+         (svref ,vec ,ind))
     #-:sbcl
     `(svref ,vec ,ind))
 

@@ -406,7 +406,7 @@ formatSlotDomain1(x, infovec) ==
   x is ['NRTEVAL, y] =>
       INTEGERP(y) or STRINGP(y) => ['QUOTE, y]
       SYMBOLP(y) => [y]
-      y is ["QREFELT", "%", k] and INTEGERP(k) =>
+      y is [op, "%", k] and MEMQ(op, '(QREFELT DOM_SLOT)) and INTEGERP(k) =>
           val := infovec.0.k
           formatSlotDomain1(val, infovec)
       y

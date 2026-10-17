@@ -739,7 +739,6 @@ getSignature(op, argModeList, e) ==
 
 
 putInLocalDomainReferences (def := [opName,[lam,varl,body]]) ==
-  $elt: local := ($QuickCode => 'QREFELT; 'ELT)
   NRTputInTail CDDADR def
   def
 

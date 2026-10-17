@@ -152,8 +152,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   $libFile: local := NIL
   $lisplibCategory: local := nil
   $compiler_output_stream : local := nil
-  $max_slot_ref : local := -1
-  $domain_vector_length : local := nil
   --for categories, is rhs of definition; otherwise, is target of functor
   --will eventually become the "constructorCategory" property in lisplib
   --set in compDefineCategory1 if category, otherwise in finalizeLisplib
@@ -166,7 +164,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
       PROGN(initializeLisplib(name),
             sayMSG ['"   compiling into ", $spadLibFT, :bright libName],
             res := FUNCALL(fn, df, m, e, prefix, fal),
-            check_slot_refs(),
             sayMSG ['"   finalizing ",$spadLibFT,:bright libName],
             finalizeLisplib($libFile)),
       PROGN(if $compiler_output_stream then CLOSE($compiler_output_stream),
@@ -181,32 +178,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   else
       merge_info_from_objects([get_database(op, 'ABBREVIATION)], [], false)
   res
-
--- QREFELT omits the bounds check at run time for (QREFELT % k) with a
--- constant k (see primitives.lisp).  This is safe because we check here,
--- at compile time, that every such k is smaller than the length n of the
--- domain vector, which the constructor creates by (LETT % (GETREFV n)).
--- print_defun calls note_slot_refs on everything written to the file.
-
-note_slot_refs(x) ==
-    VECP(x) =>
-        for i in 0..MAXINDEX(x) repeat note_slot_refs(x.i)
-    ATOM(x) => nil
-    x is ["QREFELT", "%", k] and INTEGERP(k) =>
-        if k > $max_slot_ref then $max_slot_ref := k
-    if x is [op, "%", ["GETREFV", n]] and MEMQ(op, '(LETT LET SETQ)) then
-        $domain_vector_length := n
-    while CONSP(x) repeat
-        note_slot_refs(first(x))
-        x := rest(x)
-
-check_slot_refs() ==
-    $max_slot_ref < 0 => nil
-    INTEGERP($domain_vector_length) and
-      $max_slot_ref < $domain_vector_length => nil
-    unexpected_error(['"check_slot_refs",
-        CONCAT('"slot ", STRINGIMAGE($max_slot_ref),
-               '" is outside of the domain vector")])
 
 initializeLisplib libName ==
   erase_lib0(libName, '"erlib")
