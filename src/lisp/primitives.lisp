@@ -643,6 +643,18 @@
                             #+ecl string ,x))))
 
 (defmacro qrefelt (vec ind) `(svref ,vec ,ind))
+;; (DOM_SLOT % k) reads slot k of the domain vector %.  The Spad compiler
+;; writes it only with a constant k that is in range by construction (see
+;; dom_slot_ref in nruncomp.boot), so on SBCL we omit the bounds check.
+;; SBCL spends time quadratic in the number of bounds checks in long
+;; functions with many slot references (domain constructors in
+;; particular), which made compiling the algebra much slower.
+(defmacro DOM_SLOT (vec ind)
+    #+:sbcl
+    `(locally (declare (optimize (sb-c:insert-array-bounds-checks 0)))
+         (svref ,vec ,ind))
+    #-:sbcl
+    `(svref ,vec ,ind))
 
 (defmacro qrplaca (a b) `(rplaca (the cons ,a) ,b))
 
