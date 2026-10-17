@@ -147,7 +147,7 @@ optCall (x is ["call",:u]) ==
     q = "CONST" => ["spadConstant", R, n]
     --putInLocalDomainReferences will change this to ELT or QREFELT
     rplac(first x, "SPADCALL")
-    if $QuickCode then RPLACA(fn,"QREFELT")
+    if $QuickCode then RPLACA(fn, quick_elt(R, n))
     rplac(rest x, [:a, fn])
     x
   systemErrorHere '"optCall"
@@ -193,9 +193,14 @@ optSpecialCall(x,y,n) ==
     x
   [fn,:a]:= first x
   rplac(first x, "SPADCALL")
-  if $QuickCode then RPLACA(fn,"QREFELT")
+  if $QuickCode then RPLACA(fn, quick_elt(y, n))
   rplac(rest x, [:a, fn])
   x
+
+-- the accessor for slot n of the domain vector dom
+quick_elt(dom, n) ==
+    dom = '% and INTEGERP(n) => first(dom_slot_ref(n))
+    "QREFELT"
 
 compileTimeBindingOf u ==
   NULL(name:= BPINAME u)  => system_error("S2OO0001",
