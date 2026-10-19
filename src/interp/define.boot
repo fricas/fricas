@@ -354,7 +354,6 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
 -->>-- next global initialized here, reset by NRTbuildFunctor
     $NRTslot1PredicateList: local := nil
        --this is used below to set $lisplibSlot1 global
-    $NRTbase: local := 6 -- equals length of domainShell
     $NRTaddForm: local := nil   -- see compAdd; NRTmakeSlot1
     $NRTdeltaLength: local := 0 -- length of $NRTdeltaList
     $NRTdeltaList: local := nil --list of misc. elts used in compiled fncts
@@ -428,7 +427,6 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
         output_lisp_form(['MAKEPROP, MKQ(op), ''infovec,
                           getInfovecCode(NRTslot1Info, e)])
       $lisplibOperationAlist:= operationAlist
-      $lisplibMissingFunctions:= $CheckVectorList
     if null argl then
         lisplibWrite('"NILADIC", true, $libFile)
     [fun, ['Mapping, :signature'], originale]
@@ -840,7 +838,6 @@ compAdd(['add,$addForm,capsule],m,e) ==
          '"from", ''%b, MKQ($edit_file), ''%d, _
          '"needs to be compiled"]]]],
      m, e]
-  $addFormLhs: local:= addForm
   if addForm is ["SubDomain", domainForm, predicate] then
     $NRTaddForm := domainForm
     NRTgetLocalIndex(domainForm, e)
@@ -865,7 +862,6 @@ compCapsule(['CAPSULE,:itemList],m,e) ==
   compCapsuleInner(itemList, m, addDomain('%, e))
 
 compSubDomain(["SubDomain",domainForm,predicate],m,e) ==
-  $addFormLhs: local:= domainForm
   $addForm: local := nil
   $NRTaddForm := domainForm
   [$addForm,.,e]:= compSubDomain1(domainForm,predicate,m,e)

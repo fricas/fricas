@@ -43,7 +43,6 @@ $lisplibKind := nil
 $lisplibModemapAlist := []
 $lisplibModemap := nil
 $lisplibOperationAlist := []
-$lisplibMissingFunctions := []
 
 --% Standard Library Creation Functions
 

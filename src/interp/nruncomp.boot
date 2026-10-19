@@ -31,6 +31,8 @@
 
 )package "BOOT"
 
+DEFCONSTANT($NRTbase, 6)
+
 -----------------------------NEW buildFunctor CODE-----------------------------
 NRTaddDeltaCode(kvec) ==
 --NOTES: This function is called from buildFunctor to initially
@@ -493,7 +495,6 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
   $GENNO: local:= 0     --bound in compDefineFunctor1, then as parameter here
   $catvecList: local    --list of vectors v1..vn for each view
   $SetFunctions: local  --copy of p view with preds telling when fnct defined
-  $MissingFunctionInfo: local --vector marking which functions are assigned
   $ConstantAssignments: local --code for creation of constants
   $epilogue: local := nil     --code to set slot 5, things to be done last
   $extraParms:local  --Set in DomainSubstitutionFunction, used in setVector12
@@ -514,7 +515,6 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
   for i in 0..4 repeat domainShell.i := base_shell.i
   $template := GETREFV (6 + $NRTdeltaLength)
   $SetFunctions:= GETREFV(#domainShell)
-  $MissingFunctionInfo:= GETREFV(#domainShell)
   catNames := ['%, :[GENVAR() for u in rest(catvecListMaker)]]
   domname:='dv_$
 
@@ -544,7 +544,6 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
          :predBitVectorCode2, ['SETF, 'pv_$, dom_slot_ref(3)],
             storeOperationCode]
 
-  $CheckVectorList := NRTcheckVector domainShell
 --CODE: part 1
   devaluate_code := [['LET,b, maybe_devaluate(a, c)]
                       for [a,:b] in $devaluateList for c in $functor_cosig1]
@@ -572,25 +571,6 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
   --sayBrightly '"------------------functor code: -------------------"
   --pp ans
   ans
-
-NRTcheckVector domainShell ==
---RETURNS: an alist (((op,sig),:pred) ...) of missing functions
-  alist := nil
-  for i in 6..MAXINDEX domainShell repeat
---Vector elements can be one of
--- (a) T           -- item was marked
--- (b) NIL         -- item is a domain; will be filled in by setVector4part3
--- (c) categoryForm-- it was a domain view; now irrelevant
--- (d) op-signature-- store missing function info in $CheckVectorList
-    v:= domainShell.i
-    v=true => nil  --item is marked; ignore
-    null v => nil  --a domain, which setVector4part3 will fill in
-    atom v => systemErrorHere '"CheckVector"
-    atom first v => nil  --category form; ignore
-    assoc(first v,alist) => nil
-    alist:=
-      [[first v,:$SetFunctions.i],:alist]
-  alist
 
 NRTsetVector4Part1(sigs, forms, conds, base_shell, e) ==
     uncond_list := nil
