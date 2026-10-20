@@ -154,11 +154,20 @@ intersectionContour(c, c', ce) ==
       interVars:= intersection(varlist,varlist')
       unionVars:= union(varlist,varlist')
       diffVars:= setDifference(unionVars,interVars)
+      -- a variable changed in one branch only, but known before the
+      -- if: intersect with its properties before the if
+      oldVars := [x for x in diffVars | getProplist(x, ce)]
+      diffVars := setDifference(diffVars, oldVars)
       modeAssoc := buildModeAssoc(diffVars, c, c', ce)
       [:modeAssoc,:
         [[x,:proplist]
           for [x,:y] in c | member(x,interVars) and
-            (proplist := interProplist(y, LASSOC($var := x, c'), ce))]]
+            (proplist := interProplist(y, LASSOC($var := x, c'), ce))],
+        :[[x, :proplist] for x in oldVars |
+            (proplist := interProplist(LASSOC($var := x, c) or
+                                         getProplist(x, ce),
+                                       LASSOC(x, c') or getProplist(x, ce),
+                                       ce))]]
     interProplist(p, p', ce) ==
                             --p is new proplist; p' is old one
         [:modeCompare(p, p', ce), :[pair' for pair in p |
