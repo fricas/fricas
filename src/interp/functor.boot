@@ -241,7 +241,6 @@ SetFunctionSlots(sig, body, flag, kvec) ==
                 body := ['CONS, 'IDENTITY, ['FUNCALL, a, b]]
             body := [($QuickCode => 'QSETREFV; 'SETELT), '%, index, body]
             if REFVECP($SetFunctions) and TruthP(flag) then kvec.index:= true
-                 --used by CheckVector to determine which ops are missing
             not REFVECP($SetFunctions) => nil
                     --packages don't set it
             TruthP($SetFunctions.index) => (body := nil; return nil)

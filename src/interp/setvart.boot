@@ -100,6 +100,13 @@ DEFPARAMETER($setOptions, '(
        setInputLibrary
        NIL
        htSetInputLibrary)
+      (missing
+       "report exported functions which are not implemented"
+       interpreter
+       LITERALS
+       $compilerMissingFunctions
+       (warn error off)
+       warn)
       (args
        "arguments for compiling FriCAS code"
        interpreter

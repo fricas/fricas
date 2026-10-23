@@ -1,0 +1,35 @@
+-- Check for exported functions which are not implemented
+-- (")set compiler missing", see find_missing_functions in src/interp/define.boot)
+
+-- )compile clears the state of the unittest domains, so compile first
+)compile MissingFoo.spad
+)compile MissingBase.spad
+)compile MissingCond.spad
+)set compiler missing off
+)compile MissingOff.spad
+)set compiler missing warn
+
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "missingfun"
+
+testcase "unconditional export without implementation"
+testEquals("integer(missing_functions_count('MissingFoo)$Lisp)", "1")
+testEquals("foo()$MissingFoo", "1")
+
+testcase "operations from the add base and from defaults"
+testEquals("integer(missing_functions_count('MissingBase)$Lisp)", "1")
+testTrue("(foo()$MissingBase = foo()$MissingBase)@Boolean")
+testTrue("not((foo()$MissingBase ~= foo()$MissingBase)@Boolean)")
+
+testcase "conditional exports and implementations"
+testEquals("integer(missing_functions_count('MissingCond)$Lisp)", "2")
+testEquals("foo1()$MissingCond(Integer)", "1")
+testEquals("foo2()$MissingCond(Fraction(Integer))", "2")
+testEquals("foo3()$MissingCond(Fraction(Integer))", "3")
+
+testcase "check switched off"
+testEquals("integer(missing_functions_count('MissingOff)$Lisp)", "0")
+
+statistics()
