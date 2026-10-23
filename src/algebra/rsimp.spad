@@ -1,3 +1,29 @@
+)abbrev package CINTSQF CheapIntegerSquareFree
+CheapIntegerSquareFree() : Exports == Implementation where
+  N ==> NonNegativeInteger
+  Z ==> Integer
+  fac_RZ ==> Record(flag : Union("nil", "sqfr", "irred", "prime"),
+                    factor : Z, exponent : N)
+  fRes ==> Record(coef : Z, factors : List(fac_RZ))
+
+  Exports ==> with
+    square_free : Z -> fRes
+
+  Implementation ==> add
+
+    square_free(x : Z) : fRes ==
+        u0 : Z :=
+            x > 0 => 1
+            x := -x
+            -1
+        f1 :=
+            BasicSieve(x, 1000)$IntegerFactorizationPackage(Z)
+        fl := factorList(f1)
+        u1 := unit(f1)
+        u1 = 1 => [u0, fl]
+        pr := perfectNthRoot(u1)$IntegerRoots(Z)
+        [u0, cons(["nil", pr.base, pr.exponent]$fac_RZ, fl)]
+
 )abbrev package ROOTUT RootUtilities
 ++ Description: This package implements 'complex_roots'.
 RootUtilities(R, F) : Exports == Implementation where
