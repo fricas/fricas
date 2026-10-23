@@ -150,6 +150,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   $lisplibSuperDomain: local := NIL
   $libFile: local := NIL
   $lisplibCategory: local := nil
+  $env_lookup_cache : local := MAKE_HASHTABLE('EQ) -- see searchCurrentEnv
   $compiler_output_stream : local := nil
   $comp_arg_cache : local := MAKE_HASHTABLE('EQ) -- see comp_arg
   --for categories, is rhs of definition; otherwise, is target of functor

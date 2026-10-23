@@ -336,9 +336,29 @@ search(x,e is [curEnv,:tailEnv]) ==
   searchCurrentEnv(x,curEnv)
 
 searchCurrentEnv(x,currentEnv) ==
+  $env_lookup_cache => search_env_cached(x, currentEnv)
+  search_current_env1(x, currentEnv)
+
+search_current_env1(x, currentEnv) ==
   for contour in currentEnv repeat
     if u:= ASSQ(x,contour) then return (signal:= u)
   IFCDR signal
+
+-- The compiler looks up the same names in the same environment again
+-- and again (during modemap selection), and many lookups miss after
+-- scanning every contour.  While a constructor is compiled,
+-- $env_lookup_cache (bound in compDefineLisplib) maps each environment
+-- (EQ) to a hash table of the results of lookups in it.  Environments
+-- are extended by consing new contours and bindings, never changed in
+-- place, so a result stays valid for its environment.
+DEFVAR($env_lookup_cache, nil)
+
+search_env_cached(x, env) ==
+  tab := HGET($env_lookup_cache, env) or
+           HPUT($env_lookup_cache, env, MAKE_HASHTABLE('EQ))
+  u := HGET2(tab, x, "%unknown")
+  not(EQ(u, "%unknown")) => u
+  HPUT(tab, x, search_current_env1(x, env))
 
 augProplist(proplist,prop,val) ==
   while (proplist is [[ =prop,:.],:proplist']) repeat proplist:= proplist'
