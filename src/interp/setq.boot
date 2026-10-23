@@ -294,6 +294,5 @@ $InitialModemapFrame := [[[]]]
 $NRTaddForm := []
 $NRTdeltaList := []
 $NRTdeltaListComp := []
-$NRTbase := 0
 $NRTdeltaLength := 0
 $NRTmonitorIfTrue := false

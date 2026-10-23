@@ -31,6 +31,8 @@
 
 )package "BOOT"
 
+DEFCONSTANT($NRTbase, 6)
+
 -----------------------------NEW buildFunctor CODE-----------------------------
 NRTaddDeltaCode(kvec) ==
 --NOTES: This function is called from buildFunctor to initially
@@ -86,7 +88,7 @@ NRTencode(x,y) == encode(x,y,true, true) where
       -- the operation name should be assigned a slot
       not(firstTime) and (k := NRTassocIndex x) =>
           not(domain) and INTEGERP(k) =>
-              ['NRTEVAL, [($QuickCode => 'QREFELT; 'ELT), "%", k]]
+              ['NRTEVAL, dom_slot_ref(k)]
           k
       VECP(x) => systemErrorHere '"NRTencode"
       PAIRP(x) =>
@@ -227,6 +229,19 @@ NRTassocIndex x == --returns index of "domain" entry x in al
             | first(y) = 'domain and NTH(1, y) = x] =>
     $NRTbase + $NRTdeltaLength - k
   nil
+
+-- The reference to slot k of the domain vector %.  DOM_SLOT omits the
+-- bounds check on SBCL (primitives.lisp).  k is in range by construction:
+-- a slot index is either a fixed slot below $NRTbase or $NRTbase + i with
+-- i < $NRTdeltaLength (genDeltaEntry, NRTassocIndex, NRTgetLocalIndex);
+-- $NRTdeltaLength only grows, and buildFunctor creates % with
+-- GETREFV(6 + $NRTdeltaLength) from its final value.
+dom_slot_ref(k) ==
+    not($QuickCode) => ['ELT, '%, k]
+    INTEGERP(k) and k >= 0 and k < $NRTbase + $NRTdeltaLength =>
+        ['DOM_SLOT, '%, k]
+    unexpected_error(['"dom_slot_ref", CONCAT('"slot ", STRINGIMAGE(k),
+                      '" is outside of the domain vector")])
 
 NRTgetLocalIndex(item, e) ==
   k := NRTassocIndex item => k
@@ -526,7 +541,7 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
          addargname := $FormalMapVariableList.(POSN1($NRTaddForm,$locals))
          argStuffCode := [['QSETREFV, '%, 5, addargname], :argStuffCode]
       [['stuffDomainSlots, '%], :argStuffCode,
-         :predBitVectorCode2, ['SETF, 'pv_$, ['QREFELT, '%, 3]],
+         :predBitVectorCode2, ['SETF, 'pv_$, dom_slot_ref(3)],
             storeOperationCode]
 
 --CODE: part 1
@@ -711,7 +726,6 @@ NRTsubstDelta(initSig) ==
 -----------------------------SLOT1 DATABASE------------------------------------
 
 NRTputInLocalReferences bod ==
-  $elt: local := ($QuickCode => 'QREFELT; 'ELT)
   NRTputInHead bod
 
 NRTputInHead bod ==
@@ -721,7 +735,7 @@ NRTputInHead bod ==
     -- The following test allows function-returning expressions
     fn is [elt, dom, ind] and not (dom = '%) and
          MEMQ(elt,'(ELT QREFELT CONST)) =>
-      k := NRTassocIndex dom => RPLACA(LASTNODE bod, [$elt, '%, k])
+      k := NRTassocIndex dom => RPLACA(LASTNODE bod, dom_slot_ref(k))
       nil
     NRTputInHead fn
     bod
@@ -740,7 +754,7 @@ NRTputInTail x ==
     atom (u := first y) =>
       EQ(u, '%) or LASSOC(u, $devaluateList) => nil
       k:= NRTassocIndex u =>
-        atom u => RPLACA(y, [$elt, '%, k])
+        atom u => RPLACA(y, dom_slot_ref(k))
         -- u atomic means that the slot will always contain a vector
         BREAK()
       --this reference must check that slot is a vector

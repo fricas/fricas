@@ -357,7 +357,6 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
 -->>-- next global initialized here, reset by NRTbuildFunctor
     $NRTslot1PredicateList: local := nil
        --this is used below to set $lisplibSlot1 global
-    $NRTbase: local := 6 -- equals length of domainShell
     $NRTaddForm: local := nil   -- see compAdd; NRTmakeSlot1
     $add_base_ops: local := nil -- [op, sig] exported by the add base, see compAdd
     $capsule_conds: local := nil -- conditions of enclosing ifs, see doItIf
@@ -939,7 +938,6 @@ getSignature(op, argModeList, e) ==
 
 
 putInLocalDomainReferences (def := [opName,[lam,varl,body]]) ==
-  $elt: local := ($QuickCode => 'QREFELT; 'ELT)
   NRTputInTail CDDADR def
   def
 
@@ -1041,7 +1039,6 @@ compAdd(['add,$addForm,capsule],m,e) ==
          '"from", ''%b, MKQ($edit_file), ''%d, _
          '"needs to be compiled"]]]],
      m, e]
-  $addFormLhs: local:= addForm
   if addForm is ["SubDomain", domainForm, predicate] then
     $NRTaddForm := domainForm
     NRTgetLocalIndex(domainForm, e)
@@ -1067,7 +1064,6 @@ compCapsule(['CAPSULE,:itemList],m,e) ==
   compCapsuleInner(itemList, m, addDomain('%, e))
 
 compSubDomain(["SubDomain",domainForm,predicate],m,e) ==
-  $addFormLhs: local:= domainForm
   $addForm: local := nil
   $NRTaddForm := domainForm
   [$addForm,.,e]:= compSubDomain1(domainForm,predicate,m,e)

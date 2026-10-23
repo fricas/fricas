@@ -151,76 +151,12 @@ mkDomainConstructor x ==
   x is [op] => MKQ x
   x is [op,:argl] => ['LIST,MKQ op,:[mkDomainConstructor a for a in argl]]
 
-
-DescendCodeAdd(base, flag, kvec, e) ==
-  atom base => DescendCodeVarAdd(base, flag, kvec, e)
-  not (modemap:=get(opOf base,'modemap,$CategoryFrame)) =>
-      if getmode(opOf base, e) is ["Mapping", target, :formalArgModes]
-         then formalArgs:= take(#formalArgModes,$FormalMapVariableList)
-                --argument substitution if parameterized?
-
-         else system_error("S2OR0001",
-                           '"Category or domain %1b not known.", [opOf base])
-      DescendCodeAdd1(base, flag, target, formalArgs, formalArgModes, kvec, e)
-  for [[[.,:formalArgs],target,:formalArgModes],.] in modemap repeat
-      (ans := DescendCodeAdd1(base, flag, target, formalArgs,
-                              formalArgModes, kvec, e)) => return ans
-  ans
-
-DescendCodeAdd1(base, flag, target, formalArgs, formalArgModes, kvec, e) ==
-  slist:= pairList(formalArgs,rest $addFormLhs)
-         --base = comp $addFormLhs-- bound in compAdd
-  newModes:= SUBLIS(slist,formalArgModes)
-  or/[not comp(u,m,e) for u in rest $addFormLhs for m in newModes] =>
-    return nil
-      --I should check that the actual arguments are of the right type
-  for u in formalArgs for m in newModes repeat
-    [.,.,e]:= compMakeDeclaration(['_:,u,m],m,e)
-      --we can not substitute in the formal arguments before we comp
-      --for that may change the shape of the object, but we must before
-      --we match signatures
-  cat:= (compMakeCategoryObject(target,e)).expr
-  instantiatedBase:= GENVAR()
-  n:=MAXINDEX cat
-  code:=
-    [u
-      for i in 6..n | not atom cat.i and not atom (sig:= first cat.i)
-         and
-          (u:=
-            SetFunctionSlots(SUBLIS(slist, sig), ['ELT, instantiatedBase, i],
-                             flag, kvec)) ~= nil]
-     --The code from here to the end is designed to replace repeated LOAD/STORE
-     --combinations (SETELT ...(ELT ..)) by MVCs where this is practicable
-  copyvec:=GETREFV (1+n)
-  for u in code repeat
-      if update(u,copyvec,[]) then code:=delete(u,code)
-    where update(code,copyvec,sofar) ==
-      ATOM code =>nil
-      MEMQ(QCAR code,'(ELT QREFELT)) =>
-          copyvec.(CADDR code):=union(copyvec.(CADDR code), sofar)
-          true
-      code is [x,name,number,u'] and MEMQ(x,'(SETELT QSETREFV)) =>
-        update(u',copyvec,[[name,:number],:sofar])
-  for i in 6..n repeat
-    if copyvec.i then
-      v:=[($QuickCode => 'QREFELT;'ELT),instantiatedBase,i]
-      for u in copyvec.i repeat
-        [name,:count]:=u
-        v:=[($QuickCode => 'QSETREFV;'SETELT),name,count,v]
-      code:=[v,:code]
-  [['LET,instantiatedBase,base],:code]
-
 DescendCode(code, flag, viewAssoc, EnvToPass, kvec, e) ==
   -- flag = true if we are walking down code always executed;
   -- otherwise set to conditions in which
   code=nil => nil
   code='noBranch => nil
-  code is ['add,base,:codelist] =>
-    codelist:=
-        [v for u in codelist | (v := DescendCode(u, flag, viewAssoc,
-           EnvToPass, kvec, e)) ~= nil]
-                  -- must do this first, to get this overriding Add code
-    ['PROGN, :DescendCodeAdd(base, flag, kvec, e), :codelist]
+  code is ['add, base, :codelist] => BREAK()
   code is ['PROGN,:codelist] =>
     ['PROGN,:
             --Two REVERSEs leave original order, but ensure last guy wins
@@ -254,7 +190,7 @@ DescendCode(code, flag, viewAssoc, EnvToPass, kvec, e) ==
         CONTAINED('%, body) and isDomainForm(body, e) =>
           --instantiate domains which depend on $ after constants are set
           code := [($QuickCode => 'QSETREFV; 'SETELT),
-                    [($QuickCode => 'QREFELT; 'ELT), '%, 5],
+                    dom_slot_ref(5),
                       #$locals - #u, code]
           $epilogue:=
             TruthP flag => [code,:$epilogue]
@@ -298,30 +234,27 @@ ProcessCond(cond, et) ==
   cond
 
 SetFunctionSlots(sig, body, flag, kvec) ==
-  v := '%
-  u := kvec
-  if true then
     null body => return NIL
-    for catImplem in LookUpSigSlots(sig,u.1) repeat
-      if catImplem is [q,.,index] and (q='ELT or q='CONST) then
-          if q is 'CONST and body is ['CONS,a,b] then
-             body := ['CONS,'IDENTITY,['FUNCALL,a,b]]
-          body:= [($QuickCode => 'QSETREFV; 'SETELT),v,index,body]
-          if REFVECP $SetFunctions and TruthP flag then u.index:= true
-          if v = '% then  -- i.e. we are looking at the principal view
-            not REFVECP $SetFunctions => nil
+    for catImplem in LookUpSigSlots(sig, kvec.1) repeat
+        if catImplem is [q, ., index] and (q = 'ELT or q = 'CONST) then
+            if q is 'CONST and body is ['CONS, a, b] then
+                body := ['CONS, 'IDENTITY, ['FUNCALL, a, b]]
+            body := [($QuickCode => 'QSETREFV; 'SETELT), '%, index, body]
+            if REFVECP($SetFunctions) and TruthP(flag) then kvec.index:= true
+            not REFVECP($SetFunctions) => nil
                     --packages don't set it
-            TruthP $SetFunctions.index => (body:= nil; return nil)
+            TruthP($SetFunctions.index) => (body := nil; return nil)
                      -- the function was already assigned
             $SetFunctions.index:=
-              TruthP flag => true
-              not $SetFunctions.index=>flag --JHD didn't set $SF on this branch
-              ["or",$SetFunctions.index,flag]
-      else
-          system_error("S2OR0002", '"Unknown implementation: %1s", [catImplem])
-  body is ['SETELT,:.] => body
-  body is ['QSETREFV,:.] => body
-  nil
+                TruthP(flag) => true
+                not $SetFunctions.index => flag
+                ["or", $SetFunctions.index, flag]
+        else
+            system_error("S2OR0002", '"Unknown implementation: %1s",
+                         [catImplem])
+    body is ['SETELT, :.] => body
+    body is ['QSETREFV, :.] => body
+    nil
 
 LookUpSigSlots(sig,siglist) ==
 -- must kill any implementations below of the form (ELT $ NIL)
@@ -546,14 +479,6 @@ getViewsConditions(u, e) ==
   [[vec.0,:true],:views] --*
       --the two lines marked  ensure that the principal view comes first
       --if you don't want it, CDR it off
-
-DescendCodeVarAdd(base, flag, kvec, e) ==
-   princview := kvec
-   [SetFunctionSlots(sig, SUBST('ELT,'CONST,implem), flag, kvec)
-       for i in 6..MAXINDEX princview |
-         princview.i is [sig:=[op,types],:.] and
-           LASSOC([base, :SUBST(base, '%, types)], get(op, 'modemap, e)) is
-                  [[pred,implem]]]
 
 resolvePatternVars(p,args) ==
   p := SUBLISLIS(args, $TriangleVariableList, p)

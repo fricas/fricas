@@ -200,7 +200,6 @@ buildGloss() ==  --called by buildDatabase (database.boot)
 --starting with gloss.text, build glosskey.text and glossdef.text
   $constructorName : local := nil
   $exposeFlag : local := true
-  $x : local := nil
   $attribute? : local := true     --do not surround first word
   pathname := '"gloss.text"
   instream := MAKE_INSTREAM(pathname)
