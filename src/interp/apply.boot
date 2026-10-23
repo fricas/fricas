@@ -268,17 +268,49 @@ compMapCond'([cexpr,fnexpr], op, dc, bindings, e) ==
   compMapCond''(cexpr, dc, e) => compMapCondFun(fnexpr,op,dc,bindings)
   stackMessage ['"not known that",'%b,dc,'%d,'"has",'%b,cexpr,'%d]
 
-compMapCond''(cexpr, dc, e) ==
+-- A 'not (x has c)' where neither 'x has c' nor its negation is known
+-- is decided by a case split: the condition must hold both when
+-- 'x has c' is true and when it is false.  Such conditions come from
+-- exports under 'if A or B', which are split into 'A' and 'not A and B'.
+compMapCond''(cexpr, dc, e) == comp_map_cond(cexpr, dc, [], e)
+
+comp_map_cond(cexpr, dc, al, e) ==
+  compMapCond1(cexpr, dc, al, e) => true
+  (u := unknown_negated_has(cexpr, al, e)) =>
+      comp_map_cond(cexpr, dc, [[u, :true], :al], e) and
+        comp_map_cond(cexpr, dc, [[u, :false], :al], e)
+  false
+
+unknown_negated_has(x, al, e) ==
+  x is ["not", u] =>
+      u is ["has", :.] and negated_has_value(u, al, e) = "unknown" => u
+      nil
+  x is [op, :l] and MEMQ(op, '(AND and OR or)) =>
+      or/[unknown_negated_has(y, al, e) for y in l]
+  nil
+
+-- The value of 'not u' for a 'has' condition u: true, false or
+-- "unknown".  al is an alist of 'has' conditions assumed true or false.
+negated_has_value(u, al, e) ==
+  (a := assoc(u, al)) => not(rest a)
+  known_info_in_env(["not", u], e) => true
+  u is ["has", name, cat] and known_false_has(name, cat, e) => true
+  known_info_in_env(u, e) => false
+  "unknown"
+
+compMapCond1(cexpr, dc, al, e) ==
   cexpr = false => false
   cexpr=true => true
   cexpr is ["AND", :l] or cexpr is ["and", :l] =>
-      and/[compMapCond''(u, dc, e) for u in l]
+      and/[compMapCond1(u, dc, al, e) for u in l]
   cexpr is ["OR", :l] or cexpr is ["or", :l] =>
-      or/[compMapCond''(u, dc, e) for u in l]
-  -- FIXME: This will claim that 'not u' is true when we
-  -- do not know truth value
-  cexpr is ["not",u] => not compMapCond''(u, dc, e)
+      or/[compMapCond1(u, dc, al, e) for u in l]
+  cexpr is ["not", u] =>
+      u is ["has", :.] => EQ(negated_has_value(u, al, e), true)
+      known_info_in_env(cexpr, e) => true
+      false
   cexpr is ["has", name, cat] =>
+        (a := assoc(cexpr, al)) => rest a
         known_info_in_env(cexpr, e) => true
         false
         --for the time being we'll stop here - shouldn't happen so far

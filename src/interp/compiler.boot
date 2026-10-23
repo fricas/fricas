@@ -1048,8 +1048,9 @@ getInverseEnvironment(a,E) ==
 -- the next five lines try to ensure that explicit special-case tests
 -- prevent implicit ones from being generated
   op="has" =>
-    [x,m]:= argl
-    E
+    -- record that the condition is false, see compMapCond''
+    put("$Information", "special",
+        [["not", a], :get("$Information", "special", E)], E)
   a is ["case",x,m] and IDENTP x =>
            --the next two lines are necessary to get 3-branched Unions to work
            -- old-style unions, that is

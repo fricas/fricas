@@ -215,6 +215,38 @@ knownInfo1 pred ==
       res
   false
 
+-- true if name has exactly the categories it exports: a constant
+-- domain, or % while compiling a domain or package
+closed_domain?(name) ==
+    name = "%" =>
+        not($insideCategoryIfTrue) and not($insideCategoryPackageIfTrue)
+    closed_domain_form?(name)
+
+closed_domain_form?(x) ==
+    INTEGERP(x) or STRINGP(x) => true
+    x is [op, :args] and IDENTP(op) and constructor?(op) =>
+        and/[closed_domain_form?(a) for a in args]
+    false
+
+-- true if it is known that 'name has cat' is false
+known_false_has(name, cat, e) ==
+    not(closed_domain?(name)) => false
+    cat is ["SIGNATURE", :.] => false
+    v := compForMode(name, $EmptyMode, e)
+    null v => false
+    vmode := CADR v
+    cat = vmode => false
+    vmode is ["Join", :l] and member(cat, l) => false
+    [vv, ., .] := get_catlist(vmode, e)
+    null vv => false
+    catlist :=
+        CONTAINED("%", name) => vv.4
+        SUBST(name, "%", vv.4)
+    member(cat, first catlist) => false
+    -- a conditional ancestor counts as unknown, whatever its condition
+    or/[AncestorP(cat, LIST first u) for u in CADR catlist] => false
+    true
+
 actOnInfo(u, e) ==
   null u => e
   u is ["PROGN", :l] => BREAK()
