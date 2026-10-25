@@ -105,10 +105,9 @@ compOrCroak1(x,m,e,compFn) ==
             LASSOC(first first al,rest al) => compactify rest al
             [first al,:compactify rest al]
       $level:= #$s
-      errorMessage:=
-        if $compErrorMessageStack
-           then first $compErrorMessageStack
-           else '"unspecified error"
+      errorMessage := IFCAR($compErrorMessageStack)
+      errorMessage := comp_fail_explain(errorMessage) or errorMessage or
+                        '"unspecified error"
       pos := comp_stack_pos()
       $scanIfTrue =>
         stack_semantic_error_at(pos, message_items(errorMessage),
@@ -124,6 +123,10 @@ compOrCroak1(x,m,e,compFn) ==
 -- true: show the internal state when a compilation fails (for
 -- compiler developers)
 DEFPARAMETER($comp_fail_dump, false)
+
+source_text(x) ==
+    STRINGP(x) => CONCAT('"_"", x, '"_"")
+    message_item(x)
 
 -- the message of a failed compilation: position, function and msg;
 -- one string unless msg has layout markers, which userError would
@@ -146,6 +149,139 @@ comp_fail_concat(l) ==
                                          '";"])) then
             s := CONCAT(s, '" ")
         s := CONCAT(s, x)
+    s
+
+-- a clearer message than msg (none, a "cannot compile" or a type
+-- mismatch), from the expressions that failed ($compStack), or nil
+comp_fail_explain(msg) ==
+    mismatch := msg is [., t, :.] and EQ(t, $type_mismatch_text)
+    not(null(msg) or mismatch or
+        msg is [s, :.] and s = '"cannot compile") => nil
+    entries := REVERSE($compStack)  -- the innermost first
+    null(entries) => nil
+    [x, ., e, :.] := first(entries)
+    -- a call op(args)$D or a constant op$D
+    x is ["Sel", dom, op] and (d := sel_fail_diagnosis(dom, op, [], e)) => d
+    x is [["Sel", dom, op], :args] and
+      (d := sel_fail_diagnosis(dom, op, args, e)) => d
+    -- a name, else the innermost call
+    IDENTP(x) and (d := comp_fail_diagnosis(first(entries))) => d
+    call := nil
+    for entry in entries while not(call) repeat
+        if entry is [[op, :.], :.] and IDENTP(op) and
+          not(GET(op, "comp_special")) then call := entry
+    call and (d := comp_fail_diagnosis(call)) => d
+    mismatch and EQUAL(x, first(msg)) => [source_text(x), :rest(msg)]
+    nil
+
+-- why x (an expression that failed, in mode m and environment e)
+-- cannot be compiled, or nil if that is not clear
+comp_fail_diagnosis([x, m, e, :.]) ==
+    IDENTP(x) =>
+        get(x, "value", e) or getmode(x, e) or isFunction(x, e) => nil
+        [STRINGIMAGE(x), '" is not declared"]
+    x isnt [op, :args] or not(IDENTP(op)) => nil
+    GET(op, "comp_special") or get(op, "value", e) or getmode(op, e) => nil
+    null(mms := get(op, "modemap", e)) =>
+        ['"there is no operation named ", STRINGIMAGE(op)]
+    n := #args
+    (msg := arity_message(op, mms, n)) => msg
+    types := [comp_fail_arg_mode(a, e) or return "failed" for a in args]
+    types = "failed" => nil
+    msg := ['"cannot find an operation named ", STRINGIMAGE(op),
+            '" with argument types ", comp_fail_join(types, '", ")]
+    if not(m = $EmptyMode or m = $NoValueMode) then
+        msg := [:msg, '" and result type ", formString(m)]
+    cands := comp_fail_candidates(op, mms, types, m, e)
+    null(cands) =>
+        [:msg, '" (see )display operation ", STRINGIMAGE(op), '")"]
+    shown := [cands.i for i in 0..(MIN(#cands, 5) - 1)]
+    msg := [:msg, '"; candidates are:", :[:['%l, c] for c in shown]]
+    #cands > #shown =>
+        [:msg, '%l, CONCAT('"   and ", STRINGIMAGE(#cands - #shown),
+          '" more (see )display operation ", STRINGIMAGE(op), '")")]
+    msg
+
+-- the candidates for a call of op with arguments of the given types and
+-- result mode m, as lines of text: those with the right number of
+-- arguments, with a fitting result type if any has one, the best first
+-- (the most arguments that fit)
+comp_fail_candidates(op, mms, types, m, e) ==
+    n := #types
+    mms := [mm for mm in mms | mm is [[., ., :sig], :.] and #sig = n]
+    if not(m = $EmptyMode or m = $NoValueMode) then
+        fit := [mm for mm in mms | mm is [[., t, :.], :.] and
+                  comp_fail_fits?(t, m, e)]
+        if fit then mms := fit
+    scored := STABLE_-SORT([[comp_fail_score(sig, types, e), :mm]
+                 for mm in mms | mm is [[., ., :sig], :.]],
+                   function comp_fail_better?)
+    lines := nil
+    for [., :mm] in scored repeat
+        line := comp_fail_candidate(op, mm)
+        if not(member(line, lines)) then lines := [line, :lines]
+    REVERSE(lines)
+
+comp_fail_better?(a, b) == first(a) > first(b)
+
+-- whether a value of mode t can be used where mode m is expected
+-- without a conversion
+comp_fail_fits?(t, m, e) == modeEqual(t, m) or isSubset(t, m, e)
+
+-- the number of arguments whose type fits sig
+comp_fail_score(sig, types, e) ==
+    #[a for a in sig for t in types | comp_fail_fits?(t, a, e)]
+
+-- "   op : (A, B) -> T from D", like )display operation
+comp_fail_candidate(op, mm) ==
+    if $functorForm then mm := SUBST($functorForm, '%, mm)
+    [[dc, t, :sig], :.] := mm
+    args :=
+        #sig = 1 => formString(first(sig))
+        CONCAT('"(", (sig => comp_fail_join(sig, '", "); '""), '")")
+    CONCAT('"   ", STRINGIMAGE(op), '" : ", args, '" -> ", formString(t),
+           '" from ", formString(dc))
+
+-- why op(args)$dom or op$dom failed, or nil if that is not clear
+sel_fail_diagnosis(dom, op, args, e) ==
+    dom = "Lisp" or dom is ["Mapping", :.] => nil
+    -- 0 and 1 are $Zero, $One or numbers here
+    op :=
+        op = $Zero or op = 0 => "0"
+        op = $One or op = 1 => "1"
+        op
+    not(IDENTP(op)) => nil
+    e := addDomain(dom, e)
+    mms := [mm for mm in get(op, "modemap", e) | mm is [[=dom, :.], :.]]
+    null(mms) =>
+        [formString(dom), '" has no operation named ", STRINGIMAGE(op)]
+    (msg := arity_message(op, mms, #args)) => [formString(dom), '": ", :msg]
+    nil
+
+-- the mode of argument a, compiled alone without messages, or nil
+comp_fail_arg_mode(a, e) ==
+    $compStack : local := nil
+    $compErrorMessageStack : local := nil
+    $warningStack : local := nil
+    $semanticErrorStack : local := nil
+    $allow_undef : local := true
+    CATCH("compOrCroak", comp(a, $EmptyMode, e)) is [., mode, .] => mode
+    nil
+
+-- "op takes 2 arguments, not n" if no modemap in mms has n arguments
+arity_message(op, mms, n) ==
+    MEMBER(n, [#sig for [[., ., :sig], :.] in mms]) => nil
+    [STRINGIMAGE(op), '" takes ", arities_text(mms), '" arguments, not ",
+     STRINGIMAGE(n)]
+
+-- the numbers of arguments of the modemaps mms, as "1 or 2"
+arities_text(mms) ==
+    comp_fail_join(SORT(REMDUP([#sig for [[., ., :sig], :.] in mms]),
+                        function _<), '" or ")
+
+comp_fail_join(l, sep) ==
+    s := message_item(first(l))
+    for x in rest(l) repeat s := CONCAT(s, sep, message_item(x))
     s
 
 -- the position of the innermost expression on $compStack that has one
@@ -613,14 +749,14 @@ getFormModemaps(form is [op,:argl],e) ==
   nargs:= #argl
   finalModemapList:= [mm for (mm:= [[.,.,:sig],:.]) in modemapList | #sig=nargs]
   modemapList and null finalModemapList =>
-    stackMessage ['"no modemap for","%b",op,"%d",'"with ",nargs,'" arguments"]
+    stackMessage arity_message(op, modemapList, nargs)
   finalModemapList
 
 eltModemapFilter(name,mmList,e) ==
   isConstantId(name,e) =>
     l:= [mm for mm in mmList | mm is [[.,.,.,sel,:.],:.] and sel=name] => l
             -- setelt! has extra parameter
-    stackMessage ['"selector variable: ",name,'" is undeclared and unbound"]
+    stackMessage ['"there is no field ", name]
     nil
   mmList
 
@@ -1227,10 +1363,20 @@ coerce(T,m) ==
   T.expr = "$fromCoerceable$" or isSomeDomainVariable m => nil
       -- if from coerceable, this coerce was just a trial coercion
       -- from compFormWithModemap to filter through the modemaps
-  stackMessage fn(T.expr,T.mode,m) where
-    fn(x,m1,m2) ==
-      ['"Cannot coerce","%b",x,"%d","%l",'"      of mode","%b",m1,"%d","%l",
-        '"      to mode","%b",m2,"%d"]
+  stackMessage type_mismatch_message(T.expr, T.mode, m)
+
+-- marks a type mismatch message (compared with EQ in comp_fail_explain)
+DEFPARAMETER($type_mismatch_text, '" has type ")
+
+-- the mode of a string literal is the string itself
+type_mismatch_message(x, m1, m2) ==
+    if STRINGP(x) then x := source_text(x)
+    [x, $type_mismatch_text, type_text(m1), '", but ", type_text(m2),
+     '" is expected"]
+
+type_text(m) ==
+    STRINGP(m) => '"String"
+    m
 
 coerceEasy(T,m) ==
   m=$EmptyMode => T
