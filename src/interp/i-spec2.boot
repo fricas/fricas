@@ -757,6 +757,13 @@ upTableSetelt(op,lhs is [htOp,:args],rhs) ==
   putValue(op,objNew(['PROGN,tableCode,objVal t],objMode t))
   r
 
+isSingleton(t) ==
+    not(VECP(t)) => false
+    not(getUnname(t) = $immediateDataSymbol) => false
+    v0 := getValue(t)
+    not(objMode(v0) = ["String"]) => false
+    objVal(v0)
+
 isType t ==
   -- Returns the evaluated type if t is a tree representing a type,
   -- and NIL otherwise
@@ -764,7 +771,7 @@ isType t ==
    VECP op =>
      isMap(op:= getUnname op) => NIL
      op = 'Mapping =>
-       argTypes := [isType type for type in rest t]
+       argTypes := [isType(type) or isSingleton(type) for type in rest t]
        "or"/[null type for type in argTypes] => nil
        ['Mapping, :argTypes]
      isLocalVar(op) => NIL
