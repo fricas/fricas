@@ -462,9 +462,12 @@ unStackWarning msg ==
   $warningStack := [x for x in $warningStack | not(x = msg or rest(x) = msg)]
   nil
 
--- msg as text, with "file:line: " in front if pos is known
+-- msg as text, with "file:line: " in front if pos is known; a % alone
+-- is written %%, else sayBrightly reads it as a layout marker and
+-- prints nothing
 pos_message(pos, msg) ==
-  msg := message_items(msg)
+  msg := [(x = '% or x = '"%" => '"%%"; message_item(x))
+           for x in (atom msg => [msg]; msg)]
   null(prefix := pos_prefix(pos)) => msg
   [prefix, :msg]
 

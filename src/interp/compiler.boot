@@ -137,9 +137,9 @@ comp_fail_message(pos, msg) ==
     msg := message_items(msg)
     if $insideCapsuleFunctionIfTrue = true then
         msg := ['"in function ", STRINGIMAGE($op), '": ", :msg]
-    msg := pos_message(pos, msg)
-    or/[MEMQ(x, '(%b %d %l)) for x in msg] => msg
-    comp_fail_concat(msg)
+    or/[MEMQ(x, '(%b %d %l)) for x in msg] => pos_message(pos, msg)
+    -- one string: a % in it needs no escape
+    comp_fail_concat(((p := pos_prefix(pos)) => [p, :msg]; msg))
 
 -- the strings of l joined, with a space between two neighbours that
 -- have none at the junction (old messages relied on one item per line)
@@ -1343,7 +1343,8 @@ unknownTypeError name ==
 compPretend(["pretend",x,t],m,e) ==
   e:= addDomain(t,e)
   T:= comp(x,t,e) or comp(x,$EmptyMode,e) or return nil
-  if T.mode=t then warningMessage:= ['"pretend",t,'" -- should replace by @"]
+  if T.mode=t then
+      warningMessage := ['"pretend ", t, '" -- should replace by @"]
   if opOf(T.mode) = 'Union and opOf(m) ~= 'Union then
      stackWarning(['"cannot pretend ", x, '" of type ", T.mode,
                    '" to be of type ", m])
