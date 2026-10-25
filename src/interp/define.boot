@@ -145,7 +145,7 @@ macroExpand1(x,e) ==   --not worked out yet
   atom x =>
       u := get(x, 'macro, e) =>
           null(rest(u)) =>
-              macroExpand(first u, e)
+              macroExpand(macro_instance(first u, nil, nil, nil), e)
           SAY(['"u =", u])
           userError('"macro call needs arguments")
       x
@@ -156,9 +156,12 @@ macroExpand1(x,e) ==   --not worked out yet
           u := get(op, 'macro, e) =>
               margs := rest(u)
               u := first(u)
-              null(margs) => [macroExpand(u, e), :macroExpandList(args, e)]
+              pos := get_pos(x)
+              null(margs) =>
+                  [macroExpand(macro_instance(u, nil, nil, pos), e),
+                   :macroExpandList(args, e)]
               #args = #margs =>
-                  macroExpand(SUBLISLIS(args, margs, u), e)
+                  macroExpand(macro_instance(u, margs, args, pos), e)
               userError('"invalid macro call, #args ~= #margs")
           [op, :macroExpandList(args, e)]
       macroExpandList(x,e)
