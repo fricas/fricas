@@ -466,6 +466,15 @@ pos_message(pos, msg) ==
   null(prefix := pos_prefix(pos)) => msg
   [prefix, :(atom msg => [msg]; msg)]
 
+-- the elements of msg as text, forms in Spad syntax
+message_items(msg) ==
+  [message_item(x) for x in (atom(msg) => [msg]; msg)]
+
+message_item(x) ==
+  PAIRP(x) => formString(x)
+  STRINGP(x) or MEMQ(x, '(%b %d %l)) => x
+  STRINGIMAGE(x)
+
 stackMessage msg ==
   $compErrorMessageStack:= [msg,:$compErrorMessageStack]
   nil

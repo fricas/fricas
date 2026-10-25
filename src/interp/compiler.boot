@@ -111,12 +111,42 @@ compOrCroak1(x,m,e,compFn) ==
            else '"unspecified error"
       pos := comp_stack_pos()
       $scanIfTrue =>
-        stack_semantic_error_at(pos, errorMessage, mkErrorExpr $level)
+        stack_semantic_error_at(pos, message_items(errorMessage),
+                                mkErrorExpr $level)
         ["failedCompilation",m,e]
       displaySemanticErrors()
-      SAY('"****** comp fails at level ",$level,'" with expression: ******")
-      displayComp $level
-      userError pos_message(pos, errorMessage)
+      $comp_fail_dump =>
+        SAY('"****** comp fails at level ",$level,'" with expression: ******")
+        displayComp $level
+        userError pos_message(pos, errorMessage)
+      userError comp_fail_message(pos, errorMessage)
+
+-- true: show the internal state when a compilation fails (for
+-- compiler developers)
+DEFPARAMETER($comp_fail_dump, false)
+
+-- the message of a failed compilation: position, function and msg;
+-- one string unless msg has layout markers, which userError would
+-- otherwise print one element per line
+comp_fail_message(pos, msg) ==
+    msg := message_items(msg)
+    if $insideCapsuleFunctionIfTrue = true then
+        msg := ['"in function ", STRINGIMAGE($op), '": ", :msg]
+    msg := pos_message(pos, msg)
+    or/[MEMQ(x, '(%b %d %l)) for x in msg] => msg
+    comp_fail_concat(msg)
+
+-- the strings of l joined, with a space between two neighbours that
+-- have none at the junction (old messages relied on one item per line)
+comp_fail_concat(l) ==
+    s := first(l)
+    for x in rest(l) | #x > 0 repeat
+        if #s > 0 and not(member(SUBSTRING(s, #s - 1, 1), ['" ", '"(", '"["])
+          or member(SUBSTRING(x, 0, 1), ['" ", '",", '".", '")", '"]", '":",
+                                         '";"])) then
+            s := CONCAT(s, '" ")
+        s := CONCAT(s, x)
+    s
 
 -- the position of the innermost expression on $compStack that has one
 -- (the innermost one is the last)
@@ -857,7 +887,14 @@ compSeq1(l,$exitModeStack,e) ==
   form:= ["SEQ",:replaceExitEtc(c,catchTag,"TAGGEDexit",$exitModeStack.(0))]
   [["CATCH",catchTag,form],$exitModeStack.(0),$finalEnv]
 
-compSeqItem(x,m,e) == comp(macroExpand(x,e),m,e)
+compSeqItem(x, m, e) ==
+    -- messages stacked while an item compiles come from failed
+    -- alternatives; they would hide the error of a later item
+    msgs := $compErrorMessageStack
+    (T := comp(macroExpand(x, e), m, e)) =>
+        $compErrorMessageStack := msgs
+        T
+    nil
 
 replaceExitEtc(x,tag,opFlag,opMode) ==
   (fn(x,tag,opFlag,opMode); x) where
