@@ -152,3 +152,63 @@ pfPrintSrcLines(pf) ==
     if lno < lnGlobalNum(line) then
       FORMAT(true, '"   ~A~%",  lnString line)
       lno := lnGlobalNum(line)
+
+-- Source positions of the nodes of the Spad parse tree.  The parser
+-- records the position of the first token of each node, and the later
+-- stages copy it to the nodes they build from it.  The positions are kept
+-- in a table, so the tree itself is not changed.
+
+DEFPARAMETER($parse_positions, MAKE_HASHTABLE('EQ))
+
+clear_parse_positions() == CLRHASH($parse_positions)
+
+get_pos(x) ==
+    CONSP(x) => HGET($parse_positions, x)
+    nil
+
+earlier_pos(p1, p2) ==
+    null(p1) => p2
+    null(p2) => p1
+    compareposns(p1, p2) => p2
+    p1
+
+-- give x the position pos, unless it already has an earlier one
+note_pos(x, pos) ==
+    if CONSP(x) and pos then
+        HPUT($parse_positions, x, earlier_pos(get_pos(x), pos))
+
+-- give y, which was built from x, the position of x; returns y
+copy_pos(x, y) ==
+    if CONSP(y) and not(get_pos(y)) and (pos := get_pos(x)) then
+        HPUT($parse_positions, y, pos)
+    y
+
+-- copy the positions of the nodes of x to the corresponding nodes of y,
+-- which has the shape of x (e.g. the result of SUBLIS); returns y
+copy_pos_tree(x, y) ==
+    EQ(x, y) => y
+    CONSP(x) and CONSP(y) =>
+        copy_pos(x, y)
+        copy_pos_tree(first x, first y)
+        copy_pos_tree(rest x, rest y)
+        y
+    y
+
+-- give the nodes of x without a position, down to the nodes that have
+-- one, the position pos; returns x
+note_new_pos(x, pos) ==
+    pos and CONSP(x) and not(get_pos(x)) =>
+        HPUT($parse_positions, x, pos)
+        y := x
+        while CONSP(y) repeat
+            note_new_pos(first y, pos)
+            y := rest y
+        x
+    x
+
+-- the text "file:line: " for a position, or nil
+pos_prefix(pos) ==
+    null(pos) => nil
+    fn := lnPlaceOfOrigin(poGetLineObject pos)
+    STRINGP(fn) => CONCAT(fn, '":", STRINGIMAGE(poLinePosn pos), '": ")
+    CONCAT('"line ", STRINGIMAGE(poLinePosn pos), '": ")

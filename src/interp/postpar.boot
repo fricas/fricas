@@ -62,7 +62,9 @@ displayPreCompilationErrors() ==
     else sayMath ['"    ",:first $postStack]
   TERPRI()
 
-postTran x ==
+postTran x == copy_pos(x, postTran1 x)
+
+postTran1 x ==
   atom x =>
     postAtom x
   op := first x

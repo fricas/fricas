@@ -98,7 +98,10 @@ init_parse_tran() ==
 
 init_parse_tran()
 
-parseTran x ==
+-- the nodes built from x get the position of x
+parseTran x == note_new_pos(parseTran1 x, get_pos(x))
+
+parseTran1 x ==
   atom x => parseAtom x
   [op, :argl] := x
   u := (op is ['Sel, ., x] => x; op)
@@ -200,7 +203,9 @@ parseIf t ==
       p = 'true  => a
       p = 'false => b
       p is ['not,p'] => ifTran(p',b,a)
-      p is ['IF,p',a',b'] => ifTran(p',ifTran(a',COPY a,COPY b),ifTran(b',a,b))
+      p is ['IF,p',a',b'] =>
+        ifTran(p', ifTran(a', copy_pos_tree(a, COPY a), copy_pos_tree(b, COPY b)),
+               ifTran(b',a,b))
       p is ['SEQ,:l,['exit,1,p']] =>
         ['SEQ,:l,['exit,1,ifTran(p',incExitLevel a,incExitLevel b)]]
          --this assumes that l has no exits
@@ -224,13 +229,13 @@ transSeq l ==
   null l => nil
   null rest l => decExitLevel first l
   [item,:tail]:= l
-  item is ['SEQ,:l,['exit,1,['IF,p,['exit, =2,q],'noBranch]]] and
+  item is ['SEQ,:l,['exit,1,if_node := ['IF,p,['exit, =2,q],'noBranch]]] and
     (and/[x is [":=", :.] for x in l]) =>
-      ['SEQ,:[decExitLevel x for x in l],['exit,1,['IF,decExitLevel p,
-        decExitLevel q,transSeq tail]]]
+      copy_pos(item, ['SEQ,:[decExitLevel x for x in l],['exit,1,
+        copy_pos(if_node, ['IF,decExitLevel p,decExitLevel q,transSeq tail])]])
   item is ['IF,a,['exit,1,b],'noBranch] =>
-    ['IF,decExitLevel a,decExitLevel b,transSeq tail]
+    copy_pos(item, ['IF,decExitLevel a,decExitLevel b,transSeq tail])
   item is ['IF,a,'noBranch,['exit,1,b]] =>
-    ['IF,decExitLevel a,transSeq tail,decExitLevel b]
-  (y:= transSeq tail) is ['SEQ,:s] => ['SEQ,item,:s]
-  ['SEQ,item,['exit,1,incExitLevel y]]
+    copy_pos(item, ['IF,decExitLevel a,transSeq tail,decExitLevel b])
+  (y:= transSeq tail) is ['SEQ,:s] => copy_pos(item, ['SEQ,item,:s])
+  copy_pos(item, ['SEQ,item,['exit,1,incExitLevel y]])

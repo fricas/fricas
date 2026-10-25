@@ -127,7 +127,9 @@ macroExpandInPlace(x,e) ==
   RPLACD(x,rest y)
   x
 
-macroExpand(x,e) ==   --not worked out yet
+macroExpand(x, e) == copy_pos(x, macroExpand1(x, e))
+
+macroExpand1(x,e) ==   --not worked out yet
   atom x =>
       u := get(x, 'macro, e) =>
           null(rest(u)) =>
@@ -213,8 +215,8 @@ mkCategoryPackage(form is [op, :argl], def, e) ==
   nils:= [nil for x in argl]
   packageSig := [packageCategory,form,:nils]
   $categoryPredicateList := SUBST(nameForDollar, '%, $categoryPredicateList)
-  SUBST(nameForDollar, '%,
-      ['DEF, [packageName, :packageArgl], packageSig, def])
+  pkg_def := ['DEF, [packageName, :packageArgl], packageSig, def]
+  copy_pos_tree(pkg_def, SUBST(nameForDollar, '%, pkg_def))
 
 compDefineCategory2(form, signature, body, m, e,
   $prefix,$formalArgList) ==

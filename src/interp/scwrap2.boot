@@ -19,12 +19,13 @@ make_float(int, frac, fraclen, expo) ==
     make_BF(int*EXPT(10, fraclen) + frac, expo - fraclen)
 
 -- Should be Record(symbol : Symbol, kind, non_blank : Boolean,
---                  line : Integer, char : Integer)
+--                  line : Integer, char : Integer, pos : Position)
 $symbol_off := 0
 $kind_off := 1
 $non_blank_off := 2
 $line_off := 3
 $char_off := 4
+$pos_off := 5
 
 -- Should be Record(count : Integer, prior : Tok_rec, current : Tok_rec,
 --                  next : Tok_rec)
@@ -35,16 +36,17 @@ $next_off := 3
 
 $token_fifo := GETREFV(4)
 $token_fifo.$token_count_off := 0
-$token_fifo.$prior_off := GETREFV(5)
-$token_fifo.$current_off := GETREFV(5)
-$token_fifo.$next_off := GETREFV(5)
+$token_fifo.$prior_off := GETREFV(6)
+$token_fifo.$current_off := GETREFV(6)
+$token_fifo.$next_off := GETREFV(6)
 
-token_install(symbol, kind, non_blank, line_num, char_num, tok) ==
+token_install(symbol, kind, non_blank, line_num, char_num, pos, tok) ==
     tok.$symbol_off := symbol
     tok.$kind_off := kind
     tok.$non_blank_off := non_blank
     tok.$line_off := line_num
     tok.$char_off := char_num
+    tok.$pos_off := pos
     tok
 
 empty_token_fifo() ==
@@ -92,12 +94,13 @@ prior_symbol() ==
 
 copy_prior_token() ==
     tok := $token_fifo.$prior_off
-    res := GETREFV(5)
+    res := GETREFV(6)
     res.$symbol_off := tok.$symbol_off
     res.$kind_off := tok.$kind_off
     res.$non_blank_off := tok.$non_blank_off
     res.$line_off := tok.$line_off
     res.$char_off := tok.$char_off
+    res.$pos_off := tok.$pos_off
     res
 
 set_prior_token(tok) ==
@@ -250,7 +253,8 @@ ntokreader(token) ==
         $maybe_insert_semi and starts_expression?(sym, type) =>
             $toklst := cons(tok1, $toklst)
             $maybe_insert_semi := false
-            token_install(";", "KEYWORD", false, line_no, char_no, token)
+            token_install(";", "KEYWORD", false, line_no, char_no,
+                          rest(pos), token)
         $maybe_insert_semi := false
         if not($curent_line_number = line_no) then
             $prev_line := $curent_line
@@ -323,9 +327,10 @@ ntokreader(token) ==
             sym :=
                 sym1 => sym1.1
                 sym
-        token_install(sym, type, nonblank_flag, line_no, char_no, token)
+        token_install(sym, type, nonblank_flag, line_no, char_no,
+                      rest(pos), token)
     else
-        token_install(nil, "*EOF", nil, nil, 0, token)
+        token_install(nil, "*EOF", nil, nil, 0, nil, token)
 
 fakeloopInclude0(st, name, n) ==
     $lines : local := incStream(st, name)

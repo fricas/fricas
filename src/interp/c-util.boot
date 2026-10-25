@@ -380,7 +380,7 @@ decExitLevel u ==
     removeExit0 x ==
       atom x => x
       x is ["exit",0,u] => removeExit0 u
-      [removeExit0 first x,:removeExit0 rest x]
+      copy_pos(x, [removeExit0 first x,:removeExit0 rest x])
 
 adjExitLevel(x,seqnum,inc) ==
   atom x => x
@@ -435,9 +435,13 @@ printDashedLine() ==
   SAY
    '"--------------------------------------------------------------------------"
 
-stackSemanticError(msg,expr) ==
+stackSemanticError(msg, expr) ==
+  stack_semantic_error_at($comp_pos, msg, expr)
+
+stack_semantic_error_at(pos, msg, expr) ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
   if atom msg then msg:= LIST msg
+  msg := pos_message(pos, msg)
   entry:= [msg,expr]
   if not member(entry,$semanticErrorStack) then $semanticErrorStack:=
     [entry,:$semanticErrorStack]
@@ -447,13 +451,20 @@ stackSemanticError(msg,expr) ==
 
 stackWarning msg ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
+  msg := pos_message($comp_pos, msg)
   if not member(msg,$warningStack) then $warningStack:= [msg,:$warningStack]
   nil
 
+-- removes msg at all positions
 unStackWarning msg ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
-  $warningStack:= NREMOVE($warningStack, msg)
+  $warningStack := [x for x in $warningStack | not(x = msg or rest(x) = msg)]
   nil
+
+-- msg with "file:line: " in front, if pos is known
+pos_message(pos, msg) ==
+  null(prefix := pos_prefix(pos)) => msg
+  [prefix, :(atom msg => [msg]; msg)]
 
 stackMessage msg ==
   $compErrorMessageStack:= [msg,:$compErrorMessageStack]
