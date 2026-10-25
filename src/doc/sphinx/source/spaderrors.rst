@@ -46,6 +46,28 @@ The error is usually at the end of the prior line or somewhere before
 it, not in the current line. Look for a missing ``)`` or ``]``, or for
 wrong indentation.
 
+A function header followed by its body on the next line, without
+``==``::
+
+    pos?(x : %) : Boolean
+        rep(x) > 0
+
+gives::
+
+    missing == after pos?(x: %)?
+
+The parser reads the indented body as part of the type ``Boolean``.
+Write ``pos?(x : %) : Boolean ==``.
+
+A reserved word used as a name, for example ``f(mod : Integer) == mod +
+1``, gives a syntax error with the note::
+
+    mod is a reserved word; to use it as a name, write _mod
+
+Reserved words include ``mod``, ``rem``, ``quo``, ``exquo``, ``has``,
+``is``, ``case``, ``by`` and ``where``. Write ``_mod`` or choose another
+name.
+
 
 Names
 -----

@@ -968,6 +968,12 @@ doIt(item, $predl, e) ==
     RPLACA(item,first u)
     RPLACD(item,rest u)
     doIt(item, $predl, e)
+  (h := header_without_body(item)) =>
+    stack_semantic_error_at(get_pos(item) or $comp_pos,
+      ['"missing == after ", h, '"?"], nil)
+    RPLACA(item, 'PROGN)
+    RPLACD(item, NIL) -- creates a no-op
+    e
   item is [":=", lhs, rhs, :.] =>
     not (compOrCroak(item, $EmptyMode, e) is [code, ., e]) =>
       stackSemanticError(['"cannot compile assigned value to",:bright lhs],nil)
@@ -1027,6 +1033,20 @@ doIt(item, $predl, e) ==
     ([code, ., e] := u; RPLACA(item, first code); RPLACD(item, rest code))
     e
   true => cannotDo()
+
+-- A function header with typed arguments outside of a definition, as
+-- in "f(x : %) : Boolean" followed by an indented body without "==":
+-- the parser then reads the body as an argument of the type.
+header_without_body(x) ==
+  atom(x) => nil
+  MEMQ(first(x), '(DEF MDEF _+_-_>)) => nil
+  typed_header?(x) => CADR(x)
+  or/[header_without_body(y) for y in x]
+
+typed_header?(x) ==
+  x is [":", h, .] and h is [f, :args] and IDENTP(f) =>
+      or/[a is [":", ., .] for a in args]
+  false
 
 isMacro(x,e) ==
   x is ['DEF, [op, :args], signature, body] and

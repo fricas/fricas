@@ -155,7 +155,26 @@ spad_syntax_error(wanted, parsing) ==
         FORMAT(true, '"~&The current line is:~%~%~5D> ~A~%~%",
            $curent_line_number, $curent_line)
     show_token_fifo()
+    reserved_word_hint()
     THROW('SPAD_READER, nil)
+
+-- A reserved word like mod used as a name (f(mod : Integer) == ...)
+-- gives a syntax error that does not say why.
+reserved_word_hint() ==
+    cnt := $token_fifo.$token_count_off
+    not(0 < cnt) => nil
+    tok := $token_fifo.$current_off
+    sym := tok.$symbol_off
+    not(tok.$kind_off = 'KEYWORD and SYMBOLP(sym)) => nil
+    name := PNAME(sym)
+    not(and/[ALPHA_-CHAR_-P(c) for c in name]) => nil
+    ptok := $token_fifo.$prior_off
+    name_place? :=
+        ptok.$kind_off and MEMQ(ptok.$symbol_off, '(_( _,)) => true
+        1 < cnt and MEMQ($token_fifo.$next_off.$symbol_off, '(_: _:_= _=_=))
+    not(name_place?) => nil
+    FORMAT(true, '"~%~a is a reserved word; to use it as a name, write __~a~%",
+           name, name)
 
 fakeloopInclude(name, n) ==
     handle_input_file(name, function fakeloopInclude0, [name, n])

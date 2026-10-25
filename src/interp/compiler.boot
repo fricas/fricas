@@ -185,6 +185,11 @@ comp_fail_diagnosis([x, m, e, :.]) ==
     x isnt [op, :args] or not(IDENTP(op)) => nil
     GET(op, "comp_special") or get(op, "value", e) or getmode(op, e) => nil
     null(mms := get(op, "modemap", e)) =>
+        MEMQ(op, '(per rep)) and get("Rep", "value", e) =>
+            ['"there is no operation named ", STRINGIMAGE(op),
+             '"; per and rep are not predefined: define",
+             '" per(r : Rep) : % == r pretend % and",
+             '" rep(x : %) : Rep == x pretend Rep, or use pretend"]
         ['"there is no operation named ", STRINGIMAGE(op)]
     n := #args
     (msg := arity_message(op, mms, n)) => msg
