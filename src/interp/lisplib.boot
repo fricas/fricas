@@ -291,7 +291,8 @@ mkEvalableCategoryForm(c, e) ==       --from DEFINE
   c is [op,:argl] =>
     op="Join" =>
         for x in argl | IDENTP(x) and not(getmode(x, e)) repeat
-            stackAndThrow [STRINGIMAGE(x), '" is not a valid category"]
+            stack_and_throw_at(item_pos(c, x),
+                               [STRINGIMAGE(x), '" is not a valid category"])
         nargs := [mkEvalableCategoryForm(x, e) or return nil for x in argl]
         nargs => ["JoinInner", ["LIST", :nargs]]
     op is "DomainSubstitutionMacro" =>

@@ -168,7 +168,7 @@ macroExpand1(x,e) ==   --not worked out yet
   macroExpandList(x,e)
 
 macroExpandList(l,e) ==
-  [macroExpand(x,e) for x in l]
+  carry_name_pos(l, [macroExpand(x,e) for x in l])
 
 compDefineCategory1(df is ['DEF, form, sig, body], m, e, prefix, fal) ==
   categoryCapsule :=
@@ -333,7 +333,8 @@ check_export_types(target, e) ==
     for sig in export_signatures(target) repeat
         for t in CADDR(sig) repeat
             for x in unknown_type_names(t, e) repeat
-                stack_semantic_error_at(get_pos(sig) or $comp_pos,
+                stack_semantic_error_at(
+                    item_pos(sig, x) or get_pos(sig) or $comp_pos,
                     [STRINGIMAGE(x), '" is not a valid type"], nil)
 
 export_signatures(x) ==
@@ -397,7 +398,8 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     target:= first signature'
     e := giveFormalParametersValues(argl, e)
     [ds, ., e] := compMakeCategoryObject(target, e) or
-      stackAndThrow [target, '" is not a valid category"]
+      stack_and_throw_at(item_pos(df, target),
+                         [target, '" is not a valid category"])
     check_export_types(target, e)
 --+ copy needed since slot1 is reset; compMake.. can return a cached vector
     base_shell := COPY_-SEQ ds

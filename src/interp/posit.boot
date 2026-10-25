@@ -274,6 +274,12 @@ keep_name_cell(c) ==
     if (p := get_name_pos(c)) then HPUT($name_positions, cell, p)
     cell
 
+-- the position of x, a part of the node n: its own, or for a name the
+-- earliest position of it in n
+item_pos(n, x) ==
+    CONSP(x) => get_pos(x)
+    name_pos_in(x, n, true)
+
 -- the earliest position of the name s in the list x, or with deep? also
 -- in the lists inside it
 name_pos_in(s, x, deep?) ==

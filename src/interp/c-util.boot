@@ -507,6 +507,9 @@ message_at(msg, pos) ==
   note_pos(msg, pos)
   msg
 
+-- stackMessage, the message about something at the position pos
+stack_message_at(pos, msg) == stackMessage message_at(msg, pos)
+
 stackMessageIfNone msg ==
   --used in situations such as compForm where the earliest message is wanted
   if null $compErrorMessageStack then $compErrorMessageStack:=
@@ -516,6 +519,8 @@ stackMessageIfNone msg ==
 stackAndThrow msg ==
   $compErrorMessageStack:= [msg,:$compErrorMessageStack]
   THROW("compOrCroak",nil)
+
+stack_and_throw_at(pos, msg) == stackAndThrow message_at(msg, pos)
 
 printString x == PRINTEXP (STRINGP x => x; PNAME x)
 
