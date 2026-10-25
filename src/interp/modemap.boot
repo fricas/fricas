@@ -171,7 +171,7 @@ augModemapsFromDomain1(name, functorForm, e) ==
         ["Mapping", categoryForm, :.] := mappingForm
         catform := substituteCategoryArguments(rest(functorForm), categoryForm)
         augModemapsFromCategory(name, functorForm, catform, e)
-    stackMessage([functorForm, '" is an unknown mode"])
+    stackMessage([functorForm, '" is not a valid type"])
     e
 
 substituteCategoryArguments(argl, catform) ==
@@ -206,7 +206,8 @@ getOperationAlist(name,functorForm,form) ==
     ($domainShell => $domainShell.(1); systemError '"% has no shell now")
   T := compMakeCategoryObject(form, $tmp_e) =>
       ([., ., $tmp_e] := T; T.expr.(1))
-  stackMessage ['"not a category form: ",form]
+  null(form) => stackMessage [functorForm, '" is not a valid type"]
+  stackMessage [form, '" is not a valid category"]
 
 substNames(domainName, functorForm, opalist) ==
   functorForm := SUBSTQ("$$", "%", functorForm)

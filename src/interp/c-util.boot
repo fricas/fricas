@@ -182,7 +182,7 @@ intersectionContour(c, c', ce) ==
       pair:= assoc("mode",p) =>
         pair':= assoc("mode",p') =>
           m'' := unifiable(rest pair, rest pair', ce) => LIST ["mode", :m'']
-          stackWarning(['%b,$var,'%d,'"has two modes: "])
+          stackWarning(['%b,$var,'%d,'"has two different types"])
         LIST ["conditionalmode",:rest pair]
         --LIST pair
       pair':= assoc("mode",p') => LIST ["conditionalmode",:rest pair']
@@ -217,8 +217,8 @@ addContour(c,E is [cur,:tail]) ==
                      --check for conflicts with earlier mode
                      if vv:=LASSOC("mode",e) then
                         if v ~=vv then
-                          stackWarning ['"The conditional modes ",
-                                     v,'" and ",vv,'" conflict"]
+                          stackWarning ['"the conditional types ", v, '" and ", vv,
+                                    '" conflict"]
         LIST c
 
 makeCommonEnvironment(e,e') ==
@@ -458,13 +458,15 @@ stackWarning msg ==
 -- removes msg at all positions
 unStackWarning msg ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
+  msg := pos_message(nil, msg)
   $warningStack := [x for x in $warningStack | not(x = msg or rest(x) = msg)]
   nil
 
--- msg with "file:line: " in front, if pos is known
+-- msg as text, with "file:line: " in front if pos is known
 pos_message(pos, msg) ==
+  msg := message_items(msg)
   null(prefix := pos_prefix(pos)) => msg
-  [prefix, :(atom msg => [msg]; msg)]
+  [prefix, :msg]
 
 -- the elements of msg as text, forms in Spad syntax
 message_items(msg) ==
@@ -544,7 +546,7 @@ extendsCategoryForm(domain, form, form', e) ==
                               for x in l]
   form is ["CATEGORY",.,:l] =>
     member(form',l) or
-      stackWarning ['"not known that ",form','" is of mode ",form] or true
+      stackWarning ['"not known that ", form', '" has ", form] or true
   isCategoryForm(form) =>
           --Constructs the associated vector
     formVec := (compMakeCategoryObject(form, e)).expr

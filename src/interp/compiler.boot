@@ -110,8 +110,7 @@ compOrCroak1(x,m,e,compFn) ==
                         '"unspecified error"
       pos := comp_stack_pos()
       $scanIfTrue =>
-        stack_semantic_error_at(pos, message_items(errorMessage),
-                                mkErrorExpr $level)
+        stack_semantic_error_at(pos, errorMessage, mkErrorExpr $level)
         ["failedCompilation",m,e]
       displaySemanticErrors()
       $comp_fail_dump =>
@@ -124,9 +123,12 @@ compOrCroak1(x,m,e,compFn) ==
 -- compiler developers)
 DEFPARAMETER($comp_fail_dump, false)
 
-source_text(x) ==
+source_text(x) == message_item(quote_string(x))
+
+-- a string literal x in quotes, to tell it from the text of a message
+quote_string(x) ==
     STRINGP(x) => CONCAT('"_"", x, '"_"")
-    message_item(x)
+    x
 
 -- the message of a failed compilation: position, function and msg;
 -- one string unless msg has layout markers, which userError would
@@ -156,7 +158,7 @@ comp_fail_concat(l) ==
 comp_fail_explain(msg) ==
     mismatch := msg is [., t, :.] and EQ(t, $type_mismatch_text)
     not(null(msg) or mismatch or
-        msg is [s, :.] and s = '"cannot compile") => nil
+        msg is [s, :.] and stringPrefix?('"cannot compile", s)) => nil
     entries := REVERSE($compStack)  -- the innermost first
     null(entries) => nil
     [x, ., e, :.] := first(entries)
@@ -366,8 +368,8 @@ compLambda(x is ["+->", vl, body], m, e) ==
                  ress := compAtSign(["@", ["+->", arg1, body],
                                   ["Mapping", target, :sig1]], m, e)
                  ress
-             stackAndThrow ['"compLambda: malformed argument list", x]
-        stackAndThrow ['"compLambda: malformed argument list", x]
+             stackAndThrow ['"malformed arguments of +-> in ", x]
+        stackAndThrow ['"malformed arguments of +-> in ", x]
     nil
 
 getFreeList(u, bound, free, e) ==
@@ -443,11 +445,11 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
       vl :=
          IDENTP(vl) => [vl]
          LISTP(vl) and (and/[SYMBOLP(v) for v in vl])=> vl
-         stackAndThrow ['"bad +-> arguments:", vl]
+         stackAndThrow ['"the arguments of +-> must be names, not ", vl]
       $formalArgList := [:vl, :$formalArgList]
       #sl ~= #vl =>
          stackAndThrow [_
-           '"number of arguments to +-> does not match, expected:", #sl]
+           '"+-> has ", #vl, '" arguments, but ", #sl, '" are expected"]
       x := nx
   else
       vl:= take(#sl,$FormalMapVariableList)
@@ -584,17 +586,18 @@ compSymbol(s,m,e) ==
     if not member(s,$formalArgList) and not MEMQ(s,$FormalMapVariableList) and
       not isFunction(s,e) and null ($compForModeIfTrue=true) then
           $allow_undef => nil
-          errorRef s
+          stackWarning ['%b, s, '%d, '"is declared as ", m',
+                        '" but has not been given a value"]
     [s,m',e] --s is a declared argument
-  MEMQ(s,$FormalMapVariableList) => stackMessage ['"no mode found for",s]
+  MEMQ(s,$FormalMapVariableList) => stackMessage ['"no type found for ", s]
   not isFunction(s,e) =>
       $allow_undef => nil
       errorRef s
 
 convertOrCroak(T,m) ==
   u:= convert(T,m) => u
-  userError ['"CANNOT CONVERT: ",T.expr,"%l",'" OF MODE: ",T.mode,"%l",
-    '" TO MODE: ",m,"%l"]
+  userError ['"cannot convert a value of type ", formString(T.mode),
+             '" to ", formString(m)]
 
 convert(T,m) ==
   coerce(T,resolve(T.mode,m) or return nil)
@@ -811,7 +814,7 @@ setqSingle(id,val,m,E) ==
         (T:= comp(val,$EmptyMode,E)) and getmode(T.mode,E) =>
           assignError(val,T.mode,id,m'')
   m'' = $EmptyMode and T.mode = $EmptyMode =>
-      stackMessage ['"No mode in assignment to: ", id]
+      stackMessage ['"cannot determine the type of ", id]
   finish_setq_single(T, m, id, val, currentProplist)
 
 cons_value(v, m) == ["value", v, m, $EmptyEnvironment]
@@ -858,9 +861,9 @@ saveLocVarsTypeDecl(x, id, e) ==
 assignError(val,m',form,m) ==
   message:=
     val =>
-      ['"CANNOT ASSIGN: ",val,"%l",'"   OF MODE: ",m',"%l",'"   TO: ",form,"%l",
-        '"   OF MODE: ",m]
-    ['"CANNOT ASSIGN: ",val,"%l",'"   TO: ",form,"%l",'"   OF MODE: ",m]
+      ['"cannot assign ", val, '" of type ", m', '" to ", form,
+       '" of type ", m]
+    ['"cannot assign ", val, '" to ", form, '" of type ", m]
   stackMessage message
 
 MKPROGN(l) == MKPF(l, "PROGN")
@@ -901,9 +904,11 @@ setqMultiple(nameList,val,m,e) ==
         t is ["Record",:l] => [[name,:mode] for [":",name,mode] in l]
         comp(t,$EmptyMode,e) is [.,["RecordCategory",:l],.] =>
           [[name,:mode] for [":",name,mode] in l]
-        stackMessage ['"no multiple assigns to mode: ",t]
+        stackMessage ['"cannot assign a value of type ", t,
+                      '" to several variables"]
   #nameList~=#selectorModePairs =>
-    stackMessage [val,'" must decompose into ",#nameList,'" components"]
+    stackMessage ['"cannot assign ", val, '" to ", #nameList,
+                  '" variables, it has ", #selectorModePairs, '" components"]
   -- 3 generate code; return
   assignList:=
     [([.,.,e]:= compSetq1(x,["elt",g,y],z,e) or return "failed").expr
@@ -913,8 +918,8 @@ setqMultiple(nameList,val,m,e) ==
 
 setqMultipleExplicit(nameList,valList,m,e) ==
   #nameList~=#valList =>
-    stackMessage ['"Multiple assignment error; # of items in: ",nameList,
-      '"must = # in: ",valList]
+    stackMessage ['"cannot assign ", #valList, '" values to ", #nameList,
+                  '" variables"]
   gensymList:= [genVariable() for name in nameList]
   assignList:=
              --should be fixed to declare genVar when possible
@@ -1080,7 +1085,8 @@ compExit(["exit",level,x],m,e) ==
   [x',m',e']:=
     u:=
       comp(x,m1,e) or return
-        stackMessageIfNone ['"cannot compile exit expression",x,'"in mode",m1]
+        stackMessageIfNone ['"cannot compile ", quote_string(x),
+                            '" as a value of type ", m1]
   modifyModeStack(m',index)
   [["TAGGEDexit",index,u],m,e]
 
@@ -1327,14 +1333,15 @@ unknownTypeError name ==
   name:=
     name is [op,:.] => op
     name
-  stackSemanticError(["%b",name,"%d",'"is not a known type"],nil)
+  stackSemanticError(["%b",name,"%d",'"is not a valid type"],nil)
 
 compPretend(["pretend",x,t],m,e) ==
   e:= addDomain(t,e)
   T:= comp(x,t,e) or comp(x,$EmptyMode,e) or return nil
   if T.mode=t then warningMessage:= ['"pretend",t,'" -- should replace by @"]
   if opOf(T.mode) = 'Union and opOf(m) ~= 'Union then
-     stackWarning(['"cannot pretend ",x,'" of mode ",T.mode,'" to mode ",m])
+     stackWarning(['"cannot pretend ", x, '" of type ", T.mode,
+                   '" to be of type ", m])
   T:= [T.expr,t,T.env]
   T':= coerce(T,m) => (if warningMessage then stackWarning warningMessage; T')
 
@@ -1517,8 +1524,8 @@ autoCoerceByModemap([x,source,e],target) ==
     (y:= get(x,"condition",e)) and (or/[u is ["case",., =target] for u in y])
        => [["call",fn,x],target,e]
     x="$fromCoerceable$" => nil
-    stackMessage ['"cannot coerce: ",x,"%l",'"      of mode: ",source,"%l",
-      '"      to: ",target,'" without a case statement"]
+    stackMessage ['"cannot convert ", x, '" of type ", source, '" to ",
+      target, '" without a case statement"]
   [["call",fn,x],target,e]
 
 --% Very old resolve

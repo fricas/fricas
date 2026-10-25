@@ -79,7 +79,13 @@ compDefine1(form,m,e) ==
     new_prefix := getAbbreviation(first(lhs), #(rest(lhs)))
     compDefineFunctor(['DEF, lhs, signature, rhs], m, e,
                       new_prefix, $formalArgList)
-  null($functorForm) => stackAndThrow ['"bad == form ",form]
+  null($functorForm) =>
+      name := (lhs is [op] => op; lhs)
+      signature.target =>
+          stackAndThrow ['"cannot compile ", name, '" == ...: the right-hand",
+                         '" side is not a domain or an add form"]
+      stackAndThrow ['"cannot compile ", name, '" == ...: ", opOf(lhs),
+                     '" is not declared"]
   compDefineCapsuleFunction(form, m, e, $prefix, $formalArgList)
 
 compDefineAddSignature([op,:argl],signature,e) ==
@@ -111,8 +117,7 @@ getTargetFromRhs(lhs,rhs,e) ==
   rhs is ['Union,:l] => ['UnionCategory,:l]
   [.,target,.]:= compOrCroak(rhs,$EmptyMode,e)
   target is ["Category"] =>
-      stackAndThrow(['"Only domains and packages can get mode form target",
-                     lhs])
+      stackAndThrow(['"the category of ", lhs, '" must be declared"])
   target
 
 giveFormalParametersValues(argl,e) ==
