@@ -300,10 +300,30 @@ comp_stack_pos() ==
 -- compiled that has one
 DEFPARAMETER($comp_pos, nil)
 
-comp(x, m, e) == comp_at(x, m, e, get_pos(x) or $comp_pos)
+-- the nodes being compiled, the innermost first
+DEFPARAMETER($comp_nodes, nil)
 
--- binds $comp_pos for the compilation of x
-comp_at(x, m, e, $comp_pos) ==
+-- the position of the name s for a message: in the innermost node being
+-- compiled, among its elements first, then deeper; nodes built by the
+-- compiler (without a position) are looked through; else $comp_pos
+name_place(s) ==
+  pos := nil
+  done := false
+  for x in $comp_nodes while not(pos or done) repeat
+      pos := name_pos_in(s, x, false) or name_pos_in(s, x, true)
+      done := get_pos(x)
+  pos or $comp_pos
+
+-- the position of the operator of the innermost node being compiled
+op_place() ==
+  $comp_nodes is [node, :.] and (p := get_name_pos(node)) => p
+  $comp_pos
+
+comp(x, m, e) ==
+  comp_at(x, m, e, get_pos(x) or $comp_pos, [x, :$comp_nodes])
+
+-- binds $comp_pos and $comp_nodes for the compilation of x
+comp_at(x, m, e, $comp_pos, $comp_nodes) ==
   T:= compNoStacking(x,m,e) => ($compStack:= nil; T)
   $compStack:= [[x,m,e,$exitModeStack],:$compStack]
   nil
@@ -591,8 +611,9 @@ compSymbol(s,m,e) ==
     if not member(s,$formalArgList) and not MEMQ(s,$FormalMapVariableList) and
       not isFunction(s,e) and null ($compForModeIfTrue=true) then
           $allow_undef => nil
-          stackWarning ['%b, s, '%d, '"is declared as ", m',
-                        '" but has not been given a value"]
+          stack_warning_at(name_place(s),
+              ['%b, (s = "$$" => '"%"; s), '%d, '"is declared as ", m',
+               '" but has not been given a value"])
     [s,m',e] --s is a declared argument
   MEMQ(s,$FormalMapVariableList) => stackMessage ['"no type found for ", s]
   not isFunction(s,e) =>
@@ -1349,7 +1370,10 @@ compPretend(["pretend",x,t],m,e) ==
      stackWarning(['"cannot pretend ", x, '" of type ", T.mode,
                    '" to be of type ", m])
   T:= [T.expr,t,T.env]
-  T':= coerce(T,m) => (if warningMessage then stackWarning warningMessage; T')
+  T':= coerce(T,m) =>
+      if warningMessage then
+          stack_warning_at(op_place(), warningMessage)
+      T'
 
 compIs(["is",a,b],m,e) ==
   [aval,am,e] := comp(a,$EmptyMode,e) or return nil

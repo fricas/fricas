@@ -107,7 +107,7 @@ mkErrorExpr level ==
                 [highlight1(b,first a),:highlight1(b,rest a)]
       substitute(bracket rest l,first rest l,first l)
 
-errorRef s == stackWarning ['%b,s,'%d,'"has no value"]
+errorRef s == stack_warning_at(name_place(s), ['%b,s,'%d,'"has no value"])
 
 unErrorRef s == unStackWarning ['%b,s,'%d,'"has no value"]
 
@@ -449,9 +449,11 @@ stack_semantic_error_at(pos, msg, expr) ==
     $initCapsuleErrorCount>3 => THROW("compCapsuleBody",nil)
   nil
 
-stackWarning msg ==
+stackWarning msg == stack_warning_at($comp_pos, msg)
+
+stack_warning_at(place, msg) ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
-  msg := pos_message($comp_pos, msg)
+  msg := pos_message(place, msg)
   if not member(msg,$warningStack) then $warningStack:= [msg,:$warningStack]
   nil
 

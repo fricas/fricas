@@ -139,6 +139,8 @@ DEFPARAMETER($reduction_stack, nil)
 DEFPARAMETER($reduction_pos_stack, nil)
 -- the earliest position of the elements popped since the last push
 DEFPARAMETER($popped_pos, nil)
+-- the names popped since the last reduction, as cells [name, :position]
+DEFPARAMETER($popped_names, nil)
 
 -- the position of the current token, or else of the prior one
 token_pos() ==
@@ -154,8 +156,18 @@ push_reduction(x, y) ==
             for el in y repeat
                 p := earlier_pos(p, get_pos(el))
             p or ($token_fifo.$prior_off).$pos_off
+        -- a name popped again keeps its position (the current token may
+        -- already be the next one)
+        (hit := ASSQ(y, $popped_names)) => rest hit
         token_pos()
+    -- the names among the elements of y keep their positions
+    if CONSP(y) and $popped_names then note_names(y, $popped_names)
+    $popped_names := nil
     push_with_pos(y, pos)
+
+note_popped_name(el, pos) ==
+    if el and atom(el) and pos then
+        $popped_names := [[el, :pos], :$popped_names]
 
 -- A token starts at itself.
 push_token(y) == push_with_pos(y, token_pos())
@@ -174,7 +186,9 @@ note_popped_pos(pos) ==
 -- position, and return the element
 pop_stack_n(n) ==
     el := NTH(n - 1, $reduction_stack)
-    note_popped_pos(NTH(n - 1, $reduction_pos_stack))
+    p := NTH(n - 1, $reduction_pos_stack)
+    note_popped_pos(p)
+    note_popped_name(el, p)
     $reduction_stack := remove_nth(n, $reduction_stack)
     $reduction_pos_stack := remove_nth(n, $reduction_pos_stack)
     el

@@ -98,8 +98,9 @@ init_parse_tran() ==
 
 init_parse_tran()
 
--- the nodes built from x get the position of x
-parseTran x == note_new_pos(parseTran1 x, get_pos(x))
+-- the nodes built from x get the position of x, the names in them the
+-- positions of the same names in x
+parseTran x == carry_name_pos(x, note_new_pos(parseTran1 x, get_pos(x)))
 
 parseTran1 x ==
   atom x => parseAtom x
@@ -116,7 +117,7 @@ parseAtom x ==
   x = 'break => parseLeave ['$NoValue]
   x
 
-parseTranList l == [parseTran(y) for y in l]
+parseTranList l == carry_name_pos(l, [parseTran(y) for y in l])
 
 parseHas [x,y] ==
   mkand [['has,x,u] for u in fn y] where
@@ -232,10 +233,13 @@ transSeq l ==
   item is ['SEQ,:l,['exit,1,if_node := ['IF,p,['exit, =2,q],'noBranch]]] and
     (and/[x is [":=", :.] for x in l]) =>
       copy_pos(item, ['SEQ,:[decExitLevel x for x in l],['exit,1,
-        copy_pos(if_node, ['IF,decExitLevel p,decExitLevel q,transSeq tail])]])
+        carry_name_pos(tail, copy_pos(if_node, ['IF,decExitLevel p,
+          decExitLevel q,transSeq tail]))]])
   item is ['IF,a,['exit,1,b],'noBranch] =>
-    copy_pos(item, ['IF,decExitLevel a,decExitLevel b,transSeq tail])
+    carry_name_pos(tail,
+      copy_pos(item, ['IF,decExitLevel a,decExitLevel b,transSeq tail]))
   item is ['IF,a,'noBranch,['exit,1,b]] =>
-    copy_pos(item, ['IF,decExitLevel a,transSeq tail,decExitLevel b])
+    carry_name_pos(tail,
+      copy_pos(item, ['IF,decExitLevel a,transSeq tail,decExitLevel b]))
   (y:= transSeq tail) is ['SEQ,:s] => copy_pos(item, ['SEQ,item,:s])
-  copy_pos(item, ['SEQ,item,['exit,1,incExitLevel y]])
+  copy_pos(item, ['SEQ,item,carry_name_pos(tail, ['exit,1,incExitLevel y])])
