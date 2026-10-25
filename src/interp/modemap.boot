@@ -39,7 +39,7 @@
 addDomain(domain,e) ==
   atom domain =>
     EQ(domain,"$EmptyMode") => e
-    EQ(domain,"$NoValueMode") => e
+    EQ(domain, $NoValueMode) => e
     not IDENTP domain or 2<#(s:= STRINGIMAGE domain) and
       EQ(char "#",s.(0)) and EQ(char "#",s.(1)) => e
     MEMQ(domain,getDomainsInScope e) => e
