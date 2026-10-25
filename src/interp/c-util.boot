@@ -443,8 +443,9 @@ stack_semantic_error_at(pos, msg, expr) ==
   if atom msg then msg:= LIST msg
   msg := pos_message(pos, msg)
   entry:= [msg,expr]
-  if not member(entry,$semanticErrorStack) then $semanticErrorStack:=
-    [entry,:$semanticErrorStack]
+  if not(or/[same_warning?(msg, m1) and EQUAL(expr, e1)
+             for [m1, e1] in $semanticErrorStack]) then
+      $semanticErrorStack:= [entry,:$semanticErrorStack]
   $scanIfTrue and $insideCapsuleFunctionIfTrue=true and #$semanticErrorStack-
     $initCapsuleErrorCount>3 => THROW("compCapsuleBody",nil)
   nil
@@ -454,8 +455,23 @@ stackWarning msg == stack_warning_at($comp_pos, msg)
 stack_warning_at(place, msg) ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
   msg := pos_message(place, msg)
-  if not member(msg,$warningStack) then $warningStack:= [msg,:$warningStack]
+  if not(or/[same_warning?(msg, w) for w in $warningStack]) then
+      $warningStack:= [msg,:$warningStack]
   nil
+
+-- warnings (or errors) that differ only in the column are the same: one
+-- per line, at the first column
+same_warning?(a, b) ==
+  EQUAL(rest a, rest b) and EQUAL(drop_column(first a), drop_column(first b))
+
+-- the position prefix s ("file:line:col: ") without the column
+drop_column(s) ==
+  not(STRINGP(s)) or (n := #s) < 6 => s
+  i := n - 3
+  while i > 0 and digit?(s.i) repeat i := i - 1
+  i < n - 3 and s.i = char '_: and digit?(s.(i - 1)) =>
+      CONCAT(SUBSTRING(s, 0, i), '": ")
+  s
 
 -- removes msg at all positions
 unStackWarning msg ==
@@ -485,6 +501,11 @@ message_item(x) ==
 stackMessage msg ==
   $compErrorMessageStack:= [msg,:$compErrorMessageStack]
   nil
+
+-- msg, noted as being about the position pos (get_pos(msg) gives it)
+message_at(msg, pos) ==
+  note_pos(msg, pos)
+  msg
 
 stackMessageIfNone msg ==
   --used in situations such as compForm where the earliest message is wanted

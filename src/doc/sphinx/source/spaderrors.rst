@@ -11,10 +11,10 @@ When the compilation of a function fails, the compiler prints one
 message of the form::
 
    >> Apparent user error:
-   file.spad:11: in function g: there is no operation named foo
+   file.spad:11:9: in function g: there is no operation named foo
 
-The message gives the file, the line and the function, and then says
-what went wrong. Other problems are collected as ``Semantic Errors``
+The message gives the file, the line, the column and the function, and
+then says what went wrong. Other problems are collected as ``Semantic Errors``
 or ``Warnings`` with the same kind of position.
 
 Compiler developers can get the internal state of the compiler

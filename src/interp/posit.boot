@@ -286,9 +286,12 @@ name_pos_in(s, x, deep?) ==
         c := rest c
     pos
 
--- the text "file:line: " for a position, or nil
+-- the text "file:line:column: " for a position, or nil
 pos_prefix(pos) ==
     null(pos) => nil
     fn := lnPlaceOfOrigin(poGetLineObject pos)
-    STRINGP(fn) => CONCAT(fn, '":", STRINGIMAGE(poLinePosn pos), '": ")
-    CONCAT('"line ", STRINGIMAGE(poLinePosn pos), '": ")
+    ln := STRINGIMAGE(poLinePosn pos)
+    col := poCharPosn pos
+    if INTEGERP(col) then ln := CONCAT(ln, '":", STRINGIMAGE(col + 1))
+    STRINGP(fn) => CONCAT(fn, '":", ln, '": ")
+    CONCAT('"line ", ln, '": ")

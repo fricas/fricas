@@ -282,12 +282,14 @@ postCollect [constructOp,:m,x] ==
 postIteratorList x ==
   x is [p,:l] =>
     (p:= postTran p) is ['IN,y,u] =>
-      u is ["|",a,b] => [['IN,y,postInSeq a],["|",b],:postIteratorList l]
-      [['IN,y,postInSeq u],:postIteratorList l]
+      u is ["|",a,b] =>
+          [copy_pos(p, ['IN,y,postInSeq a]),["|",b],:postIteratorList l]
+      [copy_pos(p, ['IN,y,postInSeq u]),:postIteratorList l]
     p is  ['INBY, y, u, v] =>
       u is ["|",a,b] =>
-          [['INBY, y, postInSeq a, v], ["|",b], :postIteratorList l]
-      [['INBY, y, u, v], :postIteratorList l]
+          [copy_pos(p, ['INBY, y, postInSeq a, v]), ["|",b],
+           :postIteratorList l]
+      [copy_pos(p, ['INBY, y, u, v]), :postIteratorList l]
     [p,:postIteratorList l]
   x
 

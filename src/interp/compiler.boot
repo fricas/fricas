@@ -108,7 +108,7 @@ compOrCroak1(x,m,e,compFn) ==
       errorMessage := IFCAR($compErrorMessageStack)
       errorMessage := comp_fail_explain(errorMessage) or errorMessage or
                         '"unspecified error"
-      pos := comp_stack_pos()
+      pos := get_pos(errorMessage) or comp_stack_pos()
       $scanIfTrue =>
         stack_semantic_error_at(pos, errorMessage, mkErrorExpr $level)
         ["failedCompilation",m,e]
@@ -154,7 +154,8 @@ comp_fail_concat(l) ==
     s
 
 -- a clearer message than msg (none, a "cannot compile" or a type
--- mismatch), from the expressions that failed ($compStack), or nil
+-- mismatch), from the expressions that failed ($compStack), or nil;
+-- the message is noted at the position of what it explains
 comp_fail_explain(msg) ==
     mismatch := msg is [., t, :.] and EQ(t, $type_mismatch_text)
     not(null(msg) or mismatch or
@@ -167,14 +168,21 @@ comp_fail_explain(msg) ==
     x is [["Sel", dom, op], :args] and
       (d := sel_fail_diagnosis(dom, op, args, e)) => d
     -- a name, else the innermost call
-    IDENTP(x) and (d := comp_fail_diagnosis(first(entries))) => d
+    IDENTP(x) and (d := comp_fail_diagnosis(first(entries))) =>
+        message_at(d, stack_name_pos(x, rest(entries)))
     call := nil
     for entry in entries while not(call) repeat
         if entry is [[op, :.], :.] and IDENTP(op) and
           not(GET(op, "comp_special")) then call := entry
-    call and (d := comp_fail_diagnosis(call)) => d
+    call and (d := comp_fail_diagnosis(call)) =>
+        message_at(d, get_name_pos(first(call)))
     mismatch and EQUAL(x, first(msg)) => [source_text(x), :rest(msg)]
     nil
+
+-- the position of the name s in the innermost expression of entries
+-- (entries of $compStack) that holds it
+stack_name_pos(s, entries) ==
+    or/[name_pos_in(s, y, false) for [y, :.] in entries]
 
 -- why x (an expression that failed, in mode m and environment e)
 -- cannot be compiled, or nil if that is not clear
