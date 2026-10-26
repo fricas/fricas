@@ -80,9 +80,13 @@ PolynomialRoots(E, V, R, P, F) : Exports == Implementation where
     rsplit : List P -> Record(coef : R, poly : P)
     zroot : (Z, N) -> Record(exponent : N, coef : Z, radicand : Z)
 
+    fr_R ==> Record(flag : Union("nil", "sqfr", "irred", "prime"),
+                    factor : Z, exponent : N)
+
     zroot(x, n) ==
       zero? x or (x = 1) => [1, x, 1]
-      s := nthRoot(squareFree x, n)
+      fr := square_free(x)$CheapIntegerSquareFree()
+      s := nthRoot(makeFR(fr.coef, fr.factors)$Factored(Z), n)
       [s.exponent, s.coef, */s.radicand]
 
     -- returns [d, b] such that d divides n and b^(n/d) = x
