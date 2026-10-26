@@ -149,32 +149,21 @@ intersectionContour(c, c', ce) ==
   $var: local := nil
   computeIntersection(c, c', ce) where
     computeIntersection(c, c', ce) ==
-      varlist:= REMDUP ASSOCLEFT c
-      varlist':= REMDUP ASSOCLEFT c'
-      interVars:= intersection(varlist,varlist')
-      unionVars:= union(varlist,varlist')
-      diffVars:= setDifference(unionVars,interVars)
-      -- a variable changed in one branch only, but known before the
-      -- if: intersect with its properties before the if
-      oldVars := [x for x in diffVars | getProplist(x, ce)]
-      diffVars := setDifference(diffVars, oldVars)
-      modeAssoc := buildModeAssoc(diffVars, c, c', ce)
-      [:modeAssoc,:
-        [[x,:proplist]
-          for [x,:y] in c | member(x,interVars) and
-            (proplist := interProplist(y, LASSOC($var := x, c'), ce))],
-        :[[x, :proplist] for x in oldVars |
-            (proplist := interProplist(LASSOC($var := x, c) or
-                                         getProplist(x, ce),
-                                       LASSOC(x, c') or getProplist(x, ce),
-                                       ce))]]
+      -- where a branch did not change a variable, take its properties
+      -- from before the if
+      [[x, :proplist] for x in union(ASSOCLEFT c, ASSOCLEFT c') |
+        (proplist := interProplist(LASSOC($var := x, c) or before(x, c', ce),
+                                   LASSOC(x, c') or before(x, c, ce), ce))]
+    before(x, c, ce) ==
+      -- none if the other branch c declares x with another mode: then
+      -- it is a new variable
+      p := search(x, ce)
+      (m := LASSOC("mode", LASSOC(x, c))) and m ~= LASSOC("mode", p) => nil
+      p
     interProplist(p, p', ce) ==
                             --p is new proplist; p' is old one
         [:modeCompare(p, p', ce), :[pair' for pair in p |
                (pair' := compare(pair, p', ce))]]
-    buildModeAssoc(varlist, c, c', ce) ==
-      [[x, :mp] for x in varlist |
-          (mp := modeCompare(LASSOC(x, c), LASSOC(x, c'), ce))]
     compare(pair is [prop,:val], p', ce) ==
       --1. if the property-value pair are identical, accept it immediately
       pair=(pair':= assoc(prop,p')) => pair
