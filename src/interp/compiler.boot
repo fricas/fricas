@@ -355,6 +355,8 @@ compExpression(x,m,e) ==
 
 compAtom(x, m, e) ==
     res := compAtom1(x, m, e) => res
+    -- a local variable hides constants of the same name
+    isSymbol x and get(x, "value", e) => nil
     -- Needed at least for bootstrap of FFIELDC.spad
     compAtomWithModemap(x, m, e, get(x, "modemap", e))
 
