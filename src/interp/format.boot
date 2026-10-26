@@ -281,7 +281,10 @@ form2StringWithWhere u ==
 formString u ==
   x := form2String u
   atom x => STRINGIMAGE x
-  "STRCONC"/[STRINGIMAGE y for y in x]
+  -- plain text: a layout marker of form2String becomes a space, and %
+  -- (written %% for the message printer, dollarPercentTran) is %
+  "STRCONC"/[(member(y, $msgdbPrims) => '" "; y = "%%" or y = '"%%" => '"%";
+               STRINGIMAGE y) for y in x]
 
 DEFPARAMETER($from_unparse, false)
 

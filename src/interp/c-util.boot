@@ -182,7 +182,8 @@ intersectionContour(c, c', ce) ==
       pair:= assoc("mode",p) =>
         pair':= assoc("mode",p') =>
           m'' := unifiable(rest pair, rest pair', ce) => LIST ["mode", :m'']
-          stackWarning(['%b,$var,'%d,'"has two different types"])
+          stackWarning(['%b, $var, '%d, '"has two different types: ",
+                        rest pair, '" and ", rest pair'])
         LIST ["conditionalmode",:rest pair]
         --LIST pair
       pair':= assoc("mode",p') => LIST ["conditionalmode",:rest pair']
@@ -484,7 +485,7 @@ unStackWarning msg ==
 -- is written %%, else sayBrightly reads it as a layout marker and
 -- prints nothing
 pos_message(pos, msg) ==
-  msg := [(x = '% or x = '"%" => '"%%"; message_item(x))
+  msg := [(x = '% or x = '"%" or x = "$$" => '"%%"; message_item(x))
            for x in (atom msg => [msg]; msg)]
   null(prefix := pos_prefix(pos)) => msg
   [prefix, :msg]
@@ -493,8 +494,11 @@ pos_message(pos, msg) ==
 message_items(msg) ==
   [message_item(x) for x in (atom(msg) => [msg]; msg)]
 
+-- a form in Spad syntax; a category with a with part as "C with ..."
+message_form(x, $abbreviateJoin) == formString(x)
+
 message_item(x) ==
-  PAIRP(x) => formString(x)
+  PAIRP(x) => message_form(x, true)
   STRINGP(x) or MEMQ(x, '(%b %d %l)) => x
   STRINGIMAGE(x)
 
@@ -576,8 +580,11 @@ extendsCategoryForm(domain, form, form', e) ==
   form is ["Join", :l] => or/[extendsCategoryForm(domain, x, form', e)
                               for x in l]
   form is ["CATEGORY",.,:l] =>
-    member(form',l) or
-      stackWarning ['"not known that ", form', '" has ", form] or true
+    member(form',l) => true
+    -- no warning when coerceable only asks whether a value could be
+    -- converted (domain is then a placeholder)
+    domain = "$fromCoerceable$" => true
+    stackWarning ['"not known that ", domain, '" has ", form'] or true
   isCategoryForm(form) =>
           --Constructs the associated vector
     formVec := (compMakeCategoryObject(form, e)).expr
