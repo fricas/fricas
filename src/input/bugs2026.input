@@ -1,4 +1,6 @@
 -- )compile files needed for testing here
+)compile CompArgDeep.spad
+)compile LocalHidesConstant.spad
 )compile MappingAfterIf.spad
 
 )set break resume
@@ -63,6 +65,8 @@ u := "failed"::U
 f(x : U) : INT == (x case INT => 0; 1)
 testEquals("f(u)", "1")
 testEquals("_"failed_" has Ring", "false")
+testEquals("((INT, INT) -> _"failed_") has Ring", "false")
+testEquals("((INT, INT, _"failed_") -> INT) has Ring", "false")
 
 testcase "diagonalMatrix"
 
@@ -180,6 +184,11 @@ testcase "excessive factor time"
 p1 := nextPrime(10^40)
 p2 := nextPrime(10^30)
 n := p2^3*p1
+
+-- In 2 tests below we just check that they finish in reasonable time
+testTrue("(sqrt(n); true)")
+testTrue("(n^(1/3); true)")
+
 p1 := monomial(1, 3)$SUP(INT) - n
 testEquals("#factorList(factor(p1))", "1")
 
@@ -187,6 +196,16 @@ eI := EXPR(INT)
 sUP := SUP(eI)
 p2 := monomial(1, 3)$sUP - n
 testEquals("#factorList(factor(p2))", "1")
+
+testcase "long products of overloaded operations (issue #169)"
+
+testEquals("kleinJBounds(1, 2, true)$CompArgDeep(Fraction(Integer))", _
+           "[139055865856, 201562425575424]")
+
+testcase "local variable hides a constant (issue #80)"
+
+testEquals("f(3)$LocalHidesConstant", "[1, 2, 3]")
+testEquals("g(5)$LocalHidesConstant", "[5, 6, 7]")
 
 testcase "variable assigned in one branch of an if keeps its value"
 
