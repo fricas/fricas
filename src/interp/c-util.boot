@@ -158,7 +158,7 @@ intersectionContour(c, c', ce) ==
       -- none if the other branch c declares x with another mode: then
       -- it is a new variable
       p := search(x, ce)
-      (m := LASSOC("mode", LASSOC(x, c))) and m ~= LASSOC("mode", p) => nil
+      (m := LASSOC("mode", LASSOC(x, c))) and m ~= getmode_pl(x, p) => nil
       p
     interProplist(p, p', ce) ==
                             --p is new proplist; p' is old one
