@@ -148,18 +148,17 @@ eliminateDuplicatePropertyLists(contour) ==
 intersectionContour(c, c', ce) ==
   $var: local := nil
   computeIntersection(c, c', ce) where
-    computeIntersection(c, c', ce) ==
-      -- where a branch did not change a variable, take its properties
-      -- from before the if
-      [[x, :proplist] for x in union(ASSOCLEFT c, ASSOCLEFT c') |
-        (proplist := interProplist(LASSOC($var := x, c) or before(x, c', ce),
-                                   LASSOC(x, c') or before(x, c, ce), ce))]
-    before(x, c, ce) ==
-      -- none if the other branch c declares x with another mode: then
-      -- it is a new variable
-      p := search(x, ce)
-      (m := LASSOC("mode", LASSOC(x, c))) and m ~= getmode_pl(x, p) => nil
-      p
+    computeIntersection(c1, c2, ce) ==
+      varlist1 := REMDUP ASSOCLEFT c1
+      varlist2 := REMDUP ASSOCLEFT c2
+      diff_vars := setDifference(varlist2, varlist1)
+      e1 := [CONS(c1, first(ce))]
+      e2 := [CONS(c2, first(ce))]
+      int2 := [[x, :proplist] for [x, :y] in c2 | member(x, diff_vars) and
+               (proplist := interProplist(search(x, e1), y, ce))]
+      int1 := [[x, :proplist] for [x, :y] in c1 |
+               (proplist := interProplist(y, search(x, e2), ce))]
+      [:int2, :int1]
     interProplist(p, p', ce) ==
                             --p is new proplist; p' is old one
         [:modeCompare(p, p', ce), :[pair' for pair in p |
