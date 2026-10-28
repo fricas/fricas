@@ -146,7 +146,6 @@ eliminateDuplicatePropertyLists(contour) ==
     nil
 
 intersectionContour(c, c', ce) ==
-  $var: local := nil
   computeIntersection(c, c', ce) where
     computeIntersection(c1, c2, ce) ==
       varlist1 := REMDUP ASSOCLEFT c1
@@ -155,13 +154,13 @@ intersectionContour(c, c', ce) ==
       e1 := [CONS(c1, first(ce))]
       e2 := [CONS(c2, first(ce))]
       int2 := [[x, :proplist] for [x, :y] in c2 | member(x, diff_vars) and
-               (proplist := interProplist(search(x, e1), y, ce))]
+               (proplist := interProplist(search(x, e1), y, ce, x))]
       int1 := [[x, :proplist] for [x, :y] in c1 |
-               (proplist := interProplist(y, search(x, e2), ce))]
+               (proplist := interProplist(y, search(x, e2), ce, x))]
       [:int2, :int1]
-    interProplist(p, p', ce) ==
+    interProplist(p, p', ce, var) ==
                             --p is new proplist; p' is old one
-        [:modeCompare(p, p', ce), :[pair' for pair in p |
+        [:modeCompare(p, p', ce, var), :[pair' for pair in p |
                (pair' := compare(pair, p', ce))]]
     compare(pair is [prop,:val], p', ce) ==
       --1. if the property-value pair are identical, accept it immediately
@@ -175,11 +174,12 @@ intersectionContour(c, c', ce) ==
             --two different values but with identical modes
       --3. property="mode" is covered by modeCompare
       prop="mode" => nil
-    modeCompare(p, p', ce) ==
+    modeCompare(p, p', ce, var) ==
       pair:= assoc("mode",p) =>
         pair':= assoc("mode",p') =>
           m'' := unifiable(rest pair, rest pair', ce) => LIST ["mode", :m'']
-          stackWarning(['%b,$var,'%d,'"has two modes: "])
+          stackWarning(['%b, var, '%d, '"has two modes: ", rest(pair),
+                        '" and ", rest(pair')])
         LIST ["conditionalmode",:rest pair]
         --LIST pair
       pair':= assoc("mode",p') => LIST ["conditionalmode",:rest pair']
