@@ -32,6 +32,8 @@
 
 )package "BOOTTRAN"
 
+DEFVAR($shoeError, false)
+
 -- (boottocl "filename") translates the file "filename.boot" to
 -- the common lisp file "filename.clisp"
 
@@ -63,10 +65,18 @@ shoeClLines1(stream, a) ==
 shoeClLines(a, fn, outfn)==
       if null a
       then shoeNotFound fn
-      else
-          $GenVarCounter : local := 0
-          handle_output_file(outfn, FUNCTION shoeClLines1, [a])
-          shoeConsole CONCAT(outfn, '" PRODUCED")
+      else shoeWriteOutput(outfn, FUNCTION shoeClLines1, a)
+
+-- After an error the output file is deleted, so that the build stops
+shoeWriteOutput(outfn, fun, a) ==
+    $GenVarCounter : local := 0
+    $shoeError : local := false
+    handle_output_file(outfn, fun, [a])
+    $shoeError =>
+        maybe_delete_file(outfn)
+        shoeConsole CONCAT(outfn, '" NOT PRODUCED")
+        nil
+    shoeConsole CONCAT(outfn, '" PRODUCED")
 
 -- (boottoclc "filename") translates the file "filename.boot" to
 -- the common lisp file "filename.clisp" with the original boot
@@ -89,10 +99,7 @@ shoeClCLines1(stream, a) ==
 shoeClCLines(a, fn, outfn)==
       if null a
       then shoeNotFound fn
-      else
-          $GenVarCounter : local := 0
-          handle_output_file(outfn, FUNCTION shoeClCLines1, [a])
-          shoeConsole CONCAT(outfn,'" PRODUCED")
+      else shoeWriteOutput(outfn, FUNCTION shoeClCLines1, a)
 
 -- (boottomc "filename") translates the file "filename.boot"
 -- to machine code and loads it one item at a time
@@ -338,6 +345,7 @@ bpOutItem()==
     bpPush [shoeEVALANDFILEACTQ CADDR b]
 
 SoftShoeError(posn,key)==
+    $shoeError := true
     shoeConsole CONCAT('"ERROR IN LINE ",STRINGIMAGE lineNo posn)
     shoeConsole lineString posn
     shoeConsole CONCAT(shoeSpaces lineCharacter posn,'"|")
