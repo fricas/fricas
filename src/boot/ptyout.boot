@@ -335,6 +335,7 @@ bpOutItem()==
     bpComma() or bpTrap()
     b:=bpPop1()
     ATOM(b) => bpPush [ b ]
+    b is ["TUPLE", :l] and or/[EQCAR(x, "L%T") for x in l] => bpTrap()
     EQCAR(b,"TUPLE")=> bpPush cdr b
     EQCAR(b,"+LINE")=> bpPush [ b ]
     b is ["L%T",l,r] and IDENTP l =>

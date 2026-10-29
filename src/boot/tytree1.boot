@@ -119,6 +119,7 @@ bfMakeCons l ==
   ['CONS,first l,bfMakeCons rest l]
 
 bfFor(bflhs,U,step) ==
+     step ~= 1 and not EQCAR(U, "SEGMENT") => bpTrap()
      if EQCAR (U,'tails)
      then  bfForTree('ON, bflhs, CADR U)
      else
@@ -532,6 +533,7 @@ bfIS1(lhs,rhs) ==
     bfMKPROGN [['L%T,g,lhs],bfIS1(g,rhs)]
   rhs is ['CONS,a,b] =>
     a = "DOT" =>
+      b = "DOT" => ['CONSP,lhs]
       NULL b =>
         bfAND [['CONSP,lhs],
                ['EQ,['CDR,lhs],'NIL]]
@@ -653,7 +655,7 @@ bfGargl argl==
 bfDef1 [defOp,op,args,body] ==
   argl:=if bfTupleP args then cdr args else [args]
   [quotes,control,arglp,body]:=bfInsertLet (argl,body)
-  quotes=>BREAK()
+  quotes=>bpTrap()
   [[op,["LAMBDA",arglp,body]]]
 
 bfDef(defOp,op,args,body) ==
