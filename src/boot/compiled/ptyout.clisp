@@ -3,6 +3,10 @@
 
 (IN-PACKAGE "BOOTTRAN")
 
+; DEFVAR($shoeError, false)
+
+(DEFVAR |$shoeError| NIL)
+
 ; BOOTTOCL (fn, outfn) ==
 ;          $bfClamming:local:=false
 ;          BOOTTOCLLINES(fn, outfn)
@@ -54,19 +58,39 @@
 ; shoeClLines(a, fn, outfn)==
 ;       if null a
 ;       then shoeNotFound fn
-;       else
-;           $GenVarCounter : local := 0
-;           handle_output_file(outfn, FUNCTION shoeClLines1, [a])
-;           shoeConsole CONCAT(outfn, '" PRODUCED")
+;       else shoeWriteOutput(outfn, FUNCTION shoeClLines1, a)
 
 (DEFUN |shoeClLines| (|a| |fn| |outfn|)
-  (PROG (|$GenVarCounter|)
-    (DECLARE (SPECIAL |$GenVarCounter|))
+  (PROG ()
     (RETURN
      (COND ((NULL |a|) (|shoeNotFound| |fn|))
-           ('T (SETQ |$GenVarCounter| 0)
-            (|handle_output_file| |outfn| #'|shoeClLines1| (LIST |a|))
-            (|shoeConsole| (CONCAT |outfn| " PRODUCED")))))))
+           ('T (|shoeWriteOutput| |outfn| #'|shoeClLines1| |a|))))))
+
+; shoeWriteOutput(outfn, fun, a) ==
+;     $GenVarCounter : local := 0
+;     $shoeError : local := false
+;     handle_output_file(outfn, fun, [a])
+;     $shoeError =>
+;         maybe_delete_file(outfn)
+;         shoeConsole CONCAT(outfn, '" NOT PRODUCED")
+;         nil
+;     shoeConsole CONCAT(outfn, '" PRODUCED")
+
+(DEFUN |shoeWriteOutput| (|outfn| |fun| |a|)
+  (PROG (|$shoeError| |$GenVarCounter|)
+    (DECLARE (SPECIAL |$shoeError| |$GenVarCounter|))
+    (RETURN
+     (PROGN
+      (SETQ |$GenVarCounter| 0)
+      (SETQ |$shoeError| NIL)
+      (|handle_output_file| |outfn| |fun| (LIST |a|))
+      (COND
+       (|$shoeError|
+        (PROGN
+         (|maybe_delete_file| |outfn|)
+         (|shoeConsole| (CONCAT |outfn| " NOT PRODUCED"))
+         NIL))
+       ('T (|shoeConsole| (CONCAT |outfn| " PRODUCED"))))))))
 
 ; BOOTTOCLC(fn, outfn) ==
 ;     $bfClamming : local := false
@@ -110,19 +134,13 @@
 ; shoeClCLines(a, fn, outfn)==
 ;       if null a
 ;       then shoeNotFound fn
-;       else
-;           $GenVarCounter : local := 0
-;           handle_output_file(outfn, FUNCTION shoeClCLines1, [a])
-;           shoeConsole CONCAT(outfn,'" PRODUCED")
+;       else shoeWriteOutput(outfn, FUNCTION shoeClCLines1, a)
 
 (DEFUN |shoeClCLines| (|a| |fn| |outfn|)
-  (PROG (|$GenVarCounter|)
-    (DECLARE (SPECIAL |$GenVarCounter|))
+  (PROG ()
     (RETURN
      (COND ((NULL |a|) (|shoeNotFound| |fn|))
-           ('T (SETQ |$GenVarCounter| 0)
-            (|handle_output_file| |outfn| #'|shoeClCLines1| (LIST |a|))
-            (|shoeConsole| (CONCAT |outfn| " PRODUCED")))))))
+           ('T (|shoeWriteOutput| |outfn| #'|shoeClCLines1| |a|))))))
 
 ; BOOTTOMC fn==
 ;     $bfClamming : local := false
@@ -266,16 +284,18 @@
 
 ; STTOSEX string ==
 ;     $bfClamming : local := false
+;     $GenVarCounter : local := 0
 ;     a := STTOSEX1 string
 ;     bStreamPackageNull a => nil
 ;     stripm(CAR a, _*PACKAGE_*, FIND_-PACKAGE '"BOOTTRAN")
 
 (DEFUN STTOSEX (|string|)
-  (PROG (|$bfClamming| |a|)
-    (DECLARE (SPECIAL |$bfClamming|))
+  (PROG (|$GenVarCounter| |$bfClamming| |a|)
+    (DECLARE (SPECIAL |$GenVarCounter| |$bfClamming|))
     (RETURN
      (PROGN
       (SETQ |$bfClamming| NIL)
+      (SETQ |$GenVarCounter| 0)
       (SETQ |a| (STTOSEX1 |string|))
       (COND ((|bStreamPackageNull| |a|) NIL)
             ('T (|stripm| (CAR |a|) *PACKAGE* (FIND-PACKAGE "BOOTTRAN"))))))))
@@ -680,6 +700,7 @@
               (|bpPush| (LIST (|shoeEVALANDFILEACTQ| (CADDR |b|)))))))))))
 
 ; SoftShoeError(posn,key)==
+;     $shoeError := true
 ;     shoeConsole CONCAT('"ERROR IN LINE ",STRINGIMAGE lineNo posn)
 ;     shoeConsole lineString posn
 ;     shoeConsole CONCAT(shoeSpaces lineCharacter posn,'"|")
@@ -689,6 +710,7 @@
   (PROG ()
     (RETURN
      (PROGN
+      (SETQ |$shoeError| T)
       (|shoeConsole| (CONCAT "ERROR IN LINE " (STRINGIMAGE (|lineNo| |posn|))))
       (|shoeConsole| (|lineString| |posn|))
       (|shoeConsole| (CONCAT (|shoeSpaces| (|lineCharacter| |posn|)) "|"))
