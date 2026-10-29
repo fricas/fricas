@@ -476,6 +476,9 @@ canCoerceFrom0(t1,t2) ==
 -- equivalent types
   startTimingProcess 'querycoerce
   q :=
+    -- a domain where a category is expected: whether the domain has the
+    -- category is checked when the value is converted (coerceInteractive)
+    t1 = '(Type) and isCategoryForm(t2) => true
     isEqualOrSubDomain(t1,t2) or t1 = '(None) or t2 = '(Any) or
 
       -- make sure we are trying to coerce to a legal type
@@ -751,6 +754,12 @@ coerceInteractive(triple,t2) ==
   -- JHD added category Aug 1996 for BasicMath
   t1 in '((Category) (Mode) (Type)) =>
     t2 = $OutputForm => objNewWrap(typeToOutputForm(val), t2)
+    -- a domain passed where a category is expected, e.g. D1 for an
+    -- argument (D : Cat); compiled code checks it at run time
+    t1 = '(Type) and isCategoryForm(t2) =>
+        not($genValue) => intCodeGenCoerce1(val, t1, t2)
+        ofCategory(devaluate(objValUnwrap(triple)), t2) => objNew(val, t2)
+        NIL
     t2 = '(InputForm) => objNewWrap(typeToInputForm(val), t2)
     NIL
   t1 = '$NoValueMode =>
