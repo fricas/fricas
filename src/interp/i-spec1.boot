@@ -393,7 +393,9 @@ upcase t ==
   if first unionDoms is ['_:,.,.] then
      for i in 0.. for d in unionDoms repeat
         if d is ['_:,=rhs,.] then rhstag := i
-     if NULL rhstag then error '"upcase: bad Union form"
+     if NULL rhstag then throw_msg("S2IS0062",
+         '"%1bp is not a tag of the union.  The tags are: %2by",
+           [rhs, [tag for ['_:, tag, .] in unionDoms]])
      $genValue =>
         rhstag = first unwrap objVal triple => code := wrap(true)
         code := wrap(false)
