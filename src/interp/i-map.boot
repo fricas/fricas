@@ -744,8 +744,8 @@ genMapCode(op,body,sig,fnName,parms,isRecursive) ==
   if locals then
     -- we should have more sensible $localVars, but ATM just skip
     -- non-symbols
-    lets := [['LET, l, ''UNINITIALIZED__VARIABLE, op] for l in locals
-               | SYMBOLP(l)]
+    lets := [['LET, local_var_code l, ''UNINITIALIZED__VARIABLE, op] _
+               for l in locals | SYMBOLP(l)]
     body := ['PROGN, :lets, body]
 
   reportFunctionCompilation(op,fnName,parms,
@@ -1075,6 +1075,11 @@ mkLocalVar(op,var) ==
   $localVars:= insert(var,$localVars)
 
 isFreeVar(var) == member(var,$freeVars)
+
+-- name of a local variable in generated code; T is a Lisp constant
+local_var_code(var) ==
+  var = "T" => "T$"
+  var
 
 mkFreeVar(op,var) ==
   -- op here for symmetry with mkLocalVar

@@ -156,6 +156,12 @@ pf2Sex1 pf ==
   -- the user to figure out what happened.
   pfAbSynOp(pf) = "command" => tokPart(pf)
 
+  -- constructs that are parsed but have no meaning in the interpreter
+  kw := ASSQ(pfAbSynOp pf, '((Typing default) (Import import) _
+              (Inline inline) (Export export) (With with) (Add add))) =>
+      throw_msg("S2IP0006", '"%1b is not supported in the interpreter.",
+                [CADR kw])
+
   systemErrorHere('"pf2Sex1")
 
 pfLiteral2Sex pf ==

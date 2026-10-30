@@ -633,14 +633,6 @@ is running.
 The following are the options for tracing constructors, domains and
 packages.
 
-``)local op1 ... opN`` -- causes local functions of the constructor to
-be traced. Note that to untrace an individual local function, you must
-use the fully qualified internal name, using the escape character before
-the semicolon. For example::
-
-  )trace FRAC )local
-  )trace FRAC_;cancelGcd )off
-
 ``)ops op1 ... opN`` -- By default, all operations from a domain or package
 are traced when the domain or package is traced. This option allows you
 to specify that only particular operations should be traced.
