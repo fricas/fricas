@@ -61,7 +61,6 @@ DEFPARAMETER($traceOptionList, '(
     cond_
     count_
     depth_
-    local_
     mathprint _
     nonquietly_
     nt_
@@ -116,11 +115,10 @@ trace1(l, options) ==
   $traceNoisely: local := NIL
   if hasOption(options, 'nonquietly) then $traceNoisely := true
   hasOption(options, 'off) =>
-    (ops := hasOption(options, 'ops)) or
-      (lops := hasOption(options, 'local)) =>
+    (ops := hasOption(options, 'ops)) =>
         null(l) => throw_msg("S2IT0019", CONCAT(
             '"If you use the %b )off %d option for %b )trace %d and",
-            '" you also use the %b )local %d or %b )ops %d option,",
+            '" you also use the %b )ops %d option,",
             '" you must specify the name of a constructor.",
             '" You have not done so."), [])
         constructor := unabbrev
@@ -131,20 +129,16 @@ trace1(l, options) ==
           NIL
         not(isFunctor constructor) => throw_msg("S2IT0020", CONCAT(
             '"If you use the %b )off %d option for %b )trace %d and you",
-            '" also use the %b )local %d or %b )ops %d option, you must",
+            '" also use the %b )ops %d option, you must",
             '" specify the name of a constructor.  What you gave after",
             '" %b )trace %d is not a valid constructor name."), [])
-        if ops then
-          ops := getTraceOption ops
-          NIL
-        if lops then
-          lops := rest getTraceOption lops
-          untraceDomainLocalOps(constructor,lops)
+        getTraceOption ops
+        NIL
     (1 < #options) and not hasOption(options, 'nonquietly) =>
         throw_msg("S2IT0021", CONCAT(
             '"If you use the %b )off %d option for %b )trace %d then",
-            '" the only other options you can use are %b )nonquietly,",
-            '" )ops %d and %b )local. %d"), [])
+            '" the only other options you can use are %b )nonquietly",
+            '" %d and %b )ops. %d"), [])
     untrace l
     clearConstructorCaches()
   hasOption(options, 'stats) =>
@@ -538,7 +532,7 @@ getTraceOption (x is [key,:l]) ==
             stack_trace_option_error("S2IT0013", CONCAT(
                 '"%1 The %b )trace %d option %b )of %d should be followed",
                 '" by the name of a domain and %2b is not one."), [x])
-  MEMQ(key,'(local ops vars)) =>
+  MEMQ(key,'(ops vars)) =>
     null l or l is ["all"] => [key,:"all"]
     isListOfIdentifiersOrStrings l => x
     stack_trace_option_error("S2IT0015", CONCAT(
@@ -824,27 +818,11 @@ goGetTracer(l, dn, f, tlst, alias, options, modemap) ==
     rplac(first slot, nf)
     APPLY(first slot, [:arglist, rest slot])  --SPADCALL it!
 
-traceDomainLocalOps(dom,lops,options) ==
- sayMSG ['"  ",'"The )local option has been withdrawn"]
- sayMSG ['"  ",'"Use )ltr to trace local functions."]
- NIL
-
-untraceDomainLocalOps(dom,lops) ==
- sayMSG ['"  ",:bright abb,'"has no local functions to untrace."]
- NIL
-
-untraceAllDomainLocalOps(dom) == NIL
-
 traceDomainConstructor(domainConstructor,options) ==
   -- Trace all domains built with the given domain constructor,
   -- including all presently instantiated domains, and all future
   -- instantiations, while domain constructor is traced.
   loadFunctor domainConstructor
-  listOfLocalOps := getOption("LOCAL",options)
-  if listOfLocalOps then
-    traceDomainLocalOps(domainConstructor,listOfLocalOps,
-      [opt for opt in options | opt isnt ['LOCAL,:.]])
-  listOfLocalOps and not getOption("OPS",options) => NIL
   for [argl,.,:domain] in HGET($ConstructorCache,domainConstructor)
     repeat spadTrace(domain,options)
   $trace_names := [domainConstructor, :$trace_names]
@@ -867,7 +845,6 @@ untraceDomainConstructor domainConstructor ==
                untrace2(dc, [])
                false
         true
-  untraceAllDomainLocalOps domainConstructor
   innerDomainConstructor := INTERN STRCONC(domainConstructor,'";")
   if FBOUNDP innerDomainConstructor then UNEMBED innerDomainConstructor
     else UNEMBED domainConstructor
