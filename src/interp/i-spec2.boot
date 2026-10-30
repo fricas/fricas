@@ -590,7 +590,7 @@ evalLETput(lhs,value) ==
               :bright name,'"has changed in the computation."]
         if dm and isSubDomain(dm, om) then
             putIntSymTab(name, 'mode, om, $env)
-        ['LET,name,objVal value,$mapName]
+        ['LET, local_var_code name, objVal value, $mapName]
                -- $mapName is set in analyzeMap
       om := objMode value
       dm := get0(name, 'mode, $env) or objMode(get0(name, 'value, $e))
