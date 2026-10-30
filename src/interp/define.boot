@@ -635,8 +635,7 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
       null member(op, $formalArgList) and
             getmode(op, e) is ['Mapping, :.] => 'local
       'exported
-    if localOrExported = 'exported then
-        check_export_definition(op, signature')
+    check_definition(op, signature', localOrExported)
 
     --6a skip if compiling only certain items but not this one
     -- could be moved closer to the top
@@ -665,16 +664,59 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
 --  7. give operator a 'value property
     [fun, ['Mapping, :signature'], oldE]
 
--- Two definitions of an export with the same signature fill the same
--- slot, and the last one wins.  An earlier definition is never used
--- when the conditions of the later one are among its own.
-check_export_definition(op, sig) ==
+-- Two definitions of a function with the same signature: the last one
+-- wins (for an export it fills the slot last).  An earlier definition
+-- is never used when the conditions of the later one are among its own.
+check_definition(op, sig, kind) ==
     or/[op1 = op and sig1 = sig and and/[member(p, predl) for p in $predl]
-          for [op1, sig1, predl] in $export_defs] =>
-        stackSemanticError(['"exported function ", op, '" : ",
+          for [op1, sig1, predl] in $capsule_defs] =>
+        stackSemanticError([kind, '" function ", op, '" : ",
           :formatUnabbreviated(['Mapping, :sig]),
           '" is defined again, so the earlier definition is never used"], nil)
-    $export_defs := [[op, sig, $predl], :$export_defs]
+    $capsule_defs := [[op, sig, $predl], :$capsule_defs]
+
+-- Local functions defined more than once, at least once under a
+-- condition, as [op, :conditions of each definition], the conditions as
+-- in $predl.  The k-th definition is named cond_local_name(op, k).  A
+-- call inside a branch with a definition calls it directly, other calls
+-- go through a slot that the definitions fill (see local_call,
+-- compCapsuleInner).
+cond_local_functions(items) ==
+    defs := "append"/[capsule_def_conditions(x, nil) for x in items]
+    l := [[op, :[c for [op1, :c] in defs | op1 = op]]
+            for op in REMDUP([op for [op, :.] in defs])]
+    [x for x in l | #x > 2 and or/rest(x)]
+
+capsule_def_conditions(x, c) ==
+    x is ['DEF, [op, :.], :.] => [[op, :c]]
+    x is ['IF, p, a, b] =>
+        -- as in doItIf
+        member(p, c) => capsule_def_conditions(a, c)
+        member(["not", p], c) => capsule_def_conditions(b, c)
+        [:capsule_def_conditions(a, [p, :c]),
+         :capsule_def_conditions(b, [["not", p], :c])]
+    x is ['exit, ., y] => capsule_def_conditions(y, c)
+    -- in the order of compilation (doItWhere)
+    x is ['where, y, :l] =>
+        [:capsule_def_conditions(['PROGN, :l], c), :capsule_def_conditions(y, c)]
+    x is [op, :l] and MEMQ(op, '(PROGN SEQ)) =>
+        "append"/[capsule_def_conditions(y, c) for y in l]
+    nil
+
+cond_local_name(op, k) ==
+    INTERN STRCONC(encodeItem $prefix, '";", encodeItem op, '";",
+                   STRINGIMAGE k)
+
+-- The definition of op under the longest tail of the conditions $predl,
+-- or nil when a more special definition may hold too.
+cond_local_definition(op) ==
+    cs := LASSOC(op, $cond_local_fns)
+    l := $predl
+    while not(k := POSN1(l, cs)) and l repeat l := rest l
+    null(k) or or/[c ~= l and cond_tail?(l, c) for c in cs] => nil
+    k + 1
+
+cond_tail?(c, l) == EQUAL(c, l) or (l and cond_tail?(c, rest l))
 
 getSignatureFromMode(form,e) ==
   getmode(opOf form,e) is ['Mapping,:signature] =>
@@ -775,6 +817,9 @@ do_compile(u, e) ==
           for [[DC, :sig], [., sel]] in get(op, 'modemap, e) |
             DC = '% and (opexport := true) and
              (and/[modeEqual(x,y) for x in sig for y in $signatureOfForm])]
+      isLocalFunction(op, e) and LASSOC(op, $cond_local_fns) =>
+        $cond_local_done := [op, :$cond_local_done]
+        cond_local_name(op, #[x for x in $cond_local_done | x = op])
       isLocalFunction(op, e) =>
         if opexport then userError ['%b,op,'%d,'" is local and exported"]
         INTERN STRCONC(encodeItem $prefix, '";", encodeItem op)
@@ -896,15 +941,27 @@ compSubDomain1(domainForm,predicate,m,e) ==
   $lisplibSuperDomain := [domainForm, predicate]
   [domainForm,m,e]
 
-DEFPARAMETER($export_defs, nil)  -- [op, signature, conditions] of exports
+DEFPARAMETER($capsule_defs, nil)  -- [op, signature, conditions]
+DEFPARAMETER($cond_local_fns, nil)   -- see cond_local_functions
+DEFPARAMETER($cond_local_done, nil)   -- ops of the definitions compiled
+DEFPARAMETER($cond_local_items, nil)  -- [op, item, function]
+DEFPARAMETER($cond_local_slots, nil)  -- ops called through a slot
 
 compCapsuleInner(itemList, m, e) ==
-  $export_defs : local := nil
+  $capsule_defs : local := nil
+  $cond_local_fns : local := cond_local_functions(itemList)
+  $cond_local_done : local := nil
+  $cond_local_items : local := nil
+  $cond_local_slots : local := nil
   e:= addInformation(m,e)
            --puts a new 'special' property of $Information
   data:= ["PROGN",:itemList]
       --RPLACd by compCapsuleItems and Friends
   e:= compCapsuleItems(itemList,nil,e)
+  for [op, item, fn] in $cond_local_items | MEMQ(op, $cond_local_slots) repeat
+      RPLACA(item, ($QuickCode => 'QSETREFV; 'SETELT))
+      RPLACD(item, ['%, NRTgetLocalIndex(op, e),
+                    ['CONS, ['dispatchFunction, fn], '%]])
   localParList:= $functorLocalParameters
   code:=
     $insideCategoryIfTrue and not $insideCategoryPackageIfTrue => BREAK()
@@ -982,6 +1039,8 @@ doIt(item, $predl, e) ==
       e
   item is ['DEF,[op,:.],:.] =>
     [., ., e] := t := compOrCroak(item, $EmptyMode, e)
+    if LASSOC(op, $cond_local_fns) and isLocalFunction(op, e) then
+        $cond_local_items := [[op, item, t.expr], :$cond_local_items]
     RPLACA(item,"CodeDefine")
         --Note that DescendCode, in CodeDefine, is looking for this
     RPLACD(CADR item,[$signatureOfForm])

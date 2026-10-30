@@ -66,9 +66,7 @@ compApplication(op,argl,m,e,T) ==
     argTl = "failed" => nil
     form:=
       not (member(op,$formalArgList) or member(T.expr,$formalArgList)) and ATOM T.expr =>
-        nprefix := $prefix or BREAK()
-        [op', :[a.expr for a in argTl], "%"] where
-          op':= INTERN STRCONC(encodeItem nprefix,";",encodeItem T.expr)
+        local_call(T.expr, [a.expr for a in argTl], e)
       ['call, ['applyFun, T.expr], :[a.expr for a in argTl]]
     coerce([form, retm, e],resolve(retm,m))
   -- If op is not 'elt' and not a mapping check if we can
@@ -114,6 +112,16 @@ compFormWithModemap(form is [op,:argl],m,e,modemap) ==
         e
   convert(T,m)
 
+-- A call of a local function (see cond_local_functions for one defined
+-- under different conditions).
+local_call(op, args, e) ==
+    LASSOC(op, $cond_local_fns) =>
+        k := cond_local_definition(op) => [cond_local_name(op, k), :args, "%"]
+        $cond_local_slots := [op, :$cond_local_slots]
+        ['SPADCALL, :args, dom_slot_ref(NRTgetLocalIndex(op, e))]
+    [INTERN STRCONC(encodeItem($prefix or BREAK()), '";", encodeItem op),
+      :args, "%"]
+
 applyMapping([op,:argl],m,e,ml) ==
   #argl~=#ml-1 => nil
   isCategoryForm(first ml) =>
@@ -132,9 +140,7 @@ applyMapping([op,:argl],m,e,ml) ==
   if argl'="failed" then return nil
   form:=
     not member(op,$formalArgList) and ATOM op and not get(op,'value,e) =>
-      nprefix := $prefix or BREAK()
-      [op', :argl', "%"] where
-        op':= INTERN STRCONC(encodeItem nprefix,";",encodeItem op)
+      local_call(op, argl', e)
     ['call,['applyFun,op],:argl']
   pairlis:= [[v,:a] for a in argl' for v in $FormalMapVariableList]
   convert([form,SUBLIS(pairlis,first ml),e],m)
