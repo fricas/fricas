@@ -941,6 +941,10 @@ doIt(item, $predl, e) ==
     not (compOrCroak(item, $EmptyMode, e) is [code, ., e]) =>
       stackSemanticError(['"cannot compile assigned value to",:bright lhs],nil)
       e
+    -- $Representation is used in compNoStacking; a conditional
+    -- assignment to Rep is handled by doItIf
+    if lhs = "Rep" and isDomainForm(rhs, e) then
+        $Representation := (get("Rep", 'value, e)).(0)
     not (code is ['LET,lhs',rhs',:.] and atom lhs') =>
       code is ["PROGN",:.] =>
          stackSemanticError(['"multiple assignment ",item,'" not allowed"],nil)
@@ -952,12 +956,6 @@ doIt(item, $predl, e) ==
     if not member(IFCAR rhs, $NonMentionableDomainNames) and
       not MEMQ(lhs, $functorLocalParameters) then
          $functorLocalParameters:= [:$functorLocalParameters,lhs]
-    if code is ['LET, ., rhs', :.] and isDomainForm(rhs', e) then
-      if lhs="Rep" then
-        -- FIXME: $Representation is set unconditionally, but
-        -- assignment to Rep may be conditional ...
-        $Representation := (get("Rep", 'value, e)).(0)
-           --$Representation bound by compDefineFunctor, used in compNoStacking
     code is ['LET, :.] =>
       RPLACA(item,($QuickCode => 'QSETREFV;'SETELT))
       rhsCode:=
@@ -1018,12 +1016,17 @@ doItIf(item is [., p, x, y], $predl, e) ==
         -- the branch is always taken, so what it adds holds afterwards
         e
     olde := e
+    rep := $Representation
     [p', ., e] := comp(p, $Boolean, e) or userError ['"not a Boolean:", p]
     if x ~= "noBranch" then
         compSingleCapsuleItem(x, [p, :$predl], getSuccessEnvironment(p, e))
+    rep1 := $Representation
+    $Representation := rep
     if y ~= "noBranch" then
         compSingleCapsuleItem(y, [["not", p], :$predl],
                               getInverseEnvironment(p, olde))
+    -- after the 'if' Rep is known only if both branches agree
+    if rep1 ~= $Representation then $Representation := nil
     RPLACA(item, "COND")
     RPLACD(item, [[p', x], ['(QUOTE T), y]])
     olde
