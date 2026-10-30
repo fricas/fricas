@@ -132,8 +132,10 @@ trace1(l, options) ==
             '" also use the %b )ops %d option, you must",
             '" specify the name of a constructor.  What you gave after",
             '" %b )trace %d is not a valid constructor name."), [])
-        getTraceOption ops
-        NIL
+        opList := rest getTraceOption ops
+        for x in $trace_names | x is [dom, :.] and
+          isDomainOrPackage dom and opOf devaluate dom = constructor repeat
+            spadUntrace(dom, (opList = "all" => nil; [["OPS", :opList]]))
     (1 < #options) and not hasOption(options, 'nonquietly) =>
         throw_msg("S2IT0021", CONCAT(
             '"If you use the %b )off %d option for %b )trace %d then",
@@ -965,7 +967,7 @@ spadReply() ==
 spadUntrace(domain,options) ==
   not isDomainOrPackage domain => userError '"bad argument to untrace"
   anyifTrue:= null options
-  listOfOperations:= getOption("ops:",options)
+  listOfOperations:= getOption("OPS",options)
   domainId := devaluate domain
   null (pair := assoc(domain, $trace_names)) =>
     sayMSG ['"   No functions in",
