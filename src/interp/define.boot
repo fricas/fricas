@@ -673,6 +673,12 @@ check_definition(op, sig, kind) ==
         stackSemanticError([kind, '" function ", op, '" : ",
           :formatUnabbreviated(['Mapping, :sig]),
           '" is defined again, so the earlier definition is never used"], nil)
+    -- a local function is named by op, not by its signature
+    kind = 'local and
+      or/[op1 = op and sig1 ~= sig for [op1, sig1, .] in $capsule_defs] =>
+        stackSemanticError(['"local function ", op,
+          '" is defined with two signatures; local functions cannot be",
+          '" overloaded"], nil)
     $capsule_defs := [[op, sig, $predl], :$capsule_defs]
 
 -- Local functions defined more than once, at least once under a
