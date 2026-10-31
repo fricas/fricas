@@ -470,8 +470,7 @@ unStackWarning msg ==
 -- is written %%, else sayBrightly reads it as a layout marker and
 -- prints nothing
 pos_message(pos, msg) ==
-  msg := [(x = '% or x = '"%" or x = "$$" => '"%%"; message_item(x))
-           for x in (atom msg => [msg]; msg)]
+  msg := [(member(x, ['"%", '"$$"]) => '"%%"; x) for x in message_items(msg)]
   null(prefix := pos_prefix(pos)) => msg
   [prefix, :msg]
 

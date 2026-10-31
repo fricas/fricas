@@ -92,16 +92,7 @@ prior_symbol() ==
     tok.$kind_off => tok.$symbol_off
     nil
 
-copy_prior_token() ==
-    tok := $token_fifo.$prior_off
-    res := GETREFV(6)
-    res.$symbol_off := tok.$symbol_off
-    res.$kind_off := tok.$kind_off
-    res.$non_blank_off := tok.$non_blank_off
-    res.$line_off := tok.$line_off
-    res.$char_off := tok.$char_off
-    res.$pos_off := tok.$pos_off
-    res
+copy_prior_token() == COPY_-SEQ($token_fifo.$prior_off)
 
 set_prior_token(tok) ==
     $token_fifo.$prior_off := tok
