@@ -439,7 +439,7 @@ compForm(form,m,e) ==
 
 comp_no_warn(x, m, e) ==
     $allow_undef : local := true
-    comp(x, $EmptyMode, e)
+    comp_arg(x, $EmptyMode, e)
 
 compArgumentsAndTryAgain(form is [.,:argl],m,e) ==
   not($tryRecompileArguments) or null(argl) => nil

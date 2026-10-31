@@ -214,6 +214,7 @@
            (#1# (LIST 'CONS (CAR |l|) (|bfMakeCons| (CDR |l|))))))))
 
 ; bfFor(bflhs,U,step) ==
+;      step ~= 1 and not EQCAR(U, "SEGMENT") => bpTrap()
 ;      if EQCAR (U,'tails)
 ;      then  bfForTree('ON, bflhs, CADR U)
 ;      else
@@ -224,9 +225,12 @@
 (DEFUN |bfFor| (|bflhs| U |step|)
   (PROG ()
     (RETURN
-     (COND ((EQCAR U '|tails|) (|bfForTree| 'ON |bflhs| (CADR U)))
-           ((EQCAR U 'SEGMENT) (|bfSTEP| |bflhs| (CADR U) |step| (CADDR U)))
-           ('T (|bfForTree| 'IN |bflhs| U))))))
+     (COND ((AND (NOT (EQL |step| 1)) (NULL (EQCAR U 'SEGMENT))) (|bpTrap|))
+           (#1='T
+            (COND ((EQCAR U '|tails|) (|bfForTree| 'ON |bflhs| (CADR U)))
+                  ((EQCAR U 'SEGMENT)
+                   (|bfSTEP| |bflhs| (CADR U) |step| (CADDR U)))
+                  (#1# (|bfForTree| 'IN |bflhs| U))))))))
 
 ; bfForTree(OP,lhs,whole)==
 ;          whole:=if bfTupleP whole then bfMakeCons cdr whole else whole
@@ -1240,6 +1244,7 @@
 ;     bfMKPROGN [['L%T,g,lhs],bfIS1(g,rhs)]
 ;   rhs is ['CONS,a,b] =>
 ;     a = "DOT" =>
+;       b = "DOT" => ['CONSP,lhs]
 ;       NULL b =>
 ;         bfAND [['CONSP,lhs],
 ;                ['EQ,['CDR,lhs],'NIL]]
@@ -1320,13 +1325,15 @@
                              (PROGN (SETQ |b| (CAR |ISTMP#2|)) #1#))))))
             (COND
              ((EQ |a| 'DOT)
-              (COND
-               ((NULL |b|)
-                (|bfAND|
-                 (LIST (LIST 'CONSP |lhs|) (LIST 'EQ (LIST 'CDR |lhs|) 'NIL))))
-               (#1#
-                (|bfAND|
-                 (LIST (LIST 'CONSP |lhs|) (|bfIS1| (LIST 'CDR |lhs|) |b|))))))
+              (COND ((EQ |b| 'DOT) (LIST 'CONSP |lhs|))
+                    ((NULL |b|)
+                     (|bfAND|
+                      (LIST (LIST 'CONSP |lhs|)
+                            (LIST 'EQ (LIST 'CDR |lhs|) 'NIL))))
+                    (#1#
+                     (|bfAND|
+                      (LIST (LIST 'CONSP |lhs|)
+                            (|bfIS1| (LIST 'CDR |lhs|) |b|))))))
              ((NULL |b|)
               (|bfAND|
                (LIST (LIST 'CONSP |lhs|) (LIST 'EQ (LIST 'CDR |lhs|) 'NIL)
@@ -1663,7 +1670,7 @@
 ; bfDef1 [defOp,op,args,body] ==
 ;   argl:=if bfTupleP args then cdr args else [args]
 ;   [quotes,control,arglp,body]:=bfInsertLet (argl,body)
-;   quotes=>BREAK()
+;   quotes=>bpTrap()
 ;   [[op,["LAMBDA",arglp,body]]]
 
 (DEFUN |bfDef1| (|bfVar#19|)
@@ -1682,7 +1689,7 @@
       (SETQ |control| (CADR . #3=(|LETTMP#1|)))
       (SETQ |arglp| (CADDR . #3#))
       (SETQ |body| (CADDDR . #3#))
-      (COND (|quotes| (BREAK))
+      (COND (|quotes| (|bpTrap|))
             (#2# (LIST (LIST |op| (LIST 'LAMBDA |arglp| |body|)))))))))
 
 ; bfDef(defOp,op,args,body) ==

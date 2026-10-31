@@ -146,26 +146,22 @@ eliminateDuplicatePropertyLists(contour) ==
     nil
 
 intersectionContour(c, c', ce) ==
-  $var: local := nil
   computeIntersection(c, c', ce) where
-    computeIntersection(c, c', ce) ==
-      varlist:= REMDUP ASSOCLEFT c
-      varlist':= REMDUP ASSOCLEFT c'
-      interVars:= intersection(varlist,varlist')
-      unionVars:= union(varlist,varlist')
-      diffVars:= setDifference(unionVars,interVars)
-      modeAssoc := buildModeAssoc(diffVars, c, c', ce)
-      [:modeAssoc,:
-        [[x,:proplist]
-          for [x,:y] in c | member(x,interVars) and
-            (proplist := interProplist(y, LASSOC($var := x, c'), ce))]]
-    interProplist(p, p', ce) ==
+    computeIntersection(c1, c2, ce) ==
+      varlist1 := REMDUP ASSOCLEFT c1
+      varlist2 := REMDUP ASSOCLEFT c2
+      diff_vars := setDifference(varlist2, varlist1)
+      e1 := [CONS(c1, first(ce))]
+      e2 := [CONS(c2, first(ce))]
+      int2 := [[x, :proplist] for [x, :y] in c2 | member(x, diff_vars) and
+               (proplist := interProplist(search(x, e1), y, ce, x))]
+      int1 := [[x, :proplist] for [x, :y] in c1 |
+               (proplist := interProplist(y, search(x, e2), ce, x))]
+      [:int2, :int1]
+    interProplist(p, p', ce, var) ==
                             --p is new proplist; p' is old one
-        [:modeCompare(p, p', ce), :[pair' for pair in p |
+        [:modeCompare(p, p', ce, var), :[pair' for pair in p |
                (pair' := compare(pair, p', ce))]]
-    buildModeAssoc(varlist, c, c', ce) ==
-      [[x, :mp] for x in varlist |
-          (mp := modeCompare(LASSOC(x, c), LASSOC(x, c'), ce))]
     compare(pair is [prop,:val], p', ce) ==
       --1. if the property-value pair are identical, accept it immediately
       pair=(pair':= assoc(prop,p')) => pair
@@ -178,11 +174,19 @@ intersectionContour(c, c', ce) ==
             --two different values but with identical modes
       --3. property="mode" is covered by modeCompare
       prop="mode" => nil
-    modeCompare(p, p', ce) ==
+    modeCompare(p, p', ce, var) ==
       pair:= assoc("mode",p) =>
         pair':= assoc("mode",p') =>
-          m'' := unifiable(rest pair, rest pair', ce) => LIST ["mode", :m'']
-          stackWarning(['%b,$var,'%d,'"has two modes: "])
+          m1 := rest(pair)
+          m2 := rest(pair')
+          m'' := unifiable(m1, m2, ce) => LIST ["mode", :m'']
+          SAY(["Two modes", m1, m2])
+          if m1 = '% then
+              m1 := '"\%"
+          if m2 = '% then
+              m2 := '"\%"
+          stackWarning(['%b, var, '%d, '"has two modes: ", m1,
+                        '" and ", m2])
         LIST ["conditionalmode",:rest pair]
         --LIST pair
       pair':= assoc("mode",p') => LIST ["conditionalmode",:rest pair']

@@ -1,6 +1,7 @@
 -- )compile files needed for testing here
 )compile CompArgDeep.spad
 )compile LocalHidesConstant.spad
+)compile MappingAfterIf.spad
 
 )set break resume
 )expose UnittestCount UnittestAux Unittest
@@ -11,6 +12,7 @@ testcase "missing categories"
 
 dMp := DistributedMultivariatePolynomial([x, y, z], INT)
 testTrue("dMp has FreeModuleCategory(INT, DirectProduct(3, NNI))")
+testTrue("Complex(INT) has canonicalUnitNormal")
 
 testcase "mergeDifference"
 
@@ -205,5 +207,17 @@ testcase "local variable hides a constant (issue #80)"
 
 testEquals("f(3)$LocalHidesConstant", "[1, 2, 3]")
 testEquals("g(5)$LocalHidesConstant", "[5, 6, 7]")
+
+testcase "variable assigned in one branch of an if keeps its value"
+
+testEquals("f(-1)$MappingAfterIf", "0")
+testEquals("f(1)$MappingAfterIf", "101")
+
+testcase "while in parallel iteration over streams (issue #87)"
+
+testEquals("entries(complete([k for k in 4.. by -3 while k > 0 for m in 1..29]))",
+           "[4, 1]")
+testEquals("entries(complete([[k, m, n] for k in 1.. for m in 10.. for n in 100.. while k < 3]))",
+           "[[1, 10, 100], [2, 11, 101]]")
 
 statistics()
