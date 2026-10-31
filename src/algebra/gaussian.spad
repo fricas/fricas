@@ -27,6 +27,7 @@ ComplexCategory(R : CommutativeRing) : Category ==
          ++ exquo(x, r) returns the exact quotient of x by r, or
          ++ "failed" if r does not divide x exactly.
      if R has IntegerNumberSystem then
+         canonicalUnitNormal
          EuclideanDomain
          multiplicativeValuation
      if R has Field then        -- this is a lie; we must know that
@@ -276,7 +277,20 @@ ComplexCategory(R : CommutativeRing) : Category ==
 
          recip(x : %) == 1 exquo x
 
-         if R has OrderedRing then
+         if R has IntegerNumberSystem then
+             unitNormal x ==
+                 zero? x => [1, x, 1]
+                 one? x => [1, 1, 1]
+                 re := real(x); im := imag(x)
+                 re = 0 =>
+                     im > 0 => [imaginary(), complex(im, 0), -imaginary()]
+                     [-imaginary(), complex(-im, 0), imaginary()]
+                 re > 0 =>
+                     im >= 0 => [1, x, 1]
+                     im < 0 => [-imaginary(), complex(-im, re), imaginary()]
+                 im <= 0 => [-1, -x, -1]
+                 [imaginary(), complex(im, -re), -imaginary()]
+         else if R has OrderedRing then
            unitNormal x ==
              zero? x => [1, x, 1]
              (u := recip x) case % => [x, 1, u]

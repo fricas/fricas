@@ -216,11 +216,14 @@ postExit(x is ["=>",a,b]) ==
 -- quadratic in case of semicolon...
 -- the elements of nested op forms; the names keep their positions
 postFlatten(x,op) ==
-  x is [ =op,a,b] => NCONC(flatten_cell(CDR x, op), flatten_cell(CDDR x, op))
+  x is [ =op,a,b] =>
+    NCONC(flatten_cell(CDR x, op, function postFlatten),
+          flatten_cell(CDDR x, op, function postFlatten))
   LIST x
 
-flatten_cell(c, op) ==
-  (first c) is [ =op, :.] => postFlatten(first c, op)
+-- the element of the cell c flattened by fn, or a copy of the cell
+flatten_cell(c, op, fn) ==
+  (first c) is [ =op, :.] => FUNCALL(fn, first c, op)
   keep_name_cell(c)
 
 postForm (u is [op,:argl]) ==
@@ -323,12 +326,10 @@ postReduce ['Reduce,op,expr] ==
     ['construct,  g]]]
 
 postFlattenLeft(x,op) ==--
-  x is [ =op,a,b] => NCONC(flatten_left_cell(CDR x, op), keep_name_cell(CDDR x))
+  x is [ =op,a,b] =>
+    NCONC(flatten_cell(CDR x, op, function postFlattenLeft),
+          keep_name_cell(CDDR x))
   [x]
-
-flatten_left_cell(c, op) ==
-  (first c) is [ =op, :.] => postFlattenLeft(first c, op)
-  keep_name_cell(c)
 
 postSemiColon u ==
     items := postFlattenLeft(u, ";")

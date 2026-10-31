@@ -198,12 +198,14 @@ shoeElse1(keep,b,s)==
     shoeElse(keep,b,t)
 
 shoeLineSyntaxError(h)==
+     $shoeError := true
      shoeConsole CONCAT('"INCLUSION SYNTAX ERROR IN LINE ",
                                 STRINGIMAGE CDR h)
      shoeConsole car h
      shoeConsole '"LINE IGNORED"
 
 bPremStreamNil(h)==
+       $shoeError := true
        shoeConsole CONCAT('"UNEXPECTED )fin IN LINE ",STRINGIMAGE CDR h)
        shoeConsole car h
        shoeConsole '"REST OF FILE IGNORED"
@@ -212,6 +214,7 @@ bPremStreamNil(h)==
 bPremStreamNull(s)==
      if bStreamNull s
      then
+        $shoeError := true
         shoeConsole '"FILE TERMINATED BEFORE )endif"
         true
      else false

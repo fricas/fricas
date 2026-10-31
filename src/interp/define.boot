@@ -629,7 +629,7 @@ compInternalFunction(df is ['DEF, form, signature, body], m, e) ==
     -- $CapsuleDomainsInScope : local := e
     [op, :argl] := form
     not(IDENTP(op)) =>
-        stackAndThrow ['"Bad name for internal function:", op]
+        stackAndThrow ['"Bad name for internal function: ", op]
     nbody := ["+->", argl, body]
     fmode := ["Mapping", :signature]
     [., ., e'] := compMakeDeclaration([":", op, fmode], $EmptyMode, e)

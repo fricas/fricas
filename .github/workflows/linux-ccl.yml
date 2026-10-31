@@ -6,8 +6,16 @@ permissions: {}
 jobs:
   build:
 
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    env:
+      ARCH: ${{ endsWith(matrix.os, '-arm') && 'arm64' || 'x86-64' }}
+      CCLARCH: ${{ endsWith(matrix.os, '-arm') && 'arm64' || 'x86' }}
+      CCLBIN: ${{ endsWith(matrix.os, '-arm') && 'arm64cl' || 'lx86cl64' }}
 
     steps:
     - uses: actions/checkout@v7
@@ -16,24 +24,24 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install libgmp-dev libxpm-dev
-        wget https://github.com/Clozure/ccl/releases/download/v1.13/ccl-1.13-linuxx86.tar.gz
-        tar xvf ccl-1.13-linuxx86.tar.gz
+        wget https://github.com/Clozure/ccl/releases/download/v1.14/ccl-1.14-linux${{ env.CCLARCH }}.tar.gz
+        tar xvf ccl-1.14-linux${{ env.CCLARCH }}.tar.gz
 
     - name: configure
-      run: ./configure --with-lisp=`pwd`/ccl/lx86cl64 --with-gmp --with-x || (cat config.log && false)
+      run: ./configure --with-lisp=`pwd`/ccl/${{ env.CCLBIN }} --with-x || (cat config.log && false)
 
     - name: make
       run: make -j4 --output-sync
 
     - name: Create artifact archives
       run: |
-        tar -cjf FriCAS-linux-CCL-x86-64-${{ github.sha }}.tar.bz2 target/
+        tar -cjf FriCAS-linux-CCL-${{ env.ARCH }}-${{ github.sha }}.tar.bz2 target/
 
     - name: Upload Linux binary
       uses: actions/upload-artifact@v7
       with:
         archive: false
-        path: FriCAS-linux-CCL-x86-64-${{ github.sha }}.tar.bz2
+        path: FriCAS-linux-CCL-${{ env.ARCH }}-${{ github.sha }}.tar.bz2
 
     - name: make check
       run: make check -j4 --output-sync
