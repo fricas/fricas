@@ -55,9 +55,10 @@ genCategoryTable() ==
   $ancestors_hash := MAKE_HASHTABLE('EQ)
   $has_category_hash := MAKE_HASHTABLE('EQUAL)
   genTempCategoryTable()
+  -- packages too: a package can be the argument of a category type
   domainList:=
     [con for con in allConstructors()
-        | get_database(con, 'CONSTRUCTORKIND) = 'domain]
+        | get_database(con, 'CONSTRUCTORKIND) ~= 'category]
   domainTable:= [addDomainToTable(con,getConstrCat catl) for con
         in domainList | catl := get_database(con, 'CONSTRUCTORCATEGORY)]
   -- $nonLisplibDomains, $noCategoryDomains are set in BUILDOM BOOT
@@ -398,7 +399,8 @@ categoryParts1(kind, conform, category, do_constr) == main where
     nil
 
 updateCategoryTable(cname,kind) ==
-  kind = 'domain =>
+  -- packages too, as in genCategoryTable
+  MEMQ(kind, '(domain package)) =>
     updateCategoryTableForDomain(cname,getConstrCat(
             get_database(cname, 'CONSTRUCTORCATEGORY)))
 

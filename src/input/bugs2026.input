@@ -2,6 +2,7 @@
 )compile CompArgDeep.spad
 )compile LocalHidesConstant.spad
 )compile MappingAfterIf.spad
+)compile PackageArgument.spad
 
 )set break resume
 )expose UnittestCount UnittestAux Unittest
@@ -212,5 +213,17 @@ testcase "variable assigned in one branch of an if keeps its value"
 
 testEquals("f(-1)$MappingAfterIf", "0")
 testEquals("f(1)$MappingAfterIf", "101")
+
+testcase "packages with a named category"
+
+kind(c : Symbol) : Symbol == symbol(get_database(c, 'CONSTRUCTORKIND)$Lisp)
+testEquals("kind('ModularEvaluation1)", "'package")
+testEquals("kind('PackageArgumentStep)", "'package")
+testEquals("kind('SetCategory__&)", "'package")
+testEquals("kind('Integer)", "'domain")
+testEquals("kind('GuessOptionFunctions0)", "'package")
+testEquals("kind('MathMLFormat)", "'package")
+-- a package as the argument of a category type
+testEquals("run(1)$PackageArgumentUser(PackageArgumentStep)", "2")
 
 statistics()

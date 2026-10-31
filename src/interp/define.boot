@@ -346,6 +346,13 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
       userError '"cannot produce category object"
 --+ copy needed since slot1 is reset; compMake.. can return a cached vector
     base_shell := COPY_-SEQ ds
+    -- as in parseCategory: a domain if % occurs in an export
+    sigs := [sig for [[., sig], :.] in ds.1]
+    kind := (CONTAINED("%", sigs) => 'domain; 'package)
+    -- no operation of its own can make a value of type %
+    if kind = 'domain and not(CONTAINED("%", [first sig for sig in sigs])) then
+        stackWarning(['"no exported operation returns %; if ", op,
+          '" is meant as a package, export only its operations (with ...)"])
     $domainShell : local := base_shell
 --+ 7 lines for $NRT follow
 -->--these globals used by NRTmakeCategoryAlist, set by NRTsetVector4Part1
@@ -411,9 +418,7 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
       $lisplibModemap:= modemap
       $lisplibCategory := modemap.mmTarget
       $lisplibAbbreviation := constructor?(op)
-      $lisplibKind:=
-        target is ["CATEGORY",key,:.] and key~="domain" => 'package
-        'domain
+      $lisplibKind := kind
       $lisplibForm:= form
       if null $bootStrapMode then
         NRTslot1Info := NRTmakeSlot1Info(form, base_shell)
