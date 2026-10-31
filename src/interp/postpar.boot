@@ -62,7 +62,9 @@ displayPreCompilationErrors() ==
     else sayMath ['"    ",:first $postStack]
   TERPRI()
 
-postTran x ==
+postTran x == copy_pos(x, postTran1 x)
+
+postTran1 x ==
   atom x =>
     postAtom x
   op := first x
@@ -96,7 +98,7 @@ postTran x ==
     [postTran op,:rest u]
   postForm x
 
-postTranList x == [postTran y for y in x]
+postTranList x == carry_name_pos(x, [postTran y for y in x])
 
 postBigFloat x ==
   [.,mant, expon] := x
@@ -207,12 +209,22 @@ postMDef(t) ==
   typeList:= [targetType,:[(x is [":",.,t] => t; nil) for x in rest form]]
   ['MDEF, newLhs, typeList, postTran rhs]
 
-postExit ["=>",a,b] == ['IF,postTran a,['exit,postTran b],'noBranch]
+postExit(x is ["=>",a,b]) ==
+    a1 := postTran a
+    ['IF, a1, carry_name_pos(rest x, ['exit, postTran b]), 'noBranch]
 
 -- quadratic in case of semicolon...
+-- the elements of nested op forms; the names keep their positions
 postFlatten(x,op) ==
-  x is [ =op,a,b] => [:postFlatten(a,op),:postFlatten(b,op)]
+  x is [ =op,a,b] =>
+    NCONC(flatten_cell(CDR x, op, function postFlatten),
+          flatten_cell(CDDR x, op, function postFlatten))
   LIST x
+
+-- the element of the cell c flattened by fn, or a copy of the cell
+flatten_cell(c, op, fn) ==
+  (first c) is [ =op, :.] => FUNCALL(fn, first c, op)
+  keep_name_cell(c)
 
 postForm (u is [op,:argl]) ==
   x:=
@@ -311,12 +323,16 @@ postReduce ['Reduce,op,expr] ==
     ['construct,  g]]]
 
 postFlattenLeft(x,op) ==--
-  x is [ =op,a,b] => [:postFlattenLeft(a,op),b]
+  x is [ =op,a,b] =>
+    NCONC(flatten_cell(CDR x, op, function postFlattenLeft),
+          keep_name_cell(CDDR x))
   [x]
 
 postSemiColon u ==
-    [:l, x] := postFlattenLeft(u, ";")
-    ['SEQ, :postBlockItemList l, ["exit", postTran x]]
+    items := postFlattenLeft(u, ";")
+    [:l, x] := items
+    ['SEQ, :postBlockItemList l,
+     ["exit", :carry_name_pos(LAST(items), [postTran x])]]
 
 postSignature1(op, sig) ==
     sig1 := postType sig

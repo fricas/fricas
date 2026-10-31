@@ -107,7 +107,7 @@ mkErrorExpr level ==
                 [highlight1(b,first a),:highlight1(b,rest a)]
       substitute(bracket rest l,first rest l,first l)
 
-errorRef s == stackWarning ['%b,s,'%d,'"has no value"]
+errorRef s == stack_warning_at(name_place(s), ['%b,s,'%d,'"has no value"])
 
 unErrorRef s == unStackWarning ['%b,s,'%d,'"has no value"]
 
@@ -185,7 +185,7 @@ intersectionContour(c, c', ce) ==
               m1 := '"\%"
           if m2 = '% then
               m2 := '"\%"
-          stackWarning(['%b, var, '%d, '"has two modes: ", m1,
+          stackWarning(['%b, var, '%d, '"has two different types: ", m1,
                         '" and ", m2])
         LIST ["conditionalmode",:rest pair]
         --LIST pair
@@ -221,8 +221,8 @@ addContour(c,E is [cur,:tail]) ==
                      --check for conflicts with earlier mode
                      if vv:=LASSOC("mode",e) then
                         if v ~=vv then
-                          stackWarning ['"The conditional modes ",
-                                     v,'" and ",vv,'" conflict"]
+                          stackWarning ['"the conditional types ", v, '" and ", vv,
+                                    '" conflict"]
         LIST c
 
 makeCommonEnvironment(e,e') ==
@@ -384,7 +384,7 @@ decExitLevel u ==
     removeExit0 x ==
       atom x => x
       x is ["exit",0,u] => removeExit0 u
-      [removeExit0 first x,:removeExit0 rest x]
+      copy_pos(x, [removeExit0 first x,:removeExit0 rest x])
 
 adjExitLevel(x,seqnum,inc) ==
   atom x => x
@@ -439,9 +439,13 @@ printDashedLine() ==
   SAY
    '"--------------------------------------------------------------------------"
 
-stackSemanticError(msg,expr) ==
+stackSemanticError(msg, expr) ==
+  stack_semantic_error_at($comp_pos, msg, expr)
+
+stack_semantic_error_at(pos, msg, expr) ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
   if atom msg then msg:= LIST msg
+  msg := pos_message(pos, msg)
   entry:= [msg,expr]
   if not member(entry,$semanticErrorStack) then $semanticErrorStack:=
     [entry,:$semanticErrorStack]
@@ -449,15 +453,40 @@ stackSemanticError(msg,expr) ==
     $initCapsuleErrorCount>3 => THROW("compCapsuleBody",nil)
   nil
 
-stackWarning msg ==
+stackWarning msg == stack_warning_at($comp_pos, msg)
+
+stack_warning_at(place, msg) ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
+  msg := pos_message(place, msg)
   if not member(msg,$warningStack) then $warningStack:= [msg,:$warningStack]
   nil
 
+-- removes msg at all positions
 unStackWarning msg ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
-  $warningStack:= NREMOVE($warningStack, msg)
+  msg := pos_message(nil, msg)
+  $warningStack := [x for x in $warningStack | not(x = msg or rest(x) = msg)]
   nil
+
+-- msg as text, with "file:line: " in front if pos is known; a % alone
+-- is written %%, else sayBrightly reads it as a layout marker and
+-- prints nothing
+pos_message(pos, msg) ==
+  msg := [(member(x, ['"%", '"$$"]) => '"%%"; x) for x in message_items(msg)]
+  null(prefix := pos_prefix(pos)) => msg
+  [prefix, :msg]
+
+-- the elements of msg as text, forms in Spad syntax
+message_items(msg) ==
+  [message_item(x) for x in (atom(msg) => [msg]; msg)]
+
+-- a form in Spad syntax; a category with a with part as "C with ..."
+message_form(x, $abbreviateJoin) == formString(x)
+
+message_item(x) ==
+  PAIRP(x) => message_form(x, true)
+  STRINGP(x) or MEMQ(x, '(%b %d %l)) => x
+  STRINGIMAGE(x)
 
 stackMessage msg ==
   $compErrorMessageStack:= [msg,:$compErrorMessageStack]
@@ -527,8 +556,11 @@ extendsCategoryForm(domain, form, form', e) ==
   form is ["Join", :l] => or/[extendsCategoryForm(domain, x, form', e)
                               for x in l]
   form is ["CATEGORY",.,:l] =>
-    member(form',l) or
-      stackWarning ['"not known that ",form','" is of mode ",form] or true
+    member(form',l) => true
+    -- no warning when coerceable only asks whether a value could be
+    -- converted (domain is then a placeholder)
+    domain = "$fromCoerceable$" => true
+    stackWarning ['"not known that ", domain, '" has ", form'] or true
   isCategoryForm(form) =>
           --Constructs the associated vector
     formVec := (compMakeCategoryObject(form, e)).expr
