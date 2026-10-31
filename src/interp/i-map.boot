@@ -620,7 +620,7 @@ rewriteMap0(op,opName,argl) ==
 
 rewriteMap1(opName,argl,sig) ==
   -- compiled case of map rewriting
-  putBodyInEnv(opName, #argl)
+  failed := putBodyInEnv(opName, #argl) = 'failed
   if sig then
       tar := first sig
       argTypes := rest sig
@@ -646,7 +646,7 @@ rewriteMap1(opName,argl,sig) ==
       if VECP(arg) then $env := putIntSymTab(var, 'name, getUnname(arg), $env)
       (m := getMode arg) => $env := putIntSymTab(var, 'mode, m, $env)
   val:= interpMap(opName,tar)
-  removeBodyFromEnv(opName)
+  if not(failed) then removeBodyFromEnv(opName)
   objValUnwrap(val)
 
 interpMap(opName,tar) ==
