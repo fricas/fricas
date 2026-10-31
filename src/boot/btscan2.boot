@@ -209,7 +209,7 @@ shoeLispEscape()==
              shoeLeafError ($ln.$n)
          else
             a:=shoeReadLispString($ln,$n)
-            null a =>
+            null a or rest a =>
              SoftShoeError(cons($linepos,$n),'"lisp escape error")
              shoeLeafError ($ln.$n)
             [exp,n]:=a

@@ -139,19 +139,7 @@ comp_fail_message(pos, msg) ==
         msg := ['"in function ", STRINGIMAGE($op), '": ", :msg]
     or/[MEMQ(x, '(%b %d %l)) for x in msg] => pos_message(pos, msg)
     -- one string: a % in it needs no escape
-    comp_fail_concat(((p := pos_prefix(pos)) => [p, :msg]; msg))
-
--- the strings of l joined, with a space between two neighbours that
--- have none at the junction (old messages relied on one item per line)
-comp_fail_concat(l) ==
-    s := first(l)
-    for x in rest(l) | #x > 0 repeat
-        if #s > 0 and not(member(SUBSTRING(s, #s - 1, 1), ['" ", '"(", '"["])
-          or member(SUBSTRING(x, 0, 1), ['" ", '",", '".", '")", '"]", '":",
-                                         '";"])) then
-            s := CONCAT(s, '" ")
-        s := CONCAT(s, x)
-    s
+    "STRCONC"/[pos_prefix(pos) or '"", :msg]
 
 -- a clearer message than msg (none, a "cannot compile" or a type
 -- mismatch), from the expressions that failed ($compStack), or nil
@@ -242,11 +230,8 @@ comp_fail_score(sig, types, e) ==
 -- "   op : (A, B) -> T from D", like )display operation
 comp_fail_candidate(op, mm) ==
     if $functorForm then mm := SUBST($functorForm, '%, mm)
-    [[dc, t, :sig], :.] := mm
-    args :=
-        #sig = 1 => formString(first(sig))
-        CONCAT('"(", (sig => comp_fail_join(sig, '", "); '""), '")")
-    CONCAT('"   ", STRINGIMAGE(op), '" : ", args, '" -> ", formString(t),
+    [[dc, :sig], :.] := mm
+    CONCAT('"   ", STRINGIMAGE(op), '" : ", plain_text(formatSignature0(sig)),
            '" from ", formString(dc))
 
 -- why op(args)$dom or op$dom failed, or nil if that is not clear
@@ -647,7 +632,7 @@ compForm(form,m,e) ==
 
 comp_no_warn(x, m, e) ==
     $allow_undef : local := true
-    comp(x, $EmptyMode, e)
+    comp_arg(x, $EmptyMode, e)
 
 compArgumentsAndTryAgain(form is [.,:argl],m,e) ==
   not($tryRecompileArguments) or null(argl) => nil
@@ -1003,7 +988,7 @@ compConstruct(form is ["construct", :l], m, e) ==
 
 compQuote(expr is [QUOTE, e1], m, e) ==
   SYMBOLP(e1) => [expr, ["Symbol"], e]
-  stackAndThrow ['"Strange argument to QUOTE", expr]
+  stackAndThrow ['"Strange argument to QUOTE: ", expr]
 
 compList(l,m is ["List",mUnder],e) ==
   null l => [NIL,m,e]

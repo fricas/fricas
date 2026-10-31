@@ -185,22 +185,24 @@ compApplyModemap(form, modemap, e, sl) ==
       [genDeltaEntry([op, :modemap], e), lt', bindings]
   [f, lt', bindings]
 
---% Cache of failed argument compilations
+--% Cache of argument compilations
 
 -- compApplyModemap tries the modemaps of an operation one after the
 -- other and compiles the arguments with the argument modes of each.
 -- When several modemaps have the same argument mode, the same argument
--- is compiled again and again, and when it failed once it fails again.
--- So comp_arg remembers failures: compiling the same argument (EQ) to
--- the same mode (EQUAL) in the same environment (EQ) and the same
--- compiler state (comp_arg_state) gives the same result.
+-- is compiled again and again.  compArgumentsAndTryAgain compiles the
+-- arguments of a failed form again, at every level of a nested
+-- expression.  So comp_arg remembers the results: compiling the same
+-- argument (EQ) to the same mode (EQUAL) in the same environment (EQ)
+-- and the same compiler state (comp_arg_state) gives the same result.
+-- The code of a success is copied, since later steps may change it.
 --
--- A cache hit repeats the effects the failed compilation had on
--- $compStack and $compErrorMessageStack (used in error messages) and on
--- the counters for generated names, so the generated code and the
--- messages do not change.  Failures which changed other state that
--- comp depends on are not cached.  $comp_arg_cache is an EQ hash table
--- bound in compDefineLisplib; elsewhere it is nil and nothing is cached.
+-- A cache hit repeats only the newest message of the compile, the one
+-- shown in an error message.  The others and $compStack are only used
+-- in the dump after a failure; repeating them can exhaust the heap.
+-- Failures which changed other state that comp depends on are not
+-- cached.  $comp_arg_cache is an EQ hash table bound in
+-- compDefineLisplib; elsewhere it is nil and nothing is cached.
 
 DEFVAR($comp_arg_cache, nil)
 
@@ -220,46 +222,28 @@ comp_arg_state() == [null($compErrorMessageStack), :comp_arg_vars()]
 comp_arg_same_state(s1, s2) ==
     #s1 = #s2 and and/[EQ(x1, x2) for x1 in s1 for x2 in s2]
 
--- If after is [:new, :before], return new, otherwise "failed".
--- A loop, not a recursion: the stacks can get very long (issue #169).
-comp_arg_new_items(after, before) ==
-    new := nil
-    l := after
-    while not(EQ(l, before)) and CONSP(l) repeat
-        new := [first(l), :new]
-        l := rest(l)
-    EQ(l, before) => NREVERSE(new)
-    "failed"
-
 comp_arg(y, m, e) ==
-    null($comp_arg_cache) or not(BOUNDP('$compStack))
-      or not(BOUNDP('$compErrorMessageStack)) => comp(y, m, e)
+    null($comp_arg_cache) or not(BOUNDP('$compErrorMessageStack)) =>
+        comp(y, m, e)
     state := comp_arg_state()
     entries := HGET($comp_arg_cache, y)
     hit := or/[entry for entry in entries | entry is [m1, e1, state1, :.]
                  and EQ(e1, e) and m1 = m and comp_arg_same_state(state1, state)]
-    hit => comp_arg_replay(hit)
-    cs := $compStack
+    hit is [., ., ., msg, T] =>
+        if msg then stackMessage(msg)
+        T and [COPY_-TREE(T.expr), T.mode, T.env]
     ms := $compErrorMessageStack
     ws := $warningStack
     ss := $semanticErrorStack
-    T := comp(y, m, e) => T
-    -- comp failed: remember it if a cache hit can repeat its effects
-    ms_new := comp_arg_new_items($compErrorMessageStack, ms)
-    if ms_new ~= "failed" and EQ(ws, $warningStack) and
-         EQ(ss, $semanticErrorStack) and
-           comp_arg_same_state(rest(state), comp_arg_vars()) then
-        cs_new := comp_arg_new_items($compStack, cs)
-        HPUT($comp_arg_cache, y,
-             [[m, e, state, cs_new, $compStack, ms_new], :entries])
-    nil
-
-comp_arg_replay([., ., ., cs_new, cs, ms_new]) ==
-    $compStack :=
-        cs_new = "failed" => cs
-        APPEND(cs_new, $compStack)
-    $compErrorMessageStack := APPEND(ms_new, $compErrorMessageStack)
-    nil
+    T := comp(y, m, e)
+    -- remember the result with its newest message, the one shown
+    if EQ(ws, $warningStack) and EQ(ss, $semanticErrorStack) and
+         comp_arg_same_state(rest(state), comp_arg_vars()) then
+        msg := not(EQ(ms, $compErrorMessageStack)) and
+                 first($compErrorMessageStack)
+        HPUT($comp_arg_cache, y, [[m, e, state, msg,
+            T and [COPY_-TREE(T.expr), T.mode, T.env]], :entries])
+    T
 
 compMapCond(op, mc, bindings, fnsel, e) ==
   or/[compMapCond'(u, op, mc, bindings, e) for u in fnsel]
