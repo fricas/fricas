@@ -198,7 +198,8 @@ mkInterpTargetedADEF(t,vars,types,oldBody) ==
   arglCode := ['LIST,:[argCode for type in rest types for var in vars]]
     where argCode == ['putValueValue,['mkAtreeNode,MKQ var],
       objNewCode(['wrap,var],type)]
-  putIntSymTab($mapName, 'mapBody, oldBody, $e)
+  putIntSymTab($mapName, 'mapBody,
+      SUBLISLIS($FormalMapVariableList, vars, oldBody), $e)
   body := ['rewriteMap1,MKQ $mapName,arglCode,MKQ types]
   compileADEFBody(t,vars,types,body,first types)
 
