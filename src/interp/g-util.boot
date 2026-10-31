@@ -333,13 +333,10 @@ getProplist(x,E) ==
 search(x,e is [curEnv,:tailEnv]) ==
   tailEnv =>
     BREAK()
+  $use_env_lookup_cache => search_env_cached(x, curEnv)
   searchCurrentEnv(x,curEnv)
 
 searchCurrentEnv(x,currentEnv) ==
-  $use_env_lookup_cache => search_env_cached(x, currentEnv)
-  search_current_env1(x, currentEnv)
-
-search_current_env1(x, currentEnv) ==
   for contour in currentEnv repeat
     if u:= ASSQ(x,contour) then return (signal:= u)
   IFCDR signal
@@ -349,20 +346,21 @@ search_current_env1(x, currentEnv) ==
 -- scanning every contour.  While a constructor is compiled
 -- ($use_env_lookup_cache, bound in compDefineLisplib), $env_lookup_cache
 -- keeps the results for the last 8 environments, as an alist from the
--- environment to an EQ hash table, newest first.  Environments are
--- extended by consing new contours and bindings, never changed in place,
--- so a result stays valid for its environment.
+-- environment to the alist of its results, newest first.  Environments
+-- are extended by consing new contours and bindings, never changed in
+-- place, so a result stays valid for its environment.
 DEFVAR($use_env_lookup_cache, false)
 DEFVAR($env_lookup_cache, nil)
 
 search_env_cached(x, env) ==
-  if not(tab := IFCDR(ASSQ(env, $env_lookup_cache))) then
-      tab := MAKE_HASHTABLE('EQ)
-      $env_lookup_cache := [[env, :tab], :$env_lookup_cache]
+  if not(entry := ASSQ(env, $env_lookup_cache)) then
+      entry := [env]
+      $env_lookup_cache := [entry, :$env_lookup_cache]
       if (l := NTHCDR(7, $env_lookup_cache)) then RPLACD(l, nil)
-  u := HGET2(tab, x, "%unknown")
-  not(EQ(u, "%unknown")) => u
-  HPUT(tab, x, search_current_env1(x, env))
+  u := ASSQ(x, rest(entry)) => rest(u)
+  val := searchCurrentEnv(x, env)
+  RPLACD(entry, [[x, :val], :rest(entry)])
+  val
 
 augProplist(proplist,prop,val) ==
   while (proplist is [[ =prop,:.],:proplist']) repeat proplist:= proplist'
