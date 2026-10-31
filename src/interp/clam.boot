@@ -169,6 +169,9 @@ clearConstructorCaches() ==
   clearCategoryCaches()
   CLRHASH $ConstructorCache
   clear_callbacks()
+  -- compiled user functions still call the old domains
+  $e : local := $InteractiveFrame
+  for x in getWorkspaceNames() repeat clearCache x
 
 clearConstructorCache(cname) ==
   (kind := get_database(cname, 'CONSTRUCTORKIND)) =>

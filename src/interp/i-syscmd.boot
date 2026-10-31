@@ -2077,7 +2077,7 @@ read_or_compile(quiet, i_name) ==
     type := file_extention(input_file)
     type = '"boot" =>
         lfile := CONCAT(file_basename(input_file), '".clisp")
-        BOOTTOCLC(input_file, lfile)
+        null BOOTTOCLC(input_file, lfile) => nil
         LOAD(COMPILE_-FILE(lfile))
     type = '"lisp" =>
         ffile := CONCAT(file_basename(input_file), ".", $lisp_bin_filetype)

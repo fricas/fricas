@@ -1,0 +1,22 @@
+)set break resume
+
+-- A compiled user function called before and after )killcaches must
+-- use the new domains (fricas-devel oW3Wj4A7zyk).  )killcaches
+-- comes before the testsuite, since it also clears Unittest's state.
+mat := matrix([[sqrt('x1)]])
+kers(m) == removeDuplicates(reduce(append, map(tower, listOfLists(m))))
+kers(mat)
+ex := sqrt('x1)
+)killcaches
+kers(mat)
+r := eval(tower(ex)(1) :: Expression(Integer), ['x1 = 4])
+
+)expose UnittestCount UnittestAux Unittest
+
+testsuiteNoClear "killcaches"
+
+testcaseNoClear "compiled function after )killcaches"
+
+testEquals("r", "4")
+
+statistics()

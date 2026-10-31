@@ -6,17 +6,24 @@ permissions: {}
 jobs:
   build:
 
-    runs-on: macos-15-intel
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15-intel, macos-15]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 40
+    env:
+      ARCH: ${{ endsWith(matrix.os, '-intel') && 'x86-64' || 'arm64' }}
 
     steps:
     - uses: actions/checkout@v7
 
     - name: configure
       run: |
+        brew update
         brew install clozure-cl make
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=ccl64 --with-gmp=`brew --prefix` || (cat config.log && false)
+        ../fricas/configure --with-lisp=ccl64 || (cat config.log && false)
 
     - name: make
       run: cd ../build && gmake -j4 --output-sync
@@ -28,13 +35,13 @@ jobs:
         cp -v `brew list gmp | grep libgmp.10.dylib` FriCAS.app/Contents/Resources/usr/local/lib/fricas/target/*/lib/
         ## reduce chance of error caused by "hdiutil: Resource busy"
         make dist-macos-dmg || make dist-macos-dmg
-        mv FriCAS.dmg ../fricas/FriCAS-macOS-CCL-x86-64-${{ github.sha }}.dmg
+        mv FriCAS.dmg ../fricas/FriCAS-macOS-CCL-${{ env.ARCH }}-${{ github.sha }}.dmg
 
     - name: Upload macOS binary
       uses: actions/upload-artifact@v7
       with:
         archive: false
-        path: FriCAS-macOS-CCL-x86-64-${{ github.sha }}.dmg
+        path: FriCAS-macOS-CCL-${{ env.ARCH }}-${{ github.sha }}.dmg
 
     - name: make check
       run: cd ../build && gmake check -j4 --output-sync
