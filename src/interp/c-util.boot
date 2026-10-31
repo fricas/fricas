@@ -39,10 +39,7 @@ $warningStack := []
 $semanticErrorStack := []
 
 DROP(n, l) ==
-    n >= 0 =>
-        while n > 0 repeat
-            l := rest(l)
-        l
+    n >= 0 => NTHCDR(n, l)
     TAKE(#l + n, l)
 
 TAKE(n, l) ==
