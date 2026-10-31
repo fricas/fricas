@@ -52,6 +52,7 @@ Other resources
    :maxdepth: 1
 
    spadstyleguide
+   spaderrors
    contributors
 
 * `Debugging FriCAS <http://wiki.fricas.org/DebuggingFriCAS>`_

@@ -19,7 +19,9 @@ flattenSemi(tree) ==
 -- Expansion of macros and removal of macrodefinitions
 --
 
-expandMacros(tree) ==
+expandMacros(tree) == copy_pos(tree, expandMacros1(tree))
+
+expandMacros1(tree) ==
     ATOM tree =>
         mdef := HGET($MacroTable, tree)
         mdef =>
@@ -133,10 +135,10 @@ do_walk_where_list(tree) ==
 -- Remove macros and where parts from global definitions
 --
 
-walkWhereList(name, def, env) ==
+walkWhereList(eq, name, def, env) ==
     $restore_list : local := nil
     edefs := do_walk_where_list env
-    ress := expandMacros(["==", replaceArgDefs(name, edefs), def])
+    ress := expandMacros(copy_pos(eq, ["==", replaceArgDefs(name, edefs), def]))
     for it in $restore_list repeat
         [op, :def] := it
         HPUT($MacroTable, op, def)
@@ -147,8 +149,8 @@ walkForm(tree) ==
         define_macro(name, def)
         nil
     tree is ["==", head, def] => expandMacros(tree)
-    tree is ["where", ["==", name, def], env] =>
-        walkWhereList(name, def, env)
+    tree is ["where", eq, env] and eq is ["==", name, def] =>
+        walkWhereList(eq, name, def, env)
     userError('"Parsing error: illegal toplevel form")
     nil
 

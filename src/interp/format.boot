@@ -278,10 +278,15 @@ form2StringWithWhere u ==
   $whereList => concat(s,'%b,'"where",'%d,"%i",$whereList,"%u")
   s
 
-formString u ==
-  x := form2String u
+formString u == plain_text(form2String u)
+
+-- the output of form2String or formatSignature0 as plain text: a layout
+-- marker becomes a space, and % (written %% for the message printer,
+-- dollarPercentTran) is %
+plain_text(x) ==
   atom x => STRINGIMAGE x
-  "STRCONC"/[STRINGIMAGE y for y in x]
+  "STRCONC"/[(member(y, $msgdbPrims) => '" "; y = "%%" or y = '"%%" => '"%";
+               STRINGIMAGE y) for y in x]
 
 DEFPARAMETER($from_unparse, false)
 

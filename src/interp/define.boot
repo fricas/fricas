@@ -64,7 +64,9 @@ compDefine1(form,m,e) ==
 --  or arguments have types declared in the environment,
 --  and there is no existing modemap for this signature, add
 --  the modemap by a declaration, then strip off declarations and recurse
-  e := compDefineAddSignature(lhs,signature,e)
+  -- an unknown category of a constructor is reported by compDefineFunctor1
+  if not(constructor_with_category?(rhs, signature, e)) then
+      e := compDefineAddSignature(lhs,signature,e)
 -- 2. if signature list for arguments is not empty, replace ('DEF,..) by
 --       ('where,('DEF,..),..) with an empty signature list;
 --     otherwise, fill in all NILs in the signature
@@ -79,8 +81,19 @@ compDefine1(form,m,e) ==
     new_prefix := getAbbreviation(first(lhs), #(rest(lhs)))
     compDefineFunctor(['DEF, lhs, signature, rhs], m, e,
                       new_prefix, $formalArgList)
-  null($functorForm) => stackAndThrow ['"bad == form ",form]
+  null($functorForm) =>
+      name := (lhs is [op] => op; lhs)
+      signature.target =>
+          stackAndThrow ['"cannot compile ", name, '" == ...: the right-hand",
+                         '" side is not a domain or an add form"]
+      stackAndThrow ['"cannot compile ", name, '" == ...: ", opOf(lhs),
+                     '" is not declared"]
   compDefineCapsuleFunction(form, m, e, $prefix, $formalArgList)
+
+-- true if rhs defines a domain or package with a declared category
+constructor_with_category?(rhs, signature, e) ==
+  isDomainForm(rhs, e) and not($insideFunctorIfTrue) and signature.target and
+    not(isCategoryForm(signature.target))
 
 compDefineAddSignature([op,:argl],signature,e) ==
   (sig:= hasFullSignature(argl,signature,e)) and
@@ -111,8 +124,7 @@ getTargetFromRhs(lhs,rhs,e) ==
   rhs is ['Union,:l] => ['UnionCategory,:l]
   [.,target,.]:= compOrCroak(rhs,$EmptyMode,e)
   target is ["Category"] =>
-      stackAndThrow(['"Only domains and packages can get mode form target",
-                     lhs])
+      stackAndThrow(['"the category of ", lhs, '" must be declared"])
   target
 
 giveFormalParametersValues(argl,e) ==
@@ -127,7 +139,9 @@ macroExpandInPlace(x,e) ==
   RPLACD(x,rest y)
   x
 
-macroExpand(x,e) ==   --not worked out yet
+macroExpand(x, e) == copy_pos(x, macroExpand1(x, e))
+
+macroExpand1(x,e) ==   --not worked out yet
   atom x =>
       u := get(x, 'macro, e) =>
           null(rest(u)) =>
@@ -213,8 +227,8 @@ mkCategoryPackage(form is [op, :argl], def, e) ==
   nils:= [nil for x in argl]
   packageSig := [packageCategory,form,:nils]
   $categoryPredicateList := SUBST(nameForDollar, '%, $categoryPredicateList)
-  SUBST(nameForDollar, '%,
-      ['DEF, [packageName, :packageArgl], packageSig, def])
+  pkg_def := ['DEF, [packageName, :packageArgl], packageSig, def]
+  copy_pos_tree(pkg_def, SUBST(nameForDollar, '%, pkg_def))
 
 compDefineCategory2(form, signature, body, m, e,
   $prefix,$formalArgList) ==
@@ -233,6 +247,7 @@ compDefineCategory2(form, signature, body, m, e,
     signature':=
         [first signature, :[getArgumentModeOrMoan(a, form, e) for a in argl]]
     e:= giveFormalParametersValues(argl,e)
+    check_export_types(body, e)
 
 --   3. replace arguments by $1,..., substitute into body,
 --     and introduce declarations into environment
@@ -309,6 +324,44 @@ compDefineFunctor(df,m,e,prefix,fal) ==
   $LISPLIB => compDefineLisplib(df,m,e,prefix,fal,'compDefineFunctor1)
   compDefineFunctor1(df,m,e,prefix,fal)
 
+-- report the unknown type names in the signatures of the exports in
+-- target (the "with" part of a declaration or of a category definition)
+check_export_types(target, e) ==
+    for sig in export_signatures(target) repeat
+        for t in CADDR(sig) repeat
+            for x in unknown_type_names(t, e) repeat
+                stack_semantic_error_at(get_pos(sig) or $comp_pos,
+                    [STRINGIMAGE(x), '" is not a valid type"], nil)
+
+export_signatures(x) ==
+    x is ["SIGNATURE", ., types, :.] and LISTP(types) => [x]
+    x is ["CATEGORY", ., :l] or x is ["Join", :l] or x is ["PROGN", :l] =>
+        [:export_signatures(y) for y in l]
+    x is ["IF", ., a, b] => [:export_signatures(a), :export_signatures(b)]
+    nil
+
+-- the names in the type t that are neither types nor known in e
+unknown_type_names(t, e) ==
+    IDENTP(t) => (known_type_name?(t, e) => nil; [t])
+    t is [":", ., t1] => unknown_type_names(t1, e)
+    t is [op, :args] and IDENTP(op) =>
+        MEMQ(op, '(QUOTE Enumeration)) => nil
+        MEMQ(op, '(Mapping Record Union)) =>
+            [:unknown_type_names(a, e) for a in args]
+        not(known_type_name?(op, e)) => [op]
+        -- only the arguments that are types, not values like 0
+        cosig := get_database(op, 'COSIG) =>
+            [:unknown_type_names(a, e) for a in args for c in rest(cosig) | c]
+        nil
+    nil
+
+-- (no isFunctor here: it changes $CategoryFrame, and with it the code
+-- compiled later)
+known_type_name?(x, e) ==
+    MEMQ(x, '(% _$ Mapping Record Union Enumeration Category Type)) or
+      getmode(x, e) or get(x, "value", e) or constructor?(x) or
+        isCategoryForm(x)
+
 compDefineFunctor1(df is ['DEF, form, signature, body],
   m, e, $prefix, $formalArgList) ==
 --  1. bind global variables
@@ -341,9 +394,8 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     target:= first signature'
     e := giveFormalParametersValues(argl, e)
     [ds, ., e] := compMakeCategoryObject(target, e) or
-      sayBrightly '"   cannot produce category object:"
-      pp target
-      userError '"cannot produce category object"
+      stackAndThrow [target, '" is not a valid category"]
+    check_export_types(target, e)
 --+ copy needed since slot1 is reset; compMake.. can return a cached vector
     base_shell := COPY_-SEQ ds
     $domainShell : local := base_shell
@@ -572,7 +624,7 @@ compInternalFunction(df is ['DEF, form, signature, body], m, e) ==
     -- $CapsuleDomainsInScope : local := e
     [op, :argl] := form
     not(IDENTP(op)) =>
-        stackAndThrow ['"Bad name for internal function:", op]
+        stackAndThrow ['"Bad name for internal function: ", op]
     nbody := ["+->", argl, body]
     fmode := ["Mapping", :signature]
     [., ., e'] := compMakeDeclaration([":", op, fmode], $EmptyMode, e)
@@ -916,6 +968,12 @@ doIt(item, $predl, e) ==
     RPLACA(item,first u)
     RPLACD(item,rest u)
     doIt(item, $predl, e)
+  (h := header_without_body(item)) =>
+    stack_semantic_error_at(get_pos(item) or $comp_pos,
+      ['"missing == after ", h, '"?"], nil)
+    RPLACA(item, 'PROGN)
+    RPLACD(item, NIL) -- creates a no-op
+    e
   item is [":=", lhs, rhs, :.] =>
     not (compOrCroak(item, $EmptyMode, e) is [code, ., e]) =>
       stackSemanticError(['"cannot compile assigned value to",:bright lhs],nil)
@@ -975,6 +1033,20 @@ doIt(item, $predl, e) ==
     ([code, ., e] := u; RPLACA(item, first code); RPLACD(item, rest code))
     e
   true => cannotDo()
+
+-- A function header with typed arguments outside of a definition, as
+-- in "f(x : %) : Boolean" followed by an indented body without "==":
+-- the parser then reads the body as an argument of the type.
+header_without_body(x) ==
+  atom(x) => nil
+  MEMQ(first(x), '(DEF MDEF _+_-_>)) => nil
+  typed_header?(x) => CADR(x)
+  or/[header_without_body(y) for y in x]
+
+typed_header?(x) ==
+  x is [":", h, .] and h is [f, :args] and IDENTP(f) =>
+      or/[a is [":", ., .] for a in args]
+  false
 
 isMacro(x,e) ==
   x is ['DEF, [op, :args], signature, body] and
