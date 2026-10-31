@@ -1020,10 +1020,10 @@ mkAndApplyZippedPredicates (indexList, s,zipType,itrl) ==
   for iter in itrl repeat
     iter is ['WHILE,pred] =>
       predVec := mkIterZippedFun(indexList,pred,zipType,$localVars)
-      s := [mkAtreeNode 'swhile,predVec,s]
+      s := [mkAtreeNode('filterWhile), predVec, s]
     iter is ['UNTIL,pred] =>
       predVec := mkIterZippedFun(indexList,pred,zipType,$localVars)
-      s := [mkAtreeNode 'suntil,predVec,s]
+      s := [mkAtreeNode('filterUntil), predVec, s]
     iter is ['SUCHTHAT,pred] =>
       putTarget(pred,$Boolean)
       predVec := mkIterZippedFun(indexList,pred,zipType,$localVars)
