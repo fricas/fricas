@@ -597,7 +597,7 @@ compSymbol(s,m,e) ==
       not isFunction(s,e) and null ($compForModeIfTrue=true) then
           $allow_undef => nil
           stack_warning_at(name_place(s),
-              ['%b, (s = "$$" => '"%"; s), '%d, '"is declared as ", m',
+              ['%b, s, '%d, '"is declared as ", m',
                '" but has not been given a value"])
     [s,m',e] --s is a declared argument
   MEMQ(s,$FormalMapVariableList) => stackMessage ['"no type found for ", s]
