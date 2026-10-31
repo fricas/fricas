@@ -635,6 +635,8 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
       null member(op, $formalArgList) and
             getmode(op, e) is ['Mapping, :.] => 'local
       'exported
+    if localOrExported = 'exported then
+        check_export_definition(op, signature')
 
     --6a skip if compiling only certain items but not this one
     -- could be moved closer to the top
@@ -662,6 +664,17 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
 
 --  7. give operator a 'value property
     [fun, ['Mapping, :signature'], oldE]
+
+-- Two definitions of an export with the same signature fill the same
+-- slot, and the last one wins.  An earlier definition is never used
+-- when the conditions of the later one are among its own.
+check_export_definition(op, sig) ==
+    or/[op1 = op and sig1 = sig and and/[member(p, predl) for p in $predl]
+          for [op1, sig1, predl] in $export_defs] =>
+        stackSemanticError(['"exported function ", op, '" : ",
+          :formatUnabbreviated(['Mapping, :sig]),
+          '" is defined again, so the earlier definition is never used"], nil)
+    $export_defs := [[op, sig, $predl], :$export_defs]
 
 getSignatureFromMode(form,e) ==
   getmode(opOf form,e) is ['Mapping,:signature] =>
@@ -883,7 +896,10 @@ compSubDomain1(domainForm,predicate,m,e) ==
   $lisplibSuperDomain := [domainForm, predicate]
   [domainForm,m,e]
 
+DEFPARAMETER($export_defs, nil)  -- [op, signature, conditions] of exports
+
 compCapsuleInner(itemList, m, e) ==
+  $export_defs : local := nil
   e:= addInformation(m,e)
            --puts a new 'special' property of $Information
   data:= ["PROGN",:itemList]
