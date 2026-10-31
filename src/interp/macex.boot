@@ -43,6 +43,9 @@
 --    $macActive is a list of the bodies being expanded.
 --    $posActive is a list of the parse forms where the bodies came from.
 
+-- A parse form for a %f argument of a message (as %id, incl.boot)
+%pform(pf) == [function pf2Sex, pf]
+
 -- Beware: the name macroExpand is used by the old compiler.
 macroExpanded pf ==
     $macActive: local := []
@@ -80,7 +83,14 @@ macLambdaParameterHandling( replist , pform )  ==
         replist
     pfMLambda? pform =>     -- construct assoclist ( identifier . replacement )
         parlist := pf0MLambdaArgs pform  -- extract parameter list
-        [[pfIdSymbol par ,:pfLeaf( pfAbSynOp par,GENSYM(),pfLeafPosition par)] for par in parlist ]
+        reps := [[pfIdSymbol(par),
+                  :pfLeaf(pfAbSynOp(par), GENSYM(), pfLeafPosition(par))]
+                 for par in parlist]
+        -- F(X)(Y) ==> ... has nested MLambdas, rename their parameters too
+        body := pfMLambdaBody(pform)
+        pfMLambda?(body) =>
+            [:reps, :macLambdaParameterHandling(replist, body)]
+        reps
     for p in pfParts pform repeat macLambdaParameterHandling( replist , p )
 
 macSubstituteId( replist , pform ) ==
@@ -111,7 +121,8 @@ macMacro pf ==
     rhs := pfMacroRhs pf
     not pfId? lhs =>
         ncSoftError(pfSourcePosition(lhs),
-            '"%1 is improper for macro definition.  Ignored.", [%pform(lhs)])
+            '"%1fp is improper for macro definition.  Ignored.",
+                [%pform(lhs)])
         pf
     sy := pfIdSymbol lhs
 
@@ -164,7 +175,8 @@ mac0MLambdaApply(mlambda, args, opf, $pfMacros) ==
     for p in params for a in args repeat
         not pfId? p =>
             pos := pfSourcePosition opf
-            ncHardError(pos, '"Macro parameter %1f is not an id", [%pform(p)])
+            ncHardError(pos, '"Macro parameter %1fp is not an id",
+                        [%pform(p)])
         mac0Define(pfIdSymbol p, 'mparam, a)
 
     mac0ExpandBody( body , opf, $macActive, $posActive)
@@ -187,7 +199,8 @@ mac0InfiniteExpansion(posn, body, active) ==
             [sy,st] := got
             st = 'mlambda => CONCAT(PNAME sy, '"(...)")
             PNAME sy
-    ncSoftError(posn, '"Cycle in macro expansion: %l %1y %2 %l.  Left as: %3f",
+    ncSoftError(posn,
+          '"Cycle in macro expansion: %l %1y %2 %l Left as: %3fp",
         [[:[n, '"==>"] for n in reverse(rnames)], fname, %pform(body)])
 
     body
