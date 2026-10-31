@@ -62,7 +62,9 @@ displayPreCompilationErrors() ==
     else sayMath ['"    ",:first $postStack]
   TERPRI()
 
-postTran x ==
+postTran x == copy_pos(x, postTran1 x)
+
+postTran1 x ==
   atom x =>
     postAtom x
   op := first x
@@ -96,7 +98,7 @@ postTran x ==
     [postTran op,:rest u]
   postForm x
 
-postTranList x == [postTran y for y in x]
+postTranList x == carry_name_pos(x, [postTran y for y in x])
 
 postBigFloat x ==
   [.,mant, expon] := x
@@ -188,7 +190,7 @@ postDef([., lhs, rhs]) ==
   newLhs:= [(x is [":",a,.] => a; x) for x in form]
   argTypeList:=
     [(x is [":",.,t] => t; nil) for x in rest form]
-  typeList:= [targetType,:argTypeList]
+  typeList:= carry_name_pos(lhs, [targetType,:argTypeList])
   trhs :=
       rhs is ["=>", a, b] => ['IF,postTran a, postTran b, 'noBranch]
       postTran rhs
@@ -207,12 +209,22 @@ postMDef(t) ==
   typeList:= [targetType,:[(x is [":",.,t] => t; nil) for x in rest form]]
   ['MDEF, newLhs, typeList, postTran rhs]
 
-postExit ["=>",a,b] == ['IF,postTran a,['exit,postTran b],'noBranch]
+postExit(x is ["=>",a,b]) ==
+    a1 := postTran a
+    ['IF, a1, carry_name_pos(rest x, ['exit, postTran b]), 'noBranch]
 
 -- quadratic in case of semicolon...
+-- the elements of nested op forms; the names keep their positions
 postFlatten(x,op) ==
-  x is [ =op,a,b] => [:postFlatten(a,op),:postFlatten(b,op)]
+  x is [ =op,a,b] =>
+    NCONC(flatten_cell(CDR x, op, function postFlatten),
+          flatten_cell(CDDR x, op, function postFlatten))
   LIST x
+
+-- the element of the cell c flattened by fn, or a copy of the cell
+flatten_cell(c, op, fn) ==
+  (first c) is [ =op, :.] => FUNCALL(fn, first c, op)
+  keep_name_cell(c)
 
 postForm (u is [op,:argl]) ==
   x:=
@@ -273,12 +285,15 @@ postCollect [constructOp,:m,x] ==
 postIteratorList x ==
   x is [p,:l] =>
     (p:= postTran p) is ['IN,y,u] =>
-      u is ["|",a,b] => [['IN,y,postInSeq a],["|",b],:postIteratorList l]
-      [['IN,y,postInSeq u],:postIteratorList l]
+      u is ["|",a,b] =>
+          [copy_pos(p, ['IN,y,postInSeq a]), copy_pos(u, ["|",b]),
+           :postIteratorList l]
+      [copy_pos(p, ['IN,y,postInSeq u]),:postIteratorList l]
     p is  ['INBY, y, u, v] =>
       u is ["|",a,b] =>
-          [['INBY, y, postInSeq a, v], ["|",b], :postIteratorList l]
-      [['INBY, y, u, v], :postIteratorList l]
+          [copy_pos(p, ['INBY, y, postInSeq a, v]), copy_pos(u, ["|",b]),
+           :postIteratorList l]
+      [copy_pos(p, ['INBY, y, u, v]), :postIteratorList l]
     [p,:postIteratorList l]
   x
 
@@ -291,7 +306,7 @@ postIn arg ==
   ['IN,postTran i,postInSeq seq]
 
 postInSeq seq ==
-  seq is ['SEGMENT,p,q] => postTranSegment(p,q)
+  seq is ['SEGMENT,p,q] => copy_pos(seq, postTranSegment(p,q))
   seq is ["@Tuple", :l] => tuple2List l
   postTran seq
 
@@ -311,12 +326,16 @@ postReduce ['Reduce,op,expr] ==
     ['construct,  g]]]
 
 postFlattenLeft(x,op) ==--
-  x is [ =op,a,b] => [:postFlattenLeft(a,op),b]
+  x is [ =op,a,b] =>
+    NCONC(flatten_cell(CDR x, op, function postFlattenLeft),
+          keep_name_cell(CDDR x))
   [x]
 
 postSemiColon u ==
-    [:l, x] := postFlattenLeft(u, ";")
-    ['SEQ, :postBlockItemList l, ["exit", postTran x]]
+    items := postFlattenLeft(u, ";")
+    [:l, x] := items
+    ['SEQ, :postBlockItemList l,
+     ["exit", :carry_name_pos(LAST(items), [postTran x])]]
 
 postSignature1(op, sig) ==
     sig1 := postType sig
@@ -335,7 +354,7 @@ killColons x ==
   x is ['Record,:.] => x
   x is ['Union,:.] => x
   x is [":",.,y] => killColons y
-  [killColons first x,:killColons rest x]
+  carry_name_pos(x, [killColons first x,:killColons rest x])
 
 postSlash ['_/,a,b] ==
   STRINGP a => postTran ['Reduce,INTERN a,b]
@@ -349,7 +368,7 @@ removeSuperfluousMapping sig1 ==
 postType typ ==
   typ is ["->",source,target] =>
     source="constant" => [LIST postTran target,"constant"]
-    LIST ['Mapping,postTran target,:unTuple postTran source]
+    LIST copy_pos(typ, ['Mapping,postTran target,:unTuple postTran source])
   typ is ["->",target] => LIST ['Mapping,postTran target]
   LIST postTran typ
 

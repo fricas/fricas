@@ -109,7 +109,8 @@ compRepeatOrCollect(form,m,e) ==
             (u:=modeIsAggregateOf('Vector,targetMode,e)) =>
               repeatOrCollect:='COLLECTVEC
               CADR u
-            stackMessage('"Invalid collect bodytype")
+            stackMessage ['"a collection [... for ...] cannot have type ",
+                          targetMode]
             return nil
             -- If we're doing a collect, and the type isn't conformable
             -- then we've boobed. JHD 26.July.1990
@@ -172,7 +173,8 @@ compIterator1(it, e) ==
         [res, e]
     [mOver, mUnder] :=
       modeIsAggregateOf("List",m,e) or return
-         stackMessage ['"mode: ",m,'" must be a list of some mode"]
+         stack_message_at(item_pos(it, y), [quote_string(y), '" has type ",
+                          m, '", but for ... in needs a list"])
     if null get(x,"mode",e) then [.,.,e]:=
       compMakeDeclaration([":",x,mUnder],$EmptyMode,e) or return nil
     e:= put(x,"value",[genSomeVariable(),mUnder,e],e)
@@ -183,7 +185,8 @@ compIterator1(it, e) ==
     [y',m,e]:= comp(y,$EmptyMode,e) or return nil
     [mOver,mUnder]:=
       modeIsAggregateOf("List",m,e) or return
-        stackMessage ['"mode: ",m,'" must be a list of other modes"]
+        stack_message_at(item_pos(it, y), [quote_string(y), '" has type ",
+                         m, '", but for ... on needs a list"])
     if null get(x,"mode",e) then [.,.,e]:=
       compMakeDeclaration([":",x,m],$EmptyMode,e) or return nil
     e:= put(x,"value",[genSomeVariable(),m,e],e)
@@ -210,14 +213,17 @@ compIterator1(it, e) ==
             [["ISTEP",index,start'.expr,inc'.expr,:optFinal],e]
     [start,.,e]:=
       comp(start,$Integer,e) or return
-        stackMessage ['"start value of index: ",start,'" must be an integer"]
+        stack_message_at(item_pos(it, start), ['"the start value ",
+                         quote_string(start), '" of the loop is not an integer"])
     [inc,.,e]:=
       comp(inc,$Integer,e) or return
-        stackMessage ['"index increment:",inc,'" must be an integer"]
+        stack_message_at(item_pos(it, inc), ['"the step ", quote_string(inc),
+                         '" of the loop is not an integer"])
     if optFinal is [final] then
       [final,.,e]:=
         comp(final,$Integer,e) or return
-          stackMessage ['"final value of index: ",final,'" must be an integer"]
+          stack_message_at(item_pos(it, final), ['"the end value ",
+                           quote_string(final), '" of the loop is not an integer"])
       optFinal:= [final]
     indexmode:=
       comp(CADDR it,$NonNegativeInteger,e) => $NonNegativeInteger
@@ -229,13 +235,15 @@ compIterator1(it, e) ==
   it is ["WHILE",p] =>
     [p',m,e]:=
       comp(p,$Boolean,e) or return
-        stackMessage ['"WHILE operand: ",p,'" is not Boolean valued"]
+        stack_message_at(item_pos(it, p), ['"the condition ",
+                         quote_string(p), '" after while is not a Boolean"])
     [["WHILE",p'],e]
   it is ["UNTIL",p] => ($until:= p; ['$until,e])
   it is ["|",x] =>
     u:=
       comp(x,$Boolean,e) or return
-        stackMessage ['"SUCHTHAT operand: ",x,'" is not Boolean value"]
+        stack_message_at(item_pos(it, x), ['"the condition ",
+                         quote_string(x), '" after | is not a Boolean"])
     [["|",u.expr],u.env]
   nil
 
@@ -244,15 +252,16 @@ match_segment(i, n) ==
     n is ['SEGMENT, a, b] => (b => ['STEP, i, a, 1, b]; ['STEP, i, a, 1])
     ['IN, i, n]
 
+-- the new iterators keep the positions of the names in it
 compIterator(it, e) ==
     it is ["INBY", i, n, inc] =>
         u := match_segment(i, n)
         u isnt ['STEP, i, a, 1, :r] =>
             stackAndThrow ['"   You cannot use", "%b", '"by", "%d",
                       '"except for an explicitly indexed sequence."]
-        compIterator1(['STEP, i, a, inc, :r], e)
+        compIterator1(copy_pos(it, ['STEP, i, a, inc, :r]), e)
     it is ["IN", i, n] =>
-        compIterator1(match_segment(i, n), e)
+        compIterator1(copy_pos(it, match_segment(i, n)), e)
     compIterator1(it, e)
 
 modeIsAggregateOf(ListOrVector,m,e) ==

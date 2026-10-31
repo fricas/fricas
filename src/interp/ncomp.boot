@@ -19,12 +19,30 @@ flattenSemi(tree) ==
 -- Expansion of macros and removal of macrodefinitions
 --
 
-expandMacros(tree) ==
+expandMacros(tree) == copy_pos(tree, expandMacros1(tree))
+
+-- the body of a macro with the arguments put in, for one use at the
+-- position pos.  A body on one line (e.g. an abbreviation of a type) is
+-- copied and its nodes get pos, the arguments keep theirs; a longer body
+-- (e.g. a capsule) keeps the positions where it is written.
+macro_instance(body, margs, args, pos) ==
+    (p := get_pos(body)) and not(on_line?(body, poGlobalLinePosn(p))) =>
+        SUBLISLIS(args, margs, body)
+    note_new_pos(SUBLISLIS(args, margs, COPY_-TREE(body)), pos)
+
+-- true if the nodes of x that have a position are on the line l
+on_line?(x, l) ==
+    (p := get_pos(x)) and poGlobalLinePosn(p) ~= l => false
+    while CONSP(x) and on_line?(first x, l) repeat x := rest x
+    not(CONSP(x))
+
+expandMacros1(tree) ==
     ATOM tree =>
         mdef := HGET($MacroTable, tree)
         mdef =>
             repval := first(mdef)
-            null(rest(mdef)) => expandMacros(repval)
+            null(rest(mdef)) =>
+                expandMacros(macro_instance(repval, nil, nil, nil))
             userError('"macro call needs arguments")
         tree
     -- floating point numbers
@@ -35,13 +53,15 @@ expandMacros(tree) ==
         mdef =>
             repval := first(mdef)
             margs := rest(mdef)
+            pos := get_pos(tree)
             null(margs) =>
-                [expandMacros(repval), :[expandMacros(x) for x in args]]
+                [expandMacros(macro_instance(repval, nil, nil, pos)),
+                 :[expandMacros(x) for x in args]]
             args :=
                 args is [[",", :args1]] => postFlatten(first(args), ",")
                 args
             #args = #margs =>
-                expandMacros(SUBLISLIS(args, margs, repval))
+                expandMacros(macro_instance(repval, margs, args, pos))
             userError('"invalid macro call, #args ~= #margs")
         [op, :[expandMacros(x) for x in args]]
     [expandMacros(x) for x in tree]
@@ -133,10 +153,10 @@ do_walk_where_list(tree) ==
 -- Remove macros and where parts from global definitions
 --
 
-walkWhereList(name, def, env) ==
+walkWhereList(eq, name, def, env) ==
     $restore_list : local := nil
     edefs := do_walk_where_list env
-    ress := expandMacros(["==", replaceArgDefs(name, edefs), def])
+    ress := expandMacros(copy_pos(eq, ["==", replaceArgDefs(name, edefs), def]))
     for it in $restore_list repeat
         [op, :def] := it
         HPUT($MacroTable, op, def)
@@ -147,8 +167,8 @@ walkForm(tree) ==
         define_macro(name, def)
         nil
     tree is ["==", head, def] => expandMacros(tree)
-    tree is ["where", ["==", name, def], env] =>
-        walkWhereList(name, def, env)
+    tree is ["where", eq, env] and eq is ["==", name, def] =>
+        walkWhereList(eq, name, def, env)
     userError('"Parsing error: illegal toplevel form")
     nil
 
