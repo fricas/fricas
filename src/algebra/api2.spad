@@ -1,0 +1,678 @@
+)abbrev package CONDOCH ConstructorDocumentationHtml
+++ Author: Waldek Hebisch
+++ Description:
+++ This package generaters Html pages describing all constructors.
+++ It is a rewrite of a package by Ralf Hemmecke generating REST form.
+ConstructorDocumentationHtml : Exports == Implementation where
+  CONINFO ==> Record(fn: String, pos: String, ckind: String)
+  CONSTRUCTORS ==> XHashTable(String, CONINFO)
+  Exports ==> with
+    documentConstructors : (String, String, CONSTRUCTORS, List(String)) -> Void
+      ++ documentConstructors(title, kind, csl, cnl) documents all
+      ++ constructors of a certain kind (category, package, domain).
+      ++ csl is basic info about constructors, cnl is list of constructor
+      ++ names.
+    documentAll : String -> Void
+      ++ documentAll(path) takes as argument a path to a file that contains
+      ++ lines in the form:
+      ++   "FILENAME LINENUMBER KIND ABBREV CONSTRUCTOR"
+      ++ which looks, for example, like this
+      ++ "acplot 48 domain ACPLOT PlaneAlgebraicCurvePlot"
+      ++ and writes out for each constructor X a file with name
+      ++ X.html that contains the API description, i.e., docstring
+      ++ and a list of exported function names together with their
+      ++ types.
+      ++ Additionally, the following 3 files will be output:
+      ++  Categories.html  -- a list of all categories
+      ++  Domains.html     -- a list of all domains
+      ++  Packages.html    -- a list of all packages.
+    readConstructors : String -> CONSTRUCTORS
+      ++ readConstructors(path) read the file given by path and store
+      ++ it in a hashtable indexed by the full constructor name. That
+      ++ gives us a structure that can tell for each constructor, in
+      ++ which source file it is defined, and at which line it starts,
+      ++ as well as its kind, i.e., whether it is a category, a domain
+      ++ or a package.
+
+  Implementation ==> add
+
+    import String
+
+    SE ==> SExpression
+    SY ==> Symbol
+    Sig_doc ==> Record(signature : SE, condition : SE, origin : SE,
+                       documentation : String)
+    Op_rec ==> Record(name : SY, sdl : List(Sig_doc))
+    Op_lst ==> List(Op_rec)
+
+    Cond_rec ==> Record(form : SE, condition : SE)
+    Cond_con_lst ==> List(Cond_rec)
+
+    should_document? : XHashTable(String, Boolean) := empty()
+
+    char_lt : Character := "<"(1)
+    char_gt : Character := ">"(1)
+    char_amp : Character := "&"(1)
+    -- char_quo : Character := "_""(1)
+
+    must_escape(s : String) : Boolean ==
+        for i in 1..#s repeat
+            c := s(i)
+            if c = char_lt or c = char_gt or c = char_amp then
+                return true
+        false
+
+    escape_html_char(c : Character) : String ==
+        c = char_lt => "&lt;"
+        c = char_gt => "&gt;"
+        c = char_amp => "&amp;"
+        -- c = char_quo => "&qout;"
+        construct([c])
+
+    escape_html_chars(s : String) : String ==
+        not(must_escape(s)) => s
+        concat([escape_html_char(c) for c in entries(s)])
+
+    sex_to_string(s : SE) : String ==
+        sym := symbol(s)
+        -- Special case to undo escaping of T done by Boot
+        sym = "T$"::Symbol => "T"
+        string(sym)
+
+    lex(s1: String, s2: String): Boolean == lowerCase s1 < lowerCase s2
+
+    format_head(f : TextFile, title: String) : Void ==
+        writeLine!(f, "<!doctype html>")
+        writeLine!(f, "<html>")
+        writeLine!(f, "<META http-equiv=_"Content-Type_" "
+                      "content=_"text/html;_" charset=_"UTF-8_">")
+        writeLine!(f, "<link rel=_"stylesheet_" type=_"text/css_" "
+                      "href=_"styles.css_">")
+        writeLine!(f, "<head>")
+        writeLine!(f, "<title>" title "</title>")
+        writeLine!(f, "</head>")
+
+    format_view_link(f : TextFile, fn : String, pos : String) : Void ==
+        linktext : String := concat [fn, ".spad line ", pos]
+        linkpos : String := concat [fn, ".spad#L", pos]
+        writeLine!(f, "<p><a href=_""
+            "https://github.com/fricas/fricas/blob/master/src/algebra/"
+          linkpos "_">" linktext "</a>")
+        writeLine!(f, "<a href=_""
+            "https://github.com/fricas/fricas/edit/master/src/algebra/"
+          linkpos "_">[edit on github]</a></p>")
+
+    format_type_and_arguments(f : TextFile, con : String,
+                              argids : List(String)) : Void ==
+        write!(f, con)
+        empty?(argids) => void()
+        write!(f, "(")
+        write!(f, first(argids))
+        for id in rest(argids) repeat
+            write!(f, ", ")
+            write!(f, id)
+        write!(f, ")")
+
+    format_constructor_id(f : TextFile, t : SE) : Void ==
+        s := string(symbol(t))
+        if key?(s, should_document?) and should_document?(s) then
+            write!(f, "<a href=_"" s ".html_">" s "</a>")
+        else
+            write!(f, s)
+
+    format_type : (TextFile, SE) -> Void
+
+    format_type_list0(f : TextFile, sigs : List(SE)) : Void ==
+        t1 := first(sigs)
+        sigs := rest(sigs)
+        format_type(f, t1)
+        for t1 in sigs repeat
+            write!(f, ", ")
+            format_type(f, t1)
+
+    format_field_list(f : TextFile, tl : List(SE)) : Void ==
+        first_time : Boolean := true
+        for field in tl repeat
+            if not(first_time) then
+                write!(f, ", ")
+            first_time := false
+            (f1, f2, f3) := destruct(field)
+            write!(f, escape_html_chars(sex_to_string(f2)))
+            write!(f, " : ")
+            format_type(f, f3)
+
+    format_record(f : TextFile, tl : List(SE)) : Void ==
+        write!(f, "Record(")
+        format_field_list(f, tl)
+        write!(f, ")")
+
+    format_union_fields(f : TextFile, tl : List(SE)) : Void ==
+        t1 := first(tl)
+        list?(t1) =>
+            tl1 := destruct(t1)
+            symbol?(t1) and symbol(t1) = ":"::Symbol =>
+                format_field_list(f, tl)
+            format_type_list0(f, tl)
+        format_type_list0(f, tl)
+
+    format_union(f : TextFile, tl : List(SE)) : Void ==
+        write!(f, "Union(")
+        format_union_fields(f, tl)
+        write!(f, ")")
+
+    is_CATEGORY?(t : SE) : Boolean ==
+        not(list?(t)) => false
+        tl := destruct(t)
+        symbol?(first(tl)) and symbol(first(tl)) = 'CATEGORY
+
+    format_signatures_no_doc : (TextFile, List(SE)) -> Void
+
+    format_CATEGORY(f : TextFile, t : SE) : Void ==
+        void()
+)if false
+        tl := rest(rest(destruct(t)))
+        writeLine!(f, " with")
+        format_signatures_no_doc(f, tl)
+)endif
+
+    format_join_CATEGORY(f : TextFile, t : SE) : Void ==
+        tl := rest(destruct(t))
+        t1 := first(tl)
+        tl := rest(tl)
+        #tl = 1 =>
+            format_type(f, t1)
+            format_CATEGORY(f, first(tl))
+        write!(f, "Join")
+        format_type(f, t1)
+        while not(empty?(rest tl)) repeat
+            write!(f, ", ")
+            t1 := first(tl)
+            tl := rest(tl)
+            format_type(f, t1)
+        write!(f, ")")
+        format_CATEGORY(f, first(tl))
+
+    format_type(f : TextFile, t : SE) : Void ==
+        symbol?(t) =>
+            symbol(t) = '% => write!(f, "%")
+            format_constructor_id(f, t)
+        -- We should have proper handling of values.  ATM this handles
+        -- frequently occuring case
+        integer?(t) =>
+            write!(f, string(integer(t)))
+        string?(t) =>
+            s := string(t)
+            write!(f, "_"" s "_"")
+        list?(t) =>
+            tl := destruct(t)
+            empty?(tl) => error "empty list as a type!"
+            t1 := first(tl)
+            not(symbol?(t1)) =>
+                error "type constructor not a symbol!"
+            sym1 := symbol(t1)
+            tl := rest(tl)
+            sym1 = 'Record => format_record(f, tl)
+            sym1 = 'Union => format_union(f, tl)
+            sym1 = 'Join and is_CATEGORY?(last(tl)) =>
+                format_join_CATEGORY(f, t)
+            sym1 = 'CATEGORY =>
+                format_CATEGORY(f, t)
+            format_constructor_id(f, t1)
+            empty?(tl) => void()
+            write!(f, "(")
+            t1 := first(tl)
+            format_type(f, t1)
+            for t1 in rest(tl) repeat
+                write!(f, ", ")
+                format_type(f, t1)
+            write!(f, ")")
+        PRETTYPRINT(t)$Lisp
+        void()
+
+    M_rec ==> Record(name : String, args : List(TeXTree))
+
+    format_tex_tree : (TextFile, TeXTree) -> Void
+
+    format_tex_macro(f : TextFile, mr : M_rec) : Void ==
+        name := mr.name
+        name = "\spad" =>
+            write!(f, "<code>")
+            format_tex_tree(f, first(mr.args))
+            write!(f, "</code>")
+        name = "\spadfunFrom" =>
+            -- FIXME
+            write!(f, "<span class=_"std std-ref_">")
+            format_tex_tree(f, first(mr.args))
+            write!(f, "</span>")
+        name = "\spadfun" =>
+            write!(f, "<span class=_"spadfun_">")
+            format_tex_tree(f, first(mr.args))
+            write!(f, "</span>")
+        name = "\pspadfun" =>
+            format_tex_tree(f, first(mr.args))
+        name = "\spadopFrom" =>
+            -- FIXME
+            write!(f, "<span class=_"spadop_">")
+            format_tex_tree(f, first(mr.args))
+            write!(f, "</span>")
+        name = "\spadop" =>
+            write!(f, "<span class=_"spadop_">")
+            format_tex_tree(f, first(mr.args))
+            write!(f, "</span>")
+        name = "\spadignore" =>
+            format_tex_tree(f, first(mr.args))
+        name = "\spadtype" =>
+            -- FIXME
+            format_tex_tree(f, first(mr.args))
+        name = "\spadvar" =>
+            -- FIXME
+            format_tex_tree(f, first(mr.args))
+        name = "\userfun" =>
+            -- FIXME
+            format_tex_tree(f, first(mr.args))
+        name = "\spadsys" =>
+            -- FIXME
+            format_tex_tree(f, first(mr.args))
+        name = "\$" =>
+            write!(f, "$")
+        name = "\%" =>
+            write!(f, "%")
+        name = "\#" =>
+            write!(f, "#")
+        name = "\^" =>
+            write!(f, "^")
+        name = "\sigma" =>
+            -- FIXME
+            write!(f, "\sigma")
+        name = "\delta" =>
+            -- FIXME
+            write!(f, "\delta")
+        name = "\pi" =>
+            -- FIXME
+            write!(f, "\pi")
+        name = "\leq" =>
+            -- FIXME
+            write!(f, "\leq")
+        name = "\int" =>
+            -- FIXME
+            write!(f, "\int")
+        name = "\sum" =>
+            -- FIXME
+            write!(f, "\sum")
+        name = "\times" =>
+            -- FIXME
+            write!(f, "times")
+        name = "\" =>
+            -- FIXME
+            write!(f, "_"")
+        name = "\dot" =>
+            -- FIXME
+            write!(f, ".")
+        name = "\_"" =>
+            -- FIXME
+            write!(f, "_"")
+        name = "\/" =>
+            -- FIXME
+            write!(f, "\/")
+        name = "\=" =>
+            -- FIXME
+            write!(f, "=")
+        name = "\\" =>
+            -- FIXME
+            void()
+        name = "\~" =>
+            -- FIXME
+            void()
+        name = "\{" =>
+            write!(f, "{")
+        name = "\}" =>
+            write!(f, "}")
+        name = "\<" =>
+            write!(f, "&lt;")
+        name = "\url" =>
+            write!(f, "<a href=_"")
+            -- a1 := first(mr.args)
+            -- txt : String := get_text(a1)
+            -- write!(f, txt)
+            -- FIXME
+            format_tex_tree(f, first(mr.args))
+            write!(f, "_"<")
+            format_tex_tree(f, first(mr.args))
+            write!(f, "</a>")
+        name = "\begin" =>
+            -- FIXME
+            void()
+        name = "\end" =>
+            -- FIXME
+            void()
+        name = "\item" =>
+            -- FIXME
+            void()
+        name = "\par" =>
+            -- FIXME
+            void()
+        name = "\spadgloss" =>
+            -- FIXME
+            format_tex_tree(f, first(mr.args))
+        name = "\spadglossSee" =>
+            -- FIXME
+            format_tex_tree(f, (mr.args)(2))
+        name = "\em" =>
+            -- FIXME
+            void()
+        name = "\it" =>
+            -- FIXME
+            void()
+        name = "\centerline" =>
+            -- FIXME
+            format_tex_tree(f, first(mr.args))
+        name = "\blankline" => void()
+        name = "\newline" => void()
+        name = "\tab" => void()
+        name = "\space" => void()
+        name = "\indented" =>
+            format_tex_tree(f, (mr.args)(2))
+        name = "\indent" =>
+            -- FIXME
+            void()
+        name = "\undocumented" =>
+            write!(f, "is undocumented")
+        name = "\TeX" =>
+            write!(f, "TeX")
+        name = "\LaTeX" =>
+            write!(f, "LaTeX")
+        name = "\Language" =>
+            write!(f, "FriCAS")
+        print(message(name)$OutputForm)$OutputForm
+        error "format_tex_macro: unhandled macro"
+
+    format_tex_tree(f : TextFile, tree : TeXTree) : Void ==
+        text?(tree) =>
+            write!(f, escape_html_chars(get_text(tree)))
+        group?(tree) =>
+            lt := ungroup(tree)
+            for t1 in lt repeat
+                format_tex_tree(f, t1)
+        m_call?(tree) =>
+            format_tex_macro(f, get_call(tree))
+
+    format_doc(f : TextFile, doc : String) : Void ==
+        tree := parse(doc)$TexParser
+        writeLine!(f, "<p>")
+        format_tex_tree(f, tree)
+        writeLine!(f, "</p>")
+
+    format_arguments_and_types(f : TextFile, argids : List(String),
+                               argtypes : List(SE)) : Void ==
+        empty?(argids) => void()
+        writeLine!(f, "<ul>")
+        for a in argids for t in argtypes repeat
+            write!(f, "<li>" a " : ")
+            format_type(f, t)
+        writeLine!(f, "</ul>")
+
+    format_header(f : TextFile, con : String, argids : List(String)) : Void ==
+        write!(f, "<h1>")
+        format_type_and_arguments(f, con, argids)
+        writeLine!(f, "</h1>")
+
+    format_type_list(f : TextFile, sigs : List(SE)) : Void ==
+        empty?(sigs) => write!(f, "()")
+        t1 := first(sigs)
+        sigs := rest(sigs)
+        empty?(sigs) => format_type(f, t1)
+        write!(f, "(")
+        format_type(f, t1)
+        for t1 in sigs repeat
+            write!(f, ", ")
+            format_type(f, t1)
+        write!(f, ")")
+
+    escape_link_chars : String -> String
+
+    format_signature_no_doc0(f : TextFile, fn : String, sig : SE,
+                             do_ref : Boolean, orig : String) : Void ==
+        -- sig1 := destruct(sig)
+        -- fn := sex_to_string(first(sig1))
+        -- lsig := destruct(first(rest(sig1)))
+        lsig := destruct(sig)
+        rt := first(lsig)
+        tl := rest(lsig)
+        efn := escape_html_chars(fn)
+        if do_ref then
+            ln := escape_link_chars(fn)
+            write!(f, "<a href=_"" orig ".html#f__" ln "_">" efn "</a> : ")
+        else
+            write!(f, "<span class=_"spadfun_">")
+            write!(f, efn " : ")
+            write!(f, "</span>")
+        format_type_list(f, tl)
+        write!(f, " -&gt ")
+        format_type(f, rt)
+
+    format_signature_no_doc(f : TextFile, fn : String, sig : SE,
+                            do_ref : Boolean, orig : String) : Void ==
+        write!(f, "<p>")
+        format_signature_no_doc0(f, fn, sig, do_ref, orig)
+
+    format_has(f : TextFile, cl : List(SE)) : Void ==
+        format_type(f, cl(1))
+        write!(f, " has ")
+        op := symbol(car(cl(2)))
+        op = 'SIGNATURE =>
+            sl := cdr(cl(2))
+            opf := car(sl)
+            fn := string(symbol(opf))
+            sl := car(cdr(sl))
+            format_signature_no_doc0(f, fn, sl, false, "")
+        format_type(f, cl(2))
+
+    format_cond1 : (TextFile, SE) -> Void
+
+    format_cond_lst(f : TextFile, word : String, pl : List(SE)) : Void ==
+        first := true
+        for p in pl repeat
+            if not(first) then
+                write!(f, " ")
+                write!(f, word)
+                write!(f, " ")
+            first := false
+            format_cond1(f, p)   
+
+    format_cond1(f : TextFile, p : SE) : Void ==
+        op := symbol(car(p))
+        op = 'OR or op = 'or =>
+            format_cond_lst(f, "or", destruct(cdr(p)))
+        op = 'AND or op = 'and =>
+            format_cond_lst(f, "and", destruct(cdr(p)))
+        op = 'NOT or op = 'not =>
+            write!(f, " not ")
+            format_cond1(f, destruct(p)(2))
+        op = 'has =>
+            format_has(f, destruct(cdr(p)))
+        error "emit_predicate: unimplemented"
+
+    format_condition(f : TextFile, p : SE) : Void ==
+        p = (true pretend SE) => void()
+        write!(f, " if ")
+        format_cond1(f, p)
+
+    escape_link_char(c : Character) : String ==
+        alphanumeric?(c) => construct([c])
+        concat("__", string(ord(c)))
+
+    escape_link_chars(s : String) : String ==
+        every?(alphanumeric?$Character, s) => s
+        concat([escape_link_char(c) for c in entries(s)])
+
+    format_signature(f : TextFile, sig : SE, cond : SE, doc : String,
+                     orig : SE, fn : String, prev_fn : String) : Void ==
+        no_doc := not(symbol?(orig)) or not(symbol(orig) = "%%"::Symbol)
+        if not(fn = prev_fn) then
+            ln := escape_link_chars(fn)
+            write!(f, "<a name=_"f__" ln "_"></a>")
+        write!(f, "<dl><dt>")
+        orig_name :=
+            no_doc => string(symbol(car(orig)))
+            ""
+        format_signature_no_doc0(f, fn, sig, no_doc, orig_name)
+        format_condition(f, cond)
+        write!(f, "</dt><dd>")
+
+        if no_doc then
+            write!(f, " from ")
+            format_type(f, orig)
+        else
+            format_doc(f, doc)
+        writeLine!(f, "</dd></dl>")
+
+    sig_compare(sd1 : Sig_doc, sd2 : Sig_doc) : Boolean ==
+        sd1.signature = sd2.signature =>
+            -- print(message("equal signatures")$OutputForm)
+            -- print(sd1::OutputForm)
+            -- print(sd2::OutputForm)
+            false
+            -- error "equal signatures"
+        not(NULL(LEXLESSEQP(sd1.signature, sd2.signature)$Lisp)$Lisp)
+
+    name_compare(r1 : Op_rec, r2 : Op_rec) : Boolean ==
+        not(NULL(LEXLESSEQP(r1.name, r2.name)$Lisp)$Lisp)
+
+    format_signatures(f : TextFile, opl : Op_lst, con_form : SE) : Void ==
+        opl := [[opr.name, sort(sig_compare, opr.sdl)] for opr in opl]
+        opl := sort(name_compare, opl)
+        prev_fn : String := ""
+        for opr in opl repeat
+            fn := string(opr.name)
+            for sd in opr.sdl repeat
+                orig := sd.origin
+                if orig = con_form then
+                    orig := convert("%%"::Symbol)
+                format_signature(f, sd.signature, sd.condition,
+                                 sd.documentation, orig, fn, prev_fn)
+                prev_fn := fn
+        void()
+        
+    format_category(f : TextFile, cat : SE, cond : SE) : Void ==
+        write!(f, "<p>")
+        format_type(f, cat)
+        format_condition(f, cond)
+        writeLine!(f)
+
+    format_categories(f : TextFile, catl : Cond_con_lst, cform : SE) : Void ==
+        for cr in catl repeat
+            catf := cr.form
+            csl := destruct(catf)
+            (empty?(rest(csl)) and symbol(first(csl)) = 'Type) => iterate
+            format_category(f, catf, cr.condition)
+
+    BRI ==> BrowserInformation
+
+    -- reStructuredText(con, fn, pos) creates a list of reStructuredText
+    -- lines for the constructor con.
+    -- The parameters fn and pos are used to create a link to the source
+    -- file and line number of the constructor.
+    format_constructor(con : String, fn : String, pos : String) : Void ==
+        print(con::OutputForm) -- status message on console
+        f : TextFile := open(filename("", con, "html"), "output")
+        format_head(f, con)
+
+        writeLine!(f, "<body>")
+        con_sym := con::Symbol
+        con_form := constructor_form(con_sym)$BRI
+        cfl := destruct(con_form)
+        cfl := [((symbol?(si) and string(symbol(si)) = "T$") =>
+                     convert("T"::Symbol); si) for si in cfl]
+
+        argids : List(String) := [
+            string(symbol(argi)) for argi in rest(cfl)]
+        format_header(f, con, argids)
+        -- reference to the (github) source of the constructor
+        format_view_link(f, fn, pos)
+
+        con_sig := destruct(constructor_signature(con_sym, rest(cfl)))
+
+        -- what args does the constructor have
+        format_arguments_and_types(f, argids, rest(con_sig))
+
+        -- the docstring of the constructor
+        ds := constructor_documentation(con_sym)
+        if ds = "" then
+            ds := "undocumented"
+        format_doc(f, ds)
+        -- print("after format_doc"::OutputForm)
+
+        -- list of signatures and categories
+        opl := operations(con_form, con_form)
+        format_signatures(f, opl, con_form)
+
+        -- c : ConstructorData := constructorData(con)
+        catl := ancestors(con_form, con_form)
+        format_categories(f, catl, con_form)
+        writeLine!(f, "</body>")
+        writeLine!(f, "</html>")
+        close!(f)
+
+    format_link(f : TextFile, c : String) : Void ==
+        writeLine!(f, "<li><a href=_"" c ".html_">" c "</a>")
+
+    -- documentConstructorsTOC(title, l) creates a file with name title and
+    -- extension .html that contains the table of contents for all the
+    -- constructors given by the strings in l.
+    documentConstructorsTOC(title: String, l: List String): Void ==
+        f: TextFile := open(filename("", title, "html"), "output")
+        -- head
+        format_head(f, title)
+        -- body
+        writeLine!(f, "<body>")
+        writeLine!(f, "<p>Contents:</p>")
+        writeLine!(f, "<ul>")
+        for c in l repeat
+           format_link(f, c)
+        writeLine!(f, "</ul>")
+        writeLine!(f, "</body>")
+        writeLine!(f, "</html>")
+        close!(f)
+
+    documentConstructors(title : String, kind : String, cs : CONSTRUCTORS,
+                         all_lst : List(String)): Void ==
+        should_document? := empty()
+        for x in all_lst repeat
+            should_document?(x) := true
+        l: List String := [x for x in keys cs | cs.x.ckind = kind]
+        l := sort!(lex, l)
+        documentConstructorsTOC(title, l) -- table of contents
+        for c in l repeat format_constructor(c, cs.c.fn, cs.c.pos) -- files
+
+    -- We assume there is a file abbrev.list (given through the 'path'
+    -- parameter) that lists the abbrev lines of the .spad files in
+    -- the form
+    --    FILENAME LINENUMBER KIND ABBREV CONSTRUCTOR
+    -- which looks like this
+    --    acplot 1 package REALSOLV RealSolvePackage
+    --    acplot 48 domain ACPLOT PlaneAlgebraicCurvePlot
+    --    aggcat2 1 package FLAGG2 FiniteLinearAggregateFunctions2
+    readConstructors(path : String) : CONSTRUCTORS ==
+        constructors : CONSTRUCTORS := empty()
+        f : TextFile := open(path::FileName)
+        while not(endOfFile?(f)) repeat
+            l : List(String) := split(readLine!(f), char " ")
+            constructors(l(5)) := [l(1), l(2), l(3)]
+        close!(f)
+        constructors
+
+    documentAll(abbrevs : String) : Void ==
+        -- These are all known constructors in the running system.
+        -- Constructors that should be documented will be marked with
+        -- a "true" value. The others will only be referenced by
+        -- a link to the official FriCAS API page.
+        -- References to unknown constructors will not lead to a link.
+        -- The list of constructors that we want to document should be
+        -- a sublist of all constructors.
+        constructors: CONSTRUCTORS := readConstructors abbrevs
+        all_lst := keys(constructors)
+
+        documentConstructors("Categories", "category", constructors, all_lst)
+        documentConstructors("Domains",    "domain",   constructors, all_lst)
+        documentConstructors("Packages",   "package",  constructors, all_lst)
+        void()
