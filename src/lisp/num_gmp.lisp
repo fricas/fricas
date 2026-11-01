@@ -3,10 +3,11 @@
 (locally
   (declare (optimize (speed 3) (safety 0)))
 
-#+(and :openmcl (or :X8632-TARGET :X8664-TARGET :ARM-TARGET))
+#+(and :openmcl (or :X8632-TARGET :X8664-TARGET :ARM-TARGET :ARM64-TARGET))
 (macrolet (
     (bignum_subtag()
         #+:ARM-TARGET 'ARM::SUBTAG-BIGNUM
+        #+:ARM64-TARGET 'ARM64::SUBTAG-BIGNUM
         #+:PPC32-TARGET 'PPC32::SUBTAG-BIGNUM
         #+:PPC64-TARGET 'PPC64::SUBTAG-BIGNUM
         #+:X8632-TARGET 'X8632::SUBTAG-BIGNUM
@@ -22,8 +23,8 @@
        #+:32-BIT-TARGET `(ash ,wl 2)
        #+:64-BIT-TARGET `(ash ,wl 3))
     (is_plus(n nl)
-       #-:X8664-TARGET `(eql (the fixnum (ccl::%bignum-sign ,n)) 0)
-       #+:X8664-TARGET `(ccl::%bignum-0-or-plusp ,n ,nl))
+       #-:64-BIT-TARGET `(eql (the fixnum (ccl::%bignum-sign ,n)) 0)
+       #+:64-BIT-TARGET `(ccl::%bignum-0-or-plusp ,n ,nl))
     (alloc_bignum (rl res)
        #+(and :64-BIT-TARGET :CCL-1.12)
          `(ccl::%maybe-allocate-bignum ,rl ,res)
@@ -359,6 +360,126 @@
     (bne @loop)
     (bx lr))
 )
+
+#+:ARM64-TARGET
+(progn
+
+(CCL::defarm64lapfunction gmp-bignum-copy-from-lisp
+    ((x arg_x) (y arg_y) (l arg_z))
+    (mov imm1 (:$ 0))
+    (ldur imm2 (:@ y (:$ arm64::misc-data-offset)))
+   @loop
+    (sub imm0 imm1 (:$ (- arm64::misc-data-offset)))
+    (ldr imm0 (:@ x imm0))
+    (str imm0 (:@ imm2 imm1))
+    (add imm1 imm1 (:$ 8))
+    (cmp imm1 l)
+    (b.ne @loop)
+    (ret))
+
+(CCL::defarm64lapfunction gmp-bignum-copy-negate-from-lisp
+    ((x arg_x) (y arg_y) (l arg_z))
+    (and temp0 l (:$ 8))
+    (eor l l temp0)
+    (lsr l l (:$ 1))
+    (mov imm1 (:$ 0))
+    (ldur imm2 (:@ y (:$ arm64::misc-data-offset)))
+   @loop1
+    (sub imm0 imm1 (:$ (- arm64::misc-data-offset)))
+    (ldr imm0 (:@ x imm0))
+    (cmp imm0 (:$ 0))
+    (b.ne @negate)
+    (str imm0 (:@ imm2 imm1))
+    (add imm1 imm1 (:$ 8))
+    (cmp imm1 l)
+    (b.ne @loop1)
+    (cmp temp0 (:$ 0))
+    (b.eq @return)
+    (sub imm0 imm1 (:$ (- arm64::misc-data-offset)))
+    (ldrsw imm0 (:@ x imm0))
+    (mov temp0 (:$ 0))
+   @negate
+    (neg imm0 imm0)
+    (str imm0 (:@ imm2 imm1))
+    (add imm1 imm1 (:$ 8))
+    (cmp imm1 l)
+    (b.ge @finish)
+   @loop2
+    (sub imm0 imm1 (:$ (- arm64::misc-data-offset)))
+    (ldr imm0 (:@ x imm0))
+    (mvn imm0 imm0)
+    (str imm0 (:@ imm2 imm1))
+    (add imm1 imm1 (:$ 8))
+    (cmp imm1 l)
+    (b.ne @loop2)
+   @finish
+    (cmp temp0 (:$ 0))
+    (b.eq @return)
+    (sub imm0 imm1 (:$ (- arm64::misc-data-offset)))
+    (ldrsw imm0 (:@ x imm0))
+    (mvn imm0 imm0)
+    (str imm0 (:@ imm2 imm1))
+   @return
+    (ret))
+
+(CCL::defarm64lapfunction gmp-bignum-copy-to-lisp
+    ((x arg_x) (y arg_y) (l arg_z))
+    (ldur imm2 (:@ x (:$ arm64::misc-data-offset)))
+   @loop
+    (sub l l (:$ 8))
+    (ldr imm0 (:@ imm2 l))
+    (sub imm1 l (:$ (- arm64::misc-data-offset)))
+    (str imm0 (:@ y imm1))
+    (cmp l (:$ 0))
+    (b.ne @loop)
+    (ret))
+
+(CCL::defarm64lapfunction gmp-bignum-copy-negate-to-lisp
+    ((x arg_x) (y arg_y) (l arg_z))
+    (mov temp0 (:$ 0))
+    (ldur imm2 (:@ x (:$ arm64::misc-data-offset)))
+   @loop1
+    (ldr imm0 (:@ imm2 temp0))
+    (cmp imm0 (:$ 0))
+    (b.ne @negate)
+    (sub imm1 temp0 (:$ (- arm64::misc-data-offset)))
+    (str imm0 (:@ y imm1))
+    (add temp0 temp0 (:$ 8))
+    (cmp temp0 l)
+    (b.ne @loop1)
+    (ret)
+   @negate
+    (neg imm0 imm0)
+    (sub imm1 temp0 (:$ (- arm64::misc-data-offset)))
+    (str imm0 (:@ y imm1))
+    (add temp0 temp0 (:$ 8))
+    (cmp temp0 l)
+    (b.ne @loop2)
+    (ret)
+   @loop2
+    (ldr imm0 (:@ imm2 temp0))
+    (mvn imm0 imm0)
+    (sub imm1 temp0 (:$ (- arm64::misc-data-offset)))
+    (str imm0 (:@ y imm1))
+    (add temp0 temp0 (:$ 8))
+    (cmp temp0 l)
+    (b.ne @loop2)
+    (ret))
+
+(CCL::defarm64lapfunction gmp-bignum-copy
+    ((x arg_x) (y arg_y) (l arg_z))
+    (mov imm1 (:$ arm64::misc-data-offset))
+    (sub imm2 l (:$ (- arm64::misc-data-offset)))
+   @loop
+    (ldr imm0 (:@ x imm1))
+    (str imm0 (:@ y imm1))
+    (add imm1 imm1 (:$ 8))
+    (cmp imm1 imm2)
+    (b.ne @loop)
+    (ret))
+
+)
+
 
 (defun gmp-bignum-isqrt (x)
   (let* ((xl (digits_to_words (ccl::%bignum-length x)))
