@@ -989,12 +989,25 @@ isMacro(x,e) ==
 -- FIXME: we ignore effects of computation of condition and
 -- do not merge branches
 doItIf(item is [., p, x, y], $predl, e) ==
+    -- splitting 'and' and 'or' copies branches into places where
+    -- the condition is already decided
+    x' :=
+        member(p, $predl) => x
+        member(["not", p], $predl) => y
+        nil
+    x' =>
+        if x' ~= "noBranch" then compSingleCapsuleItem(x', $predl, e)
+        RPLACA(item, "COND")
+        RPLACD(item, [['(QUOTE T), x']])
+        -- the branch is always taken, so what it adds holds afterwards
+        e
     olde := e
     [p', ., e] := comp(p, $Boolean, e) or userError ['"not a Boolean:", p]
     if x ~= "noBranch" then
-        compSingleCapsuleItem(x, $predl, getSuccessEnvironment(p, e))
+        compSingleCapsuleItem(x, [p, :$predl], getSuccessEnvironment(p, e))
     if y ~= "noBranch" then
-        compSingleCapsuleItem(y, $predl, getInverseEnvironment(p, olde))
+        compSingleCapsuleItem(y, [["not", p], :$predl],
+                              getInverseEnvironment(p, olde))
     RPLACA(item, "COND")
     RPLACD(item, [[p', x], ['(QUOTE T), y]])
     olde
