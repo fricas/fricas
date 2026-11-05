@@ -619,7 +619,8 @@ setqSetelt([v,:s],val,m,E) ==
 setqSingle(id,val,m,E) ==
   $insideSetqSingleIfTrue: local:= true
     --used for comping domain forms within functions
-  currentProplist:= getProplist(id,E)
+  -- a "case" test on id does not hold for a new value
+  currentProplist := DELASC("condition", getProplist(id, E))
   m'':=
     get(id,'mode,E) or getmode(id,E) or
        (if m=$NoValueMode then $EmptyMode else m)
