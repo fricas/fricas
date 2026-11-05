@@ -342,6 +342,8 @@ extractCodeAndConstructTriple(u, m, oldE) ==
   u is ["call",fn,:.] =>
     if fn is ["applyFun",a] then fn := a
     [fn,m,oldE]
+  -- a local function called through its slot (local_call)
+  u is ['SPADCALL, :., fn] => [fn, m, oldE]
   [op,:.,env] := u
   [["CONS",["function",op],env],m,oldE]
 
