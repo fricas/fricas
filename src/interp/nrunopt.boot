@@ -655,17 +655,9 @@ dcOps conname ==
 NRTgetLookupFunction(domform,exCategory,addForm) ==
   domform := SUBLIS($pairlis,domform)
   addForm := SUBLIS($pairlis,addForm)
-  $why: local := nil
   atom addForm => 'lookupComplete
-  extends := NRTextendsCategory1(domform,exCategory,getExportCategory addForm)
-  if null extends then
-    [u,msg,:v] := $why
-    sayBrightly '"--------------non extending category----------------------"
-    sayBrightlyNT ['"..",:bright form2String domform,'"of cat "]
-    PRINT u
-    sayBrightlyNT bright msg
-    if v then PRINT first v else TERPRI()
-  extends => 'lookupIncomplete
+  NRTextendsCategory1(domform, exCategory, getExportCategory addForm) =>
+      'lookupIncomplete
   'lookupComplete
 
 getExportCategory form ==
@@ -691,11 +683,7 @@ extendsCategory(dom,u,v) ==
   v is ["Join",:l] => and/[extendsCategory(dom,u,x) for x in l]
   v is ["CATEGORY",.,:l] => and/[extendsCategory(dom,u,x) for x in l]
   v := substSlotNumbers(v,$template,$functorForm)
-  extendsCategoryBasic0(dom,u,v) => true
-  $why :=
-    v is ['SIGNATURE,op,sig] => [u,['"  has no ",:formatOpSignature(op,sig)]]
-    [u,'" has no",v]
-  nil
+  extendsCategoryBasic0(dom,u,v)
 
 extendsCategoryBasic0(dom,u,v) ==
   v is ['IF,p,['ATTRIBUTE,c],.] =>
