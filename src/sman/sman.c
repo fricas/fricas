@@ -490,7 +490,7 @@ start_the_hypertex(void)
 static void
 start_the_graphics(void)
 {
-  spawn_of_hell(GraphicsProgram, DoItAgain);
+  spawn_of_hell(GraphicsProgram, NadaDelShitsky);
 }
 
 /* Start the FriCAS session in a separate process, */
