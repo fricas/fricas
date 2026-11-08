@@ -370,14 +370,6 @@ HyperdocPage() : Exports == Implementation where
             ll := cons(el, ll)
         [reverse!(ll), reverse!(lo)]
 
-    trim_options(links : SE) : LSE ==
-        l1 := destruct(links)
-        ll : LSE := []
-        for el in l1 repeat
-            symbol?(el) and symbol(el) = 'options => break
-            ll := cons(el, ll)
-        reverse!(ll)
-
     render_page : (%, List(SE)) -> Void
 
     lRSE ==> List(Record(key : Symbol, entry : SE))
@@ -417,7 +409,7 @@ HyperdocPage() : Exports == Implementation where
 
     render_lisp_links(page : %, arg : SE, memo? : Boolean) : Void ==
         -- error "unimplemented"
-        links := trim_options(arg)
+        links := split_options(arg).links
         ind_s : String := "5"
         render_ls(page, ["\newline\indent{", ind_s, "}\beginitems"])
         link : String :=
@@ -428,7 +420,7 @@ HyperdocPage() : Exports == Implementation where
         render1s(page, "\enditems\indent{0} ")
 
     render_bc_links0(page : %, arg : SE, link : String) : Void ==
-        links := trim_options(arg)
+        links := split_options(arg).links
         for ld in links repeat
             render_link_button(page, link, ld, false)
 
