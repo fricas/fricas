@@ -1125,8 +1125,8 @@ compColon([":",f,t],m,e) ==
   e:=
     f is [op,:argl] =>
       --for MPOLY--replace parameters by formal arguments: RDJ 3/83
-      newTarget:= EQSUBSTLIST(take(#argl,$FormalMapVariableList),
-        [(x is [":",a,m] => a; x) for x in argl],t)
+      newTarget := sublis_type([[(x is [":", a, .] => a; x), :v]
+          for x in argl for v in $FormalMapVariableList], t)
       signature:=
         ["Mapping",newTarget,:
           [(x is [":",a,m] => m;
@@ -1137,6 +1137,12 @@ compColon([":",f,t],m,e) ==
     makeCategoryForm(t,e) is [catform,e] then
         e:= put(f,"value",[genSomeVariable(),t,$noEnv],e)
   ["/throwAway",getmode(f,e),e]
+
+-- sublisNQ(al, t) for a type t, except in the tags of Record and Union
+sublis_type(al, t) ==
+    not(CONTAINED(":", t)) => sublisNQ(al, t)
+    t is [":", tag, t1] => [":", tag, sublis_type(al, t1)]
+    [sublis_type(al, x) for x in t]
 
 unknownTypeError name ==
   name:=
