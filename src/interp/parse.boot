@@ -98,7 +98,11 @@ init_parse_tran() ==
 
 init_parse_tran()
 
-parseTran x ==
+-- the nodes built from x get the position of x, the names in them the
+-- positions of the same names in x
+parseTran x == carry_name_pos(x, note_new_pos(parseTran1 x, get_pos(x)))
+
+parseTran1 x ==
   atom x => parseAtom x
   [op, :argl] := x
   u := (op is ['Sel, ., x] => x; op)
@@ -113,7 +117,7 @@ parseAtom x ==
   x = 'break => parseLeave ['$NoValue]
   x
 
-parseTranList l == [parseTran(y) for y in l]
+parseTranList l == carry_name_pos(l, [parseTran(y) for y in l])
 
 parseHas [x,y] ==
   mkand [['has,x,u] for u in fn y] where
@@ -200,7 +204,9 @@ parseIf t ==
       p = 'true  => a
       p = 'false => b
       p is ['not,p'] => ifTran(p',b,a)
-      p is ['IF,p',a',b'] => ifTran(p',ifTran(a',COPY a,COPY b),ifTran(b',a,b))
+      p is ['IF,p',a',b'] =>
+        ifTran(p', ifTran(a', copy_pos_tree(a, COPY a), copy_pos_tree(b, COPY b)),
+               ifTran(b',a,b))
       p is ['SEQ,:l,['exit,1,p']] =>
         ['SEQ,:l,['exit,1,ifTran(p',incExitLevel a,incExitLevel b)]]
          --this assumes that l has no exits
@@ -224,13 +230,16 @@ transSeq l ==
   null l => nil
   null rest l => decExitLevel first l
   [item,:tail]:= l
-  item is ['SEQ,:l,['exit,1,['IF,p,['exit, =2,q],'noBranch]]] and
+  item is ['SEQ,:l,['exit,1,if_node := ['IF,p,['exit, =2,q],'noBranch]]] and
     (and/[x is [":=", :.] for x in l]) =>
-      ['SEQ,:[decExitLevel x for x in l],['exit,1,['IF,decExitLevel p,
-        decExitLevel q,transSeq tail]]]
+      copy_pos(item, ['SEQ,:[decExitLevel x for x in l],['exit,1,
+        carry_name_pos(tail, copy_pos(if_node, ['IF,decExitLevel p,
+          decExitLevel q,transSeq tail]))]])
   item is ['IF,a,['exit,1,b],'noBranch] =>
-    ['IF,decExitLevel a,decExitLevel b,transSeq tail]
+    carry_name_pos(tail,
+      copy_pos(item, ['IF,decExitLevel a,decExitLevel b,transSeq tail]))
   item is ['IF,a,'noBranch,['exit,1,b]] =>
-    ['IF,decExitLevel a,transSeq tail,decExitLevel b]
-  (y:= transSeq tail) is ['SEQ,:s] => ['SEQ,item,:s]
-  ['SEQ,item,['exit,1,incExitLevel y]]
+    carry_name_pos(tail,
+      copy_pos(item, ['IF,decExitLevel a,transSeq tail,decExitLevel b]))
+  (y:= transSeq tail) is ['SEQ,:s] => copy_pos(item, ['SEQ,item,:s])
+  copy_pos(item, ['SEQ,item,carry_name_pos(tail, ['exit,1,incExitLevel y])])

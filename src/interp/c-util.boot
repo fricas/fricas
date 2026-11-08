@@ -107,7 +107,7 @@ mkErrorExpr level ==
                 [highlight1(b,first a),:highlight1(b,rest a)]
       substitute(bracket rest l,first rest l,first l)
 
-errorRef s == stackWarning ['%b,s,'%d,'"has no value"]
+errorRef s == stack_warning_at(name_place(s), ['%b,s,'%d,'"has no value"])
 
 unErrorRef s == unStackWarning ['%b,s,'%d,'"has no value"]
 
@@ -185,7 +185,7 @@ intersectionContour(c, c', ce) ==
               m1 := '"\%"
           if m2 = '% then
               m2 := '"\%"
-          stackWarning(['%b, var, '%d, '"has two modes: ", m1,
+          stackWarning(['%b, var, '%d, '"has two different types: ", m1,
                         '" and ", m2])
         LIST ["conditionalmode",:rest pair]
         --LIST pair
@@ -221,8 +221,8 @@ addContour(c,E is [cur,:tail]) ==
                      --check for conflicts with earlier mode
                      if vv:=LASSOC("mode",e) then
                         if v ~=vv then
-                          stackWarning ['"The conditional modes ",
-                                     v,'" and ",vv,'" conflict"]
+                          stackWarning ['"the conditional types ", v, '" and ", vv,
+                                    '" conflict"]
         LIST c
 
 makeCommonEnvironment(e,e') ==
@@ -384,7 +384,7 @@ decExitLevel u ==
     removeExit0 x ==
       atom x => x
       x is ["exit",0,u] => removeExit0 u
-      [removeExit0 first x,:removeExit0 rest x]
+      copy_pos(x, [removeExit0 first x,:removeExit0 rest x])
 
 adjExitLevel(x,seqnum,inc) ==
   atom x => x
@@ -439,29 +439,82 @@ printDashedLine() ==
   SAY
    '"--------------------------------------------------------------------------"
 
-stackSemanticError(msg,expr) ==
+stackSemanticError(msg, expr) ==
+  stack_semantic_error_at($comp_pos, msg, expr)
+
+stack_semantic_error_at(pos, msg, expr) ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
   if atom msg then msg:= LIST msg
+  msg := pos_message(pos, msg)
   entry:= [msg,expr]
-  if not member(entry,$semanticErrorStack) then $semanticErrorStack:=
-    [entry,:$semanticErrorStack]
+  if not(or/[same_warning?(msg, m1) and EQUAL(expr, e1)
+             for [m1, e1] in $semanticErrorStack]) then
+      $semanticErrorStack:= [entry,:$semanticErrorStack]
   $scanIfTrue and $insideCapsuleFunctionIfTrue=true and #$semanticErrorStack-
     $initCapsuleErrorCount>3 => THROW("compCapsuleBody",nil)
   nil
 
-stackWarning msg ==
+stackWarning msg == stack_warning_at($comp_pos, msg)
+
+stack_warning_at(place, msg) ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
-  if not member(msg,$warningStack) then $warningStack:= [msg,:$warningStack]
+  msg := pos_message(place, msg)
+  if not(or/[same_warning?(msg, w) for w in $warningStack]) then
+      $warningStack:= [msg,:$warningStack]
   nil
 
+-- warnings (or errors) that differ only in the column are the same: one
+-- per line, at the first column
+same_warning?(a, b) ==
+  EQUAL(rest a, rest b) and EQUAL(drop_column(first a), drop_column(first b))
+
+-- the position prefix s ("file:line:col: ") without the column
+drop_column(s) ==
+  not(STRINGP(s)) or (n := #s) < 6 => s
+  i := n - 3
+  while i > 0 and digit?(s.i) repeat i := i - 1
+  i < n - 3 and s.i = char '_: and digit?(s.(i - 1)) =>
+      CONCAT(SUBSTRING(s, 0, i), '": ")
+  s
+
+-- removes msg at all positions
 unStackWarning msg ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
-  $warningStack:= NREMOVE($warningStack, msg)
+  msg := pos_message(nil, msg)
+  $warningStack := [x for x in $warningStack | not(x = msg or rest(x) = msg)]
   nil
+
+-- msg as text, with "file:line: " in front if pos is known; a % alone
+-- is written %%, else sayBrightly reads it as a layout marker and
+-- prints nothing
+pos_message(pos, msg) ==
+  msg := [(member(x, ['"%", '"$$"]) => '"%%"; x) for x in message_items(msg)]
+  null(prefix := pos_prefix(pos)) => msg
+  [prefix, :msg]
+
+-- the elements of msg as text, forms in Spad syntax
+message_items(msg) ==
+  [message_item(x) for x in (atom(msg) => [msg]; msg)]
+
+-- a form in Spad syntax; a category with a with part as "C with ..."
+message_form(x, $abbreviateJoin) == formString(x)
+
+message_item(x) ==
+  PAIRP(x) => message_form(x, true)
+  STRINGP(x) or MEMQ(x, '(%b %d %l)) => x
+  STRINGIMAGE(x)
 
 stackMessage msg ==
   $compErrorMessageStack:= [msg,:$compErrorMessageStack]
   nil
+
+-- msg, noted as being about the position pos (get_pos(msg) gives it)
+message_at(msg, pos) ==
+  note_pos(msg, pos)
+  msg
+
+-- stackMessage, the message about something at the position pos
+stack_message_at(pos, msg) == stackMessage message_at(msg, pos)
 
 stackMessageIfNone msg ==
   --used in situations such as compForm where the earliest message is wanted
@@ -472,6 +525,8 @@ stackMessageIfNone msg ==
 stackAndThrow msg ==
   $compErrorMessageStack:= [msg,:$compErrorMessageStack]
   THROW("compOrCroak",nil)
+
+stack_and_throw_at(pos, msg) == stackAndThrow message_at(msg, pos)
 
 printString x == PRINTEXP (STRINGP x => x; PNAME x)
 
@@ -527,8 +582,11 @@ extendsCategoryForm(domain, form, form', e) ==
   form is ["Join", :l] => or/[extendsCategoryForm(domain, x, form', e)
                               for x in l]
   form is ["CATEGORY",.,:l] =>
-    member(form',l) or
-      stackWarning ['"not known that ",form','" is of mode ",form] or true
+    member(form',l) => true
+    -- no warning when coerceable only asks whether a value could be
+    -- converted (domain is then a placeholder)
+    domain = "$fromCoerceable$" => true
+    stackWarning ['"not known that ", domain, '" has ", form'] or true
   isCategoryForm(form) =>
           --Constructs the associated vector
     formVec := (compMakeCategoryObject(form, e)).expr

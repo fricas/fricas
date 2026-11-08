@@ -152,3 +152,152 @@ pfPrintSrcLines(pf) ==
     if lno < lnGlobalNum(line) then
       FORMAT(true, '"   ~A~%",  lnString line)
       lno := lnGlobalNum(line)
+
+-- Source positions of the nodes of the Spad parse tree.  The parser
+-- records the position of the first token of each node, and the later
+-- stages copy it to the nodes they build from it.  The positions are kept
+-- in a table, so the tree itself is not changed.
+
+DEFPARAMETER($parse_positions, MAKE_HASHTABLE('EQ))
+-- The positions of names: a symbol occurs in many places, so the position
+-- of an occurrence is kept for the list cell that holds it.
+DEFPARAMETER($name_positions, MAKE_HASHTABLE('EQ))
+
+clear_parse_positions() ==
+    CLRHASH($parse_positions)
+    CLRHASH($name_positions)
+
+get_pos(x) ==
+    CONSP(x) => HGET($parse_positions, x)
+    nil
+
+earlier_pos(p1, p2) ==
+    null(p1) => p2
+    null(p2) => p1
+    compareposns(p1, p2) => p2
+    p1
+
+-- give x the position pos, unless it already has an earlier one
+note_pos(x, pos) ==
+    if CONSP(x) and pos then
+        HPUT($parse_positions, x, earlier_pos(get_pos(x), pos))
+
+-- give y, which was built from x, the position of x, and to the names
+-- in y the positions of the same names in x; returns y
+copy_pos(x, y) ==
+    carry_name_pos(x, y)
+    if CONSP(y) and not(get_pos(y)) and (pos := get_pos(x)) then
+        HPUT($parse_positions, y, pos)
+    y
+
+-- copy the positions of the nodes and names of x to the corresponding
+-- ones of y, which has the shape of x (e.g. the result of SUBLIS);
+-- returns y
+copy_pos_tree(x, y) ==
+    EQ(x, y) => y
+    CONSP(x) and CONSP(y) =>
+        if not(get_pos(y)) and (pos := get_pos(x)) then
+            HPUT($parse_positions, y, pos)
+        if not(get_name_pos(y)) and (pos := get_name_pos(x)) then
+            HPUT($name_positions, y, pos)
+        copy_pos_tree(first x, first y)
+        copy_pos_tree(rest x, rest y)
+        y
+    y
+
+-- give the nodes of x without a position, down to the nodes that have
+-- one, the position pos; returns x
+note_new_pos(x, pos) ==
+    pos and CONSP(x) and not(get_pos(x)) =>
+        HPUT($parse_positions, x, pos)
+        y := x
+        while CONSP(y) repeat
+            note_new_pos(first y, pos)
+            y := rest y
+        x
+    x
+
+-- the position of the name in the list cell c
+get_name_pos(c) == HGET($name_positions, c)
+
+name_entry_before?(a, b) == not(compareposns(rest a, rest b))
+
+-- give the names in the list y the positions in l, a list of
+-- [name, :position]: each one once, in source order; returns y
+note_names(y, l) ==
+    if rest l then l := SORT(l, function name_entry_before?)
+    c := y
+    while l and CONSP(c) repeat
+        s := first c
+        if s and atom(s) and not(get_name_pos(c)) and (hit := ASSQ(s, l)) then
+            HPUT($name_positions, c, rest hit)
+            l := [d for d in l | not(EQ(d, hit))]
+        c := rest c
+    y
+
+-- give the names in the list y, which was built from x, the positions of
+-- the same names in x: in the list x or in the lists directly in it,
+-- except those that are kept as elements of y; returns y
+carry_name_pos(x, y) ==
+    not(CONSP(x)) or not(CONSP(y)) or EQ(x, y) => y
+    -- usually a name stays at its place in the list
+    missing := nil
+    cx := x
+    cy := y
+    while CONSP(cy) repeat
+        s := first cy
+        if s and atom(s) and not(get_name_pos(cy)) then
+            if CONSP(cx) and EQ(first cx, s) and (p := get_name_pos(cx)) then
+                HPUT($name_positions, cy, p)
+            else missing := [s, :missing]
+        if CONSP(cx) then cx := rest cx
+        cy := rest cy
+    null(missing) => y
+    l := nil
+    c := x
+    while CONSP(c) repeat
+        el := first c
+        if MEMQ(el, missing) and (p := get_name_pos(c)) then l := [[el, :p], :l]
+        if CONSP(el) and not(MEMQ(el, y)) then
+            d := el
+            while CONSP(d) repeat
+                if MEMQ(first d, missing) and (p := get_name_pos(d)) then
+                    l := [[first d, :p], :l]
+                d := rest d
+        c := rest c
+    l => note_names(y, l)
+    y
+
+-- a new list cell holding the element of the cell c, with its position
+keep_name_cell(c) ==
+    cell := [first c]
+    if (p := get_name_pos(c)) then HPUT($name_positions, cell, p)
+    cell
+
+-- the position of x, a part of the node n: its own, or for a name the
+-- earliest position of it in n
+item_pos(n, x) ==
+    CONSP(x) => get_pos(x)
+    name_pos_in(x, n, true)
+
+-- the earliest position of the name s in the list x, or with deep? also
+-- in the lists inside it
+name_pos_in(s, x, deep?) ==
+    pos := nil
+    c := x
+    while CONSP(c) repeat
+        if EQ(first c, s) then pos := earlier_pos(pos, get_name_pos(c))
+        if deep? and CONSP(first c) then
+            pos := earlier_pos(pos, name_pos_in(s, first c, true))
+        c := rest c
+    pos
+
+-- the text "file:line:column: " for a position, or nil
+pos_prefix(pos) ==
+    null(pos) => nil
+    fn := lnPlaceOfOrigin(poGetLineObject pos)
+    ln := STRINGIMAGE(poLinePosn pos)
+    col := poCharPosn pos
+    if INTEGERP(col) then ln := CONCAT(ln, '":", STRINGIMAGE(col + 1))
+    STRINGP(fn) => CONCAT(fn, '":", ln, '": ")
+    CONCAT('"line ", ln, '": ")
