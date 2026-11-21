@@ -78,9 +78,11 @@ deltaTran(item,compItem) ==
 
 $devaluateList := []
 
-NRTreplaceAllLocalReferences(form) ==
+NRTevalForm(form) ==
+  -- evalSlotDomain evaluates it, so translate it like a function body
   $devaluateList :local := []
-  NRTputInLocalReferences form
+  form := NRTputInLocalReferences COPY_-TREE(lispize(form))
+  ['NRTEVAL, THIRD(compTranDryRun([nil, nil, form]))]
 
 NRTencode(x,y) == encode(x,y,true, true) where
   encode(x, compForm, firstTime, domain) ==
@@ -101,8 +103,7 @@ NRTencode(x,y) == encode(x,y,true, true) where
                   cosig := [true for y in QCDR(x)]
               [QCAR x, :[encode(y, z, false, cdom) for y in QCDR(x)
                           for z in rest compForm for cdom in cosig]]
-          ['NRTEVAL, NRTreplaceAllLocalReferences(
-                             COPY_-TREE(lispize(compForm)))]
+          NRTevalForm(compForm)
       MEMQ(x, $formalArgList) =>
           v := $FormalMapVariableList.(POSN1(x, $formalArgList))
           firstTime => ['local, v]
@@ -111,8 +112,7 @@ NRTencode(x,y) == encode(x,y,true, true) where
       x = '% => x
       x = "$$" => x
       domain => ['QUOTE, x]
-      ['NRTEVAL, NRTreplaceAllLocalReferences(
-                             COPY_-TREE(lispize(compForm)))]
+      NRTevalForm(compForm)
 
 --------------FUNCTIONS CALLED DURING CAPSULE FUNCTION COMPILATION-------------
 listOfBoundVars(form, e) ==
